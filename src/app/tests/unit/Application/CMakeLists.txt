@@ -1,0 +1,34 @@
+cmake_minimum_required(VERSION 3.13)
+
+add_executable(
+  UTEST_Application  
+  UTEST_Application.cpp
+  ${CMAKE_SOURCE_DIR}/src/app/Application.cpp
+  ${GENERAL_MOCKS_ROOT}/ApplicationContext/src/app/ApplicationContext.cpp
+)
+
+target_include_directories(
+  UTEST_Application
+  PRIVATE ${GENERAL_MOCKS_ROOT}/ApplicationContext
+  PRIVATE ${APP_MOCKS_ROOT}/ApplicationContext2LibraryContext
+  PRIVATE ${GENERAL_MOCKS_ROOT}/LibraryContext
+  PRIVATE ${APP_MOCKS_ROOT}/LibraryFacade
+  PRIVATE ${APP_MOCKS_ROOT}/project-global-decls
+  PRIVATE ${GENERAL_MOCKS_ROOT}/log
+  PRIVATE ${CMAKE_SOURCE_DIR}
+)
+
+target_link_libraries(
+  UTEST_Application
+  GTest::gtest_main GTest::gmock
+)
+
+include(GoogleTest)
+
+gtest_add_tests(
+  TARGET UTEST_Application
+  TEST_SUFFIX .noArgs
+  TEST_LIST noArgsTests
+)
+
+set_tests_properties(${noArgsTests} PROPERTIES TIMEOUT 600)
