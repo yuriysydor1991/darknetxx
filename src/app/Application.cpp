@@ -5,6 +5,7 @@
 #include <memory>
 
 #include "src/log/log.h"
+#include "src/darknet-adaptor/DarknetController.h"
 
 namespace app
 {
@@ -18,7 +19,14 @@ int Application::run(std::shared_ptr<ApplicationContext> ctx)
     return INVALID;
   }
 
-  LOGI("Your application implementation goes here!");
+  auto darknet = darknet_adaptor::DarknetController::create();
+
+  assert(darknet != nullptr);
+
+  if (!darknet->init(ctx)) {
+    LOGE("Fail to init the darknet");
+    return INVALID;
+  }
 
   return 0;
 }

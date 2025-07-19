@@ -15,9 +15,12 @@ class DarknetController
 {
  public:
   using AppCtxPtr = app::AppCtxPtr;
+  using DarknetControllerPtr = std::shared_ptr<DarknetController>;
 
   virtual ~DarknetController() = default;
   DarknetController() = default;
+
+  static DarknetControllerPtr create();
 
   /**
    * @brief Init the darknet.
@@ -28,6 +31,8 @@ class DarknetController
    */
   virtual bool init(AppCtxPtr ctx);
 };
+
+using DarknetControllerPtr = DarknetController::DarknetControllerPtr;
 
 }  // namespace darknet_adaptor
 

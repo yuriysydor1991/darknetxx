@@ -8,8 +8,15 @@
 namespace darknet_adaptor
 {
 
+DarknetControllerPtr DarknetController::create()
+{
+  return std::make_shared<DarknetController>();
+}
+
 bool DarknetController::init([[maybe_unused]] AppCtxPtr ctx)
 {
+  LOGD("Initing the darknet");
+  
   return true;
 }
 
