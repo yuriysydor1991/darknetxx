@@ -2,16 +2,16 @@ cmake_minimum_required(VERSION 3.13)
 
 # Change the PROJECT_NAME var value to change executable name
 set(
-  PROJECT_NAME "CppAppTemplate"
+  PROJECT_NAME "darknetxx"
   CACHE STRING "Project general name with an executable name"
 )
 
 project(
   ${PROJECT_NAME}
   VERSION 0.10.0
-  DESCRIPTION "A C++ Template project for you!"
+  DESCRIPTION "Ported version of Darknet NN"
   HOMEPAGE_URL "http://www.kytok.org.ua/"
-  LANGUAGES CXX
+  LANGUAGES CXX,C
 )
 
 set(CMAKE_CXX_STANDARD 17)
