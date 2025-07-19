@@ -1,11 +1,12 @@
-#include <stdio.h>
-#include <assert.h>
-
 #include "src/detector/train_detector_ctx.h"
-#include "src/utils.h"
-#include "src/parser.h"
 
-int train_detector_ctx(struct detector_context* ctx)
+#include <assert.h>
+#include <stdio.h>
+
+#include "src/parser.h"
+#include "src/utils.h"
+
+int train_detector_ctx(struct detector_context *ctx)
 {
   assert(ctx != NULL);
 
@@ -173,8 +174,8 @@ int train_detector_ctx(struct detector_context* ctx)
 #ifdef OPENCV
   // int num_threads = get_num_threads();
   // if(num_threads > 2) args.threads = get_num_threads() - 2;
-  args.threads = 6 * ctx->ngpus;  // 3 for - Amazon EC2 Tesla V100: p3.2xlarge (8
-                             // logical cores) - p3.16xlarge
+  args.threads = 6 * ctx->ngpus;  // 3 for - Amazon EC2 Tesla V100: p3.2xlarge
+                                  // (8 logical cores) - p3.16xlarge
   // args.threads = 12 * ngpus;    // Ryzen 7 2700X (16 logical cores)
   mat_cv *img = NULL;
   float max_img_loss = net.max_chart_loss;
@@ -183,7 +184,8 @@ int train_detector_ctx(struct detector_context* ctx)
   char windows_name[100];
   sprintf(windows_name, "chart_%s.png", base);
   img = draw_train_chart(windows_name, max_img_loss, net.max_batches,
-                         number_of_lines, img_size, ctx->dont_show, ctx->chart_path);
+                         number_of_lines, img_size, ctx->dont_show,
+                         ctx->chart_path);
 #endif  // OPENCV
   if (net.contrastive && args.threads > net.batch / 2)
     args.threads = net.batch / 2;
@@ -403,9 +405,10 @@ int train_detector_ctx(struct detector_context* ctx)
       // network net_combined = combine_train_valid_networks(net, net_map);
 
       iter_map = iteration;
-      mean_average_precision = validate_detector_map(
-          ctx->datacfg, ctx->cfg, ctx->weights, ctx->thresh, ctx->iou_thresh, 0, net.letter_box,
-          &net_map);  // &net_combined);
+      mean_average_precision =
+          validate_detector_map(ctx->datacfg, ctx->cfg, ctx->weights,
+                                ctx->thresh, ctx->iou_thresh, 0, net.letter_box,
+                                &net_map);  // &net_combined);
       printf("\n mean_average_precision (mAP@%0.2f) = %f \n", ctx->iou_thresh,
              mean_average_precision);
       if (mean_average_precision >= best_map) {

@@ -1168,7 +1168,7 @@ LIB_API float validate_detector_map(char *datacfg, char *cfgfile,
                                     const float iou_thresh,
                                     const int map_points, int letter_box,
                                     network *existing_net);
-LIB_API int train_detector_ctx(detector_context* ctx);
+LIB_API int train_detector_ctx(detector_context *ctx);
 LIB_API void test_detector(char *datacfg, char *cfgfile, char *weightfile,
                            char *filename, float thresh, float hier_thresh,
                            int dont_show, int ext_output, int save_labels,

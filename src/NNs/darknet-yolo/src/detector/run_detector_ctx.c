@@ -1,11 +1,11 @@
 #include "src/detector/run_detector_ctx.h"
 
-#include <stdio.h>
 #include <assert.h>
+#include <stdio.h>
 
 #include "src/detector/detector_context.h"
-#include "src/list.h"
 #include "src/detector/train_detector_ctx.h"
+#include "src/list.h"
 
 int run_detector_ctx(struct detector_context *ctx)
 {

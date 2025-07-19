@@ -8,9 +8,7 @@
 #include "option_list.h"
 #include "parser.h"
 #include "region_layer.h"
-#include "src/detector/detector_args_parser.h"
-#include "src/detector/detector_context.h"
-#include "src/detector/run_detector_ctx.h"
+#include "src/detector/run_detector.h"
 #include "utils.h"
 
 #ifndef __COMPAR_FN_T
@@ -29,7 +27,6 @@ static int coco_ids[] = {1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 13, 14, 15,
                          48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61,
                          62, 63, 64, 65, 67, 70, 72, 73, 74, 75, 76, 77, 78, 79,
                          80, 81, 82, 84, 85, 86, 87, 88, 89, 90};
-
 
 static int get_coco_image_id(char *filename)
 {
@@ -1622,21 +1619,3 @@ void draw_object(char *datacfg, char *cfgfile, char *weightfile, char *filename,
         DARKNET_LOC);
 }
 #endif  // defined(OPENCV) && defined(GPU)
-
-void run_detector(int argc, char **argv)
-{
-  struct detector_context ctx = {0};
-
-  ctx.argc = argc;
-  ctx.argv = argv;
-
-  if (!detector_args_parser(&ctx)) {
-    printf("Failure during detector args parse\n");
-    return;
-  }
-
-  if (!run_detector_ctx(&ctx)) {
-    printf("Failure while running the detector\n");
-    return;
-  }
-}

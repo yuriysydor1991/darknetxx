@@ -17,7 +17,7 @@ extern void predict_classifier(char *datacfg, char *cfgfile, char *weightfile,
                                char *filename, int top);
 extern void run_voxel(int argc, char **argv);
 extern void run_yolo(int argc, char **argv);
-extern void run_detector(int argc, char **argv);
+extern int run_detector(int argc, char **argv);
 extern void run_coco(int argc, char **argv);
 extern void run_writing(int argc, char **argv);
 extern void run_captcha(int argc, char **argv);
