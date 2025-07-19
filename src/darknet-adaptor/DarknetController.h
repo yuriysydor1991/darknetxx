@@ -4,6 +4,8 @@
 #include <memory>
 
 #include "src/app/ApplicationContext.h"
+#include "src/darknet-adaptor/DarknetContext.h"
+#include "src/darknet-adaptor/adaptors/IDarknetAdaptor.h"
 
 namespace darknet_adaptor
 {
@@ -16,6 +18,7 @@ class DarknetController
  public:
   using AppCtxPtr = app::AppCtxPtr;
   using DarknetControllerPtr = std::shared_ptr<DarknetController>;
+  using IDarknetAdaptorPtr = adaptors::IDarknetAdaptorPtr;
 
   virtual ~DarknetController() = default;
   DarknetController() = default;
@@ -23,13 +26,17 @@ class DarknetController
   static DarknetControllerPtr create();
 
   /**
-   * @brief Init the darknet.
+   * @brief Perform darkent action.
    *
    * @param ctx Application's run context with command line parameters etc.
    *
    * @return Returns true on the success and false otherwise.
    */
-  virtual bool init(AppCtxPtr ctx);
+  virtual bool perform(AppCtxPtr ctx);
+
+protected:
+  virtual DarknetContextPtr create_context(AppCtxPtr actx);
+  virtual IDarknetAdaptorPtr create_appropriate_worker(DarknetContextPtr dctx);
 };
 
 using DarknetControllerPtr = DarknetController::DarknetControllerPtr;

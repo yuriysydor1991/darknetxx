@@ -23,7 +23,7 @@ int Application::run(std::shared_ptr<ApplicationContext> ctx)
 
   assert(darknet != nullptr);
 
-  if (!darknet->init(ctx)) {
+  if (!darknet->perform(ctx)) {
     LOGE("Fail to init the darknet");
     return INVALID;
   }

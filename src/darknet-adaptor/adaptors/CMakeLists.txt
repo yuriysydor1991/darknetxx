@@ -1,13 +1,12 @@
 cmake_minimum_required(VERSION 3.13)
 
 add_library(
-  DarknetCXXOrigDarknetAdaptorOBJ OBJECT
-  DarknetController.cpp
-  DarknetContext.cpp
+  DarknetCXXOrigDarknetAdaptorsOBJ OBJECT
+  ADetector.cpp
 )
 
 target_include_directories(
-  DarknetCXXOrigDarknetAdaptorOBJ 
+  DarknetCXXOrigDarknetAdaptorsOBJ 
   PRIVATE
     ${CMAKE_SOURCE_DIR}
     ${CMAKE_BINARY_DIR}
@@ -15,7 +14,5 @@ target_include_directories(
 
 target_link_libraries(
   ${PROJECT_BINARY_NAME}
-  DarknetCXXOrigDarknetAdaptorOBJ
+  DarknetCXXOrigDarknetAdaptorsOBJ
 )
-
-add_subdirectory(adaptors)

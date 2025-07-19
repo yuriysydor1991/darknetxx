@@ -1290,10 +1290,10 @@ PTW32_DLLPORT DWORD PTW32_CDECL ptw32_get_exception_services_code(void);
  * Redefine the SEH __except keyword to ensure that applications
  * propagate our internal exceptions up to the library's internal handlers.
  */
-#define __except (E)                                                    \
-  __except ((GetExceptionCode() == ptw32_get_exception_services_code()) \
-                ? EXCEPTION_CONTINUE_SEARCH                             \
-                : (E))
+#define __except                                                            \
+  (E) __except ((GetExceptionCode() == ptw32_get_exception_services_code()) \
+                    ? EXCEPTION_CONTINUE_SEARCH                             \
+                    : (E))
 
 #endif /* __CLEANUP_SEH */
 
@@ -1341,8 +1341,8 @@ PTW32_DLLPORT DWORD PTW32_CDECL ptw32_get_exception_services_code(void);
 
 #else /* _MSC_VER */
 
-#define catch (E)                      \
-  catch (ptw32_exception &) { throw; } \
+#define catch                              \
+  (E) catch (ptw32_exception &) { throw; } \
   catch (E)
 
 #endif /* _MSC_VER */

@@ -276,7 +276,7 @@ class JSON_sender
         // sprintf(head, "\r\nContent-Length: %zu\r\n\r\n", outlen);
         // sprintf(head, "--boundary\r\nContent-Type:
         // application/json\r\nContent-Length: %zu\r\n\r\n", outlen); _write(s,
-        //head, 0);
+        // head, 0);
         if (!close_all_sockets) _write(s, ", \n", 0);
         int n = _write(s, outputbuf, outlen);
         if (n < (int)outlen) {
