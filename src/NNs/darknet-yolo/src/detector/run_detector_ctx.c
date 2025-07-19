@@ -5,13 +5,19 @@
 
 #include "src/detector/detector_context.h"
 #include "src/list.h"
+#include "src/detector/train_detector_ctx.h"
 
 int run_detector_ctx(struct detector_context *ctx)
 {
   assert(ctx != NULL);
 
   if (ctx == NULL) {
-    printf("No valid context provided");
+    printf("run_detector_ctx: no valid context provided");
+    return 0;
+  }
+
+  if (ctx->argc < 3) {
+    printf("run_detector_ctx: commands are not containing the subcommand");
     return 0;
   }
 
@@ -21,10 +27,7 @@ int run_detector_ctx(struct detector_context *ctx)
                   ctx->ext_output, ctx->save_labels, ctx->outfile,
                   ctx->letter_box, ctx->benchmark_layers);
   else if (0 == strcmp(ctx->argv[2], "train"))
-    train_detector(ctx->datacfg, ctx->cfg, ctx->weights, ctx->gpus, ctx->ngpus,
-                   ctx->clear, ctx->dont_show, ctx->calc_map, ctx->thresh,
-                   ctx->iou_thresh, ctx->mjpeg_port, ctx->show_imgs,
-                   ctx->benchmark_layers, ctx->chart_path, ctx->mAP_epochs);
+    train_detector_ctx(ctx);
   else if (0 == strcmp(ctx->argv[2], "valid"))
     validate_detector(ctx->datacfg, ctx->cfg, ctx->weights, ctx->outfile);
   else if (0 == strcmp(ctx->argv[2], "recall"))

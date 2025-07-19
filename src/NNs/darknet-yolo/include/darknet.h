@@ -81,6 +81,9 @@ typedef struct metadata metadata;
 struct tree;
 typedef struct tree tree;
 
+struct detector_context;
+typedef struct detector_context detector_context;
+
 extern int gpu_index;
 
 // option_list.h
@@ -1165,11 +1168,7 @@ LIB_API float validate_detector_map(char *datacfg, char *cfgfile,
                                     const float iou_thresh,
                                     const int map_points, int letter_box,
                                     network *existing_net);
-LIB_API void train_detector(char *datacfg, char *cfgfile, char *weightfile,
-                            int *gpus, int ngpus, int clear, int dont_show,
-                            int calc_map, float thresh, float iou_thresh,
-                            int mjpeg_port, int show_imgs, int benchmark_layers,
-                            char *chart_path, int mAP_epochs);
+LIB_API int train_detector_ctx(detector_context* ctx);
 LIB_API void test_detector(char *datacfg, char *cfgfile, char *weightfile,
                            char *filename, float thresh, float hier_thresh,
                            int dont_show, int ext_output, int save_labels,
