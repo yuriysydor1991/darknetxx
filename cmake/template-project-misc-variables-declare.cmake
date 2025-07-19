@@ -167,7 +167,7 @@ file(
   ALLSOURCES 
   LIST_DIRECTORIES false 
   CONFIGURE_DEPENDS
-  "src/*.h" "src/*.cpp"
+  "src/*.h" "src/*.cpp" "src/*.c" "src/*.cu"
 )
 
 message(STATUS "PROJECT_NAME: ${PROJECT_NAME}")

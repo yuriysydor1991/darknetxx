@@ -34,7 +34,7 @@ class DarknetController
    */
   virtual bool perform(AppCtxPtr ctx);
 
-protected:
+ protected:
   virtual DarknetContextPtr create_context(AppCtxPtr actx);
   virtual IDarknetAdaptorPtr create_appropriate_worker(DarknetContextPtr dctx);
 };

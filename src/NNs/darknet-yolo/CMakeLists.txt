@@ -400,7 +400,7 @@ configure_file(
 )
 
 #look for all *.h files in src folder
-file(GLOB headers "${CMAKE_CURRENT_LIST_DIR}/src/*.h")
+file(GLOB headers "src/*.h")
 #add also files in the include folder
 list(APPEND headers
   ${CMAKE_CURRENT_LIST_DIR}/include/darknet.h
@@ -414,7 +414,7 @@ endif()
 #set(exported_headers ${headers})
 
 #look for all *.c files in src folder
-file(GLOB sources "${CMAKE_CURRENT_LIST_DIR}/src/*.c")
+file(GLOB_RECURSE sources "src/*.c")
 #add also .cpp files
 list(APPEND sources
   ${CMAKE_CURRENT_LIST_DIR}/src/http_stream.cpp
@@ -442,7 +442,7 @@ if((NOT USE_INTEGRATED_LIBS) AND MSVC)
 endif()
 
 if(ENABLE_CUDA)
-  file(GLOB cuda_sources "${CMAKE_CURRENT_LIST_DIR}/src/*.cu")
+  file(GLOB_RECURSE cuda_sources "src/*.cu")
 endif()
 
 if(BUILD_AS_CPP)
@@ -485,9 +485,9 @@ if(MATH_LIBRARY)
   target_link_libraries(kmeansiou PRIVATE ${MATH_LIBRARY})
 endif()
 
-target_include_directories(darknet PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include> $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/src> $<INSTALL_INTERFACE:${INSTALL_INCLUDE_DIR}> $<BUILD_INTERFACE:${Stb_INCLUDE_DIR}>)
-target_include_directories(dark PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include> $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/src> $<INSTALL_INTERFACE:${INSTALL_INCLUDE_DIR}> $<BUILD_INTERFACE:${Stb_INCLUDE_DIR}>)
-target_include_directories(uselib PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include> $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/src> $<INSTALL_INTERFACE:${INSTALL_INCLUDE_DIR}> $<BUILD_INTERFACE:${Stb_INCLUDE_DIR}>)
+target_include_directories(darknet PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include> $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/src> $<INSTALL_INTERFACE:${INSTALL_INCLUDE_DIR}> $<BUILD_INTERFACE:${Stb_INCLUDE_DIR}> ${CMAKE_SOURCE_DIR})
+target_include_directories(dark PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include> $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/src> $<INSTALL_INTERFACE:${INSTALL_INCLUDE_DIR}> $<BUILD_INTERFACE:${Stb_INCLUDE_DIR}> ${CMAKE_SOURCE_DIR})
+target_include_directories(uselib PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include> $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/src> $<INSTALL_INTERFACE:${INSTALL_INCLUDE_DIR}> $<BUILD_INTERFACE:${Stb_INCLUDE_DIR}> ${CMAKE_SOURCE_DIR})
 
 target_compile_definitions(darknet PRIVATE -DUSE_CMAKE_LIBS)
 target_compile_definitions(dark PRIVATE -DUSE_CMAKE_LIBS)

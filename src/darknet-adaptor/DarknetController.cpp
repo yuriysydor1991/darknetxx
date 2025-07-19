@@ -1,12 +1,12 @@
 #include "src/darknet-adaptor/DarknetController.h"
 
-#include <memory>
 #include <cassert>
+#include <memory>
 
 #include "src/app/ApplicationContext.h"
-#include "src/log/log.h"
-#include "src/darknet-adaptor/adaptors/ADetector.h"
 #include "src/darknet-adaptor/DarknetStrings.h"
+#include "src/darknet-adaptor/adaptors/ADetector.h"
+#include "src/log/log.h"
 
 namespace darknet_adaptor
 {
@@ -54,7 +54,8 @@ DarknetContextPtr DarknetController::create_context(AppCtxPtr actx)
   return std::make_shared<DarknetContext>(actx);
 }
 
-DarknetController::IDarknetAdaptorPtr DarknetController::create_appropriate_worker(DarknetContextPtr dctx)
+DarknetController::IDarknetAdaptorPtr
+DarknetController::create_appropriate_worker(DarknetContextPtr dctx)
 {
   assert(dctx != nullptr);
 

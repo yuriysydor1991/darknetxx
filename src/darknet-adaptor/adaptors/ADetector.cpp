@@ -1,7 +1,7 @@
 #include "src/darknet-adaptor/adaptors/ADetector.h"
 
-#include <memory>
 #include <cassert>
+#include <memory>
 
 #include "src/darknet-adaptor/adaptors/IDarknetAdaptor.h"
 #include "src/log/log.h"
