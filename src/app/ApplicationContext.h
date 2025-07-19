@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <memory>
 
 namespace app
 {
@@ -64,6 +65,8 @@ struct ApplicationContext
    */
   void push_error(const std::string& errorDescription);
 };
+
+using AppCtxPtr = std::shared_ptr<ApplicationContext>;
 
 }  // namespace app
 
