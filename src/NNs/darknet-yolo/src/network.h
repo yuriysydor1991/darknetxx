@@ -11,15 +11,12 @@
 #endif
 #endif
 #include <inttypes.h>
+#include <stdint.h>
 
 #include "darknet.h"
-
-#include <stdint.h>
-#include "layer.h"
-
-
-#include "image.h"
 #include "data.h"
+#include "image.h"
+#include "layer.h"
 #include "tree.h"
 
 #ifdef __cplusplus
@@ -66,13 +63,9 @@ typedef struct network{
     int h, w, c;
     int max_crop;
     int min_crop;
-    int flip; // horizontal flip 50% probability augmentaiont for classifier training (default = 1)
-    float angle;
-    float aspect;
-    float exposure;
-    float saturation;
-    float hue;
-    int small_object;
+    int flip; // horizontal flip 50% probability augmentaiont for classifier
+training (default = 1) float angle; float aspect; float exposure; float
+saturation; float hue; int small_object;
 
     int gpu_index;
     tree *hierarchy;
@@ -108,8 +101,8 @@ void sync_nets(network *nets, int n, int interval);
 float train_network_datum_gpu(network net, float *x, float *y);
 float *network_predict_gpu(network net, float *input);
 float *network_predict_gpu_gl_texture(network net, uint32_t texture_id);
-float * get_network_output_gpu_layer(network net, int i);
-float * get_network_delta_gpu_layer(network net, int i);
+float *get_network_output_gpu_layer(network net, int i);
+float *get_network_delta_gpu_layer(network net, int i);
 float *get_network_output_gpu(network net);
 void forward_network_gpu(network net, network_state state);
 void backward_network_gpu(network net, network_state state);
@@ -122,7 +115,7 @@ int get_sequence_value(network net);
 float get_current_rate(network net);
 int get_current_batch(network net);
 int64_t get_current_iteration(network net);
-//void free_network(network net); // darknet.h
+// void free_network(network net); // darknet.h
 void compare_networks(network n1, network n2, data d);
 char *get_layer_string(LAYER_TYPE a);
 
@@ -138,8 +131,8 @@ float train_network_sgd(network net, data d, int n);
 float train_network_datum(network net, float *x, float *y);
 
 matrix network_predict_data(network net, data test);
-//LIB_API float *network_predict(network net, float *input);
-//LIB_API float *network_predict_ptr(network *net, float *input);
+// LIB_API float *network_predict(network net, float *input);
+// LIB_API float *network_predict_ptr(network *net, float *input);
 float network_accuracy(network net, data d);
 float *network_accuracies(network net, data d, int n);
 float network_accuracy_multi(network net, data d, int n);
@@ -156,27 +149,30 @@ int get_predicted_class_network(network net);
 void print_network(network net);
 void visualize_network(network net);
 int resize_network(network *net, int w, int h);
-//LIB_API void set_batch_network(network *net, int b);
+// LIB_API void set_batch_network(network *net, int b);
 int get_network_input_size(network net);
 float get_network_cost(network net);
-//LIB_API layer* get_network_layer(network* net, int i);
-//LIB_API detection *get_network_boxes(network *net, int w, int h, float thresh, float hier, int *map, int relative, int *num, int letter);
-//LIB_API detection *make_network_boxes(network *net, float thresh, int *num);
-//LIB_API void free_detections(detection *dets, int n);
-//LIB_API void reset_rnn(network *net);
-//LIB_API network *load_network_custom(char *cfg, char *weights, int clear, int batch);
-//LIB_API network *load_network(char *cfg, char *weights, int clear);
-//LIB_API float *network_predict_image(network *net, image im);
-//LIB_API float validate_detector_map(char *datacfg, char *cfgfile, char *weightfile, float thresh_calc_avg_iou, const float iou_thresh, int map_points, int letter_box, network *existing_net);
-//LIB_API void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, int ngpus, int clear, int dont_show, int calc_map, int mjpeg_port);
-//LIB_API int network_width(network *net);
-//LIB_API int network_height(network *net);
-//LIB_API void optimize_picture(network *net, image orig, int max_layer, float scale, float rate, float thresh, int norm);
+// LIB_API layer* get_network_layer(network* net, int i);
+// LIB_API detection *get_network_boxes(network *net, int w, int h, float
+// thresh, float hier, int *map, int relative, int *num, int letter); LIB_API
+// detection *make_network_boxes(network *net, float thresh, int *num); LIB_API
+// void free_detections(detection *dets, int n); LIB_API void reset_rnn(network
+// *net); LIB_API network *load_network_custom(char *cfg, char *weights, int
+// clear, int batch); LIB_API network *load_network(char *cfg, char *weights,
+// int clear); LIB_API float *network_predict_image(network *net, image im);
+// LIB_API float validate_detector_map(char *datacfg, char *cfgfile, char
+// *weightfile, float thresh_calc_avg_iou, const float iou_thresh, int
+// map_points, int letter_box, network *existing_net); LIB_API void
+// train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, int
+// ngpus, int clear, int dont_show, int calc_map, int mjpeg_port); LIB_API int
+// network_width(network *net); LIB_API int network_height(network *net);
+// LIB_API void optimize_picture(network *net, image orig, int max_layer, float
+// scale, float rate, float thresh, int norm);
 
 int get_network_nuisance(network net);
 int get_network_background(network net);
-//LIB_API void fuse_conv_batchnorm(network net);
-//LIB_API void calculate_binary_weights(network net);
+// LIB_API void fuse_conv_batchnorm(network net);
+// LIB_API void calculate_binary_weights(network net);
 network combine_train_valid_networks(network net_train, network net_map);
 void copy_weights_net(network net_train, network *net_map);
 void free_network_recurrent_state(network net);
@@ -187,7 +183,6 @@ int is_ema_initialized(network net);
 void ema_update(network net, float ema_alpha);
 void ema_apply(network net);
 void reject_similar_weights(network net, float sim_threshold);
-
 
 #ifdef __cplusplus
 }

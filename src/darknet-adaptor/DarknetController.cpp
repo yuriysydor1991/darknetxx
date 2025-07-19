@@ -16,7 +16,7 @@ DarknetControllerPtr DarknetController::create()
 bool DarknetController::init([[maybe_unused]] AppCtxPtr ctx)
 {
   LOGD("Initing the darknet");
-  
+
   return true;
 }
 

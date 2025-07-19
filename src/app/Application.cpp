@@ -4,8 +4,8 @@
 #include <iostream>
 #include <memory>
 
-#include "src/log/log.h"
 #include "src/darknet-adaptor/DarknetController.h"
+#include "src/log/log.h"
 
 namespace app
 {

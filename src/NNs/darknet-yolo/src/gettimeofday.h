@@ -1,9 +1,10 @@
 #ifdef _MSC_VER
 #define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#include <winsock2.h>
 #include <stdint.h>
 #include <time.h>
+#include <windows.h>
+#include <winsock2.h>
+
 #include "darknet.h"
 
 #define CLOCK_REALTIME (1)
@@ -19,7 +20,7 @@
       (result)->tv_usec += 1000000;                  \
     }                                                \
   } while (0)
-#endif // timersub
+#endif  // timersub
 
 #ifdef __cplusplus
 extern "C" {

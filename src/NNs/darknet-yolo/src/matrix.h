@@ -2,14 +2,15 @@
 #define MATRIX_H
 #include "darknet.h"
 
-//typedef struct matrix{
-//    int rows, cols;
-//    float **vals;
-//} matrix;
+// typedef struct matrix{
+//     int rows, cols;
+//     float **vals;
+// } matrix;
 
-typedef struct {
-    int *assignments;
-    matrix centers;
+typedef struct
+{
+  int *assignments;
+  matrix centers;
 } model;
 
 #ifdef __cplusplus

@@ -1,9 +1,9 @@
 #ifndef YOUR_CPP_APP_TEMPLATE_PROJECT_APPLICATIONCONTEXT_CLASS_H
 #define YOUR_CPP_APP_TEMPLATE_PROJECT_APPLICATIONCONTEXT_CLASS_H
 
+#include <memory>
 #include <string>
 #include <vector>
-#include <memory>
 
 namespace app
 {

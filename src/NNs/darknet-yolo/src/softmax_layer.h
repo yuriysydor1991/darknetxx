@@ -22,7 +22,9 @@ void backward_softmax_layer_gpu(const softmax_layer l, network_state state);
 
 //-----------------------
 
-contrastive_layer make_contrastive_layer(int batch, int w, int h, int n, int classes, int inputs, layer *yolo_layer);
+contrastive_layer make_contrastive_layer(int batch, int w, int h, int n,
+                                         int classes, int inputs,
+                                         layer *yolo_layer);
 void forward_contrastive_layer(contrastive_layer l, network_state state);
 void backward_contrastive_layer(contrastive_layer l, network_state net);
 
@@ -30,7 +32,8 @@ void backward_contrastive_layer(contrastive_layer l, network_state net);
 void pull_contrastive_layer_output(const contrastive_layer l);
 void push_contrastive_layer_output(const contrastive_layer l);
 void forward_contrastive_layer_gpu(contrastive_layer l, network_state state);
-void backward_contrastive_layer_gpu(contrastive_layer layer, network_state state);
+void backward_contrastive_layer_gpu(contrastive_layer layer,
+                                    network_state state);
 #endif
 
 #ifdef __cplusplus
