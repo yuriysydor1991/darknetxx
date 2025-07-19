@@ -14,7 +14,6 @@ target_include_directories(
   PRIVATE ${CMAKE_SOURCE_DIR}
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
   PRIVATE ${CMAKE_BINARY_DIR}
-  RPIVATE $<TARGET_PROPERTY:${PROJECT_LIBRARY_NAME},INCLUDE_DIRECTORIES>
 )
 
 install(
@@ -27,9 +26,5 @@ configure_file(
   ${CMAKE_BINARY_DIR}/project-global-decls.h
 )
 
-set(GENERAL_MOCKS_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/tests/mocks")
-
 add_subdirectory(app)
 add_subdirectory(log)
-add_subdirectory(converters)
-add_subdirectory(lib)

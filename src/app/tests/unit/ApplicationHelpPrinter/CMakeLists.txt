@@ -4,14 +4,14 @@ add_executable(
   UTEST_ApplicationHelpPrinter  
   UTEST_ApplicationHelpPrinter.cpp
   ${CMAKE_SOURCE_DIR}/src/app/ApplicationHelpPrinter.cpp
-  ${GENERAL_MOCKS_ROOT}/ApplicationContext/src/app/ApplicationContext.cpp
+  ${APP_MOCKS_ROOT}/ApplicationContext/src/app/ApplicationContext.cpp
 )
 
 target_include_directories(
   UTEST_ApplicationHelpPrinter
-  PRIVATE ${GENERAL_MOCKS_ROOT}/ApplicationContext
+  PRIVATE ${APP_MOCKS_ROOT}/ApplicationContext
   PRIVATE ${APP_MOCKS_ROOT}/project-global-decls
-  PRIVATE ${GENERAL_MOCKS_ROOT}/log
+  PRIVATE ${APP_MOCKS_ROOT}/log
   PRIVATE ${CMAKE_SOURCE_DIR}
 )
 

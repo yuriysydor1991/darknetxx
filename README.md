@@ -12,10 +12,9 @@ Enables rapid creation of a complete **software product** — not just raw code 
 
 Examine available branches to find your most applicable variant of the template or combine multiple branches by merging them to assemble the best suited template structure for your needs:
 
-- `main` branch at [project root page](https://github.com/yuriysydor1991/cpp-app-template) (**current**) just the clear `main` function and all available CMake integrations with no additional app infrastructure classes.
-- `app` branch at [app](https://github.com/yuriysydor1991/cpp-app-template/tree/app) with just general application related classes to generate a single binary executable.
-- `applib` branch at [applib](https://github.com/yuriysydor1991/cpp-app-template/tree/applib) (**current**) for the application binary with additional separate library binary and header files (available for the installation) in order to provide library's code reusability across multiple applications.
-files (available for the installation) in order to provide library's code reusability across multiple applications.
+- `main` branch at [project root page](https://github.com/yuriysydor1991/cpp-app-template) just the clear `main` function no additional app infrastructure classes and all available CMake integrations.
+- `app` branch at [app](https://github.com/yuriysydor1991/cpp-app-template/tree/app) (**current**) with just general application related classes to generate a single binary executable.
+- `applib` branch at [applib](https://github.com/yuriysydor1991/cpp-app-template/tree/applib) for the application binary with additional separate library binary and header files (available for the installation) in order to provide library's code reusability across multiple applications.
 - `lib` branch at [lib](https://github.com/yuriysydor1991/cpp-app-template/tree/lib) for the library with the headers include files (and documentation) without target binary.
 - `appQt6` branch at [appQt6](https://github.com/yuriysydor1991/cpp-app-template/tree/appQt6) for the application general classes with additional defined structure for the Qt6 QML window application development.
 - `appGtkmm3` branch at [appGtkmm3](https://github.com/yuriysydor1991/cpp-app-template/tree/appGtkmm3) for the application general classes with additional defined structure for the Gtkmm-3.0 with C++ window application development.
@@ -227,29 +226,21 @@ Details at the section [Enabling the Docker container build and run](#enabling-t
 
 ## Implement code straight away!
 
-To proceed the application implementation right away look for the `LibMain` class' `LibMain.cpp` file which is designed to accept initial code of the application. Specifically, new code may be placed into the `bool LibMain::libcall(std::shared_ptr<LibraryContext> ctx)` method. 
-
-Although `Application` class instance which calls for the `libcall` method of the `LibMain` class is fully implemented and doesn't require any changes, it may also receive some changes in order for application to work properly if necessary. See the `Application` class default implementation method `int Application::run(std::shared_ptr<ApplicationContext> ctx)` in order to review it's code and introduce some changes.
-
-The `LibMain` class will be compiled into destination target library in order to make it's implementation available for other external applications to reuse it.
+To proceed the application implementation right away look for the `Application` class' `Application.cpp` file which is designed to accept initial code of the application. Specifically, new code may be placed into the `int Application::run(std::shared_ptr<ApplicationContext> ctx)` method.
 
 **But do not forget about the SOLID principles and code decomposing!**
 
-It's preferable to create other directories which would contain implemented components of the application and include them into the `LibMain` class implementation, rather than put all the code inside the `LibMain` class itself (thats may be ok for a trivial application).
+It's preferable to create other directories which would contain implemented components of the application and include them into the `Application` class implementation, rather than put all the code inside the `Application` class itself.
 
 ## Changing the project and executable name
 
 Change the name of the project in the project's root `CMakeLists.txt` file by introducing a new value for the the `PROJECT_NAME` and/or `PROJECT_BINARY_NAME` variable which is located at `cmake/template-project-misc-variables-declare.cmake`. It is recommended to do so the executable will represent your new application name instead of templated default one - the `CppAppTemplate`.
-
-To change the destination library name change the `PROJECT_LIBRARY_NAME` variable value. It's default value will take the `PROJECT_NAME` value and appends the `Lib` string into it. For example, if name of the project is not changed yet the library will have the `libCppAppTemplateLib` name.
 
 ## Introducing custom command line parameters
 
 In order to introduce some additional command line parameters for the binary look for the `CommandLineParser` class implementation. It contains command line parsing routines that are passed by `ApplicationFactory` class after the `main` function was called.
 
 Add some additional custom fields into the `ApplicationContext` class in order to pass some custom command line flags and/or data to the `IApplication` interface abstract class descendants that will be created by the `ApplicationFactory` during command line arguments parse.
-
-Some or all `ApplicationContext` fields may be transferred into the `LibraryContext` instance by the `ApplicationContext2LibraryContext` converter class instance during the `LibMain` default implementation call. Examine the `Application` default application implementation.
 
 ## Implement your own IApplication descendants
 
@@ -260,10 +251,6 @@ You may accomplish `IApplication` subclassing by directly creating an `IApplicat
 Register newly created custom `IApplication` descendant in the `ApplicationFactory`'s `create_application` method which is responsible to create appropriate application instance with accordance of a provided data through the command line parameters.
 
 That may be accomplished by implementing a custom `ApplicationFactory` descendant and overriding it's create methods like `create_application` and/or others (call appropriate static member in the `main` function of the `main.cpp` file).
-
-## Implement your own ILib descendants
-
-All above recommendations for the `IApplication` subclassing are applying to the `ILib` class which must contain the application main functionality and which will be shared as library amongst all parties of interest.
 
 ## Version tracking and other project parameters
 
@@ -643,8 +630,6 @@ In order to install generated executable (as shown previous) file into your's sy
 
 ```
 # installs generated binary under the /usr/local/bin/ for example
-# installs generated library under the /usr/local/lib/
-# and installs header include files under the /usr/local/include/CppAppTemplate
 # run from the project's build directory
 
 sudo cmake --install .

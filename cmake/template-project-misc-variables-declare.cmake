@@ -6,11 +6,6 @@ set(
 )
 
 set(
-  PROJECT_LIBRARY_NAME "${PROJECT_NAME}Lib"
-  CACHE STRING "Project main library name and target"
-)
-
-set(
   PROJECT_MAINTAINER "Your Name"
   CACHE STRING "Project maintainer name (used for the DEB package)"
 )
