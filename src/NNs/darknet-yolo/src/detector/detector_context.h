@@ -60,6 +60,8 @@ struct detector_context
   int gpu;
   int ngpus;
 
+  // from train_detector_ctx function
+
   list *options;
   char *train_images;
   char *valid_images;
@@ -68,6 +70,11 @@ struct detector_context
   network net_map;
 
   network *nets;
+
+  data train;
+  data buffer;
+
+  network net;
 };
 
 #ifdef __cplusplus
