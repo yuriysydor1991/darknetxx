@@ -9,6 +9,7 @@
 #include "src/detector/calc_map_free_ctx.h"
 #include "src/detector/calc_map_init_ctx.h"
 #include "src/detector/read_options_ctx.h"
+#include "src/detector/load_net_weights_ctx.h"
 
 int train_detector_ctx(struct detector_context *ctx)
 {
@@ -18,7 +19,7 @@ int train_detector_ctx(struct detector_context *ctx)
     printf("Invalid context pointer provided for train_detector_ctx\n");
     return;
   }
-  
+
   read_options_ctx(ctx);
 
   calc_map_init_ctx(ctx);
@@ -28,29 +29,11 @@ int train_detector_ctx(struct detector_context *ctx)
   printf("%s\n", base);
   float avg_loss = -1;
   float avg_contrastive_acc = 0;
-  network *nets = (network *)xcalloc(ctx->ngpus, sizeof(network));
+
+  load_net_weights_ctx(ctx);
 
   srand(time(0));
-  int seed = rand();
-  int k;
-  for (k = 0; k < ctx->ngpus; ++k) {
-    srand(seed);
-#ifdef GPU
-    cuda_set_device(gpus[k]);
-#endif
-    nets[k] = parse_network_cfg(ctx->cfg);
-    nets[k].benchmark_layers = ctx->benchmark_layers;
-    if (ctx->weights) {
-      load_weights(&nets[k], ctx->weights);
-    }
-    if (ctx->clear) {
-      *nets[k].seen = 0;
-      *nets[k].cur_iteration = 0;
-    }
-    nets[k].learning_rate *= ctx->ngpus;
-  }
-  srand(time(0));
-  network net = nets[0];
+  network net = ctx->nets[0];
 
   const int actual_batch_size = net.batch * net.subdivisions;
   if (actual_batch_size == 1) {
@@ -82,7 +65,7 @@ int train_detector_ctx(struct detector_context *ctx)
   data train, buffer;
 
   layer l = net.layers[net.n - 1];
-  for (k = 0; k < net.n; ++k) {
+  for (int k = 0; k < net.n; ++k) {
     layer lk = net.layers[k];
     if (lk.type == YOLO || lk.type == GAUSSIAN_YOLO || lk.type == REGION) {
       l = lk;
@@ -216,14 +199,14 @@ int train_detector_ctx(struct detector_context *ctx)
       int k;
       if (net.dynamic_minibatch) {
         for (k = 0; k < ctx->ngpus; ++k) {
-          (*nets[k].seen) =
+          (*ctx->nets[k].seen) =
               init_b * net.subdivisions *
               get_current_iteration(
                   net);  // remove this line, when you will save to weights-file
                          // both: seen & cur_iteration
-          nets[k].batch = dim_b;
+          ctx->nets[k].batch = dim_b;
           int j;
-          for (j = 0; j < nets[k].n; ++j) nets[k].layers[j].batch = dim_b;
+          for (j = 0; j < ctx->nets[k].n; ++j) ctx->nets[k].layers[j].batch = dim_b;
         }
         net.batch = dim_b;
         imgs = net.batch * net.subdivisions * ctx->ngpus;
@@ -238,9 +221,9 @@ int train_detector_ctx(struct detector_context *ctx)
       load_thread = load_data(args);
 
       for (k = 0; k < ctx->ngpus; ++k) {
-        resize_network(nets + k, dim_w, dim_h);
+        resize_network(ctx->nets + k, dim_w, dim_h);
       }
-      net = nets[0];
+      net = ctx->nets[0];
     }
     double time = what_time_is_it_now();
     pthread_join(load_thread, 0);
@@ -254,22 +237,7 @@ int train_detector_ctx(struct detector_context *ctx)
     load_thread = load_data(args);
     // wait_key_cv(500);
 
-    /*
-    int k;
-    for(k = 0; k < l.max_boxes; ++k){
-    box b = float_to_box(train.y.vals[10] + 1 + k*5);
-    if(!b.x) break;
-    printf("loaded: %f %f %f %f\n", b.x, b.y, b.w, b.h);
-    }
-    image im = float_to_image(448, 448, 3, train.X.vals[10]);
-    int k;
-    for(k = 0; k < l.max_boxes; ++k){
-    box b = float_to_box(train.y.vals[10] + 1 + k*5);
-    printf("%d %d %d %d\n", truth.x, truth.y, truth.w, truth.h);
-    draw_bbox(im, b, 8, 1,0,0);
-    }
-    save_image(im, "truth11");
-    */
+    save_truth_image_ctx(ctx);
 
     const double load_time = (what_time_is_it_now() - time);
     printf("Loaded: %lf seconds", load_time);
@@ -348,9 +316,9 @@ int train_detector_ctx(struct detector_context *ctx)
         if (net.dynamic_minibatch) {
           for (k = 0; k < ctx->ngpus; ++k) {
             for (k = 0; k < ctx->ngpus; ++k) {
-              nets[k].batch = init_b;
+              ctx->nets[k].batch = init_b;
               int j;
-              for (j = 0; j < nets[k].n; ++j) nets[k].layers[j].batch = init_b;
+              for (j = 0; j < ctx->nets[k].n; ++j) ctx->nets[k].layers[j].batch = init_b;
             }
           }
           net.batch = init_b;
@@ -363,9 +331,9 @@ int train_detector_ctx(struct detector_context *ctx)
         train = buffer;
         load_thread = load_data(args);
         for (k = 0; k < ctx->ngpus; ++k) {
-          resize_network(nets + k, init_w, init_h);
+          resize_network(ctx->nets + k, init_w, init_h);
         }
-        net = nets[0];
+        net = ctx->nets[0];
       }
 
       copy_weights_net(net, &ctx->net_map);
@@ -399,7 +367,7 @@ int train_detector_ctx(struct detector_context *ctx)
 #ifdef OPENCV
     if (net.contrastive) {
       float cur_con_acc = -1;
-      for (k = 0; k < net.n; ++k)
+      for (int k = 0; k < net.n; ++k)
         if (net.layers[k].type == CONTRASTIVE)
           cur_con_acc = *net.layers[k].loss;
       if (cur_con_acc >= 0)
@@ -472,8 +440,8 @@ int train_detector_ctx(struct detector_context *ctx)
   free_list(ctx->options);
   ctx->options = NULL;
 
-  for (k = 0; k < ctx->ngpus; ++k) free_network(nets[k]);
-  free(nets);
+  for (int k = 0; k < ctx->ngpus; ++k) free_network(ctx->nets[k]);
+  free(ctx->nets);
   // free_network(net);
 
   calc_map_free_ctx(ctx);

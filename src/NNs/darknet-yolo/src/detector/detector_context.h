@@ -66,6 +66,8 @@ struct detector_context
   char *backup_directory;
 
   network net_map;
+
+  network *nets;
 };
 
 #ifdef __cplusplus
