@@ -51,4 +51,6 @@ void load_net_weights_ctx(struct detector_context* ctx)
 
   ctx->avg_time = -1;
   ctx->alpha_time = 0.01;
+
+  ctx->imgs = ctx->net.batch * ctx->net.subdivisions * ctx->ngpus;
 }

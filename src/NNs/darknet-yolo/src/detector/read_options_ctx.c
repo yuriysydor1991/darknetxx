@@ -19,4 +19,12 @@ void read_options_ctx(struct detector_context* ctx)
 
   ctx->base = basecfg(ctx->cfg);
   printf("%s\n", ctx->base);
+
+  ctx->save_after_iterations = option_find_int(
+      ctx->options, "saveweights",
+      (ctx->net.max_batches < 10000) ? 1000
+                                : 10000);  // configure when to write weights.
+                                           // Very useful for smaller datasets!
+
+  ctx->save_last_weights_after = option_find_int(ctx->options, "savelast", 100);
 }

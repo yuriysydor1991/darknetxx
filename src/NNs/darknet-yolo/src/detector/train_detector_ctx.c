@@ -11,6 +11,9 @@
 #include "src/detector/read_options_ctx.h"
 #include "src/detector/load_net_weights_ctx.h"
 #include "src/detector/draw_train_loss_ctx.h"
+#include "src/detector/traverse_detection_layers_ctx.h"
+#include "src/detector/sync_gpu_nets_ctx.h"
+#include "src/detector/train_network_ctx.h"
 
 int train_detector_ctx(struct detector_context *ctx)
 {
@@ -31,43 +34,9 @@ int train_detector_ctx(struct detector_context *ctx)
 
   srand(time(0));
 
-  if (ctx->actual_batch_size == 1) {
-    error(
-        "Error: You set incorrect value batch=1 for Training! You should set "
-        "batch=64 subdivision=64",
-        DARKNET_LOC);
-  } else if (ctx->actual_batch_size < 8) {
-    printf(
-        "\n Warning: You set batch=%d lower than 64! It is recommended to set "
-        "batch=64 subdivision=64 \n",
-        ctx->actual_batch_size);
-  }
+  print_net_init_stats_ctx(ctx);
 
-  int save_after_iterations = option_find_int(
-      ctx->options, "saveweights",
-      (ctx->net.max_batches < 10000) ? 1000
-                                : 10000);  // configure when to write weights.
-                                           // Very useful for smaller datasets!
-  int save_last_weights_after = option_find_int(ctx->options, "savelast", 100);
-  printf(
-      "Weights are saved after: %d iterations. Last weights (*_last.weight) "
-      "are stored every %d iterations. \n",
-      save_after_iterations, save_last_weights_after);
-
-  ctx->imgs = ctx->net.batch * ctx->net.subdivisions * ctx->ngpus;
-  printf("Learning Rate: %g, Momentum: %g, Decay: %g\n", ctx->net.learning_rate,
-         ctx->net.momentum, ctx->net.decay);
-
-  ctx->l = ctx->net.layers[ctx->net.n - 1];
-  for (int k = 0; k < ctx->net.n; ++k) {
-    layer lk = ctx->net.layers[k];
-    if (lk.type == YOLO || lk.type == GAUSSIAN_YOLO || lk.type == REGION) {
-      ctx->l = lk;
-      printf(" Detection layer: %d - type = %d \n", k, ctx->l.type);
-    }
-  }
-
-  ctx->classes = ctx->l.classes;
+  traverse_detection_layers_ctx(ctx);
 
   ctx->plist = get_paths(ctx->train_images);
   ctx->train_images_num = ctx->plist->size;
@@ -175,16 +144,9 @@ int train_detector_ctx(struct detector_context *ctx)
 
     ctx->time = what_time_is_it_now();
     ctx->loss = 0;
-#ifdef GPU
-    if (ctx->ngpus == 1) {
-      int wait_key = (dont_show) ? 0 : 1;
-      loss = train_network_waitkey(ctx->net, ctx->train, wait_key);
-    } else {
-      loss = train_networks(ctx->nets, ctx->ngpus, ctx->train, 4);
-    }
-#else
-    ctx->loss = train_network(ctx->net, ctx->train);
-#endif
+
+    train_network_ctx(ctx);
+
     if (ctx->avg_loss < 0 || ctx->avg_loss != ctx->avg_loss)
       ctx->avg_loss = ctx->loss;  // if(-inf or nan)
     ctx->avg_loss = ctx->avg_loss * .9 + ctx->loss * .1;
@@ -255,24 +217,20 @@ int train_detector_ctx(struct detector_context *ctx)
 
     draw_train_loss_ctx(ctx);
 
-    if ((iteration >= (ctx->iter_save + save_after_iterations) ||
-         iteration % save_after_iterations == 0)) {
+    if ((iteration >= (ctx->iter_save + ctx->save_after_iterations) ||
+         iteration % ctx->save_after_iterations == 0)) {
       ctx->iter_save = iteration;
-#ifdef GPU
-      if (ctx->ngpus != 1) sync_nets(ctx->nets, ctx->ngpus, 0);
-#endif
+      sync_gpu_nets_ctx(ctx);
       char buff[256];
       sprintf(buff, "%s/%s_%d.weights", ctx->backup_directory, ctx->base, iteration);
       save_weights(ctx->net, buff);
     }
 
-    if ((save_after_iterations > save_last_weights_after) &&
-        (iteration >= (ctx->iter_save_last + save_last_weights_after) ||
-         (iteration % save_last_weights_after == 0 && iteration > 1))) {
+    if ((ctx->save_after_iterations > ctx->save_last_weights_after) &&
+        (iteration >= (ctx->iter_save_last + ctx->save_last_weights_after) ||
+         (iteration % ctx->save_last_weights_after == 0 && iteration > 1))) {
       ctx->iter_save_last = iteration;
-#ifdef GPU
-      if (ctx->ngpus != 1) sync_nets(ctx->nets, ctx->ngpus, 0);
-#endif
+      sync_gpu_nets_ctx(ctx);
       char buff[256];
       sprintf(buff, "%s/%s_last.weights", ctx->backup_directory, ctx->base);
       save_weights(ctx->net, buff);
@@ -285,9 +243,9 @@ int train_detector_ctx(struct detector_context *ctx)
     }
     free_data(ctx->train);
   }
-#ifdef GPU
-  if (ctx->ngpus != 1) sync_nets(ctx->nets, ctx->ngpus, 0);
-#endif
+
+  sync_gpu_nets_ctx(ctx);
+
   char buff[256];
   sprintf(buff, "%s/%s_final.weights", ctx->backup_directory, ctx->base);
   save_weights(ctx->net, buff);
@@ -295,32 +253,9 @@ int train_detector_ctx(struct detector_context *ctx)
       "If you want to train from the beginning, then use flag in the end of "
       "training command: -clear \n");
 
-#ifdef OPENCV
-  release_mat(&ctx->img);
-  destroy_all_windows_cv();
-#endif
-
-  // free memory
   pthread_join(load_thread, 0);
-  free_data(ctx->buffer);
 
-  free_load_threads(&ctx->args);
-
-  free(ctx->base);
-  free(ctx->paths);
-  free_list_contents(ctx->plist);
-  free_list(ctx->plist);
-
-  free_list_contents_kvp(ctx->options);
-  free_list(ctx->options);
-  ctx->options = NULL;
-
-  for (int k = 0; k < ctx->ngpus; ++k) free_network(ctx->nets[k]);
-  free(ctx->nets);
-  ctx->nets = NULL;
-  // free_network(net);
-
-  calc_map_free_ctx(ctx);
+  clear_context(ctx);
 
   return 1;
 }

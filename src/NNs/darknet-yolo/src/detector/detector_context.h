@@ -96,6 +96,8 @@ struct detector_context
   layer l;
 
   int iter_save, iter_save_last, iter_map;
+  int save_after_iterations;
+  int save_last_weights_after;
 
   float mean_average_precision;
   float best_map;
