@@ -3,6 +3,7 @@
 
 #include "src/list.h"
 #include "darknet.h"
+#include "image.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -67,6 +68,17 @@ struct detector_context
   char *valid_images;
   char *backup_directory;
 
+  char *base;
+
+  char windows_name[100];
+  mat_cv *img;
+  float max_img_loss;
+  int number_of_lines;
+  int img_size;
+  int draw_precision;
+
+  int actual_batch_size;
+
   network net_map;
 
   network *nets;
@@ -82,6 +94,18 @@ struct detector_context
   int classes;
   int train_images_num;
   layer l;
+
+  int iter_save, iter_save_last, iter_map;
+
+  float mean_average_precision;
+  float best_map;
+  float loss;
+  float avg_loss;
+  float avg_contrastive_acc;
+
+  double time, time_remaining, avg_time, alpha_time;
+
+  int next_map_calc;
 
   load_args args;
 };

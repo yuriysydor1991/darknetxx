@@ -10,6 +10,7 @@
 #include "src/detector/calc_map_init_ctx.h"
 #include "src/detector/read_options_ctx.h"
 #include "src/detector/load_net_weights_ctx.h"
+#include "src/detector/draw_train_loss_ctx.h"
 
 int train_detector_ctx(struct detector_context *ctx)
 {
@@ -25,27 +26,21 @@ int train_detector_ctx(struct detector_context *ctx)
   calc_map_init_ctx(ctx);
 
   srand(time(0));
-  char *base = basecfg(ctx->cfg);
-  printf("%s\n", base);
-  float avg_loss = -1;
-  float avg_contrastive_acc = 0;
 
   load_net_weights_ctx(ctx);
 
   srand(time(0));
-  ctx->net = ctx->nets[0];
 
-  const int actual_batch_size = ctx->net.batch * ctx->net.subdivisions;
-  if (actual_batch_size == 1) {
+  if (ctx->actual_batch_size == 1) {
     error(
         "Error: You set incorrect value batch=1 for Training! You should set "
         "batch=64 subdivision=64",
         DARKNET_LOC);
-  } else if (actual_batch_size < 8) {
+  } else if (ctx->actual_batch_size < 8) {
     printf(
         "\n Warning: You set batch=%d lower than 64! It is recommended to set "
         "batch=64 subdivision=64 \n",
-        actual_batch_size);
+        ctx->actual_batch_size);
   }
 
   int save_after_iterations = option_find_int(
@@ -81,52 +76,16 @@ int train_detector_ctx(struct detector_context *ctx)
   const int init_w = ctx->net.w;
   const int init_h = ctx->net.h;
   const int init_b = ctx->net.batch;
-  int iter_save, iter_save_last, iter_map;
-  iter_save = get_current_iteration(ctx->net);
-  iter_save_last = get_current_iteration(ctx->net);
-  iter_map = get_current_iteration(ctx->net);
-  float mean_average_precision = -1;
-  float best_map = mean_average_precision;
 
   prepare_load_args_ctx(ctx);
 
-#ifdef OPENCV
-  // int num_threads = get_num_threads();
-  // if(num_threads > 2) args.threads = get_num_threads() - 2;
-  ctx->args.threads = 6 * ctx->ngpus;  // 3 for - Amazon EC2 Tesla V100: p3.2xlarge
-                                  // (8 logical cores) - p3.16xlarge
-  // args.threads = 12 * ngpus;    // Ryzen 7 2700X (16 logical cores)
-  mat_cv *img = NULL;
-  float max_img_loss = ctx->net.max_chart_loss;
-  int number_of_lines = 100;
-  int img_size = 1000;
-  char windows_name[100];
-  sprintf(windows_name, "chart_%s.png", base);
-  img = draw_train_chart(windows_name, max_img_loss, ctx->net.max_batches,
-                         number_of_lines, img_size, ctx->dont_show,
-                         ctx->chart_path);
-#endif  // OPENCV
-  if (ctx->net.contrastive && ctx->args.threads > ctx->net.batch / 2)
-    ctx->args.threads = ctx->net.batch / 2;
-  if (ctx->net.track) {
-    ctx->args.track = ctx->net.track;
-    ctx->args.augment_speed = ctx->net.augment_speed;
-    if (ctx->net.sequential_subdivisions)
-      ctx->args.threads = ctx->net.sequential_subdivisions * ctx->ngpus;
-    else
-      ctx->args.threads = ctx->net.subdivisions * ctx->ngpus;
-    ctx->args.mini_batch = ctx->net.batch / ctx->net.time_steps;
-    printf(
-        "\n Tracking! batch = %d, subdiv = %d, time_steps = %d, mini_batch = "
-        "%d \n",
-        ctx->net.batch, ctx->net.subdivisions, ctx->net.time_steps, ctx->args.mini_batch);
-  }
+  draw_train_chart_ctx(ctx);
+  
   // printf(" imgs = %d \n", imgs);
 
   pthread_t load_thread = load_data(ctx->args);
 
   int count = 0;
-  double time_remaining, avg_time = -1, alpha_time = 0.01;
 
   // while(i*imgs < N*120){
   while (get_current_iteration(ctx->net) < ctx->net.max_batches) {
@@ -149,7 +108,7 @@ int train_detector_ctx(struct detector_context *ctx)
 
       // at the beginning (check if enough memory) and at the end (calc rolling
       // mean/variance)
-      if (avg_loss < 0 || get_current_iteration(ctx->net) > ctx->net.max_batches - 100) {
+      if (ctx->avg_loss < 0 || get_current_iteration(ctx->net) > ctx->net.max_batches - 100) {
         dim_w = max_dim_w;
         dim_h = max_dim_h;
       }
@@ -192,8 +151,10 @@ int train_detector_ctx(struct detector_context *ctx)
       }
       ctx->net = ctx->nets[0];
     }
-    double time = what_time_is_it_now();
+    ctx->time = what_time_is_it_now();
+
     pthread_join(load_thread, 0);
+
     ctx->train = ctx->buffer;
     if (ctx->net.track) {
       ctx->net.sequential_subdivisions = get_current_seq_subdivisions(ctx->net);
@@ -206,75 +167,35 @@ int train_detector_ctx(struct detector_context *ctx)
 
     save_truth_image_ctx(ctx);
 
-    const double load_time = (what_time_is_it_now() - time);
+    const double load_time = (what_time_is_it_now() - ctx->time);
     printf("Loaded: %lf seconds", load_time);
-    if (load_time > 0.1 && avg_loss > 0)
+    if (load_time > 0.1 && ctx->avg_loss > 0)
       printf(" - performance bottleneck on CPU or Disk HDD/SSD");
     printf("\n");
 
-    time = what_time_is_it_now();
-    float loss = 0;
+    ctx->time = what_time_is_it_now();
+    ctx->loss = 0;
 #ifdef GPU
-    if (ngpus == 1) {
+    if (ctx->ngpus == 1) {
       int wait_key = (dont_show) ? 0 : 1;
-      loss = train_network_waitkey(net, train, wait_key);
+      loss = train_network_waitkey(ctx->net, ctx->train, wait_key);
     } else {
-      loss = train_networks(nets, ngpus, train, 4);
+      loss = train_networks(ctx->nets, ctx->ngpus, ctx->train, 4);
     }
 #else
-    loss = train_network(ctx->net, ctx->train);
+    ctx->loss = train_network(ctx->net, ctx->train);
 #endif
-    if (avg_loss < 0 || avg_loss != avg_loss)
-      avg_loss = loss;  // if(-inf or nan)
-    avg_loss = avg_loss * .9 + loss * .1;
+    if (ctx->avg_loss < 0 || ctx->avg_loss != ctx->avg_loss)
+      ctx->avg_loss = ctx->loss;  // if(-inf or nan)
+    ctx->avg_loss = ctx->avg_loss * .9 + ctx->loss * .1;
+
+    print_net_stat_ctx(ctx);
 
     const int iteration = get_current_iteration(ctx->net);
-    // i = get_current_batch(net);
 
-    int calc_map_for_each =
-        ctx->mAP_epochs * ctx->train_images_num /
-        (ctx->net.batch * ctx->net.subdivisions);  // calculate mAP every mAP_epochs
-    calc_map_for_each = fmax(calc_map_for_each, 100);
-    int next_map_calc = iter_map + calc_map_for_each;
-    next_map_calc = fmax(next_map_calc, ctx->net.burn_in);
-    // next_map_calc = fmax(next_map_calc, 400);
-    if (ctx->calc_map) {
-      printf("\n (next mAP calculation at %d iterations) ", next_map_calc);
-      if (mean_average_precision > 0)
-        printf("\n Last accuracy mAP@%0.2f = %2.2f %%, best = %2.2f %% ",
-               ctx->iou_thresh, mean_average_precision * 100, best_map * 100);
-    }
-
-    printf("\033[H\033[J");
-    if (mean_average_precision > 0.0) {
-      printf("%d/%d: loss=%0.1f map=%0.2f best=%0.2f hours left=%0.1f\007",
-             iteration, ctx->net.max_batches, loss, mean_average_precision, best_map,
-             avg_time);
-    } else {
-      printf("%d/%d: loss=%0.1f hours left=%0.1f\007", iteration,
-             ctx->net.max_batches, loss, avg_time);
-    }
-
-    if (ctx->net.cudnn_half) {
-      if (iteration < ctx->net.burn_in * 3)
-        fprintf(stderr,
-                "\n Tensor Cores are disabled until the first %d iterations "
-                "are reached.\n",
-                3 * ctx->net.burn_in);
-      else
-        fprintf(stderr, "\n Tensor Cores are used.\n");
-      fflush(stderr);
-    }
-    printf(
-        "\n %d: %f, %f avg loss, %f rate, %lf seconds, %d images, %f hours "
-        "left\n",
-        iteration, loss, avg_loss, get_current_rate(ctx->net),
-        (what_time_is_it_now() - time), iteration * ctx->imgs, avg_time);
-    fflush(stdout);
-
-    int draw_precision = 0;
+    ctx->draw_precision = 0;
     if (ctx->calc_map &&
-        (iteration >= next_map_calc || iteration == ctx->net.max_batches)) {
+        (iteration >= ctx->next_map_calc || iteration == ctx->net.max_batches)) {
       if (ctx->l.random) {
         printf("Resizing to initial size: %d x %d ", init_w, init_h);
         ctx->args.w = init_w;
@@ -308,69 +229,56 @@ int train_detector_ctx(struct detector_context *ctx)
       // combine Training and Validation networks
       // network net_combined = combine_train_valid_networks(net, net_map);
 
-      iter_map = iteration;
-      mean_average_precision =
+      ctx->iter_map = iteration;
+      ctx->mean_average_precision =
           validate_detector_map(ctx->datacfg, ctx->cfg, ctx->weights,
                                 ctx->thresh, ctx->iou_thresh, 0, ctx->net.letter_box,
                                 &ctx->net_map);  // &net_combined);
       printf("\n mean_average_precision (mAP@%0.2f) = %f \n", ctx->iou_thresh,
-             mean_average_precision);
-      if (mean_average_precision >= best_map) {
-        best_map = mean_average_precision;
+             ctx->mean_average_precision);
+      if (ctx->mean_average_precision >= ctx->best_map) {
+        ctx->best_map = ctx->mean_average_precision;
         printf("New best mAP!\n");
         char buff[256];
-        sprintf(buff, "%s/%s_best.weights", ctx->backup_directory, base);
+        sprintf(buff, "%s/%s_best.weights", ctx->backup_directory, ctx->base);
         save_weights(ctx->net, buff);
       }
 
-      draw_precision = 1;
+      ctx->draw_precision = 1;
     }
-    time_remaining = ((ctx->net.max_batches - iteration) / ctx->ngpus) *
-                     (what_time_is_it_now() - time + load_time) / 60 / 60;
+    ctx->time_remaining = ((ctx->net.max_batches - iteration) / ctx->ngpus) *
+                     (what_time_is_it_now() - ctx->time + load_time) / 60 / 60;
     // set initial value, even if resume training from 10000 iteration
-    if (avg_time < 0) avg_time = time_remaining;
+    if (ctx->avg_time < 0) ctx->avg_time = ctx->time_remaining;
     else
-      avg_time = alpha_time * time_remaining + (1 - alpha_time) * avg_time;
-#ifdef OPENCV
-    if (ctx->net.contrastive) {
-      float cur_con_acc = -1;
-      for (int k = 0; k < ctx->net.n; ++k)
-        if (ctx->net.layers[k].type == CONTRASTIVE)
-          cur_con_acc = *ctx->net.layers[k].loss;
-      if (cur_con_acc >= 0)
-        avg_contrastive_acc = avg_contrastive_acc * 0.99 + cur_con_acc * 0.01;
-      printf("  avg_contrastive_acc = %f \n", avg_contrastive_acc);
-    }
-    draw_train_loss(windows_name, img, img_size, avg_loss, max_img_loss,
-                    iteration, ctx->net.max_batches, mean_average_precision,
-                    draw_precision, "mAP%", avg_contrastive_acc / 100,
-                    ctx->dont_show, ctx->mjpeg_port, avg_time);
-#endif  // OPENCV
+      ctx->avg_time = ctx->alpha_time * ctx->time_remaining + (1 - ctx->alpha_time) * ctx->avg_time;
 
-    if ((iteration >= (iter_save + save_after_iterations) ||
+    draw_train_loss_ctx(ctx);
+
+    if ((iteration >= (ctx->iter_save + save_after_iterations) ||
          iteration % save_after_iterations == 0)) {
-      iter_save = iteration;
+      ctx->iter_save = iteration;
 #ifdef GPU
-      if (ngpus != 1) sync_nets(nets, ngpus, 0);
+      if (ctx->ngpus != 1) sync_nets(ctx->nets, ctx->ngpus, 0);
 #endif
       char buff[256];
-      sprintf(buff, "%s/%s_%d.weights", ctx->backup_directory, base, iteration);
+      sprintf(buff, "%s/%s_%d.weights", ctx->backup_directory, ctx->base, iteration);
       save_weights(ctx->net, buff);
     }
 
     if ((save_after_iterations > save_last_weights_after) &&
-        (iteration >= (iter_save_last + save_last_weights_after) ||
+        (iteration >= (ctx->iter_save_last + save_last_weights_after) ||
          (iteration % save_last_weights_after == 0 && iteration > 1))) {
-      iter_save_last = iteration;
+      ctx->iter_save_last = iteration;
 #ifdef GPU
-      if (ngpus != 1) sync_nets(nets, ngpus, 0);
+      if (ctx->ngpus != 1) sync_nets(ctx->nets, ctx->ngpus, 0);
 #endif
       char buff[256];
-      sprintf(buff, "%s/%s_last.weights", ctx->backup_directory, base);
+      sprintf(buff, "%s/%s_last.weights", ctx->backup_directory, ctx->base);
       save_weights(ctx->net, buff);
 
       if (ctx->net.ema_alpha && is_ema_initialized(ctx->net)) {
-        sprintf(buff, "%s/%s_ema.weights", ctx->backup_directory, base);
+        sprintf(buff, "%s/%s_ema.weights", ctx->backup_directory, ctx->base);
         save_weights_upto(ctx->net, buff, ctx->net.n, 1);
         printf(" EMA weights are saved to the file: %s \n", buff);
       }
@@ -378,17 +286,17 @@ int train_detector_ctx(struct detector_context *ctx)
     free_data(ctx->train);
   }
 #ifdef GPU
-  if (ngpus != 1) sync_nets(nets, ngpus, 0);
+  if (ctx->ngpus != 1) sync_nets(ctx->nets, ctx->ngpus, 0);
 #endif
   char buff[256];
-  sprintf(buff, "%s/%s_final.weights", ctx->backup_directory, base);
+  sprintf(buff, "%s/%s_final.weights", ctx->backup_directory, ctx->base);
   save_weights(ctx->net, buff);
   printf(
       "If you want to train from the beginning, then use flag in the end of "
       "training command: -clear \n");
 
 #ifdef OPENCV
-  release_mat(&img);
+  release_mat(&ctx->img);
   destroy_all_windows_cv();
 #endif
 
@@ -398,7 +306,7 @@ int train_detector_ctx(struct detector_context *ctx)
 
   free_load_threads(&ctx->args);
 
-  free(base);
+  free(ctx->base);
   free(ctx->paths);
   free_list_contents(ctx->plist);
   free_list(ctx->plist);

@@ -16,4 +16,7 @@ void read_options_ctx(struct detector_context* ctx)
   ctx->train_images = option_find_str(ctx->options, "train", "data/train.txt");
   ctx->valid_images = option_find_str(ctx->options, "valid", ctx->train_images);
   ctx->backup_directory = option_find_str(ctx->options, "backup", "/backup/");
+
+  ctx->base = basecfg(ctx->cfg);
+  printf("%s\n", ctx->base);
 }

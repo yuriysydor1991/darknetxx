@@ -13,6 +13,9 @@ void load_net_weights_ctx(struct detector_context* ctx)
     return;
   }
 
+  ctx->avg_loss = -1;
+  ctx->avg_contrastive_acc = 0;
+
   ctx->nets = (network *)xcalloc(ctx->ngpus, sizeof(network));
 
   srand(time(0));
@@ -35,4 +38,17 @@ void load_net_weights_ctx(struct detector_context* ctx)
     }
     ctx->nets[k].learning_rate *= ctx->ngpus;
   }
+
+  ctx->net = ctx->nets[0];
+
+  ctx->iter_save = get_current_iteration(ctx->net);
+  ctx->iter_save_last = get_current_iteration(ctx->net);
+  ctx->iter_map = get_current_iteration(ctx->net);
+  ctx->mean_average_precision = -1;
+  ctx->best_map = ctx->mean_average_precision;
+
+  ctx->actual_batch_size = ctx->net.batch * ctx->net.subdivisions;
+
+  ctx->avg_time = -1;
+  ctx->alpha_time = 0.01;
 }

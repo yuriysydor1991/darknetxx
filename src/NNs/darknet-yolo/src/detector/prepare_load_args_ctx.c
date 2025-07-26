@@ -2,6 +2,7 @@
 
 #include <assert.h>
 #include <string.h>
+#include <stdio.h>
 
 void prepare_load_args_ctx(struct detector_context* ctx)
 {
@@ -47,4 +48,20 @@ void prepare_load_args_ctx(struct detector_context* ctx)
   if (ctx->dont_show && ctx->show_imgs) ctx->show_imgs = 2;
 
   ctx->args.show_imgs = ctx->show_imgs;
+
+  if (ctx->net.contrastive && ctx->args.threads > ctx->net.batch / 2)
+    ctx->args.threads = ctx->net.batch / 2;
+  if (ctx->net.track) {
+    ctx->args.track = ctx->net.track;
+    ctx->args.augment_speed = ctx->net.augment_speed;
+    if (ctx->net.sequential_subdivisions)
+      ctx->args.threads = ctx->net.sequential_subdivisions * ctx->ngpus;
+    else
+      ctx->args.threads = ctx->net.subdivisions * ctx->ngpus;
+    ctx->args.mini_batch = ctx->net.batch / ctx->net.time_steps;
+    printf(
+        "\n Tracking! batch = %d, subdiv = %d, time_steps = %d, mini_batch = "
+        "%d \n",
+        ctx->net.batch, ctx->net.subdivisions, ctx->net.time_steps, ctx->args.mini_batch);
+  }
 }
