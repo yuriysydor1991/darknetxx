@@ -75,6 +75,15 @@ struct detector_context
   data buffer;
 
   network net;
+
+  char **paths;
+  int imgs;
+  list *plist;
+  int classes;
+  int train_images_num;
+  layer l;
+
+  load_args args;
 };
 
 #ifdef __cplusplus

@@ -59,24 +59,24 @@ int train_detector_ctx(struct detector_context *ctx)
       "are stored every %d iterations. \n",
       save_after_iterations, save_last_weights_after);
 
-  int imgs = ctx->net.batch * ctx->net.subdivisions * ctx->ngpus;
+  ctx->imgs = ctx->net.batch * ctx->net.subdivisions * ctx->ngpus;
   printf("Learning Rate: %g, Momentum: %g, Decay: %g\n", ctx->net.learning_rate,
          ctx->net.momentum, ctx->net.decay);
 
-  layer l = ctx->net.layers[ctx->net.n - 1];
+  ctx->l = ctx->net.layers[ctx->net.n - 1];
   for (int k = 0; k < ctx->net.n; ++k) {
     layer lk = ctx->net.layers[k];
     if (lk.type == YOLO || lk.type == GAUSSIAN_YOLO || lk.type == REGION) {
-      l = lk;
-      printf(" Detection layer: %d - type = %d \n", k, l.type);
+      ctx->l = lk;
+      printf(" Detection layer: %d - type = %d \n", k, ctx->l.type);
     }
   }
 
-  int classes = l.classes;
+  ctx->classes = ctx->l.classes;
 
-  list *plist = get_paths(ctx->train_images);
-  int train_images_num = plist->size;
-  char **paths = (char **)list_to_array(plist);
+  ctx->plist = get_paths(ctx->train_images);
+  ctx->train_images_num = ctx->plist->size;
+  ctx->paths = (char **)list_to_array(ctx->plist);
 
   const int init_w = ctx->net.w;
   const int init_h = ctx->net.h;
@@ -88,44 +88,12 @@ int train_detector_ctx(struct detector_context *ctx)
   float mean_average_precision = -1;
   float best_map = mean_average_precision;
 
-  load_args args = {0};
-  args.w = ctx->net.w;
-  args.h = ctx->net.h;
-  args.c = ctx->net.c;
-  args.paths = paths;
-  args.n = imgs;
-  args.m = plist->size;
-  args.classes = classes;
-  args.flip = ctx->net.flip;
-  args.jitter = l.jitter;
-  args.resize = l.resize;
-  args.num_boxes = l.max_boxes;
-  args.truth_size = l.truth_size;
-  ctx->net.num_boxes = args.num_boxes;
-  ctx->net.train_images_num = train_images_num;
-  args.d = &ctx->buffer;
-  args.type = DETECTION_DATA;
-  args.threads = 64;  // 16 or 64
-
-  args.angle = ctx->net.angle;
-  args.gaussian_noise = ctx->net.gaussian_noise;
-  args.blur = ctx->net.blur;
-  args.mixup = ctx->net.mixup;
-  args.exposure = ctx->net.exposure;
-  args.saturation = ctx->net.saturation;
-  args.hue = ctx->net.hue;
-  args.letter_box = ctx->net.letter_box;
-  args.mosaic_bound = ctx->net.mosaic_bound;
-  args.contrastive = ctx->net.contrastive;
-  args.contrastive_jit_flip = ctx->net.contrastive_jit_flip;
-  args.contrastive_color = ctx->net.contrastive_color;
-  if (ctx->dont_show && ctx->show_imgs) ctx->show_imgs = 2;
-  args.show_imgs = ctx->show_imgs;
+  prepare_load_args_ctx(ctx);
 
 #ifdef OPENCV
   // int num_threads = get_num_threads();
   // if(num_threads > 2) args.threads = get_num_threads() - 2;
-  args.threads = 6 * ctx->ngpus;  // 3 for - Amazon EC2 Tesla V100: p3.2xlarge
+  ctx->args.threads = 6 * ctx->ngpus;  // 3 for - Amazon EC2 Tesla V100: p3.2xlarge
                                   // (8 logical cores) - p3.16xlarge
   // args.threads = 12 * ngpus;    // Ryzen 7 2700X (16 logical cores)
   mat_cv *img = NULL;
@@ -138,33 +106,33 @@ int train_detector_ctx(struct detector_context *ctx)
                          number_of_lines, img_size, ctx->dont_show,
                          ctx->chart_path);
 #endif  // OPENCV
-  if (ctx->net.contrastive && args.threads > ctx->net.batch / 2)
-    args.threads = ctx->net.batch / 2;
+  if (ctx->net.contrastive && ctx->args.threads > ctx->net.batch / 2)
+    ctx->args.threads = ctx->net.batch / 2;
   if (ctx->net.track) {
-    args.track = ctx->net.track;
-    args.augment_speed = ctx->net.augment_speed;
+    ctx->args.track = ctx->net.track;
+    ctx->args.augment_speed = ctx->net.augment_speed;
     if (ctx->net.sequential_subdivisions)
-      args.threads = ctx->net.sequential_subdivisions * ctx->ngpus;
+      ctx->args.threads = ctx->net.sequential_subdivisions * ctx->ngpus;
     else
-      args.threads = ctx->net.subdivisions * ctx->ngpus;
-    args.mini_batch = ctx->net.batch / ctx->net.time_steps;
+      ctx->args.threads = ctx->net.subdivisions * ctx->ngpus;
+    ctx->args.mini_batch = ctx->net.batch / ctx->net.time_steps;
     printf(
         "\n Tracking! batch = %d, subdiv = %d, time_steps = %d, mini_batch = "
         "%d \n",
-        ctx->net.batch, ctx->net.subdivisions, ctx->net.time_steps, args.mini_batch);
+        ctx->net.batch, ctx->net.subdivisions, ctx->net.time_steps, ctx->args.mini_batch);
   }
   // printf(" imgs = %d \n", imgs);
 
-  pthread_t load_thread = load_data(args);
+  pthread_t load_thread = load_data(ctx->args);
 
   int count = 0;
   double time_remaining, avg_time = -1, alpha_time = 0.01;
 
   // while(i*imgs < N*120){
   while (get_current_iteration(ctx->net) < ctx->net.max_batches) {
-    if (l.random && count++ % 10 == 0) {
+    if (ctx->l.random && count++ % 10 == 0) {
       float rand_coef = 1.4;
-      if (l.random != 1.0) rand_coef = l.random;
+      if (ctx->l.random != 1.0) rand_coef = ctx->l.random;
       printf("Resizing, random_coef = %.2f \n", rand_coef);
       float random_val = rand_scale(rand_coef);  // *x or /x
       int dim_w =
@@ -192,8 +160,8 @@ int train_detector_ctx(struct detector_context *ctx)
       int new_dim_b = (int)(dim_b * 0.8);
       if (new_dim_b > init_b) dim_b = new_dim_b;
 
-      args.w = dim_w;
-      args.h = dim_h;
+      ctx->args.w = dim_w;
+      ctx->args.h = dim_h;
 
       int k;
       if (ctx->net.dynamic_minibatch) {
@@ -208,8 +176,8 @@ int train_detector_ctx(struct detector_context *ctx)
           for (j = 0; j < ctx->nets[k].n; ++j) ctx->nets[k].layers[j].batch = dim_b;
         }
         ctx->net.batch = dim_b;
-        imgs = ctx->net.batch * ctx->net.subdivisions * ctx->ngpus;
-        args.n = imgs;
+        ctx->imgs = ctx->net.batch * ctx->net.subdivisions * ctx->ngpus;
+        ctx->args.n = ctx->imgs;
         printf("\n %d x %d  (batch = %d) \n", dim_w, dim_h, ctx->net.batch);
       } else
         printf("\n %d x %d \n", dim_w, dim_h);
@@ -217,7 +185,7 @@ int train_detector_ctx(struct detector_context *ctx)
       pthread_join(load_thread, 0);
       ctx->train = ctx->buffer;
       free_data(ctx->train);
-      load_thread = load_data(args);
+      load_thread = load_data(ctx->args);
 
       for (k = 0; k < ctx->ngpus; ++k) {
         resize_network(ctx->nets + k, dim_w, dim_h);
@@ -229,11 +197,11 @@ int train_detector_ctx(struct detector_context *ctx)
     ctx->train = ctx->buffer;
     if (ctx->net.track) {
       ctx->net.sequential_subdivisions = get_current_seq_subdivisions(ctx->net);
-      args.threads = ctx->net.sequential_subdivisions * ctx->ngpus;
+      ctx->args.threads = ctx->net.sequential_subdivisions * ctx->ngpus;
       printf(" sequential_subdivisions = %d, sequence = %d \n",
              ctx->net.sequential_subdivisions, get_sequence_value(ctx->net));
     }
-    load_thread = load_data(args);
+    load_thread = load_data(ctx->args);
     // wait_key_cv(500);
 
     save_truth_image_ctx(ctx);
@@ -264,7 +232,7 @@ int train_detector_ctx(struct detector_context *ctx)
     // i = get_current_batch(net);
 
     int calc_map_for_each =
-        ctx->mAP_epochs * train_images_num /
+        ctx->mAP_epochs * ctx->train_images_num /
         (ctx->net.batch * ctx->net.subdivisions);  // calculate mAP every mAP_epochs
     calc_map_for_each = fmax(calc_map_for_each, 100);
     int next_map_calc = iter_map + calc_map_for_each;
@@ -301,16 +269,16 @@ int train_detector_ctx(struct detector_context *ctx)
         "\n %d: %f, %f avg loss, %f rate, %lf seconds, %d images, %f hours "
         "left\n",
         iteration, loss, avg_loss, get_current_rate(ctx->net),
-        (what_time_is_it_now() - time), iteration * imgs, avg_time);
+        (what_time_is_it_now() - time), iteration * ctx->imgs, avg_time);
     fflush(stdout);
 
     int draw_precision = 0;
     if (ctx->calc_map &&
         (iteration >= next_map_calc || iteration == ctx->net.max_batches)) {
-      if (l.random) {
+      if (ctx->l.random) {
         printf("Resizing to initial size: %d x %d ", init_w, init_h);
-        args.w = init_w;
-        args.h = init_h;
+        ctx->args.w = init_w;
+        ctx->args.h = init_h;
         int k;
         if (ctx->net.dynamic_minibatch) {
           for (k = 0; k < ctx->ngpus; ++k) {
@@ -321,14 +289,14 @@ int train_detector_ctx(struct detector_context *ctx)
             }
           }
           ctx->net.batch = init_b;
-          imgs = init_b * ctx->net.subdivisions * ctx->ngpus;
-          args.n = imgs;
+          ctx->imgs = init_b * ctx->net.subdivisions * ctx->ngpus;
+          ctx->args.n = ctx->imgs;
           printf("\n %d x %d  (batch = %d) \n", init_w, init_h, init_b);
         }
         pthread_join(load_thread, 0);
         free_data(ctx->train);
         ctx->train = ctx->buffer;
-        load_thread = load_data(args);
+        load_thread = load_data(ctx->args);
         for (k = 0; k < ctx->ngpus; ++k) {
           resize_network(ctx->nets + k, init_w, init_h);
         }
@@ -428,12 +396,12 @@ int train_detector_ctx(struct detector_context *ctx)
   pthread_join(load_thread, 0);
   free_data(ctx->buffer);
 
-  free_load_threads(&args);
+  free_load_threads(&ctx->args);
 
   free(base);
-  free(paths);
-  free_list_contents(plist);
-  free_list(plist);
+  free(ctx->paths);
+  free_list_contents(ctx->plist);
+  free_list(ctx->plist);
 
   free_list_contents_kvp(ctx->options);
   free_list(ctx->options);

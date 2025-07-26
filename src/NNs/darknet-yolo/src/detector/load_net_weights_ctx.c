@@ -9,7 +9,7 @@ void load_net_weights_ctx(struct detector_context* ctx)
 {
   assert(ctx != NULL);
   
-  if (!ctx->calc_map) {
+  if (ctx == NULL) {
     return;
   }
 
