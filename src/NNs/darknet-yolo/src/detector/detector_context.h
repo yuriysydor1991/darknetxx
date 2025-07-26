@@ -2,6 +2,7 @@
 #define DARKNET_DETECTOR_C_CONTEXT_STRUCT_H
 
 #include "src/list.h"
+#include "darknet.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -63,6 +64,8 @@ struct detector_context
   char *train_images;
   char *valid_images;
   char *backup_directory;
+
+  network net_map;
 };
 
 #ifdef __cplusplus

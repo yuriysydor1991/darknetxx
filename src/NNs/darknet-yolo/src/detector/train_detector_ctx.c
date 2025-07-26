@@ -6,53 +6,22 @@
 #include "src/parser.h"
 #include "src/utils.h"
 
+#include "src/detector/calc_map_free_ctx.h"
+#include "src/detector/calc_map_init_ctx.h"
+#include "src/detector/read_options_ctx.h"
+
 int train_detector_ctx(struct detector_context *ctx)
 {
   assert(ctx != NULL);
 
   if (ctx == NULL) {
     printf("Invalid context pointer provided for train_detector_ctx\n");
-    return 0;
+    return;
   }
+  
+  read_options_ctx(ctx);
 
-  ctx->options = read_data_cfg(ctx->datacfg);
-  ctx->train_images = option_find_str(ctx->options, "train", "data/train.txt");
-  ctx->valid_images = option_find_str(ctx->options, "valid", ctx->train_images);
-  ctx->backup_directory = option_find_str(ctx->options, "backup", "/backup/");
-
-  network net_map;
-
-  if (ctx->calc_map) {
-    FILE *valid_file = fopen(ctx->valid_images, "r");
-    if (!valid_file) {
-      printf(
-          "\n Error: There is no %s file for mAP calculation!\n Don't use -map "
-          "flag.\n Or set valid=%s in your %s file. \n",
-          ctx->valid_images, ctx->train_images, ctx->datacfg);
-      error("Error!", DARKNET_LOC);
-    } else
-      fclose(valid_file);
-
-    cuda_set_device(ctx->gpus[0]);
-    printf(" Prepare additional network for mAP calculation...\n");
-    net_map = parse_network_cfg_custom(ctx->cfg, 1, 1);
-    net_map.benchmark_layers = ctx->benchmark_layers;
-    const int net_classes = net_map.layers[net_map.n - 1].classes;
-
-    int k;  // free memory unnecessary arrays
-    for (k = 0; k < net_map.n - 1; ++k) free_layer_custom(net_map.layers[k], 1);
-
-    char *name_list = option_find_str(ctx->options, "names", "data/names.list");
-    int names_size = 0;
-    char **names = get_labels_custom(name_list, &names_size);
-    if (net_classes != names_size) {
-      printf(
-          "\n Error: in the file %s number of names %d that isn't equal to "
-          "classes=%d in the file %s \n",
-          name_list, names_size, net_classes, ctx->cfg);
-    }
-    free_ptrs((void **)names, net_map.layers[net_map.n - 1].classes);
-  }
+  calc_map_init_ctx(ctx);
 
   srand(time(0));
   char *base = basecfg(ctx->cfg);
@@ -399,7 +368,7 @@ int train_detector_ctx(struct detector_context *ctx)
         net = nets[0];
       }
 
-      copy_weights_net(net, &net_map);
+      copy_weights_net(net, &ctx->net_map);
 
       // combine Training and Validation networks
       // network net_combined = combine_train_valid_networks(net, net_map);
@@ -408,7 +377,7 @@ int train_detector_ctx(struct detector_context *ctx)
       mean_average_precision =
           validate_detector_map(ctx->datacfg, ctx->cfg, ctx->weights,
                                 ctx->thresh, ctx->iou_thresh, 0, net.letter_box,
-                                &net_map);  // &net_combined);
+                                &ctx->net_map);  // &net_combined);
       printf("\n mean_average_precision (mAP@%0.2f) = %f \n", ctx->iou_thresh,
              mean_average_precision);
       if (mean_average_precision >= best_map) {
@@ -507,10 +476,7 @@ int train_detector_ctx(struct detector_context *ctx)
   free(nets);
   // free_network(net);
 
-  if (ctx->calc_map) {
-    net_map.n = 0;
-    free_network(net_map);
-  }
+  calc_map_free_ctx(ctx);
 
   return 1;
 }
