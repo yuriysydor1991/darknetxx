@@ -1,6 +1,8 @@
 #ifndef DARKNET_DETECTOR_C_CONTEXT_STRUCT_H
 #define DARKNET_DETECTOR_C_CONTEXT_STRUCT_H
 
+#include "src/list.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -56,6 +58,11 @@ struct detector_context
   int *gpus;
   int gpu;
   int ngpus;
+
+  list *options;
+  char *train_images;
+  char *valid_images;
+  char *backup_directory;
 };
 
 #ifdef __cplusplus

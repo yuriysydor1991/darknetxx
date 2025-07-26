@@ -15,20 +15,20 @@ int train_detector_ctx(struct detector_context *ctx)
     return 0;
   }
 
-  list *options = read_data_cfg(ctx->datacfg);
-  char *train_images = option_find_str(options, "train", "data/train.txt");
-  char *valid_images = option_find_str(options, "valid", train_images);
-  char *backup_directory = option_find_str(options, "backup", "/backup/");
+  ctx->options = read_data_cfg(ctx->datacfg);
+  ctx->train_images = option_find_str(ctx->options, "train", "data/train.txt");
+  ctx->valid_images = option_find_str(ctx->options, "valid", ctx->train_images);
+  ctx->backup_directory = option_find_str(ctx->options, "backup", "/backup/");
 
   network net_map;
 
   if (ctx->calc_map) {
-    FILE *valid_file = fopen(valid_images, "r");
+    FILE *valid_file = fopen(ctx->valid_images, "r");
     if (!valid_file) {
       printf(
           "\n Error: There is no %s file for mAP calculation!\n Don't use -map "
           "flag.\n Or set valid=%s in your %s file. \n",
-          valid_images, train_images, ctx->datacfg);
+          ctx->valid_images, ctx->train_images, ctx->datacfg);
       error("Error!", DARKNET_LOC);
     } else
       fclose(valid_file);
@@ -42,7 +42,7 @@ int train_detector_ctx(struct detector_context *ctx)
     int k;  // free memory unnecessary arrays
     for (k = 0; k < net_map.n - 1; ++k) free_layer_custom(net_map.layers[k], 1);
 
-    char *name_list = option_find_str(options, "names", "data/names.list");
+    char *name_list = option_find_str(ctx->options, "names", "data/names.list");
     int names_size = 0;
     char **names = get_labels_custom(name_list, &names_size);
     if (net_classes != names_size) {
@@ -97,11 +97,11 @@ int train_detector_ctx(struct detector_context *ctx)
   }
 
   int save_after_iterations = option_find_int(
-      options, "saveweights",
+      ctx->options, "saveweights",
       (net.max_batches < 10000) ? 1000
                                 : 10000);  // configure when to write weights.
                                            // Very useful for smaller datasets!
-  int save_last_weights_after = option_find_int(options, "savelast", 100);
+  int save_last_weights_after = option_find_int(ctx->options, "savelast", 100);
   printf(
       "Weights are saved after: %d iterations. Last weights (*_last.weight) "
       "are stored every %d iterations. \n",
@@ -123,7 +123,7 @@ int train_detector_ctx(struct detector_context *ctx)
 
   int classes = l.classes;
 
-  list *plist = get_paths(train_images);
+  list *plist = get_paths(ctx->train_images);
   int train_images_num = plist->size;
   char **paths = (char **)list_to_array(plist);
 
@@ -415,7 +415,7 @@ int train_detector_ctx(struct detector_context *ctx)
         best_map = mean_average_precision;
         printf("New best mAP!\n");
         char buff[256];
-        sprintf(buff, "%s/%s_best.weights", backup_directory, base);
+        sprintf(buff, "%s/%s_best.weights", ctx->backup_directory, base);
         save_weights(net, buff);
       }
 
@@ -450,7 +450,7 @@ int train_detector_ctx(struct detector_context *ctx)
       if (ngpus != 1) sync_nets(nets, ngpus, 0);
 #endif
       char buff[256];
-      sprintf(buff, "%s/%s_%d.weights", backup_directory, base, iteration);
+      sprintf(buff, "%s/%s_%d.weights", ctx->backup_directory, base, iteration);
       save_weights(net, buff);
     }
 
@@ -462,11 +462,11 @@ int train_detector_ctx(struct detector_context *ctx)
       if (ngpus != 1) sync_nets(nets, ngpus, 0);
 #endif
       char buff[256];
-      sprintf(buff, "%s/%s_last.weights", backup_directory, base);
+      sprintf(buff, "%s/%s_last.weights", ctx->backup_directory, base);
       save_weights(net, buff);
 
       if (net.ema_alpha && is_ema_initialized(net)) {
-        sprintf(buff, "%s/%s_ema.weights", backup_directory, base);
+        sprintf(buff, "%s/%s_ema.weights", ctx->backup_directory, base);
         save_weights_upto(net, buff, net.n, 1);
         printf(" EMA weights are saved to the file: %s \n", buff);
       }
@@ -477,7 +477,7 @@ int train_detector_ctx(struct detector_context *ctx)
   if (ngpus != 1) sync_nets(nets, ngpus, 0);
 #endif
   char buff[256];
-  sprintf(buff, "%s/%s_final.weights", backup_directory, base);
+  sprintf(buff, "%s/%s_final.weights", ctx->backup_directory, base);
   save_weights(net, buff);
   printf(
       "If you want to train from the beginning, then use flag in the end of "
@@ -499,8 +499,9 @@ int train_detector_ctx(struct detector_context *ctx)
   free_list_contents(plist);
   free_list(plist);
 
-  free_list_contents_kvp(options);
-  free_list(options);
+  free_list_contents_kvp(ctx->options);
+  free_list(ctx->options);
+  ctx->options = NULL;
 
   for (k = 0; k < ctx->ngpus; ++k) free_network(nets[k]);
   free(nets);
