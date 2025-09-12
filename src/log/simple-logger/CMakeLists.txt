@@ -6,7 +6,7 @@ add_library(
 )
 
 target_include_directories(
-  TemplateProjectSimpleLoggerObj 
+  TemplateProjectSimpleLoggerObj
   PRIVATE
     ${CMAKE_SOURCE_DIR}
     ${CMAKE_BINARY_DIR}

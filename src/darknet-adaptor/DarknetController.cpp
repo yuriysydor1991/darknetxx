@@ -5,7 +5,8 @@
 
 #include "src/app/ApplicationContext.h"
 #include "src/darknet-adaptor/DarknetStrings.h"
-#include "src/darknet-adaptor/adaptors/ADetector.h"
+#include "src/darknet-adaptor/adaptors/ADetector/ADetector.h"
+#include "src/darknet-adaptor/adaptors/ADetectorTrainer/ADetectorTrainer.h"
 #include "src/log/log.h"
 
 namespace darknet_adaptor
@@ -51,7 +52,11 @@ DarknetContextPtr DarknetController::create_context(AppCtxPtr actx)
 
   LOGD("Creating the context");
 
-  return std::make_shared<DarknetContext>(actx);
+  auto ctx = std::make_shared<DarknetContext>(actx);
+
+  ctx->init();
+
+  return ctx;
 }
 
 DarknetController::IDarknetAdaptorPtr
@@ -64,11 +69,17 @@ DarknetController::create_appropriate_worker(DarknetContextPtr dctx)
     return {};
   }
 
-  if (dctx->command == DarknetStrings::detector) {
-    return std::make_shared<adaptors::ADetector>();
+  if (!dctx->get_Detect_cfg().empty()) {
+    LOGD("Found the detect cfg file: " << dctx->get_Detect_cfg());
+    return adaptors::ADetector::create();
   }
 
-  LOGE("Can't create worker for the unknown command: " << dctx->command);
+  if (!dctx->get_Train_cfg().empty()) {
+    LOGD("Found the train cfg file: " << dctx->get_Train_cfg());
+    return adaptors::ADetectorTrainer::create();
+  }
+
+  LOGE("No other adaptors so far!");
 
   return {};
 }

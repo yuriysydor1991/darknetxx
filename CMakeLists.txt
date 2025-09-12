@@ -26,5 +26,7 @@ include(template-project-feature-enabler)
 
 add_subdirectory(src)
 add_subdirectory(doc)
+add_subdirectory(misc)
 
 include(template-project-feature-enabler-post)
+

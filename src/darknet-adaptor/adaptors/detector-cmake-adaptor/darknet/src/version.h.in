@@ -1,0 +1,10 @@
+#ifndef DARKNET_GLOBAL_CMAKE_PROJECT_DECLS_H
+#define DARKNET_GLOBAL_CMAKE_PROJECT_DECLS_H
+
+#define MAJOR_VERSION @Darknet_MAJOR_VERSION@
+#define MINOR_VERSION @Darknet_MINOR_VERSION@
+#define PATCH_VERSION @Darknet_PATCH_VERSION@
+#define Darknet_data_dir "@Darknet_data_path@"
+
+#endif // DARKNET_GLOBAL_CMAKE_PROJECT_DECLS_H
+

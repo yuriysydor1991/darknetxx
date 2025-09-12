@@ -1,0 +1,23 @@
+#ifndef DARKNETXX_PROJECT_CTEST_PARSER_DATA_PROVIDER_CLASS_H
+#define DARKNETXX_PROJECT_CTEST_PARSER_DATA_PROVIDER_CLASS_H
+
+#include <cstddef>
+#include <vector>
+
+#include "dlinfo.h"
+
+class CTEST_darknet_parser_provider
+{
+ public:
+  inline static constexpr const char* const CFG_1 = "@CMAKE_CURRENT_SOURCE_DIR@/data/1.cfg";
+  inline static constexpr const char* const W_1 = "@CMAKE_CURRENT_SOURCE_DIR@/data/1.weights";
+  
+  inline static constexpr const char* const CFG_2 = "@CMAKE_CURRENT_SOURCE_DIR@/data/2.cfg";
+  inline static constexpr const char* const W_2 = "@CMAKE_CURRENT_SOURCE_DIR@/data/2.weights";
+  
+  static const dlinfov& get_1();
+  static const dlinfov& get_2();
+};
+
+
+#endif // DARKNETXX_PROJECT_CTEST_PARSER_DATA_PROVIDER_CLASS_H

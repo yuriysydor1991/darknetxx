@@ -1,0 +1,100 @@
+FROM ubuntu:22.04
+
+RUN apt update
+RUN apt -y upgrade
+
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata \
+ && ln -fs /usr/share/zoneinfo/Etc/UTC /etc/localtime \
+ && dpkg-reconfigure --frontend noninteractive tzdata
+
+RUN apt install -y apt-utils 
+RUN apt install -y locales 
+RUN localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
+ENV LANG=en_US.utf8
+
+RUN apt install -y libstdc++6 build-essential git cmake g++
+RUN apt install -y libgtest-dev
+RUN apt install -y libgmock-dev 
+RUN apt install -y gdb aptitude nano
+RUN apt install -y libgtk-3-dev
+RUN apt install -y gdb
+
+ARG installPrefix=/usr
+ARG srcD=/src
+
+WORKDIR $srcD
+
+ARG OCVCONTRIBDN=opencv_contrib
+ARG OCVCONTRIBBUILD=$srcD/opencv_contrib-build
+ARG OCVCONTRIBD=$srcD/$OCVCONTRIBDN
+
+# no build required
+RUN git clone --single-branch --progress --depth 1 https://github.com/opencv/opencv_contrib.git $OCVCONTRIBDN
+
+ARG OPENCVDIRN=opencv
+ARG OPENCVBUILDDIR=$srcD/opencv-4.x-build
+ARG OPENCVDIR=$srcD/$OPENCVDIRN
+
+WORKDIR $srcD
+
+RUN git clone --single-branch --progress --branch 4.x --depth 1 https://github.com/opencv/opencv.git $OPENCVDIRN
+RUN mkdir -vp $OPENCVBUILDDIR
+WORKDIR $OPENCVBUILDDIR
+RUN cmake -S $OPENCVDIR -B $OPENCVBUILDDIR \
+  -DOPENCV_EXTRA_MODULES_PATH=$OCVCONTRIBD/modules \
+  -DWITH_CUDA=OFF -DWITH_OPENGL=ON -DWITH_V4L=ON \
+  -DWITH_GTK=ON -DWITH_GTK_3=ON \
+  -DWITH_QT=OFF -DWITH_GSTREAMER=ON \
+  -DOPENCV_DNN_CUDA=OFF \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_INSTALL_PREFIX=$installPrefix
+RUN cmake --build $OPENCVBUILDDIR -j$(nproc)
+RUN cmake --install $OPENCVBUILDDIR --prefix $installPrefix
+
+ARG srcD=/src
+ARG drknD=$srcD/darknet
+ARG drknBD=$srcD/darknet-build
+ARG installPrefix=/usr
+
+WORKDIR $srcD
+
+ARG darknetB=$srcD/darknetmod
+ARG darknetBD=$srcD/darknetB/cmake-build
+
+RUN mkdir -vp $darknetBD
+RUN mkdir -vp $darknetB
+
+ARG CACHEBUST=$CACHEBUST
+
+ENV DOCKER_BUILD_DATE=$CACHEBUST
+
+COPY src/NNs/darknet-yolo/ $darknetB/
+
+WORKDIR $darknetB
+
+RUN rm -fr $darknetB/cmake-build
+
+RUN cmake -B $darknetBD -S $darknetB -DCMAKE_INSTALL_PREFIX=$installPrefix -DCMAKE_BUILD_TYPE=Debug \
+  -DENABLE_CUDA=OFF \
+  -DCMAKE_INSTALL_PREFIX=$installPrefix \
+  -DINSTALL_BIN_DIR=$installPrefix/bin \
+  -DINSTALL_LIB_DIR=$installPrefix/lib
+RUN cmake --build $darknetBD -j$(nproc)
+RUN cmake --install $darknetBD --prefix $installPrefix
+
+WORKDIR $srcD
+
+ARG BUILDDIR=$srcD/${PROJECT_BINARY_NAME}-build
+ARG prjD=$srcD/${PROJECT_BINARY_NAME}
+
+RUN --mount=from=project,target=$prjD \ 
+ cd $prjD && \
+ mkdir -vp $BUILDDIR && \
+ cmake -S $prjD -B $BUILDDIR -DCMAKE_INSTALL_PREFIX=$installPrefix -DCMAKE_BUILD_TYPE=Release \
+  -DRESOURCES_ROOT_PATH=${RESOURCES_ROOT_PATH} -DENABLE_DOCKER_DARKNET_PREDICTOR=ON && \
+ cmake --build $BUILDDIR -j$(nproc) --verbose && \
+ cmake --install $BUILDDIR --prefix $installPrefix
+
+WORKDIR /usr/share/yolo4-data/
+
+CMD ["darknet-predictor.sh"]

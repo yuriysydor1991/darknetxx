@@ -111,6 +111,8 @@ class SimpleLogger
                    const unsigned short& nlvl = MAX_LOG_LEVEL,
                    const bool toPrintValue = true);
 
+  static std::string prepare_buff(const char* fmt, ...);
+
  private:
   /**
    * @brief Method to define current log message timestamp.

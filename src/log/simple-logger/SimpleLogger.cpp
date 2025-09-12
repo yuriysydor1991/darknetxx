@@ -2,6 +2,8 @@
 
 #include <array>
 #include <chrono>
+#include <cstdarg>
+#include <cstdio>
 #include <exception>
 #include <filesystem>
 #include <fstream>
@@ -135,6 +137,28 @@ std::string SimpleLogger::get_full_log_path(const std::string& logname)
 std::string SimpleLogger::get_default_full_log_path()
 {
   return get_full_log_path(default_log_name);
+}
+
+std::string SimpleLogger::prepare_buff(const char* fmt, ...)
+{
+  static const size_t DEF_BUFF_CHUNK_SIZE = 102400U;
+
+  size_t chunks = 1;
+  size_t buff_size = chunks * DEF_BUFF_CHUNK_SIZE;
+
+  std::string rt(buff_size + 1, static_cast<char>(0));
+
+  va_list args;
+  va_start(args, fmt);
+
+  while (std::vsnprintf(rt.data(), buff_size, fmt, args) >= buff_size) {
+    buff_size = ++chunks * DEF_BUFF_CHUNK_SIZE;
+    rt.resize(buff_size + 1, static_cast<char>(0));
+  }
+
+  va_end(args);
+
+  return rt;
 }
 
 }  // namespace simple_logger

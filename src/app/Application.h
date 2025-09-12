@@ -13,11 +13,16 @@ namespace app
  * @brief The default application implementation should be placed into
  * into current class.
  */
-class Application : public IApplication
+class Application : public IApplication,
+                    public std::enable_shared_from_this<Application>
 {
  public:
+  using AppPtr = std::shared_ptr<Application>;
+
   virtual ~Application() = default;
-  Application() = default;
+  Application(const Application&) = delete;
+  Application(Application&&) = delete;
+  Application();
 
   /**
    * @brief Implemented default application. See IApplication interface.
@@ -27,7 +32,18 @@ class Application : public IApplication
    * @return Returns the application return status. A zero value on the success
    * and other value otherwise.
    */
-  virtual int run(std::shared_ptr<ApplicationContext> ctx) override;
+  virtual int run(AppCtxPtr ctx) override;
+
+ protected:
+  virtual bool deal_omp(AppCtxPtr);
+  virtual bool stop_catch();
+
+  static bool init_signals();
+  static void handle_sigint(int sig);
+
+  inline static AppPtr apt{};
+
+  AppCtxPtr actx;
 };
 
 }  // namespace app

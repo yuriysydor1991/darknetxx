@@ -1,0 +1,131 @@
+#!/bin/bash
+
+installPrefix=/usr
+yoloDataRoot="/usr/share/yolo4-data"
+dataDir="${yoloDataRoot}"
+yoloDataBackupD="${yoloDataRoot}/backup"
+subdataDir="$dataDir/data"
+dataFile="$subdataDir/obj.data"
+cfgFile="$dataDir/cfg/yolov3.cfg"
+yolo4conv137Preset="/usr/share/yolov4.conv.137"
+yolo4tinyPreset="/usr/share/yolov4-tiny.conv.29"
+threadsCount=@DOCKER_STARTER_NUM_THREADS@
+netNthResize=@DOCKER_STARTER_NET_NTH_RESIZE@
+nthDataReload=@DOCKER_STARTER_NTH_ITER_DATA_RELOAD@
+avgLossLimit=@DOCKER_STARTER_AVG_LOSS_LIMIT@
+resizeParam=""
+
+if [[ -z "$dataDir" ]] ; then
+  echo "No root YOLO4 data dir path provided!"
+  exit 1
+fi
+
+if [[ ! -d "$dataDir" ]] ; then
+  echo "No ${dataDir} mounted data dir found"
+  exit 1
+fi
+
+if [[ ! -f "$dataFile" ]] ; then
+  echo "Absent data file at $dataFile"
+  exit 1
+fi
+
+if [[ ! -f "$cfgFile" ]] ; then
+  cfgFile=$(find "$dataDir/cfg/" -name '*.cfg' | head -n 1) 
+  
+  if [[ ! -f "$cfgFile" ]] ; then
+    echo "Absent cfg file at $cfgFile"
+    exit 1
+  fi
+fi
+
+if [[ ! -f "$yolo4conv137Preset" ]] ; then
+  echo "Absent data file at $yolo4conv137Preset"
+  exit 1
+fi
+
+if [[ ! -f "$yolo4tinyPreset" ]] ; then
+  echo "Absent data file at $yolo4tinyPreset"
+  exit 1
+fi
+
+if [[ ! -d "$yoloDataBackupD" ]] ; then
+  mkdir -vp "$yoloDataBackupD"
+  
+  if [[ ! -d "$yoloDataBackupD" ]] ; then
+    echo "Failure while creating dir: $yoloDataBackupD"
+    exit 1
+  fi
+fi
+
+if [[ -z $(which darknetxx) ]] ; then
+  echo "No darknetxx installed application found!"
+  exit 1
+fi
+
+if [[ $(pwd) != "${yoloDataRoot}" ]]
+then
+  cd "${yoloDataRoot}"
+
+  if [[ $(pwd) != "${yoloDataRoot}" ]]
+  then
+    echo "$yoloDataRoot is not cwd!"
+    exit 1
+  fi
+fi
+
+latestSavedWeights=$(find backup -name '*_last.weights' -exec realpath {} \;)
+
+if [[ ! -z "$latestSavedWeights" ]]
+then
+  echo "Found and using latest saved weights file: $latestSavedWeights"
+fi
+
+if [[ $netNthResize -gt 0 ]]
+then
+  resizeParam=--net-resize-nth ${netNthResize}
+else
+  resizeParam=--dont-resize-network
+fi
+
+# exit 0
+
+if [[ ! -z "${latestSavedWeights}" ]]
+then
+  echo "Trying command: time darknetxx --train-cfg ${cfgFile} --weights ${latestSavedWeights} --threads ${threadsCount} --dont-show --draw-precision ${resizeParam} --data-reload-nth $nthDataReload --stop-less-avg-loss $avgLossLimit"
+
+  if ! time darknetxx --train-cfg "${cfgFile}" --weights "${latestSavedWeights}" --threads ${threadsCount} --dont-show --draw-precision ${resizeParam}  --data-reload-nth $nthDataReload  --stop-less-avg-loss $avgLossLimit
+  then
+    echo "Failure to train!"
+    exit 1
+  fi
+else
+  echo "Trying command: time darknetxx --train-cfg ${cfgFile} --threads ${threadsCount} --dont-show --draw-precision ${resizeParam}  --data-reload-nth $nthDataReload  --stop-less-avg-loss $avgLossLimit"
+
+  if ! time darknetxx --train-cfg "${cfgFile}" --threads ${threadsCount} --dont-show --draw-precision ${resizeParam}  --data-reload-nth $nthDataReload  --stop-less-avg-loss $avgLossLimit
+  then
+    echo "Failure to train!"
+    exit 1
+  fi
+fi
+
+exit 0
+
+if [[ ! -z "${latestSavedWeights}" ]]
+then
+  echo "Trying command: valgrind --tool=callgrind darknetxx --train-cfg ${cfgFile} --weights ${latestSavedWeights} --threads ${threadsCount} --draw-precision ${resizeParam} --data-reload-nth $nthDataReload  --stop-less-avg-loss $avgLossLimit"
+
+  if ! valgrind --tool=callgrind darknetxx --train-cfg "${cfgFile}" --weights "${latestSavedWeights}" --threads ${threadsCount} --draw-precision ${resizeParam}  --data-reload-nth $nthDataReload  --stop-less-avg-loss $avgLossLimit
+  then
+    echo "Failure to train!"
+    exit 1
+  fi
+else
+  echo "Trying command: valgrind --tool=callgrind darknetxx --train-cfg ${cfgFile} --threads ${threadsCount} --draw-precision ${resizeParam}  --data-reload-nth $nthDataReload  --stop-less-avg-loss $avgLossLimit"
+
+  if ! valgrind --tool=callgrind darknetxx --train-cfg "${cfgFile}" --threads ${threadsCount} --draw-precision ${resizeParam} --data-reload-nth $nthDataReload  --stop-less-avg-loss $avgLossLimit
+  then
+    echo "Failure to train!"
+    exit 1
+  fi
+fi

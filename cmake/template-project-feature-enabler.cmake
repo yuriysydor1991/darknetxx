@@ -1,8 +1,9 @@
 cmake_minimum_required(VERSION 3.13)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/enablers")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/profilers")
 
-if(ENABLE_UNIT_TESTS)
+if(ENABLE_UNIT_TESTS OR ENABLE_COMPONENT_TESTS)
   enable_testing()
   include(template-project-GTest-enabler)
 endif()
@@ -38,3 +39,6 @@ endif()
 if (ENABLE_NLOHMANN_JSON)
   include(template-project-nlohman-json-enabler)
 endif()
+
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+

@@ -22,6 +22,12 @@ option(
 )
 
 option(
+  ENABLE_COMPONENT_TESTS 
+  "Set to ON value if component tests build and run should be available"
+  OFF
+)
+
+option(
   GTEST_TRY_SYSTEM_PROBE 
   "Set to ON value if current project CMake files should probe the system GTest"
   ON
@@ -142,10 +148,79 @@ option(
   OFF
 )
 
+option(
+  ENABLE_DOCKER_DARKNET_PREDICTOR
+  "Set to ON to enable the predictor docker container runs"
+  OFF
+)
+
+option(
+  ENABLE_DOCKER_DARKNET
+  "Set to ON to enable the darkent dockers targets"
+  OFF
+)
+
 set(
   DEFAULT_LOG_FILE_PATH ""
   CACHE STRING 
   "Sets the default log file path"
+)
+
+option(
+  ENABLE_DOCKER_DARKNETXX_CPU_TRAIN
+  "Set to ON to enable the darkentxx CPU train docker target"
+  OFF
+)
+
+option(
+  ENABLE_OPENMP
+  "Set to ON to enable the darkentxx OpenMP code parallelisation "
+  ON
+)
+
+option(
+  ENABLE_DOCKER_DARKNETXX_PREDICTOR
+  "Set to ON to enable the darkentxx CPU predictor docker target"
+  OFF
+)
+
+option(
+  ENABLE_GPROF
+  "Set to ON to enable the gprof application profiler analysis"
+  OFF
+)
+
+option(
+  ENABLE_CALLGRIND
+  "Set to ON to enable the valgrind (callgrind) application profiler analysis"
+  OFF
+)
+
+set(Darknet_data_sub_install "share/darknetxx/${CMAKE_PROJECT_VERSION}")
+set(Darknet_data_path "${CMAKE_INSTALL_PREFIX}/${Darknet_data_sub_install}/")
+
+set(
+  DOCKER_STARTER_NUM_THREADS 5
+  CACHE STRING 
+  "Sets the docker trainer script number of threads"
+)
+
+set(
+  DOCKER_STARTER_NET_NTH_RESIZE 10
+  CACHE STRING 
+  "Sets the docker trainer script number of net every Nth resize"
+)
+
+set(
+  DOCKER_STARTER_NTH_ITER_DATA_RELOAD 0
+  CACHE STRING 
+  "Sets the docker trainer script nth train iteration data reload"
+)
+
+set(
+  DOCKER_STARTER_AVG_LOSS_LIMIT 0.0
+  CACHE STRING 
+  "Sets the docker trainer the avg loss limit to stop training"
 )
 
 string(TIMESTAMP PROJECT_CONFIGURE_DATE "%Y-%m-%d %H:%M:%S")
@@ -173,3 +248,4 @@ file(
 message(STATUS "PROJECT_NAME: ${PROJECT_NAME}")
 message(STATUS "PROJECT_BINARY_NAME: ${PROJECT_BINARY_NAME}")
 message(STATUS "PROJECT_CONFIGURE_DATE: ${PROJECT_CONFIGURE_DATE}")
+

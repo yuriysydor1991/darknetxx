@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.13)
 
-set(EXTRA_COMPILE_OPTIONS 
-  ${EXTRA_COMPILE_OPTIONS}   
+set(SANITIZERS_LIST
+  ${SANITIZERS_LIST}
   -fsanitize=undefined 
   -fsanitize=shift 
   -fsanitize=shift-exponent 
@@ -30,6 +30,16 @@ set(EXTRA_COMPILE_OPTIONS
   -fstack-check
   -fno-omit-frame-pointer
   -fno-stack-clash-protection
+)
+
+set(SANITIZERS_LIST_LINK
+  ${SANITIZERS_LIST_LINK}
+  -fsanitize=undefined
+)
+
+set(EXTRA_COMPILE_OPTIONS 
+  ${EXTRA_COMPILE_OPTIONS}   
+  ${SANITIZERS_LIST}
 )
 
 set(

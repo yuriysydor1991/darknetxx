@@ -11,3 +11,8 @@ include(template-project-docker-variables-declare)
 configure_file(${DOCKERFILE_SRC} ${DOCKERFILE_DST})
 
 include(template-project-docker-single-runner-target)
+include(docker-darknet-cpu-train-data)
+include(docker-darknet-cpu-train-data-predictor)
+include(docker-darknetxx-cpu-train-data)
+include(docker-darknetxx-cpu-train-data-predictor)
+

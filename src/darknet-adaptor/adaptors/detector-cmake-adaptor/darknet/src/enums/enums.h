@@ -1,0 +1,198 @@
+#ifndef DARKNET_ENUMS_H
+#define DARKNET_ENUMS_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#define SECRET_NUM -1234
+
+typedef enum
+{
+  UNUSED_DEF_VAL
+} UNUSED_ENUM_TYPE;
+
+typedef enum
+{
+  CONVOLUTIONAL,
+  DECONVOLUTIONAL,
+  CONNECTED,
+  MAXPOOL,
+  LOCAL_AVGPOOL,
+  SOFTMAX,
+  DETECTION,
+  DROPOUT,
+  CROP,
+  ROUTE,
+  COST,
+  NORMALIZATION,
+  AVGPOOL,
+  LOCAL,
+  SHORTCUT,
+  SCALE_CHANNELS,
+  SAM,
+  ACTIVE,
+  RNN,
+  GRU,
+  LSTM,
+  CONV_LSTM,
+  HISTORY,
+  CRNN,
+  BATCHNORM,
+  NETWORK,
+  XNOR,
+  REGION,
+  YOLO,
+  GAUSSIAN_YOLO,
+  ISEG,
+  REORG,
+  REORG_OLD,
+  UPSAMPLE,
+  LOGXENT,
+  L2NORM,
+  EMPTY,
+  BLANK,
+  CONTRASTIVE,
+  IMPLICIT
+} LAYER_TYPE;
+
+// layer.h
+typedef enum
+{
+  SSE,
+  MASKED,
+  L1,
+  SEG,
+  SMOOTH,
+  WGAN
+} COST_TYPE;
+
+typedef enum
+{
+  LOGISTIC,
+  RELU,
+  RELU6,
+  RELIE,
+  LINEAR,
+  RAMP,
+  TANH,
+  PLSE,
+  REVLEAKY,
+  LEAKY,
+  ELU,
+  LOGGY,
+  STAIR,
+  HARDTAN,
+  LHTAN,
+  SELU,
+  GELU,
+  SWISH,
+  MISH,
+  HARD_MISH,
+  NORM_CHAN,
+  NORM_CHAN_SOFTMAX,
+  NORM_CHAN_SOFTMAX_MAXVAL
+} ACTIVATION;
+
+// parser.h
+typedef enum
+{
+  IOU,
+  GIOU,
+  MSE,
+  DIOU,
+  CIOU
+} IOU_LOSS;
+
+// parser.h
+typedef enum
+{
+  DEFAULT_NMS,
+  GREEDY_NMS,
+  DIOU_NMS,
+  CORNERS_NMS
+} NMS_KIND;
+
+// parser.h
+typedef enum
+{
+  YOLO_CENTER = 1 << 0,
+  YOLO_LEFT_TOP = 1 << 1,
+  YOLO_RIGHT_BOTTOM = 1 << 2
+} YOLO_POINT;
+
+// parser.h
+typedef enum
+{
+  NO_WEIGHTS,
+  PER_FEATURE,
+  PER_CHANNEL
+} WEIGHTS_TYPE_T;
+
+// parser.h
+typedef enum
+{
+  NO_NORMALIZATION,
+  RELU_NORMALIZATION,
+  SOFTMAX_NORMALIZATION
+} WEIGHTS_NORMALIZATION_T;
+
+// image.h
+typedef enum
+{
+  PNG,
+  BMP,
+  TGA,
+  JPG
+} IMTYPE;
+
+// activations.h
+typedef enum
+{
+  MULT,
+  ADD,
+  SUB,
+  DIV
+} BINARY_ACTIVATION;
+
+// network.h
+typedef enum
+{
+  CONSTANT,
+  STEP,
+  EXP,
+  POLY,
+  STEPS,
+  SIG,
+  RANDOM,
+  SGDR
+} learning_rate_policy;
+
+// data.h
+typedef enum
+{
+  CLASSIFICATION_DATA,
+  DETECTION_DATA,
+  CAPTCHA_DATA,
+  REGION_DATA,
+  IMAGE_DATA,
+  COMPARE_DATA,
+  WRITING_DATA,
+  SWAG_DATA,
+  TAG_DATA,
+  OLD_CLASSIFICATION_DATA,
+  STUDY_DATA,
+  DET_DATA,
+  SUPER_DATA,
+  LETTERBOX_DATA,
+  REGRESSION_DATA,
+  SEGMENTATION_DATA,
+  INSTANCE_DATA,
+  ISEG_DATA
+} data_type;
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif  // DARKNET_ENUMS_H

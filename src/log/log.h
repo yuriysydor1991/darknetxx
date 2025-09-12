@@ -102,4 +102,106 @@
 #endif  // MAX_LOG_LEVEL
 #endif  // LOGT
 
+#ifndef FMTLOGI
+/**
+ * @brief The internal logger macro to define the general logging code body.
+ */
+#define FMTLOGI(fmt, ...)                                             \
+  {                                                                   \
+    simple_logger::SimpleLogger::log(                                 \
+        simple_logger::SimpleLogger::LVL_INFO, __FILE__, __LINE__,    \
+        simple_logger::SimpleLogger::prepare_buff(fmt, __VA_ARGS__)); \
+  }
+#endif  // FMTLOGI
+
+#ifndef LOG_BODY_EXT
+/**
+ * @brief The logger macro to define the extended logging code body.
+ */
+#define LOG_BODY_EXT(FILE_STR, LINE_INT, LOGLVL, msg)            \
+  {                                                              \
+    std::stringstream logMessageContainer;                       \
+    logMessageContainer << msg;                                  \
+    simple_logger::SimpleLogger::log((LOGLVL), (FILE_STR),       \
+                                     static_cast<int>(LINE_INT), \
+                                     logMessageContainer.str()); \
+  }
+#endif  // LOG_BODY
+
+#ifndef ELOGE
+/**
+ * @brief Perform the error logging.
+ *
+ * @param msg The logging message which may use the << operator
+ * and each of the log elements MUST be converted into the std::string.
+ */
+#define ELOGE(FILE_STR, LINE_INT, msg)                                         \
+  LOG_BODY_EXT((FILE_STR), (LINE_INT), simple_logger::SimpleLogger::LVL_ERROR, \
+               msg)
+#endif  // ELOGE
+
+#ifndef ELOGI
+#if MAX_LOG_LEVEL >= MACRO_LOG_LEVEL_INFO
+/**
+ * @brief Perform the info logging.
+ *
+ * @param msg The logging message which may use the << operator
+ * and each of the log elements MUST be converted into the std::string.
+ */
+#define ELOGI(FILE_STR, LINE_INT, msg)                                        \
+  LOG_BODY_EXT((FILE_STR), (LINE_INT), simple_logger::SimpleLogger::LVL_INFO, \
+               msg)
+#else
+#define ELOGI(FILE_STR, LINE_INT, msg)
+#endif  // MAX_LOG_LEVEL
+#endif  // ELOGI
+
+#ifndef ELOGW
+#if MAX_LOG_LEVEL >= MACRO_LOG_LEVEL_WARNING
+/**
+ * @brief Perform the warning logging.
+ *
+ * @param msg The logging message which may use the << operator
+ * and each of the log elements MUST be converted into the std::string.
+ */
+#define ELOGW(FILE_STR, LINE_INT, msg) \
+  LOG_BODY_EXT((FILE_STR), (LINE_INT), \
+               simple_logger::SimpleLogger::LVL_WARNING, msg)
+#else
+#define ELOGW(FILE_STR, LINE_INT, msg)
+#endif  // MAX_LOG_LEVEL
+#endif  // ELOGW
+
+#ifndef ELOGD
+#if MAX_LOG_LEVEL >= MACRO_LOG_LEVEL_DEBUG
+/**
+ * @brief Perform the debug logging.
+ *
+ * @param msg The logging message which may use the << operator
+ * and each of the log elements MUST be converted into the std::string.
+ */
+#define ELOGD(FILE_STR, LINE_INT, msg)                                         \
+  LOG_BODY_EXT((FILE_STR), (LINE_INT), simple_logger::SimpleLogger::LVL_DEBUG, \
+               msg)
+#else
+#define ELOGD(FILE_STR, LINE_INT, msg)
+#endif  // MAX_LOG_LEVEL
+#endif  // ELOGD
+
+#ifndef ELOGT
+#if MAX_LOG_LEVEL >= MACRO_LOG_LEVEL_TRACE
+/**
+ * @brief Perform the trace logging.
+ *
+ * @param msg The logging message which may use the << operator
+ * and each of the log elements MUST be converted into the std::string.
+ */
+#define ELOGT(FILE_STR, LINE_INT, msg)                                         \
+  LOG_BODY_EXT((FILE_STR), (LINE_INT), simple_logger::SimpleLogger::LVL_TRACE, \
+               msg)
+#else
+#define ELOGT(FILE_STR, LINE_INT, msg)
+#endif  // MAX_LOG_LEVEL
+#endif  // ELOGT
+
 #endif  // YOUR_CPP_APP_TEMPLATE_PROJECT_LOGGER_SUBSYSTEM_DECLARATIONS_H
