@@ -6,6 +6,19 @@
 using namespace app;
 using namespace testing;
 
+/**
+ * @brief Test-only subclass exposing a reset of the process-lifetime static
+ * self pointer (apt) that Application installs for the signal handler. Without
+ * resetting it the Application (and the context it holds) would outlive the
+ * test and the gmock context, producing a leaked-mock / static-destruction
+ * crash.
+ */
+class TestableApplication : public Application
+{
+ public:
+  static void reset_singleton() { apt = nullptr; }
+};
+
 class UTEST_Application : public Test
 {
  public:
@@ -14,6 +27,8 @@ class UTEST_Application : public Test
         appCtx{std::make_shared<ApplicationContext>(argc, argv)}
   {
   }
+
+  ~UTEST_Application() override { TestableApplication::reset_singleton(); }
 
   int argc{0};
   char** argv{nullptr};

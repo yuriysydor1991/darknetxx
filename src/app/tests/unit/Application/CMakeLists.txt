@@ -1,15 +1,19 @@
 cmake_minimum_required(VERSION 3.13)
 
 add_executable(
-  UTEST_Application  
+  UTEST_Application
   UTEST_Application.cpp
   ${CMAKE_SOURCE_DIR}/src/app/Application.cpp
   ${APP_MOCKS_ROOT}/ApplicationContext/src/app/ApplicationContext.cpp
+  ${APP_MOCKS_ROOT}/DarknetController/src/darknet-adaptor/DarknetController.cpp
+  ${APP_MOCKS_ROOT}/OMPController/src/OMP/OMPController.cpp
 )
 
 target_include_directories(
   UTEST_Application
   PRIVATE ${APP_MOCKS_ROOT}/ApplicationContext
+  PRIVATE ${APP_MOCKS_ROOT}/DarknetController
+  PRIVATE ${APP_MOCKS_ROOT}/OMPController
   PRIVATE ${APP_MOCKS_ROOT}/project-global-decls
   PRIVATE ${APP_MOCKS_ROOT}/log
   PRIVATE ${CMAKE_SOURCE_DIR}

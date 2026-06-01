@@ -16,7 +16,7 @@ int load_net_weights_ctx(struct detector_context* ctx)
   assert(ctx != NULL);
 
   if (ctx == NULL) {
-    return;
+    return 0;
   }
 
   ctx->base = basecfg(ctx->cfg);

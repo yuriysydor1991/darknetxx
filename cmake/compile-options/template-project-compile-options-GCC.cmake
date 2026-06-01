@@ -54,6 +54,18 @@ set(
   -Werror=implicit-function-declaration
 )
 
+# GCC 14+ promoted several legacy C diagnostics to errors by default. The
+# vendored original Darknet C sources still trip them, so keep them as warnings
+# (the project-specific implicit-function-declaration stays an error above).
+set(
+  EXTRA_C_COMPILE_OPTIONS
+  ${EXTRA_C_COMPILE_OPTIONS}
+  -Wno-error=incompatible-pointer-types
+  -Wno-error=int-conversion
+  -Wno-error=implicit-int
+  -Wno-error=return-mismatch
+)
+
 set(EXTRA_C_LINK_OPTIONS "")
 
 if (ENABLE_OPENMP)
