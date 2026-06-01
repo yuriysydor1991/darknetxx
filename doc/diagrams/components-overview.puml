@@ -23,7 +23,7 @@ package "darknet-adaptor (Darknet bridge)" {
 
 package "Supporting components" {
   [ompi::OMPController] as omp
-  [log (SimpleLogger /\ncpplog4c)] as log
+  [log (DefaultLogger /\ncpplog4c)] as log
   [helpers::StringTools] as helpers
 }
 

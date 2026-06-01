@@ -18,13 +18,13 @@ package "ompi" {
 }
 
 package "log" {
-  class SimpleLogger <<namespace>> {
+  class DefaultLogger <<namespace>> {
     +{static} init(filepath, lvl, print)
     +{static} log(lvl, file, line, msg)
   }
-  note bottom of SimpleLogger
+  note bottom of DefaultLogger
     LOGE / LOGW / LOGI / LOGD / LOGT
-    macros expand into SimpleLogger::log
+    macros expand into DefaultLogger::log
   end note
 }
 
@@ -35,13 +35,13 @@ package "helpers" {
 }
 
 OMPController --> "app::ApplicationContext" : reads threads
-OMPController ..> SimpleLogger : logs
+OMPController ..> DefaultLogger : logs
 @enduml
 
 ## Призначення кожного компонента
 
 - **`ompi::OMPController`** ([`OMPController.h`](/src/OMP/OMPController.h)) - налаштовує середовище виконання OpenMP. Він читає бажану кількість робочих потоків з `app::ApplicationContext` (прапорець `--threads`) і відповідно налаштовує максимальну кількість потоків OpenMP. Створюється через статичний фабричний метод `create()`.
-- **Підсистема журналювання** ([`src/log`](/src/log)) - надає макроси `LOGE`, `LOGW`, `LOGI`, `LOGD` і `LOGT`, визначені у [`log.h`](/src/log/log.h). Макроси передають повідомлення разом з іменем файлу і номером рядка до реалізації журналу. Типова `simple_logger::SimpleLogger` ([`SimpleLogger.h`](/src/log/simple-logger/SimpleLogger.h)) записує повідомлення у налаштований файл журналу і/або у стандартні потоки; також доступний альтернативний бекенд `cpplog4c`.
+- **Підсистема журналювання** ([`src/log`](/src/log)) - надає макроси `LOGE`, `LOGW`, `LOGI`, `LOGD` і `LOGT`, визначені у [`log.h`](/src/log/log.h). Макроси передають повідомлення разом з іменем файлу і номером рядка до реалізації журналу. Типова `default_logger::DefaultLogger` ([`DefaultLogger.h`](/src/log/default-logger/DefaultLogger.h)) записує повідомлення у налаштований файл журналу і/або у стандартні потоки; також доступний альтернативний бекенд `cpplog4c`.
 - **`helpers::StringTools`** ([`StringTools.h`](/src/helpers/StringTools.h)) - невеликі утиліти для роботи з рядками, спільні для всього проекту.
 
 Підсистема журналювання ініціалізується рано об'єктом `app::ApplicationFactory`,

@@ -22,7 +22,7 @@ target_link_libraries(
   CTEST_darknet_randoms
   GTest::gtest_main GTest::gmock 
   DarknetXXLog4CInterfaceObj 
-  TemplateProjectSimpleLoggerObj
+  TemplateProjectDefaultLoggerObj
 )
 
 include(GoogleTest)

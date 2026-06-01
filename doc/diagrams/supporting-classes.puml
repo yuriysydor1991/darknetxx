@@ -13,13 +13,13 @@ package "ompi" {
 }
 
 package "log" {
-  class SimpleLogger <<namespace>> {
+  class DefaultLogger <<namespace>> {
     +{static} init(filepath, lvl, print)
     +{static} log(lvl, file, line, msg)
   }
-  note bottom of SimpleLogger
+  note bottom of DefaultLogger
     LOGE / LOGW / LOGI / LOGD / LOGT
-    macros expand into SimpleLogger::log
+    macros expand into DefaultLogger::log
   end note
 }
 
@@ -30,6 +30,6 @@ package "helpers" {
 }
 
 OMPController --> "app::ApplicationContext" : reads threads
-OMPController ..> SimpleLogger : logs
+OMPController ..> DefaultLogger : logs
 
 @enduml

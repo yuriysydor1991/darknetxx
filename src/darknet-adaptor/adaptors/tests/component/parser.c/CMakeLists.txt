@@ -90,7 +90,7 @@ target_link_libraries(
   ${OpenCV_LIBS}
   GTest::gtest_main GTest::gmock 
   DarknetXXLog4CInterfaceObj 
-  TemplateProjectSimpleLoggerObj
+  TemplateProjectDefaultLoggerObj
 )
 
 include(GoogleTest)
