@@ -1,0 +1,53 @@
+@startuml darknet-adaptor-classes
+title darknet_adaptor namespace - class structure
+
+skinparam shadowing false
+hide empty members
+
+class DarknetController {
+  +{static} create() : DarknetControllerPtr
+  +perform(appCtx) : bool
+  #create_context(appCtx) : DarknetContextPtr
+  #create_appropriate_worker(dctx) : IDarknetAdaptorPtr
+}
+
+class DarknetContext {
+  +DarknetContext(appCtx)
+  +init() : bool
+  +get_darknet_ctx() : detector_context
+  +get/set_Dont_show(), get/set_Map(), ... : accessors
+}
+
+interface IDarknetAdaptor {
+  +perform(dctx) : bool
+}
+
+class ADetector {
+  +perform(dctx) : bool
+}
+class ADetectorTrainer {
+  +perform(dctx) : bool
+}
+class ALayerAdaptor {
+  +perform(dctx) : bool
+}
+class ANetworkAdaptor {
+  +perform(dctx) : bool
+}
+
+class StructAdaptorHelper {
+  +converts orig Darknet structs
+}
+
+IDarknetAdaptor <|.. ADetector
+IDarknetAdaptor <|.. ADetectorTrainer
+IDarknetAdaptor <|.. ALayerAdaptor
+IDarknetAdaptor <|.. ANetworkAdaptor
+
+DarknetController --> DarknetContext : creates
+DarknetController ..> IDarknetAdaptor : selects worker
+IDarknetAdaptor --> DarknetContext : reads/writes
+DarknetContext ..> StructAdaptorHelper : struct mapping
+DarknetContext --> "app::ApplicationContext" : built from
+
+@enduml

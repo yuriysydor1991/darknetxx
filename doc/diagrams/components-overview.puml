@@ -1,0 +1,45 @@
+@startuml components-overview
+title darknetxx - high level components overview
+
+skinparam componentStyle rectangle
+skinparam shadowing false
+
+package "Executable entry" {
+  [main()] as main
+}
+
+package "app (application infrastructure)" {
+  [ApplicationFactory] as factory
+  [CommandLineParser] as parser
+  [ApplicationContext] as ctx
+  [IApplication\n(+ Application,\nHelpPrinter,\nVersionPrinter)] as iapp
+}
+
+package "darknet-adaptor (Darknet bridge)" {
+  [DarknetController] as dctrl
+  [DarknetContext] as dctx
+  [IDarknetAdaptor\n(+ ADetector,\nADetectorTrainer,\nALayer/ANetwork)] as adaptor
+}
+
+package "Supporting components" {
+  [ompi::OMPController] as omp
+  [log (SimpleLogger /\ncpplog4c)] as log
+  [helpers::StringTools] as helpers
+}
+
+main --> factory
+factory --> parser
+factory --> ctx
+factory --> iapp : creates by ctx
+parser --> ctx : fills
+iapp --> dctrl : default app drives
+iapp --> omp : adjust threads
+dctrl --> dctx
+dctrl --> adaptor : selects worker
+adaptor --> dctx : reads/writes
+factory ..> log
+iapp ..> log
+dctrl ..> log
+parser ..> helpers
+
+@enduml

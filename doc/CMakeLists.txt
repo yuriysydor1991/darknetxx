@@ -1,10 +1,67 @@
 cmake_minimum_required(VERSION 3.13)
 
+option(
+  ENABLE_DOC_DOXYGEN
+  "Set to ON value if Doxygen documentation generation should be available"
+  OFF
+)
+
+set(
+  DOXYGEN_OUTPUT_LANGUAGE "English"
+  CACHE STRING "Sets the Doxygen output language for the generated documentation (see doc/Doxyfile.in)"
+)
+
+set(
+  DOXYGEN_MAIN_PAGE_MD "README.md"
+  CACHE STRING "Sets the Doxygen main README file to place into documentation the home page."
+)
+
+set(
+  DOXYGEN_OUTPUT_DIR ${CMAKE_SOURCE_DIR}/doc
+  CACHE STRING "Sets the doxygen documentation output directory."
+)
+
+option(
+  DOXYGEN_DO_INSTALL
+  "Set to on if CMake should install the generated documentation during install command executed."
+  OFF
+)
+
+set(
+  DOXYGEN_OUT_HTML_NAME ${PROJECT_BINARY_NAME}-html
+  CACHE STRING "The Doxygen output HTML directory name (for the Doxyfile)"
+)
+
+set(
+  DOXYGEN_OUT_HTML ${DOXYGEN_OUTPUT_DIR}/${DOXYGEN_OUT_HTML_NAME}
+  CACHE STRING "Sets the doxygen documentation output full directory path."
+)
+
+set(
+  DOXYGEN_PLANTUML_JAR_PATH ""
+  CACHE STRING "Path to the plantuml.jar used to render the PlantUML (*.puml) class diagrams. Leave empty to let CMake probe the system."
+)
+
 if(NOT ENABLE_DOC_DOXYGEN)
   return()
 endif()
 
 find_package(Doxygen REQUIRED)
+
+if(NOT DOXYGEN_PLANTUML_JAR_PATH)
+  find_file(
+    DOXYGEN_PLANTUML_JAR_PATH
+    NAMES plantuml.jar
+    PATHS /usr/share/plantuml /usr/share/java /usr/local/share/plantuml
+    DOC "Path to the plantuml.jar used to render the PlantUML class diagrams"
+  )
+endif()
+
+if(DOXYGEN_PLANTUML_JAR_PATH)
+  message(STATUS "PlantUML diagrams will be rendered using: ${DOXYGEN_PLANTUML_JAR_PATH}")
+else()
+  message(STATUS "plantuml.jar was not found - the PlantUML class diagrams will be skipped. Set DOXYGEN_PLANTUML_JAR_PATH to enable them.")
+endif()
 
 set(DOXYGEN_IN Doxyfile.in)
 set(DOXYGEN_OUT ${CMAKE_BINARY_DIR}/Doxyfile)
@@ -14,7 +71,7 @@ if (DOXYGEN_OUTPUT_LANGUAGE STREQUAL "Ukrainian")
 endif()
 
 configure_file(
-  ${DOXYGEN_IN} 
+  ${DOXYGEN_IN}
   ${DOXYGEN_OUT}
 )
 

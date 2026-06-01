@@ -1,0 +1,72 @@
+@startuml application-runtime-classes
+title app namespace - runtime class structure
+
+skinparam shadowing false
+hide empty members
+
+interface IApplication {
+  +run(ctx) : int
+  +{static} INVALID : int
+}
+
+class Application {
+  +run(ctx) : int
+  #deal_omp(ctx) : bool
+  #stop_catch() : bool
+  -{static} init_signals() : bool
+  -{static} handle_sigint(sig)
+}
+
+class ApplicationHelpPrinter {
+  +run(ctx) : int
+}
+
+class ApplicationVersionPrinter {
+  +run(ctx) : int
+}
+
+class ApplicationFactory {
+  +create_default_context(argc, argv) : ApplicationContext
+  +create_default_arg_parser() : CommandLineParser
+  +create_application(ctx) : IApplication
+  +create_help_printer() : IApplication
+  +create_version_printer() : IApplication
+  +run(argc, argv) : int
+  +{static} execute(argc, argv) : int
+}
+
+class CommandLineParser {
+  +parse_args(ctx) : bool
+  +{static} get_custom_logfile(argc, argv) : string
+  #parse_arg(ctx, param, hasNext, next, idx) : bool
+  #requires_data(param) : bool
+}
+
+class CMDParamNames {
+  +{static} HELPW, VERSIONW, ... : string
+}
+
+struct ApplicationContext {
+  +argc : int&
+  +argv : char**&
+  +print_help_and_exit : bool
+  +print_version_and_exit : bool
+  +train_cfg / detect_cfg / weights : string
+  +thresh / iou_thresh / hier_thresh : float
+  +threads : unsigned
+  +stop : atomic_bool
+  +push_error(desc)
+}
+
+IApplication <|.. Application
+IApplication <|.. ApplicationHelpPrinter
+IApplication <|.. ApplicationVersionPrinter
+
+ApplicationFactory ..> IApplication : creates
+ApplicationFactory ..> CommandLineParser : creates
+ApplicationFactory ..> ApplicationContext : creates
+CommandLineParser ..> CMDParamNames : uses names
+CommandLineParser --> ApplicationContext : fills
+Application --> ApplicationContext : holds actx
+
+@enduml
