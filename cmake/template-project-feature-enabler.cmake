@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.13)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/enablers")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/enablers/packagers")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/profilers")
 
 if(ENABLE_UNIT_TESTS OR ENABLE_COMPONENT_TESTS)
@@ -31,6 +32,13 @@ endif()
 if(ENABLE_FLATPAK)
   include(template-project-flatpak-target)
 endif()
+
+# Additional packagers. Each module self-declares its ENABLE_* option and
+# returns early when disabled, so they are included unconditionally.
+include(template-project-snap-enabler)
+include(template-project-rpm-enabler)
+include(template-project-freebsd-pkg-enabler)
+include(template-project-wix-enabler)
 
 if (ENABLE_SANITIZERS OR ENABLE_SANITIZERS_THREADS)
   include(template-project-sanitizers)
