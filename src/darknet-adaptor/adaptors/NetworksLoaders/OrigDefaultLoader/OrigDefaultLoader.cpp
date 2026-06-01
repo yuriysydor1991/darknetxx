@@ -113,8 +113,7 @@ void OrigDefaultLoader::parse_data(const std::string &data, float *a, int n)
   char *next = data;
   int done = 0;
   for (i = 0; i < n && !done; ++i) {
-    while (*++next != '\0' && *next != ',')
-      ;
+    while (*++next != '\0' && *next != ',');
     if (*next == '\0') done = 1;
     *next = '\0';
     sscanf(curr, "%g", &a[i]);
@@ -2536,8 +2535,8 @@ void OrigDefaultLoader::load_shortcut_weights(layer l, FILE *fp)
   if (read_bytes > 0 && read_bytes < num)
     LOGW("Warning: Unexpected end of wights-file! l.weights - l.index = "
          << l.index);
-    // for (int i = 0; i < l.nweights; ++i) printf(" %f, ", l.weights[i]);
-    // printf(" read_bytes = %d \n\n", read_bytes);
+  // for (int i = 0; i < l.nweights; ++i) printf(" %f, ", l.weights[i]);
+  // printf(" read_bytes = %d \n\n", read_bytes);
 #ifdef GPU
   if (gpu_index >= 0) {
     push_shortcut_layer(l);
@@ -2553,8 +2552,8 @@ void OrigDefaultLoader::load_implicit_weights(layer l, FILE *fp)
   if (read_bytes > 0 && read_bytes < num)
     LOGW("Warning: Unexpected end of wights-file! l.weights - l.index = "
          << l.index);
-    // for (int i = 0; i < l.nweights; ++i) printf(" %f, ", l.weights[i]);
-    // printf(" read_bytes = %d \n\n", read_bytes);
+  // for (int i = 0; i < l.nweights; ++i) printf(" %f, ", l.weights[i]);
+  // printf(" read_bytes = %d \n\n", read_bytes);
 #ifdef GPU
   if (gpu_index >= 0) {
     push_implicit_layer(l);

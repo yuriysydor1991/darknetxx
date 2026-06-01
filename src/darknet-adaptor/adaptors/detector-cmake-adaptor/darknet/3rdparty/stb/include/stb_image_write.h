@@ -268,7 +268,7 @@ STBIWDEF void stbi_flip_vertically_on_write(int flip_boolean);
 #define STBIW_ASSERT(x) assert(x)
 #endif
 
-#define STBIW_UCHAR(x) (unsigned char)((x)&0xff)
+#define STBIW_UCHAR(x) (unsigned char)((x) & 0xff)
 
 #ifdef STB_IMAGE_WRITE_STATIC
 static int stbi_write_png_compression_level = 8;
@@ -882,7 +882,7 @@ STBIWDEF int stbi_write_hdr(char const *filename, int x, int y, int comp,
 #ifndef STBIW_ZLIB_COMPRESS
 // stretchy buffer; stbiw__sbpush() == vector<>::push_back() -- stbiw__sbcount()
 // == vector<>::size()
-#define stbiw__sbraw(a) ((int *)(void *)(a)-2)
+#define stbiw__sbraw(a) ((int *)(void *)(a) - 2)
 #define stbiw__sbm(a) stbiw__sbraw(a)[0]
 #define stbiw__sbn(a) stbiw__sbraw(a)[1]
 
@@ -960,9 +960,9 @@ static unsigned int stbiw__zhash(unsigned char *data)
 #define stbiw__zlib_huffa(b, c) stbiw__zlib_add(stbiw__zlib_bitrev(b, c), c)
 // default huffman tables
 #define stbiw__zlib_huff1(n) stbiw__zlib_huffa(0x30 + (n), 8)
-#define stbiw__zlib_huff2(n) stbiw__zlib_huffa(0x190 + (n)-144, 9)
-#define stbiw__zlib_huff3(n) stbiw__zlib_huffa(0 + (n)-256, 7)
-#define stbiw__zlib_huff4(n) stbiw__zlib_huffa(0xc0 + (n)-280, 8)
+#define stbiw__zlib_huff2(n) stbiw__zlib_huffa(0x190 + (n) - 144, 9)
+#define stbiw__zlib_huff3(n) stbiw__zlib_huffa(0 + (n) - 256, 7)
+#define stbiw__zlib_huff4(n) stbiw__zlib_huffa(0xc0 + (n) - 280, 8)
 #define stbiw__zlib_huff(n)            \
   ((n) <= 143   ? stbiw__zlib_huff1(n) \
    : (n) <= 255 ? stbiw__zlib_huff2(n) \
@@ -1054,12 +1054,10 @@ STBIWDEF unsigned char *stbi_zlib_compress(unsigned char *data, int data_len,
     if (bestloc) {
       int d = (int)(data + i - bestloc);  // distance back
       STBIW_ASSERT(d <= 32767 && best <= 258);
-      for (j = 0; best > lengthc[j + 1] - 1; ++j)
-        ;
+      for (j = 0; best > lengthc[j + 1] - 1; ++j);
       stbiw__zlib_huff(j + 257);
       if (lengtheb[j]) stbiw__zlib_add(best - lengthc[j], lengtheb[j]);
-      for (j = 0; d > distc[j + 1] - 1; ++j)
-        ;
+      for (j = 0; d > distc[j + 1] - 1; ++j);
       stbiw__zlib_add(stbiw__zlib_bitrev(j, 5), 5);
       if (disteb[j]) stbiw__zlib_add(d - distc[j], disteb[j]);
       i += best;

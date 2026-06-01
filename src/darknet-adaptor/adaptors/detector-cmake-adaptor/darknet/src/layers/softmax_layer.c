@@ -466,7 +466,7 @@ void forward_contrastive_layer(contrastive_layer l, network_state state)
                       contr_size * sizeof(contrastive_params) / 4);
     }
 #else   // GPU
-    //#pragma omp parallel for
+    // #pragma omp parallel for
     for (int k = 0; k < contr_size; ++k) {
       contrast_p[k].P =
           P_constrastive_f_det(k, l.labels, z, l.embedding_size, l.temperature,
@@ -536,7 +536,7 @@ void forward_contrastive_layer(contrastive_layer l, network_state state)
   }
 
   // calc deltas
-  //#pragma omp parallel for collapse(4)
+  // #pragma omp parallel for collapse(4)
   for (int bd = 0; bd < l.batch; ++bd) {
     for (int nd = 0; nd < l.n; ++nd) {
       for (int hd = 0; hd < l.h; ++hd) {

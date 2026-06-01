@@ -118,9 +118,9 @@ typedef struct network
   float *cost;
   float clip;
 
-  //#ifdef GPU
-  // float *input_gpu;
-  // float *truth_gpu;
+  // #ifdef GPU
+  //  float *input_gpu;
+  //  float *truth_gpu;
   float *delta_gpu;
   float *output_gpu;
 
@@ -144,7 +144,7 @@ typedef struct network
   float *global_delta_gpu;
   float *state_delta_gpu;
   size_t max_delta_gpu_size;
-  //#endif  // GPU
+  // #endif  // GPU
   int optimized_memory;
   int dynamic_minibatch;
   size_t workspace_size_limit;

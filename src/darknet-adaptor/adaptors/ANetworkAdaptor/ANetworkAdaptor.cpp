@@ -629,12 +629,12 @@ float ANetworkAdaptor::clip()
   return net->clip;
 }
 
-//#ifdef GPU
-// float *ANetworkAdaptor::input_gpu()
+// #ifdef GPU
+//  float *ANetworkAdaptor::input_gpu()
 //{
-//  assert(net != nullptr);
-//  return net->input_gpu;
-//}
+//   assert(net != nullptr);
+//   return net->input_gpu;
+// }
 
 // float *ANetworkAdaptor::truth_gpu()
 //{
@@ -756,7 +756,7 @@ size_t ANetworkAdaptor::max_delta_gpu_size()
   return net->max_delta_gpu_size;
 }
 
-//#endif  // GPU
+// #endif  // GPU
 int ANetworkAdaptor::optimized_memory()
 {
   assert(net != nullptr);
@@ -1436,12 +1436,12 @@ void ANetworkAdaptor::clip(const float& nval)
   net->clip = nval;
 }
 
-//#ifdef GPU
-// void ANetworkAdaptor::input_gpu(const std::vector<float>& nval)
+// #ifdef GPU
+//  void ANetworkAdaptor::input_gpu(const std::vector<float>& nval)
 //{
-//  assert(net != nullptr);
-//  input_gpu = nval;
-//}
+//   assert(net != nullptr);
+//   input_gpu = nval;
+// }
 
 // void ANetworkAdaptor::truth_gpu(const std::vector<float>& nval)
 //{
@@ -1582,7 +1582,7 @@ void ANetworkAdaptor::max_delta_gpu_size(const size_t& nval)
   net->max_delta_gpu_size = nval;
 }
 
-//#endif  // GPU
+// #endif  // GPU
 void ANetworkAdaptor::optimized_memory(const int& nval)
 {
   assert(net != nullptr);

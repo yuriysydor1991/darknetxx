@@ -44,7 +44,7 @@ void swap_binary(convolutional_layer *l)
 
 void binarize_weights(float *weights, int n, int size, float *binary)
 {
-  //#pragma omp parallel for
+  // #pragma omp parallel for
   for (int f = 0; f < n; ++f) {
     float mean = 0;
     const int fsize = f * size;
@@ -52,7 +52,7 @@ void binarize_weights(float *weights, int n, int size, float *binary)
       mean += fabs(weights[fsize + i]);
     }
     mean = mean / size;
-    //#pragma omp parallel for
+    // #pragma omp parallel for
     for (int i = 0; i < size; ++i) {
       binary[fsize + i] = (weights[fsize + i] > 0) ? mean : -mean;
     }
@@ -61,7 +61,7 @@ void binarize_weights(float *weights, int n, int size, float *binary)
 
 void binarize_cpu(float *input, int n, float *binary)
 {
-  //#pragma omp parallel for
+  // #pragma omp parallel for
   for (int i = 0; i < n; ++i) {
     binary[i] = (input[i] > 0) ? 1 : -1;
   }
@@ -1078,7 +1078,7 @@ void add_bias(float *output, float *biases, int batch, int n, int size)
 
 void scale_bias(float *output, float *scales, int batch, int n, int size)
 {
-  //#pragma omp parallel for collapse(3)
+  // #pragma omp parallel for collapse(3)
   for (int b = 0; b < batch; ++b) {
     for (int i = 0; i < n; ++i) {
       for (int j = 0; j < size; ++j) {

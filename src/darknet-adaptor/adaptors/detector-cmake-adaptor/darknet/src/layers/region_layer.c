@@ -425,7 +425,7 @@ void get_region_boxes(layer l, int w, int h, float thresh, float **probs,
 {
   int i;
   float *const predictions = l.output;
-  //#pragma omp parallel for
+  // #pragma omp parallel for
   for (i = 0; i < l.w * l.h; ++i) {
     int j, n;
     int row = i / l.w;

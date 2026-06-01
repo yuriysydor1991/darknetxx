@@ -299,7 +299,7 @@ dxrep dx_box_iou(box pred, box truth, IOU_LOSS iou_loss)
   float giou_Ch = fmax(pred_b, truth_tblr.bot) - fmin(pred_t, truth_tblr.top);
   float giou_C = giou_Cw * giou_Ch;
   // float IoU = I / U;
-  //#ifdef DEBUG_PRINTS
+  // #ifdef DEBUG_PRINTS
   // printf("X: %f", X);
   // printf(", Xhat: %f", Xhat);
   // printf(", Ih: %f", Ih);
@@ -307,7 +307,7 @@ dxrep dx_box_iou(box pred, box truth, IOU_LOSS iou_loss)
   // printf(", I: %f", I);
   // printf(", U: %f", U);
   // printf(", IoU: %f\n", I / U);
-  //#endif
+  // #endif
 
   // Partial Derivatives, derivatives
   float dX_wrt_t = -1 * (pred_r - pred_l);
@@ -562,7 +562,7 @@ dxrep dx_box_iou(box pred, box truth, IOU_LOSS iou_loss)
   // dx.dl *= delta_l / (delta_l + delta_r);
   // dx.dr *= delta_r / (delta_l + delta_r);
 
-  //#ifdef DEBUG_PRINTS
+  // #ifdef DEBUG_PRINTS
   /*printf("  directions dt: ");
   if ((pred_tblr.top < truth_tblr.top && dx.dt > 0) || (pred_tblr.top >
 truth_tblr.top && dx.dt < 0)) { printf("✓"); } else { printf("𝒙");

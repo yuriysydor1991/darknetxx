@@ -3,8 +3,8 @@
 
 #include <sstream>
 
-#include "src/log/severity-macro-consts.h"
 #include "src/log/default-logger/DefaultLogger.h"
+#include "src/log/severity-macro-consts.h"
 
 #ifndef LOG_INIT
 /**
@@ -27,12 +27,12 @@
 /**
  * @brief The internal logger macro to define the general logging code body.
  */
-#define LOG_BODY(LOGLVL, msg)                                    \
-  {                                                              \
-    std::stringstream logMessageContainer;                       \
-    logMessageContainer << msg;                                  \
+#define LOG_BODY(LOGLVL, msg)                                      \
+  {                                                                \
+    std::stringstream logMessageContainer;                         \
+    logMessageContainer << msg;                                    \
     default_logger::DefaultLogger::log(LOGLVL, __FILE__, __LINE__, \
-                                     logMessageContainer.str()); \
+                                       logMessageContainer.str()); \
   }
 #endif  // LOG_BODY
 
@@ -106,8 +106,8 @@
 /**
  * @brief The internal logger macro to define the general logging code body.
  */
-#define FMTLOGI(fmt, ...)                                             \
-  {                                                                   \
+#define FMTLOGI(fmt, ...)                                               \
+  {                                                                     \
     default_logger::DefaultLogger::log(                                 \
         default_logger::DefaultLogger::LVL_INFO, __FILE__, __LINE__,    \
         default_logger::DefaultLogger::prepare_buff(fmt, __VA_ARGS__)); \
@@ -118,13 +118,13 @@
 /**
  * @brief The logger macro to define the extended logging code body.
  */
-#define LOG_BODY_EXT(FILE_STR, LINE_INT, LOGLVL, msg)            \
-  {                                                              \
-    std::stringstream logMessageContainer;                       \
-    logMessageContainer << msg;                                  \
+#define LOG_BODY_EXT(FILE_STR, LINE_INT, LOGLVL, msg)              \
+  {                                                                \
+    std::stringstream logMessageContainer;                         \
+    logMessageContainer << msg;                                    \
     default_logger::DefaultLogger::log((LOGLVL), (FILE_STR),       \
-                                     static_cast<int>(LINE_INT), \
-                                     logMessageContainer.str()); \
+                                       static_cast<int>(LINE_INT), \
+                                       logMessageContainer.str()); \
   }
 #endif  // LOG_BODY
 
@@ -135,9 +135,9 @@
  * @param msg The logging message which may use the << operator
  * and each of the log elements MUST be converted into the std::string.
  */
-#define ELOGE(FILE_STR, LINE_INT, msg)                                         \
-  LOG_BODY_EXT((FILE_STR), (LINE_INT), default_logger::DefaultLogger::LVL_ERROR, \
-               msg)
+#define ELOGE(FILE_STR, LINE_INT, msg) \
+  LOG_BODY_EXT((FILE_STR), (LINE_INT), \
+               default_logger::DefaultLogger::LVL_ERROR, msg)
 #endif  // ELOGE
 
 #ifndef ELOGI
@@ -148,9 +148,9 @@
  * @param msg The logging message which may use the << operator
  * and each of the log elements MUST be converted into the std::string.
  */
-#define ELOGI(FILE_STR, LINE_INT, msg)                                        \
-  LOG_BODY_EXT((FILE_STR), (LINE_INT), default_logger::DefaultLogger::LVL_INFO, \
-               msg)
+#define ELOGI(FILE_STR, LINE_INT, msg) \
+  LOG_BODY_EXT((FILE_STR), (LINE_INT), \
+               default_logger::DefaultLogger::LVL_INFO, msg)
 #else
 #define ELOGI(FILE_STR, LINE_INT, msg)
 #endif  // MAX_LOG_LEVEL
@@ -180,9 +180,9 @@
  * @param msg The logging message which may use the << operator
  * and each of the log elements MUST be converted into the std::string.
  */
-#define ELOGD(FILE_STR, LINE_INT, msg)                                         \
-  LOG_BODY_EXT((FILE_STR), (LINE_INT), default_logger::DefaultLogger::LVL_DEBUG, \
-               msg)
+#define ELOGD(FILE_STR, LINE_INT, msg) \
+  LOG_BODY_EXT((FILE_STR), (LINE_INT), \
+               default_logger::DefaultLogger::LVL_DEBUG, msg)
 #else
 #define ELOGD(FILE_STR, LINE_INT, msg)
 #endif  // MAX_LOG_LEVEL
@@ -196,9 +196,9 @@
  * @param msg The logging message which may use the << operator
  * and each of the log elements MUST be converted into the std::string.
  */
-#define ELOGT(FILE_STR, LINE_INT, msg)                                         \
-  LOG_BODY_EXT((FILE_STR), (LINE_INT), default_logger::DefaultLogger::LVL_TRACE, \
-               msg)
+#define ELOGT(FILE_STR, LINE_INT, msg) \
+  LOG_BODY_EXT((FILE_STR), (LINE_INT), \
+               default_logger::DefaultLogger::LVL_TRACE, msg)
 #else
 #define ELOGT(FILE_STR, LINE_INT, msg)
 #endif  // MAX_LOG_LEVEL

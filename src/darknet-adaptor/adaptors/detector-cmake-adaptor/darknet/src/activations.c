@@ -118,12 +118,12 @@ void activate_array(float *x, const int n, const ACTIVATION a)
   int i;
   if (a == LINEAR) {
   } else if (a == LEAKY) {
-    //#pragma omp parallel for
+    // #pragma omp parallel for
     for (i = 0; i < n; ++i) {
       x[i] = leaky_activate(x[i]);
     }
   } else if (a == LOGISTIC) {
-    //#pragma omp parallel for
+    // #pragma omp parallel for
     for (i = 0; i < n; ++i) {
       x[i] = logistic_activate(x[i]);
     }
@@ -138,7 +138,7 @@ void activate_array_swish(float *x, const int n, float *output_sigmoid,
                           float *output)
 {
   int i;
-  //#pragma omp parallel for
+  // #pragma omp parallel for
   for (i = 0; i < n; ++i) {
     float x_val = x[i];
     float sigmoid = logistic_activate(x_val);
@@ -153,7 +153,7 @@ void activate_array_mish(float *x, const int n, float *activation_input,
 {
   const float MISH_THRESHOLD = 20;
   int i;
-  //#pragma omp parallel for
+  // #pragma omp parallel for
   for (i = 0; i < n; ++i) {
     float x_val = x[i];
     activation_input[i] = x_val;  // store value before activation
@@ -172,7 +172,7 @@ void activate_array_hard_mish(float *x, const int n, float *activation_input,
                               float *output)
 {
   int i;
-  //#pragma omp parallel for
+  // #pragma omp parallel for
   for (i = 0; i < n; ++i) {
     float x_val = x[i];
     activation_input[i] = x_val;  // store value before activation
@@ -186,7 +186,7 @@ void activate_array_normalize_channels(float *x, const int n, int batch,
   int size = n / channels;
 
   int i;
-  //#pragma omp parallel for
+  // #pragma omp parallel for
   for (i = 0; i < size; ++i) {
     int wh_i = i % wh_step;
     int b = i / wh_step;
@@ -217,7 +217,7 @@ void activate_array_normalize_channels_softmax(float *x, const int n, int batch,
   int size = n / channels;
 
   int i;
-  //#pragma omp parallel for
+  // #pragma omp parallel for
   for (i = 0; i < size; ++i) {
     int wh_i = i % wh_step;
     int b = i / wh_step;
@@ -255,7 +255,7 @@ void gradient_array_normalize_channels_softmax(float *x, const int n, int batch,
   int size = n / channels;
 
   int i;
-  //#pragma omp parallel for
+  // #pragma omp parallel for
   for (i = 0; i < size; ++i) {
     int wh_i = i % wh_step;
     int b = i / wh_step;
@@ -285,7 +285,7 @@ void gradient_array_normalize_channels(float *x, const int n, int batch,
   int size = n / channels;
 
   int i;
-  //#pragma omp parallel for
+  // #pragma omp parallel for
   for (i = 0; i < size; ++i) {
     int wh_i = i % wh_step;
     int b = i / wh_step;
@@ -364,7 +364,7 @@ void gradient_array(const float *x, const int n, const ACTIVATION a,
                     float *delta)
 {
   int i;
-  //#pragma omp parallel for
+  // #pragma omp parallel for
   for (i = 0; i < n; ++i) {
     delta[i] *= gradient(x[i], a);
   }
@@ -375,7 +375,7 @@ void gradient_array_swish(const float *x, const int n, const float *sigmoid,
                           float *delta)
 {
   int i;
-  //#pragma omp parallel for
+  // #pragma omp parallel for
   for (i = 0; i < n; ++i) {
     float swish = x[i];
     delta[i] *= swish + sigmoid[i] * (1 - swish);
@@ -387,7 +387,7 @@ void gradient_array_mish(const int n, const float *activation_input,
                          float *delta)
 {
   int i;
-  //#pragma omp parallel for
+  // #pragma omp parallel for
   for (i = 0; i < n; ++i) {
     const float MISH_THRESHOLD = 20.0f;
 
@@ -421,7 +421,7 @@ void gradient_array_hard_mish(const int n, const float *activation_input,
                               float *delta)
 {
   int i;
-  //#pragma omp parallel for
+  // #pragma omp parallel for
   for (i = 0; i < n; ++i) {
     float inp = activation_input[i];
     delta[i] *= hard_mish_yashas_grad(inp);

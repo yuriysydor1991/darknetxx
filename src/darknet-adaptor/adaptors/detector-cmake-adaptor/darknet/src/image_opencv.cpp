@@ -313,7 +313,7 @@ extern "C" cv::Mat image_to_mat(image img)
 
   const size_t step = static_cast<size_t>(mat.step);
 
-  //#pragma omp parallel for collapse(3)
+  // #pragma omp parallel for collapse(3)
   for (size_t y = 0; y < height; ++y) {
     for (size_t x = 0; x < width; ++x) {
       for (size_t c = 0; c < channels; ++c) {
@@ -349,7 +349,7 @@ extern "C" image mat_to_image(cv::Mat mat)
 
   const size_t step = mat.step;
 
-  //#pragma omp parallel for collapse(3)
+  // #pragma omp parallel for collapse(3)
   for (size_t y = 0; y < h; ++y) {
     for (size_t k = 0; k < c; ++k) {
       for (size_t x = 0; x < w; ++x) {

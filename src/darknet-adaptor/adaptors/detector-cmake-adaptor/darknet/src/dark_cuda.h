@@ -27,7 +27,7 @@
 
 #include <cuda_gl_interop.h>
 #endif  // CUDA_OPENGL_INTEGRATION
-//#include <driver_types.h>
+// #include <driver_types.h>
 
 #ifdef CUDNN
 #include <cudnn.h>

@@ -373,7 +373,7 @@ struct layer
 
   size_t workspace_size;
 
-  //#ifdef GPU
+  // #ifdef GPU
   int *indexes_gpu;
 
   int stream;
@@ -510,7 +510,7 @@ struct layer
   UNUSED_ENUM_TYPE bf_algo, bf_algo16;
   void *poolingDesc;
 #endif  // CUDNN
-  //#endif  // GPU
+  // #endif  // GPU
 };
 
 char *layer_type_2_string(const LAYER_TYPE type);

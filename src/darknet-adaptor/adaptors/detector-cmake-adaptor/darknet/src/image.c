@@ -1790,7 +1790,7 @@ LIB_API void copy_image_from_bytes(image im, char *pdata)
   const size_t h = im.h;
   const size_t c = im.c;
 
-  //#pragma omp parallel for collapse(3)
+  // #pragma omp parallel for collapse(3)
   for (size_t k = 0; k < c; ++k) {
     for (size_t j = 0; j < h; ++j) {
       for (size_t i = 0; i < w; ++i) {

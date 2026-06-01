@@ -135,9 +135,9 @@ class ANetworkAdaptor : virtual public IDarknetAdaptor,
   std::vector<float>& cost();
   float clip();
 
-  //#ifdef GPU
-  // float *input_gpu();
-  // float *truth_gpu();
+  // #ifdef GPU
+  //  float *input_gpu();
+  //  float *truth_gpu();
   std::vector<float>& delta_gpu();
   std::vector<float>& output_gpu();
   std::vector<float>& input_state_gpu();
@@ -159,7 +159,7 @@ class ANetworkAdaptor : virtual public IDarknetAdaptor,
   std::vector<float>& global_delta_gpu();
   std::vector<float>& state_delta_gpu();
   size_t max_delta_gpu_size();
-  //#endif  // GPU
+  // #endif  // GPU
   int optimized_memory();
   int dynamic_minibatch();
   size_t workspace_size_limit();
@@ -292,9 +292,9 @@ class ANetworkAdaptor : virtual public IDarknetAdaptor,
   void cost(const std::vector<float>& nval);
   void clip(const float& nval);
 
-  //#ifdef GPU
-  // void input_gpu(const std::vector<float>& nval);
-  // void truth_gpu(const std::vector<float>& nval);
+  // #ifdef GPU
+  //  void input_gpu(const std::vector<float>& nval);
+  //  void truth_gpu(const std::vector<float>& nval);
   void delta_gpu(const std::vector<float>& nval);
   void output_gpu(const std::vector<float>& nval);
 
@@ -319,7 +319,7 @@ class ANetworkAdaptor : virtual public IDarknetAdaptor,
   void global_delta_gpu(const std::vector<float>& nval);
   void state_delta_gpu(const std::vector<float>& nval);
   void max_delta_gpu_size(const size_t& nval);
-  //#endif  // GPU
+  // #endif  // GPU
   void optimized_memory(const int& nval);
   void dynamic_minibatch(const int& nval);
   void workspace_size_limit(const size_t& nval);

@@ -1831,7 +1831,7 @@ size_t ALayerAdaptor::workspace_size()
   return l->workspace_size;
 }
 
-//#ifdef GPU
+// #ifdef GPU
 std::vector<int>& ALayerAdaptor::indexes_gpu()
 {
   assert(l != nullptr);
@@ -5336,7 +5336,7 @@ void ALayerAdaptor::workspace_size(size_t&& nval)
   l->workspace_size = nval;
 }
 
-//#ifdef GPU
+// #ifdef GPU
 void ALayerAdaptor::indexes_gpu(const std::vector<int>& nval)
 {
   assert(l != nullptr);

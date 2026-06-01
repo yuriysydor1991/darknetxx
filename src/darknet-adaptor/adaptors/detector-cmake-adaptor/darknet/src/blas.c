@@ -17,7 +17,7 @@ void reorg_cpu(float *x, int out_w, int out_h, int out_c, int batch, int stride,
   // \n", out_c, out_w, out_h, stride, forward); printf("  in_c = %d,  in_w =
   // %d,  in_h = %d \n", in_c, out_w*stride, out_h*stride);
 
-  //#pragma omp parallel for collapse(4)
+  // #pragma omp parallel for collapse(4)
   for (int b = 0; b < batch; ++b) {
     for (int k = 0; k < out_c; ++k) {
       for (int j = 0; j < out_h; ++j) {
@@ -44,7 +44,7 @@ void flatten(float *x, int size, int layers, int batch, int forward)
 {
   float *swap = (float *)xcalloc(size * layers * batch, sizeof(float));
 
-  //#pragma omp parallel for collapse(3)
+  // #pragma omp parallel for collapse(3)
   for (int b = 0; b < batch; ++b) {
     for (int c = 0; c < layers; ++c) {
       for (int i = 0; i < size; ++i) {
@@ -63,7 +63,7 @@ void flatten(float *x, int size, int layers, int batch, int forward)
 
 void weighted_sum_cpu(float *a, float *b, float *s, int n, float *c)
 {
-  //#pragma omp parallel for
+  // #pragma omp parallel for
   for (int i = 0; i < n; ++i) {
     c[i] = s[i] * a[i] + (1 - s[i]) * (b ? b[i] : 0);
   }
@@ -72,7 +72,7 @@ void weighted_sum_cpu(float *a, float *b, float *s, int n, float *c)
 void weighted_delta_cpu(float *a, float *b, float *s, float *da, float *db,
                         float *ds, int n, float *dc)
 {
-  //#pragma omp parallel for
+  // #pragma omp parallel for
   for (int i = 0; i < n; ++i) {
     if (da) da[i] += dc[i] * s[i];
     if (db) db[i] += dc[i] * (1 - s[i]);
@@ -99,7 +99,7 @@ void shortcut_multilayer_cpu(int size, int src_outputs, int batch, int n,
     step = src_outputs / layer_step;  // (l.c * l.h * l.w) or (l.w*l.h) or 1
 
   int id;
-  //#pragma omp parallel for
+  // #pragma omp parallel for
   for (id = 0; id < size; ++id) {
     int src_id = id;
     const int src_i = src_id % src_outputs;
@@ -119,18 +119,18 @@ void shortcut_multilayer_cpu(int size, int src_outputs, int batch, int n,
       }
       const float eps = 0.0001;
       sum = eps;
-      //#pragma omp parallel for
+      // #pragma omp parallel for
       for (i = 0; i < (n + 1); ++i) {
         const int weights_index =
             src_i / step + i * layer_step;  // [0 or c or (c, h ,w)]
         const float w = weights[weights_index];
         if (weights_normalization == RELU_NORMALIZATION) {
-          //#pragma omp critical
+          // #pragma omp critical
           {
             sum += relu(w);
           }
         } else if (weights_normalization == SOFTMAX_NORMALIZATION) {
-          //#pragma omp critical
+          // #pragma omp critical
           {
             sum += expf(w - max_val);
           }
@@ -149,7 +149,7 @@ void shortcut_multilayer_cpu(int size, int src_outputs, int batch, int n,
       out[id] = in[id];
 
     // layers
-    //#pragma omp parallel for
+    // #pragma omp parallel for
     for (i = 0; i < n; ++i) {
       int add_outputs = outputs_of_layers[i];
       if (src_i >= add_outputs) {
@@ -189,7 +189,7 @@ void backward_shortcut_multilayer_cpu(
     step = src_outputs / layer_step;  // (l.c * l.h * l.w) or (l.w*l.h) or 1
 
   int id;
-  //#pragma omp parallel for
+  // #pragma omp parallel for
   for (id = 0; id < size; ++id) {
     int src_id = id;
     int src_i = src_id % src_outputs;
@@ -282,7 +282,7 @@ void shortcut_cpu(int batch, int w1, int h1, int c1, float *add, int w2, int h2,
   int minh = (h1 < h2) ? h1 : h2;
   int minc = (c1 < c2) ? c1 : c2;
 
-  //#pragma omp parallel for collapse(4)
+  // #pragma omp parallel for collapse(4)
   for (int b = 0; b < batch; ++b) {
     for (int k = 0; k < minc; ++k) {
       for (int j = 0; j < minh; ++j) {
@@ -300,10 +300,10 @@ void mean_cpu(float *x, int batch, int filters, int spatial, float *mean)
 {
   const float scale = 1. / (batch * spatial);
 
-  //#pragma omp parallel for
+  // #pragma omp parallel for
   for (int i = 0; i < filters; ++i) {
     mean[i] = 0;
-    //#pragma omp parallel for collapse(2)
+    // #pragma omp parallel for collapse(2)
     for (int j = 0; j < batch; ++j) {
       for (int k = 0; k < spatial; ++k) {
         const int index = j * filters * spatial + i * spatial + k;
@@ -319,10 +319,10 @@ void variance_cpu(float *x, float *mean, int batch, int filters, int spatial,
 {
   const float scale = 1. / (batch * spatial - 1);
 
-  //#pragma omp parallel for
+  // #pragma omp parallel for
   for (int i = 0; i < filters; ++i) {
     variance[i] = 0;
-    //#pragma omp parallel for collapse(2)
+    // #pragma omp parallel for collapse(2)
     for (int j = 0; j < batch; ++j) {
       for (int k = 0; k < spatial; ++k) {
         const int index = j * filters * spatial + i * spatial + k;
@@ -336,7 +336,7 @@ void variance_cpu(float *x, float *mean, int batch, int filters, int spatial,
 void normalize_cpu(float *x, float *mean, float *variance, int batch,
                    int filters, int spatial)
 {
-  //#pragma omp parallel for collapse(3)
+  // #pragma omp parallel for collapse(3)
   for (int b = 0; b < batch; ++b) {
     for (int f = 0; f < filters; ++f) {
       for (int i = 0; i < spatial; ++i) {
@@ -349,37 +349,37 @@ void normalize_cpu(float *x, float *mean, float *variance, int batch,
 
 void const_cpu(int N, float ALPHA, float *X, int INCX)
 {
-  //#pragma omp parallel for
+  // #pragma omp parallel for
   for (int i = 0; i < N; ++i) X[i * INCX] = ALPHA;
 }
 
 void mul_cpu(int N, float *X, int INCX, float *Y, int INCY)
 {
-  //#pragma omp parallel for
+  // #pragma omp parallel for
   for (int i = 0; i < N; ++i) Y[i * INCY] *= X[i * INCX];
 }
 
 void pow_cpu(int N, float ALPHA, float *X, int INCX, float *Y, int INCY)
 {
-  //#pragma omp parallel for
+  // #pragma omp parallel for
   for (int i = 0; i < N; ++i) Y[i * INCY] = pow(X[i * INCX], ALPHA);
 }
 
 void axpy_cpu(int N, float ALPHA, float *X, int INCX, float *Y, int INCY)
 {
-  //#pragma omp parallel for
+  // #pragma omp parallel for
   for (int i = 0; i < N; ++i) Y[i * INCY] += ALPHA * X[i * INCX];
 }
 
 void scal_cpu(int N, float ALPHA, float *X, int INCX)
 {
-  //#pragma omp parallel for
+  // #pragma omp parallel for
   for (int i = 0; i < N; ++i) X[i * INCX] *= ALPHA;
 }
 
 void scal_add_cpu(int N, float ALPHA, float BETA, float *X, int INCX)
 {
-  //#pragma omp parallel for
+  // #pragma omp parallel for
   for (int i = 0; i < N; ++i) X[i * INCX] = X[i * INCX] * ALPHA + BETA;
 }
 
@@ -388,7 +388,7 @@ void fill_cpu(int N, float ALPHA, float *X, int INCX)
   if (INCX == 1 && ALPHA == 0) {
     memset(X, 0, N * sizeof(float));
   } else {
-    //#pragma omp parallel for
+    // #pragma omp parallel for
     for (int i = 0; i < N; ++i) X[i * INCX] = ALPHA;
   }
 }
@@ -425,19 +425,19 @@ void inter_cpu(int NX, float *X, int NY, float *Y, int B, float *OUTPUT)
 
 void copy_cpu(int N, float *X, int INCX, float *Y, int INCY)
 {
-  //#pragma omp parallel for
+  // #pragma omp parallel for
   for (int i = 0; i < N; ++i) Y[i * INCY] = X[i * INCX];
 }
 
 void mult_add_into_cpu(int N, float *X, float *Y, float *Z)
 {
-  //#pragma omp parallel for
+  // #pragma omp parallel for
   for (int i = 0; i < N; ++i) Z[i] += X[i] * Y[i];
 }
 
 void smooth_l1_cpu(int n, float *pred, float *truth, float *delta, float *error)
 {
-  //#pragma omp parallel for
+  // #pragma omp parallel for
   for (int i = 0; i < n; ++i) {
     const float diff = truth[i] - pred[i];
     const float abs_val = fabs(diff);
@@ -453,7 +453,7 @@ void smooth_l1_cpu(int n, float *pred, float *truth, float *delta, float *error)
 
 void l1_cpu(int n, float *pred, float *truth, float *delta, float *error)
 {
-  //#pragma omp parallel for
+  // #pragma omp parallel for
   for (int i = 0; i < n; ++i) {
     const float diff = truth[i] - pred[i];
     error[i] = fabs(diff);
@@ -464,7 +464,7 @@ void l1_cpu(int n, float *pred, float *truth, float *delta, float *error)
 void softmax_x_ent_cpu(int n, float *pred, float *truth, float *delta,
                        float *error)
 {
-  //#pragma omp parallel for
+  // #pragma omp parallel for
   for (int i = 0; i < n; ++i) {
     const float t = truth[i];
     const float p = pred[i];
@@ -476,7 +476,7 @@ void softmax_x_ent_cpu(int n, float *pred, float *truth, float *delta,
 void logistic_x_ent_cpu(int n, float *pred, float *truth, float *delta,
                         float *error)
 {
-  //#pragma omp parallel for
+  // #pragma omp parallel for
   for (int i = 0; i < n; ++i) {
     const float t = truth[i];
     const float p = pred[i];
@@ -487,7 +487,7 @@ void logistic_x_ent_cpu(int n, float *pred, float *truth, float *delta,
 
 void l2_cpu(int n, float *pred, float *truth, float *delta, float *error)
 {
-  //#pragma omp parallel for
+  // #pragma omp parallel for
   for (int i = 0; i < n; ++i) {
     const float diff = truth[i] - pred[i];
     error[i] = diff * diff;
@@ -517,7 +517,7 @@ void softmax(float *input, int n, float temp, float *output, int stride)
     output[i * stride] = e;
   }
 
-  //#pragma omp parallel for
+  // #pragma omp parallel for
   for (i = 0; i < n; ++i) {
     output[i * stride] /= sum;
   }
@@ -566,7 +566,7 @@ void constrain_cpu(int size, float ALPHA, float *X)
 
 void fix_nan_and_inf_cpu(float *input, size_t size)
 {
-  //#pragma omp parallel for
+  // #pragma omp parallel for
   for (int i = 0; i < size; ++i) {
     const float val = input[i];
     if (isnan(val) || isinf(val)) input[i] = 1.0f / i;  // pseudo random value
@@ -577,7 +577,7 @@ void get_embedding(float *src, int src_w, int src_h, int src_c,
                    int embedding_size, int cur_w, int cur_h, int cur_n,
                    int cur_b, float *dst)
 {
-  //#pragma omp parallel for
+  // #pragma omp parallel for
   for (int i = 0; i < embedding_size; ++i) {
     const int src_index = cur_b * (src_c * src_h * src_w) +
                           cur_n * (embedding_size * src_h * src_w) +

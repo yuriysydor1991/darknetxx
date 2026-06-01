@@ -233,7 +233,7 @@ __global__ void im2col_align_bin_gpu_kernel(
   //__shared__ float tmp_s[1];
   //__shared__ ulonglong4 tmp256_s[1];
 
-  //#define SHRED_VALS ((BLOCK / 169) * )
+  // #define SHRED_VALS ((BLOCK / 169) * )
   //__shared__ float dst_s[1024];
   //__shared__ float dst_s[1024];
   //__shared__ uint32_t bit_s[32];
@@ -634,10 +634,10 @@ __device__ void transpose_32x32_bits_reversed_diagonale(uint32_t *A,
 {
   // unsigned A_tmp[32];
   // int i;
-  //#pragma unroll
+  // #pragma unroll
   // for (i = 0; i < 32; ++i) A_tmp[i] = A[i * m];
   // transpose32_optimized(A_tmp);
-  //#pragma unroll
+  // #pragma unroll
   // for (i = 0; i < 32; ++i) B[i*n] = A_tmp[i];
 
   __shared__ uint32_t A_shared[32 * BLOCK_TRANSPOSE32];
@@ -725,7 +725,7 @@ void transpose_uint32_gpu(uint32_t *src, uint32_t *dst, int src_h, int src_w,
 }
 // --------------------------------
 
-//#define TRANS_LOOP 10
+// #define TRANS_LOOP 10
 
 __global__ void transpose_uint32_kernel_2(uint32_t *src, uint32_t *dst,
                                           int src_h, int src_w, int src_align,
@@ -748,8 +748,8 @@ __global__ void transpose_uint32_kernel_2(uint32_t *src, uint32_t *dst,
   const int local_x_index = threadIdx.x / 32;  // index / 32;
   const int local_y = local_x_index % 32;
 
-  //#pragma unroll TRANS_LOOP
-  // for (int i = 0; i < TRANS_LOOP; ++i)
+  // #pragma unroll TRANS_LOOP
+  //  for (int i = 0; i < TRANS_LOOP; ++i)
   {
     const int global_index =
         blockIdx.x;  // blockIdx.x*TRANS_LOOP + i;// local_x_index / 32;
@@ -1731,8 +1731,8 @@ __global__ void gemm_nn_custom_bin_mean_transposed_gpu_kernel(
       }
 #endif
 
-      //#ifdef NOT_USED
-      // 32 thread X 64 bit = 2048 bit // 29%
+      // #ifdef NOT_USED
+      //  32 thread X 64 bit = 2048 bit // 29%
       for (; k < (K - 2048);
            k += 2048) {  // l.size*l.size*l.c - one filter size [27 - 9216]
         uint64_t c_bit64;
@@ -1761,10 +1761,10 @@ __global__ void gemm_nn_custom_bin_mean_transposed_gpu_kernel(
           }
         }
       }
-      //#endif
+      // #endif
 
-      //#ifdef NOT_USED
-      // 32 thread X 32 bit = 1024 bit // 10%
+      // #ifdef NOT_USED
+      //  32 thread X 32 bit = 1024 bit // 10%
       for (; k < (K - 1024);
            k += 1024) {  // l.size*l.size*l.c - one filter size [27 - 9216]
 
@@ -1792,14 +1792,14 @@ __global__ void gemm_nn_custom_bin_mean_transposed_gpu_kernel(
           }
         }
       }
-      //#endif
+      // #endif
 
       if (i < M) {
         float mean_val = mean_arr[i];
         float bias_val = bias_arr[i];
 
-        //#ifdef NOT_USED
-        // 8%
+        // #ifdef NOT_USED
+        //  8%
         for (; k < K;
              k +=
              256) {  // l.size*l.size*l.c - one filter size [27 - 144 - 9216]
@@ -1814,7 +1814,7 @@ __global__ void gemm_nn_custom_bin_mean_transposed_gpu_kernel(
           count += __popcll(c_bit256.w) + __popcll(c_bit256.x) +
                    __popcll(c_bit256.y) + __popcll(c_bit256.z);
         }
-        //#endif
+        // #endif
 
 #ifdef NOT_USED
         for (; k < K;
@@ -1905,7 +1905,7 @@ void gemm_nn_custom_bin_mean_transposed_gpu(
 
     // cudaDeviceSynchronize();
   } else
-#endif  //# CUDART_VERSION >= 10000
+#endif  // # CUDART_VERSION >= 10000
   {
     gemm_nn_custom_bin_mean_transposed_gpu_kernel<<<num_blocks, BLOCK, 0,
                                                     get_cuda_stream()>>>(

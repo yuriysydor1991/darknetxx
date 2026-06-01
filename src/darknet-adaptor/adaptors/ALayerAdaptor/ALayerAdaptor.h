@@ -375,7 +375,7 @@ class ALayerAdaptor : virtual public IDarknetAdaptor,
 
   size_t workspace_size();
 
-  //#ifdef GPU
+  // #ifdef GPU
   std::vector<int>& indexes_gpu();
 
   int stream();
@@ -997,7 +997,7 @@ class ALayerAdaptor : virtual public IDarknetAdaptor,
   void workspace_size(const size_t& nval);
   void workspace_size(size_t&& nval);
 
-  //#ifdef GPU
+  // #ifdef GPU
   void indexes_gpu(const std::vector<int>& nval);
   void indexes_gpu(std::vector<int>&& nval);
 

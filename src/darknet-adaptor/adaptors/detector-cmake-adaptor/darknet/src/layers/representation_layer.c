@@ -62,7 +62,7 @@ void resize_implicit_layer(layer *l, int w, int h) {}
 void forward_implicit_layer(const layer l, network_state state)
 {
   int i;
-  //#pragma omp parallel for
+  // #pragma omp parallel for
   for (i = 0; i < l.nweights * l.batch; ++i) {
     l.output[i] = l.weights[i % l.nweights];
   }

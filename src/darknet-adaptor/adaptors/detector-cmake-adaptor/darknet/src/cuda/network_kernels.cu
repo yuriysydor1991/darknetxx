@@ -30,9 +30,9 @@
 #include "parser.h"
 #include "utils.h"
 
-//#ifdef OPENCV
-//#include <opencv2/highgui/highgui_c.h>
-//#endif
+// #ifdef OPENCV
+// #include <opencv2/highgui/highgui_c.h>
+// #endif
 
 #include "http_stream.h"
 

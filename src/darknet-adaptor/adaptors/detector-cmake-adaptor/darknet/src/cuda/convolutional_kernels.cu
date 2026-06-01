@@ -492,8 +492,8 @@ void forward_convolutional_layer_gpu(convolutional_layer l, network_state state)
   // float one = 1;    // alpha[0], beta[0] is float for HALF and FLOAT
   float alpha = 1, beta = 0;
 
-  //#ifdef CUDNN_HALF
-  // if (state.use_mixed_precision) {
+  // #ifdef CUDNN_HALF
+  //  if (state.use_mixed_precision) {
   int iteration_num = get_current_iteration(
       state.net);  // (*state.net.seen) /
                    // (state.net.batch*state.net.subdivisions);
@@ -593,7 +593,7 @@ void forward_convolutional_layer_gpu(convolutional_layer l, network_state state)
       add_bias_gpu(l.output_gpu, l.biases_gpu, l.batch, l.n, l.out_w * l.out_h);
     }
   } else {
-    //#else
+    // #else
     /*
     int input_nan_inf = is_nan_or_inf(state.input, l.inputs * l.batch);
     printf("\n is_nan_or_inf(state.input) = %d \n", input_nan_inf);
@@ -618,7 +618,7 @@ void forward_convolutional_layer_gpu(convolutional_layer l, network_state state)
     } else {
       add_bias_gpu(l.output_gpu, l.biases_gpu, l.batch, l.n, l.out_w * l.out_h);
     }
-    //#endif    // CUDNN_HALF
+    // #endif    // CUDNN_HALF
   }
 
 #else
@@ -663,8 +663,8 @@ void forward_convolutional_layer_gpu(convolutional_layer l, network_state state)
   }
 #endif
 
-  //#ifndef CUDNN_HALF
-  //#endif // no CUDNN_HALF
+  // #ifndef CUDNN_HALF
+  // #endif // no CUDNN_HALF
 
   if (l.activation == SWISH)
     activate_array_swish_ongpu(l.output_gpu, l.outputs * l.batch,
@@ -776,14 +776,14 @@ void backward_convolutional_layer_gpu(convolutional_layer l,
     backward_bias_gpu(l.bias_updates_gpu, l.delta_gpu, l.batch, l.n,
                       l.out_w * l.out_h);
 
-  //#ifndef CUDNN_HALF
-  // if(l.batch_normalize){
-  //    backward_batchnorm_layer_gpu(l, state);
-  //} else {
-  //    //backward_bias_gpu(l.bias_updates_gpu, l.delta_gpu, l.batch, l.n,
-  //    l.out_w*l.out_h);
-  //}
-  //#endif // no CUDNN_HALF
+  // #ifndef CUDNN_HALF
+  //  if(l.batch_normalize){
+  //     backward_batchnorm_layer_gpu(l, state);
+  // } else {
+  //     //backward_bias_gpu(l.bias_updates_gpu, l.delta_gpu, l.batch, l.n,
+  //     l.out_w*l.out_h);
+  // }
+  // #endif // no CUDNN_HALF
   float *original_input = state.input;
 
   if (l.xnor) state.input = l.binary_input_gpu;
@@ -791,7 +791,7 @@ void backward_convolutional_layer_gpu(convolutional_layer l,
   float one = 1.f;
   float alpha = 1, beta = 0;
 
-  //#ifdef CUDNN_HALF
+  // #ifdef CUDNN_HALF
   int iteration_num = get_current_iteration(
       state.net);  //(*state.net.seen) /
                    //(state.net.batch*state.net.subdivisions);
@@ -909,7 +909,7 @@ void backward_convolutional_layer_gpu(convolutional_layer l,
                              state.delta);
     }
   } else {
-    //#else    // CUDNN_HALF
+    // #else    // CUDNN_HALF
 
     if (l.batch_normalize) {
       backward_batchnorm_layer_gpu(l, state);
@@ -984,7 +984,7 @@ void backward_convolutional_layer_gpu(convolutional_layer l,
     }
   }
 
-  //#endif    // CUDNN_HALF
+  // #endif    // CUDNN_HALF
 
 #else  // CUDNN
   if (l.batch_normalize) {
