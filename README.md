@@ -6,6 +6,10 @@ Some parts of the repository taken from the C++ template project located at [htt
 
 **Work in progress. Do not expect project to work in the current state**
 
+# Recommended images annotator
+
+In order to train the network on your own data set you'll need annotated images with the bounding box labels in the Darknet/YOLO format. It's recommended to prepare such annotations with the `ImagesAnnotator` tool available at [https://github.com/yuriysydor1991/ImagesAnnotator](https://github.com/yuriysydor1991/ImagesAnnotator).
+
 # Requirements
 
 This section contains list of required packages and/or tools that must be present in the system in order to build templated project.
