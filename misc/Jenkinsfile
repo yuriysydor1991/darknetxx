@@ -1,6 +1,6 @@
 pipeline {
   agent any
-  
+
   environment {
     BUILDDIR="build"
     BDJUNITOUT="junit-out"
@@ -8,15 +8,14 @@ pipeline {
 
   parameters {
     booleanParam(name: 'RUN_CPPCHECK', defaultValue: false, description: 'Run the cppcheck static code check?')
-    // Template project specific: optional packager checks, all disabled by
-    // default and opt-in (e.g. WIX is MS Windows only, FreeBSD pkg is FreeBSD
-    // only). Safe to drop together with the template stages below.
-    booleanParam(name: 'RUN_FLATPAK_PACKAGER', defaultValue: false, description: 'Template: build and check the flatpak package?')
-    booleanParam(name: 'RUN_DEB_PACKAGER', defaultValue: false, description: 'Template: build and check the deb package?')
-    booleanParam(name: 'RUN_RPM_PACKAGER', defaultValue: false, description: 'Template: build and check the RPM package?')
-    booleanParam(name: 'RUN_SNAP_PACKAGER', defaultValue: false, description: 'Template: build and check the snap package?')
-    booleanParam(name: 'RUN_FREEBSD_PACKAGER', defaultValue: false, description: 'Template: build and check the FreeBSD pkg package? (FreeBSD only)')
-    booleanParam(name: 'RUN_WIX_PACKAGER', defaultValue: false, description: 'Template: build and check the WIX MSI package? (MS Windows only)')
+    // Optional packager checks, all disabled by default and opt-in (e.g. WIX is
+    // MS Windows only, FreeBSD pkg is FreeBSD only).
+    booleanParam(name: 'RUN_FLATPAK_PACKAGER', defaultValue: false, description: 'Build and check the flatpak package?')
+    booleanParam(name: 'RUN_DEB_PACKAGER', defaultValue: false, description: 'Build and check the deb package?')
+    booleanParam(name: 'RUN_RPM_PACKAGER', defaultValue: false, description: 'Build and check the RPM package?')
+    booleanParam(name: 'RUN_SNAP_PACKAGER', defaultValue: false, description: 'Build and check the snap package?')
+    booleanParam(name: 'RUN_FREEBSD_PACKAGER', defaultValue: false, description: 'Build and check the FreeBSD pkg package? (FreeBSD only)')
+    booleanParam(name: 'RUN_WIX_PACKAGER', defaultValue: false, description: 'Build and check the WIX MSI package? (MS Windows only)')
   }
 
   stages {
@@ -27,36 +26,33 @@ pipeline {
           return files == ""
         }
       }
-      
+
       steps {
-        git branch: 'main',
+        git branch: 'master',
             url: 'https://github.com/yuriysydor1991/darknetxx.git'
       }
     }
-    
+
     stage('Code format configure') {
       steps {
+        sh 'rm -fr $BUILDDIR'
         sh '''
           cmake -S . -B $BUILDDIR -DCMAKE_BUILD_TYPE=Debug -DENABLE_CLANGFORMAT=ON
         '''
       }
     }
-    
-    stage('Code format build (clang-format)') {
+
+    stage('Code format check (clang-format)') {
       steps {
-        script {
-          def files = sh(script: 'git ls-files -m', returnStdout: true).trim()
-          return files == ""
-        }
-      }
-      
-      post {
-        success {
-          echo 'No files changed - OK'
-        }
-        failure {
-          echo 'Some files are not formatted - FAIL'
-        }
+        sh 'cmake --build $BUILDDIR --target clang-format'
+        sh '''
+          if [ -n "$(git ls-files -m)" ]; then
+            echo "FAIL: the following tracked files are not clang-format clean:"
+            git ls-files -m
+            exit 1
+          fi
+          echo "OK: all tracked files are clang-format clean"
+        '''
       }
     }
 
@@ -64,13 +60,14 @@ pipeline {
       steps {
         sh 'rm -fr $BUILDDIR'
         sh '''
-          cmake -S . -B $BUILDDIR -DCMAKE_BUILD_TYPE=Debug -DENABLE_UNIT_TESTS=ON \
+          cmake -S . -B $BUILDDIR -DCMAKE_BUILD_TYPE=Debug \
+            -DENABLE_UNIT_TESTS=ON -DENABLE_COMPONENT_TESTS=ON \
             -DENABLE_SANITIZERS=ON -DENABLE_CPPCHECK=ON \
-            -DMAX_LOG_LEVEL=5 -DENABLE_COMPONENT_TESTS=ON
+            -DMAX_LOG_LEVEL=5
         '''
       }
     }
-    
+
     stage('Debug build') {
       steps {
         sh '''
@@ -78,7 +75,7 @@ pipeline {
         '''
       }
     }
-    
+
     stage('cppcheck') {
       when {
         expression { params.RUN_CPPCHECK }
@@ -89,25 +86,43 @@ pipeline {
         '''
       }
     }
-    
-    // see other branches of the darknetxx in order to see unit tests registration
-    
-    stage('Component Tests') {
+
+    stage('Unit tests') {
       parallel {
-        stage('CTEST_DefaultLogger') {
-          steps {
-            sh 'cd $BUILDDIR && ctest -R "CTEST_DefaultLogger\\." --output-on-failure --output-junit $BDJUNITOUT/CTEST_DefaultLogger.junit.xml'
-          }
+        stage('UTEST_Application') {
+          steps { sh 'cd $BUILDDIR && ctest -R "UTEST_Application\\." --output-on-failure --output-junit $BDJUNITOUT/UTEST_Application.junit.xml' }
         }
-        stage('CTEST_log') {
-          steps {
-            sh 'cd $BUILDDIR && ctest -R "CTEST_log\\." --output-on-failure --output-junit $BDJUNITOUT/CTEST_log.junit.xml'
-          }
+        stage('UTEST_ApplicationContext') {
+          steps { sh 'cd $BUILDDIR && ctest -R "UTEST_ApplicationContext\\." --output-on-failure --output-junit $BDJUNITOUT/UTEST_ApplicationContext.junit.xml' }
+        }
+        stage('UTEST_ApplicationFactory') {
+          steps { sh 'cd $BUILDDIR && ctest -R "UTEST_ApplicationFactory\\." --output-on-failure --output-junit $BDJUNITOUT/UTEST_ApplicationFactory.junit.xml' }
+        }
+        stage('UTEST_ApplicationHelpPrinter') {
+          steps { sh 'cd $BUILDDIR && ctest -R "UTEST_ApplicationHelpPrinter\\." --output-on-failure --output-junit $BDJUNITOUT/UTEST_ApplicationHelpPrinter.junit.xml' }
+        }
+        stage('UTEST_ApplicationVersionPrinter') {
+          steps { sh 'cd $BUILDDIR && ctest -R "UTEST_ApplicationVersionPrinter\\." --output-on-failure --output-junit $BDJUNITOUT/UTEST_ApplicationVersionPrinter.junit.xml' }
+        }
+        stage('UTEST_CommandLineParser') {
+          steps { sh 'cd $BUILDDIR && ctest -R "UTEST_CommandLineParser\\." --output-on-failure --output-junit $BDJUNITOUT/UTEST_CommandLineParser.junit.xml' }
         }
       }
       post { always { junit "$BUILDDIR/$BDJUNITOUT/*.xml" } }
     }
-    
+
+    stage('Component tests') {
+      parallel {
+        stage('CTEST_darknet_parser') {
+          steps { sh 'cd $BUILDDIR && ctest -R "CTEST_darknet_parser\\." --output-on-failure --output-junit $BDJUNITOUT/CTEST_darknet_parser.junit.xml' }
+        }
+        stage('CTEST_darknet_randoms') {
+          steps { sh 'cd $BUILDDIR && ctest -R "CTEST_darknet_randoms\\." --output-on-failure --output-junit $BDJUNITOUT/CTEST_darknet_randoms.junit.xml' }
+        }
+      }
+      post { always { junit "$BUILDDIR/$BDJUNITOUT/*.xml" } }
+    }
+
     stage('Debug configure (clang-tidy)') {
       steps {
         sh 'rm -fr $BUILDDIR'
@@ -117,7 +132,7 @@ pipeline {
         '''
       }
     }
-    
+
     stage('Debug build (clang-tidy)') {
       steps {
         sh '''
@@ -125,7 +140,7 @@ pipeline {
         '''
       }
     }
-    
+
     stage('Release configure') {
       steps {
         sh 'rm -fr $BUILDDIR'
@@ -134,7 +149,7 @@ pipeline {
         '''
       }
     }
-    
+
     stage('Release build') {
       steps {
         sh '''
@@ -142,7 +157,7 @@ pipeline {
         '''
       }
     }
-    
+
     stage('Release install') {
       steps {
         sh '''
@@ -152,17 +167,12 @@ pipeline {
     }
 
     // =====================================================================
-    // Template project specific checks.
-    //
-    // Everything below is specific to the darknetxx project itself and
-    // is safe to delete in a real project implementation derived from this
-    // template. The stages are written generically - they discover the doc
-    // sections, the enablers, the declared tests and the produced packages
-    // dynamically, with no hardcoded names - so they can be reused as-is on
-    // the other template branches.
+    // Repository hygiene checks for the darknetxx project. They discover the
+    // doc sections, the enablers and the declared tests dynamically (no
+    // hardcoded names) so they keep working as the project evolves.
     // =====================================================================
 
-    stage('Template: no git conflict markers') {
+    stage('Repo check: no git conflict markers') {
       steps {
         sh '''
           if git grep -nE "^(<<<<<<<|>>>>>>>)" -- .; then
@@ -174,7 +184,7 @@ pipeline {
       }
     }
 
-    stage('Template: no en_US doc sections in the uk_UA README') {
+    stage('Repo check: no en_US doc sections in the uk_UA README') {
       steps {
         sh '''
           if grep -nE "doc/sections/en_US/" doc/README.uk_UA.md; then
@@ -186,7 +196,7 @@ pipeline {
       }
     }
 
-    stage('Template: no uk_UA doc sections in the top-level README') {
+    stage('Repo check: no uk_UA doc sections in the top-level README') {
       steps {
         sh '''
           if grep -nE "doc/sections/uk_UA/" README.md; then
@@ -198,7 +208,7 @@ pipeline {
       }
     }
 
-    stage('Template: every doc section is linked in its README') {
+    stage('Repo check: every doc section is linked in its README') {
       steps {
         sh '''
           status=0
@@ -229,7 +239,7 @@ pipeline {
       }
     }
 
-    stage('Template: every enabler is registered') {
+    stage('Repo check: every enabler is registered') {
       steps {
         sh '''
           included="$( { cat cmake/template-project-feature-enabler.cmake cmake/template-project-feature-enabler-post.cmake; find cmake/enablers -name "*.cmake" -exec cat {} +; } | grep "include(" | sed "s/.*include(//; s/).*//" | tr -d " " | sort -u )"
@@ -247,7 +257,7 @@ pipeline {
       }
     }
 
-    stage('Template: every declared test is registered in the pipeline') {
+    stage('Repo check: every declared test is registered in the pipeline') {
       steps {
         sh '''
           declared="$(grep -rA3 "gtest_add_tests" --include=CMakeLists.txt src | grep -oE "TARGET[[:space:]]+[A-Za-z0-9_]+" | awk '{print $2}' | sort -u)"
@@ -267,7 +277,7 @@ pipeline {
     // Packager checks are intentionally separate sequential stages (not a
     // parallel block): each runs a full CMake configure + build, so running
     // them in parallel could overload the build agent.
-    stage('Template: flatpak package') {
+    stage('Package: flatpak') {
       when { expression { params.RUN_FLATPAK_PACKAGER } }
       steps {
         sh '''
@@ -285,7 +295,7 @@ pipeline {
       }
     }
 
-    stage('Template: deb package') {
+    stage('Package: deb') {
       when { expression { params.RUN_DEB_PACKAGER } }
       steps {
         sh '''
@@ -303,7 +313,7 @@ pipeline {
       }
     }
 
-    stage('Template: rpm package') {
+    stage('Package: rpm') {
       when { expression { params.RUN_RPM_PACKAGER } }
       steps {
         sh '''
@@ -321,7 +331,7 @@ pipeline {
       }
     }
 
-    stage('Template: snap package') {
+    stage('Package: snap') {
       when { expression { params.RUN_SNAP_PACKAGER } }
       steps {
         sh '''
@@ -339,7 +349,7 @@ pipeline {
       }
     }
 
-    stage('Template: freebsd-pkg package') {
+    stage('Package: freebsd-pkg') {
       when { expression { params.RUN_FREEBSD_PACKAGER } }
       steps {
         sh '''
@@ -357,7 +367,7 @@ pipeline {
       }
     }
 
-    stage('Template: wix-msi package') {
+    stage('Package: wix-msi') {
       when { expression { params.RUN_WIX_PACKAGER } }
       steps {
         sh '''
@@ -385,4 +395,3 @@ pipeline {
     }
   }
 }
-
