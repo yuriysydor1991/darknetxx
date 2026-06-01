@@ -6,7 +6,7 @@ endif()
 
 set(
   DARKNETXX_CPU_TRAIN_DOCKERFILE_SRC
-  "${CMAKE_SOURCE_DIR}/misc/Dockerfile.Darknetxx-CPU-train.in"
+  "${CMAKE_SOURCE_DIR}/misc/Dockerfiles/Dockerfile.Darknetxx-CPU-train.in"
   CACHE STRING "The darknetxx training docker targets"
 )
 

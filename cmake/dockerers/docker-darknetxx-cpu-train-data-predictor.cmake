@@ -6,7 +6,7 @@ endif()
 
 set(
   DARKNETXX_CPU_PREDICTOR_DOCKERFILE_SRC
-  "${CMAKE_SOURCE_DIR}/misc/Dockerfile.Darknetxx-CPU-predictor.in"
+  "${CMAKE_SOURCE_DIR}/misc/Dockerfiles/Dockerfile.Darknetxx-CPU-predictor.in"
   CACHE STRING "The darknet training docker targets"
 )
 
