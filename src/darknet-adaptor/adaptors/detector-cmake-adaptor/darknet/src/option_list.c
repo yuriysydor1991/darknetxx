@@ -38,6 +38,8 @@ list *read_data_cfg(char *filename)
         // printf("Reading the option: %s\n", line);
         if (!read_option(line, options)) {
           CLOGE("Config file error line %d, could parse: %s", nu, line);
+          // a rejected line doesn't reach the list, so it is freed here
+          free(line);
         }
         break;
     }
@@ -116,18 +118,14 @@ void option_unused(list *l)
 char *option_find(list *l, char *key)
 {
   assert(l != NULL);
-  assert(l->front != NULL);
 
   if (l == NULL) {
     CLOGEM("No list provided");
     return 0;
   }
 
-  if (l->front == NULL) {
-    CLOGEM("Invalid list provided");
-    return 0;
-  }
-
+  // An empty list is a valid one (a cfg section without any option, like the
+  // [avgpool] one), which simply holds no value of any key.
   node *n = l->front;
   while (n) {
     kvp *p = (kvp *)n->val;

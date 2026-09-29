@@ -52,6 +52,9 @@ void move_window_cv(char const *window_name, int x, int y);
 void destroy_all_windows_cv();
 int wait_key_cv(int delay);
 int wait_until_press_key_cv();
+// 1 while the named window is shown, 0 once it is closed or wasn't created,
+// -1 when the highgui backend doesn't report the visibility at all
+int is_window_visible_cv(const char *window_name);
 void make_window(char *name, int w, int h, int fullscreen);
 void show_image_cv(image p, const char *name);
 // void show_image_cv_ipl(mat_cv *disp, const char *name);
@@ -144,6 +147,7 @@ void show_opencv_info();
 void show_opencv_info();
 int wait_key_cv(int delay);
 int wait_until_press_key_cv();
+int is_window_visible_cv(const char* window_name);
 void destroy_all_windows_cv();
 void resize_window_cv(char const* window_name, int width, int height);
 

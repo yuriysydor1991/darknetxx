@@ -38,3 +38,10 @@ TEST_F(UTEST_ApplicationHelpPrinter, normal_exit)
   EXPECT_FALSE(appCtx->print_help_and_exit);
   EXPECT_FALSE(appCtx->print_version_and_exit);
 }
+
+TEST_F(UTEST_ApplicationHelpPrinter, invalid_command_line_exit)
+{
+  appCtx->errors.emplace_back("Unknown parameter: --unknown");
+
+  EXPECT_NE(app->run(appCtx), 0);
+}

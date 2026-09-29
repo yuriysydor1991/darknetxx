@@ -3,44 +3,51 @@
 #include <assert.h>
 
 #include "data.h"
-#include "memory.h"
 #include "option_list.h"
-#include "parser.h"
 #include "src/clog/clog.h"
+#include "src/detector/subs/tester/load_class_names_ctx.h"
 #include "src/utils.h"
 
-void calc_map_init_ctx(struct detector_context *ctx)
+int calc_map_init_ctx(struct detector_context *ctx)
 {
   assert(ctx != NULL);
 
+  if (ctx == NULL) {
+    CLOGEM("Invalid context pointer provided");
+    return 0;
+  }
+
   if (!ctx->calc_map) {
-    return;
+    return 1;
   }
 
   FILE *valid_file = fopen(ctx->net.valid_images, "r");
   if (!valid_file) {
     CLOGE(
-        "Error: There is no %s file for mAP calculation! Don't use -map "
-        "flag. Or set valid=%s in your %s file.",
-        ctx->net.valid_images, ctx->net.train_images, ctx->datacfg);
-    error("Error!", DARKNET_LOC);
-  } else
-    fclose(valid_file);
+        "Error: There is no %s file for mAP calculation! Don't use --map "
+        "flag. Or set valid=<file> in the [net] section of your %s file.",
+        ctx->net.valid_images, ctx->cfg);
+    return 0;
+  }
 
-#ifdef GPU
-  cuda_set_device(ctx->gpus[0]);
-#endif
+  fclose(valid_file);
 
-  CLOGIM(" Prepare additional network for mAP calculation...");
-  ctx->net_map = parse_network_cfg_custom(ctx->cfg, 1, 1);
-  ctx->net_map.benchmark_layers = ctx->benchmark_layers;
+  // the mAP calculation network is loaded by the C++ network infrastructure
+  // (the class names file of the command line included), it computes with
+  // the layers of the training one
+  if (ctx->net_map.layers == NULL || ctx->net_map.n <= 0) {
+    CLOGEM("No mAP calculation network provided");
+    return 0;
+  }
+
   const int net_classes = ctx->net_map.layers[ctx->net_map.n - 1].classes;
 
-  int k;  // free memory unnecessary arrays
-  for (k = 0; k < ctx->net_map.n - 1; ++k)
-    free_layer_custom(ctx->net_map.layers[k], 1);
+  char *name_list = get_class_names_file_ctx(ctx, &ctx->net_map);
 
-  char *name_list = ctx->net.names;
+  if (!check_class_names_file(name_list)) {
+    return 0;
+  }
+
   int names_size = 0;
   char **names = get_labels_custom(name_list, &names_size);
 
@@ -51,5 +58,7 @@ void calc_map_init_ctx(struct detector_context *ctx)
         name_list, names_size, net_classes, ctx->cfg);
   }
 
-  free_ptrs((void **)names, ctx->net_map.layers[ctx->net_map.n - 1].classes);
+  free_ptrs((void **)names, names_size);
+
+  return 1;
 }

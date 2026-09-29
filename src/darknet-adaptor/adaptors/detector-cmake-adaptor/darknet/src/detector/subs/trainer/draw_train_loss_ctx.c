@@ -22,9 +22,16 @@ void draw_train_loss_ctx(struct detector_context* ctx)
 
   const int iteration = ctx->current_iteration;
 
+  // A new point of the mAP curve comes with every calculation, while the
+  // --draw-precision flag draws the curve on every iteration once there is
+  // any calculated value.
+  const int draw_precision =
+      ctx->map_calculated ||
+      (ctx->draw_precision && ctx->mean_average_precision >= 0);
+
   draw_train_loss_ex(ctx->windows_name, ctx->img, ctx->img_size, ctx->avg_loss,
                      ctx->max_img_loss, iteration, ctx->net.max_batches,
-                     ctx->mean_average_precision, ctx->draw_precision, "mAP%",
+                     ctx->mean_average_precision, draw_precision, "mAP%",
                      ctx->avg_contrastive_acc / 100, ctx->dont_show,
                      ctx->mjpeg_port, ctx->avg_time,
                      ctx->save_chart_every_iter);

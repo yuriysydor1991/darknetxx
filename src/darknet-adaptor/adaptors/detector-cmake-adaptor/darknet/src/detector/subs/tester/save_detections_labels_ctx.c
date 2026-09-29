@@ -1,15 +1,20 @@
 #include "src/detector/subs/tester/save_detections_labels_ctx.h"
 
 #include <assert.h>
+#include <errno.h>
 #include <limits.h>
 #include <stdlib.h>
+#include <string.h>
 
+#include "src/clog/clog.h"
 #include "src/detector/detector_context.h"
 #include "utils.h"
 
 int save_detections_labels_ctx(struct detector_context* ctx)
 {
   static const size_t BUFF_SIZE = PATH_MAX;
+
+  assert(ctx != NULL);
 
   // pseudo labeling concept - fast.ai
   if (!ctx->save_labels) {
@@ -20,12 +25,13 @@ int save_detections_labels_ctx(struct detector_context* ctx)
 
   memset(labelpath, 0, BUFF_SIZE);
 
-  replace_image_to_label(ctx->filename, labelpath);
+  replace_image_to_label(ctx->input, labelpath);
 
   FILE* fw = fopen(labelpath, "wb");
 
   if (fw == NULL) {
-    file_error(__FILE__, __LINE__, labelpath);
+    CLOGE("Failed to open the %s labels file for writing: %s", labelpath,
+          strerror(errno));
     return 0;
   }
 

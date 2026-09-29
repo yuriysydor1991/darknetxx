@@ -75,11 +75,6 @@ set(
     -v $(XDG_RUNTIME_DIR)/bus:$(XDG_RUNTIME_DIR)/bus
     -v $(XDG_RUNTIME_DIR)/at-spi/bus_0:$(XDG_RUNTIME_DIR)/at-spi/bus_0
     -e XDG_RUNTIME_DIR=$(XDG_RUNTIME_DIR)
-    --device /dev/dri
-    --group-add video
-    --gpus all
-    --runtime=nvidia
-    -v ${HOST_RESOURCES_IMAGES}:/var/share/images:ro
     -v ${YOLO4_137_PRESET_DATA_FILE}:/usr/share/yolov4.conv.137:ro
     -v ${YOLO4_TINY_PRESET_DATA_FILE}:/usr/share/yolov4-tiny.conv.29:ro
     -v ${YOLO4_TRAINING_DATA_DIR}:/usr/share/yolo4-data
@@ -87,8 +82,8 @@ set(
     xhost -local:docker
 )
 
-message(STATUS "docker darkentxx CPU train single build command: ${DOCKERXX_CPU_SINGLE_BUILD_CMD}")
-message(STATUS "docker darkentxx CPU train single run command: ${DOCKERXX_CPU_SINGLE_RUN_CMD}")
+message(STATUS "docker darkentxx CPU train single build command: ${DARKNETXX_CPU_TRAIN_DOCKER_SINGLE_BUILD_CMD}")
+message(STATUS "docker darkentxx CPU train single run command: ${DARKNETXX_CPU_TRAIN_DOCKER_SINGLE_RUN_CMD}")
 
 add_custom_target(
   docker-single-build-darknetxx-cpu-train

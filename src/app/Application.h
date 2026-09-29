@@ -12,13 +12,17 @@ namespace app
 /**
  * @brief The default application implementation should be placed into
  * into current class.
+ *
+ * The OS signals are not handled here, since the app::SignalsHandler component
+ * covers them for every application of the project - the ApplicationFactory
+ * installs it before the current class' run method is reached, so the only
+ * thing left is to poll the raised ApplicationContext flags. See the
+ * [handling the OS signals](/doc/sections/en_US/4-8-handling-the-OS-signals.md)
+ * documentation section.
  */
-class Application : public IApplication,
-                    public std::enable_shared_from_this<Application>
+class Application : public IApplication
 {
  public:
-  using AppPtr = std::shared_ptr<Application>;
-
   virtual ~Application() = default;
   Application(const Application&) = delete;
   Application(Application&&) = delete;
@@ -29,19 +33,36 @@ class Application : public IApplication,
    *
    * @param ctx Application's run context with command line parameters etc.
    *
-   * @return Returns the application return status. A zero value on the success
-   * and other value otherwise.
+   * @return Returns the application return status. A zero value on the success,
+   * the 128 + signal number on a stop request of the signal and other value
+   * otherwise.
    */
   virtual int run(AppCtxPtr ctx) override;
 
  protected:
   virtual bool deal_omp(AppCtxPtr);
-  virtual bool stop_catch();
 
-  static bool init_signals();
-  static void handle_sigint(int sig);
+  /**
+   * @brief Provides the exit status of the work the stop request of the
+   * ApplicationContext::stop_signal cut short.
+   */
+  static int stopped_status(AppCtxPtr ctx);
 
-  inline static AppPtr apt{};
+  /**
+   * @brief Makes the invalid computations noticeable instead of letting them
+   * spread through the network as a NaN value.
+   *
+   * Enables the floating point exceptions and traps the SIGFPE signal they
+   * arrive as. The trap belongs here and not to the app::SignalsHandler
+   * component, since it is a diagnostic of a dying process and not an
+   * application lifecycle request the component covers.
+   *
+   * The Darknet computations rely on the IEEE semantics of the overflows and
+   * the invalid operations here and there (the logistic activation of a
+   * confident logit overflows the expf, for example), so the method does
+   * nothing at all unless the ENABLE_FP_TRAPS CMake option is ON.
+   */
+  static void init_computation_traps();
 
   AppCtxPtr actx;
 };

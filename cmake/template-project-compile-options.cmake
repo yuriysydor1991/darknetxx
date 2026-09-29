@@ -16,5 +16,13 @@ set(
   -DDEFAULT_LOG_FILE_PATH="${DEFAULT_LOG_FILE_PATH}"
 )
 
+# The Darknet C core resets the directory compile options, while its CLOG*
+# macros compile out the levels above the MAX_LOG_LEVEL the same way too.
+set(
+  EXTRA_C_COMPILE_OPTIONS
+  ${EXTRA_C_COMPILE_OPTIONS}
+  -DMAX_LOG_LEVEL=${MAX_LOG_LEVEL}
+)
+
 message(STATUS "COMPILER ID: ${CMAKE_CXX_COMPILER_ID}")
 message(STATUS "COMPILE OPTIONS: ${EXTRA_COMPILE_OPTIONS}")

@@ -99,7 +99,7 @@ void shortcut_multilayer_cpu(int size, int src_outputs, int batch, int n,
     step = src_outputs / layer_step;  // (l.c * l.h * l.w) or (l.w*l.h) or 1
 
   int id;
-  // #pragma omp parallel for
+#pragma omp parallel for
   for (id = 0; id < size; ++id) {
     int src_id = id;
     const int src_i = src_id % src_outputs;
@@ -189,7 +189,9 @@ void backward_shortcut_multilayer_cpu(
     step = src_outputs / layer_step;  // (l.c * l.h * l.w) or (l.w*l.h) or 1
 
   int id;
-  // #pragma omp parallel for
+  // With the weights the iterations accumulate into the shared weight_updates
+  // elements, so only the weightless shortcut is parallel.
+#pragma omp parallel for if (!weights)
   for (id = 0; id < size; ++id) {
     int src_id = id;
     int src_i = src_id % src_outputs;

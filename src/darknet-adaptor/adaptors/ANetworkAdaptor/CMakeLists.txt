@@ -13,8 +13,9 @@ target_include_directories(
     ${MOD_DARKNET_INCLUDES}
 )
 
-#target_link_libraries(
-#  ${PROJECT_BINARY_NAME}
-#  DarknetCXXANetworkAdaptorOBJ
-#)
+target_link_libraries(
+  ${PROJECT_BINARY_NAME}
+  DarknetCXXANetworkAdaptorOBJ
+)
 
+add_subdirectory(tests)

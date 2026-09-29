@@ -1,6 +1,9 @@
 #include "src/app/ApplicationFactory.h"
 
 #include <cassert>
+#include <csignal>
+#include <cstdio>
+#include <iostream>
 #include <memory>
 
 #include "src/app/Application.h"
@@ -10,6 +13,8 @@
 #include "src/app/CMDParamNames.h"
 #include "src/app/CommandLineParser.h"
 #include "src/app/IApplication.h"
+#include "src/app/signals-handlers/ISignalsHandler.h"
+#include "src/app/signals-handlers/SignalsHandler.h"
 #include "src/log/log.h"
 
 namespace app
@@ -25,6 +30,12 @@ std::shared_ptr<CommandLineParser>
 ApplicationFactory::create_default_arg_parser()
 {
   return std::make_shared<CommandLineParser>();
+}
+
+std::shared_ptr<ISignalsHandler>
+ApplicationFactory::create_default_signals_handler()
+{
+  return std::make_shared<SignalsHandler>();
 }
 
 std::shared_ptr<ApplicationContext> ApplicationFactory::create_context(
@@ -47,7 +58,17 @@ std::shared_ptr<ApplicationContext> ApplicationFactory::create_context(
     return {};
   }
 
-  argParser->parse_args(ctx);
+  if (!argParser->parse_args(ctx)) {
+    LOGE("Fail to parse the command line parameters");
+
+    // Nothing but the usage runs for an invalid command line, and the pushed
+    // error makes the help printer to report the failure.
+    ctx->print_help_and_exit = true;
+
+    if (ctx->errors.empty()) {
+      ctx->push_error("Invalid command line parameters");
+    }
+  }
 
   return ctx;
 }
@@ -121,9 +142,51 @@ int ApplicationFactory::run(int& gargc, char**& gargv)
     return IApplication::INVALID;
   }
 
+  std::shared_ptr<ISignalsHandler> signalsHandler =
+      create_default_signals_handler();
+
+  assert(signalsHandler != nullptr);
+
+  if (signalsHandler == nullptr) {
+    LOGE("Fail to create the signals handler object");
+    return IApplication::INVALID;
+  }
+
+  // The handler lives till the current method returns, which is when the
+  // covered signals are given back to the OS default disposition.
+  if (!signalsHandler->install(ctx)) {
+    LOGW("Fail to handle the application OS signals");
+  }
+
   LOGD("Starting the application");
 
-  return app->run(ctx);
+  const int status = app->run(ctx);
+
+  mstop_signal = ctx->stop.load() ? ctx->stop_signal.load() : 0;
+
+  return status;
+}
+
+void ApplicationFactory::end_by_the_stop_signal(const int signalNumber)
+{
+  if (signalNumber <= 0) {
+    return;
+  }
+
+#ifdef SIGQUIT
+  if (signalNumber == SIGQUIT) {
+    return;
+  }
+#endif  // SIGQUIT
+
+  LOGD("Ending the process by the stop signal " << signalNumber);
+
+  std::cout.flush();
+  std::cerr.flush();
+  std::fflush(nullptr);
+
+  std::signal(signalNumber, SIG_DFL);
+  std::raise(signalNumber);
 }
 
 int ApplicationFactory::execute(int& gargc, char**& gargv)
@@ -131,7 +194,15 @@ int ApplicationFactory::execute(int& gargc, char**& gargv)
   std::shared_ptr<ApplicationFactory> factory =
       std::make_shared<ApplicationFactory>();
 
-  return factory->run(gargc, gargv);
+  const int status = factory->run(gargc, gargv);
+  const int stopSignal = factory->mstop_signal;
+
+  // the signals handler and the whole work are released at this point
+  factory.reset();
+
+  end_by_the_stop_signal(stopSignal);
+
+  return status;
 }
 
 }  // namespace app

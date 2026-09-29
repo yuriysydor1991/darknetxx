@@ -14,7 +14,13 @@ foreach(DIR IN LISTS CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES)
   endif()
 endforeach()
 
-list(TRANSFORM implicitSysIncludes PREPEND "--extra-arg=-I")
+# The GCC own headers (the intrinsics among them) call the GCC builtins clang
+# does not know, so clang-tidy takes the ones of its own resource directory.
+list(FILTER implicitSysIncludes EXCLUDE REGEX "/gcc/[^/]+/[^/]+/include(-fixed)?$")
+
+# The -isystem and not the -I: otherwise the project warnings are reported
+# for the standard library headers and WarningsAsErrors fails the build.
+list(TRANSFORM implicitSysIncludes PREPEND "--extra-arg=-isystem")
 
 set(
   CTCOMMAND

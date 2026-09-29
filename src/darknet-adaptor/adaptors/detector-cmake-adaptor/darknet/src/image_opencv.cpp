@@ -441,6 +441,26 @@ extern "C" int wait_key_cv(int delay)
 extern "C" int wait_until_press_key_cv() { return wait_key_cv(0); }
 // ----------------------------------------
 
+extern "C" int is_window_visible_cv(const char *window_name)
+{
+  try {
+    const double visible =
+        cv::getWindowProperty(window_name, cv::WND_PROP_VISIBLE);
+
+    // the backends without the property answer the negative value
+    if (visible < 0.0) {
+      return -1;
+    }
+
+    return visible >= 1.0 ? 1 : 0;
+  }
+  catch (...) {
+    // no such window at all, the GTK backend destroys a closed one
+  }
+  return 0;
+}
+// ----------------------------------------
+
 extern "C" void make_window(char *name, int w, int h, int fullscreen)
 {
   try {
@@ -952,7 +972,9 @@ extern "C" void draw_detections_cv_v3(mat_cv *mat, detection *dets, int num,
         const int show = strncmp(names[j], "dont_show", 9);
         const double cdets = dets[i].prob[j];
 
-        if (dets[i].prob[j] <= thresh && show) {
+        // the negation of the original "shown above the threshold" condition,
+        // which skips a NaN probability too
+        if (!(dets[i].prob[j] > thresh && show)) {
           continue;
         }
 
@@ -1161,7 +1183,7 @@ extern "C" mat_cv *draw_train_chart(char *windows_name, float max_img_loss,
     }
 
     if (!dont_show) {
-      LOGI(" If error occurs - run training with flag: -dont_show");
+      LOGI(" If error occurs - run training with flag: --dont-show");
       cv::namedWindow(windows_name, cv::WINDOW_NORMAL);
       cv::moveWindow(windows_name, 0, 0);
       cv::resizeWindow(windows_name, img_size, img_size);
@@ -1694,6 +1716,7 @@ extern "C" void show_opencv_info()
 }
 extern "C" int wait_key_cv(int delay) { return 0; }
 extern "C" int wait_until_press_key_cv() { return 0; }
+extern "C" int is_window_visible_cv(const char* window_name) { return 0; }
 extern "C" void destroy_all_windows_cv() {}
 extern "C" void resize_window_cv(char const* window_name, int width, int height)
 {

@@ -64,6 +64,24 @@ class CommandLineParser
                          const std::string& nextParam, int& paramIndex);
 
   /**
+   * @brief Applies a single known command line parameter to the context.
+   *
+   * @param ctx The parsed application context.
+   * @param param Command line argument (usually starts with - or --, for
+   * example, --help)
+   * @param nextParam The value that stands after current command line flag, or
+   * empty string if insufficient data.
+   *
+   * @return Returns false for an unknown parameter and true otherwise.
+   *
+   * @throws std::invalid_argument or std::out_of_range for a malformed value
+   * of the parameter.
+   */
+  virtual bool parse_known_arg(std::shared_ptr<ApplicationContext> ctx,
+                               const std::string& param,
+                               const std::string& nextParam);
+
+  /**
    * @brief Check if given parameter param must have some data value placed
    * after it in the command line parameters.
    *

@@ -85,6 +85,8 @@ int ApplicationHelpPrinter::run(std::shared_ptr<ApplicationContext> ctx)
                "training network configuration (*.cfg) file");
   print_option(out, CMDParamNames::detect_cfgw, "<FILE>",
                "detection network configuration (*.cfg) file");
+  print_option(out, CMDParamNames::namesw, "<FILE>",
+               "class names file (overrides the cfg [net] names= key)");
   print_option(out, CMDParamNames::latest_weightsw, "<FILE>",
                "network weights file to load");
   print_option(out, CMDParamNames::detect_imagew, "<FILE>",
@@ -93,12 +95,6 @@ int ApplicationHelpPrinter::run(std::shared_ptr<ApplicationContext> ctx)
                "comma separated list of GPU indexes to use");
   print_option(out, CMDParamNames::threadsw, "<N>",
                "number of worker threads to use");
-  print_option(out, CMDParamNames::widthw, "<N>",
-               "override the network input width");
-  print_option(out, CMDParamNames::heightw, "<N>",
-               "override the network input height");
-  print_option(out, CMDParamNames::num_of_clustersw, "<N>",
-               "number of anchor clusters (default 5)");
 
   out << "\nTraining options:\n";
   print_option(out, CMDParamNames::clearw, "",
@@ -112,18 +108,20 @@ int ApplicationHelpPrinter::run(std::shared_ptr<ApplicationContext> ctx)
   print_option(out, CMDParamNames::netnthresizew, "<N>",
                "resize the network every Nth training iteration (default 10)");
   print_option(out, CMDParamNames::data_reload_nthw, "<N>",
-               "reload the training data every Nth iteration");
+               "load a new training batch every Nth iteration only");
   print_option(out, CMDParamNames::dontreload_dataw, "",
-               "do not reload the training data on every iteration");
+               "keep training on the loaded batch (a resize reloads it)");
   print_option(out, CMDParamNames::stop_less_avg_lossw, "<VALUE>",
                "stop the training once the average loss reaches "
                "the given value or less");
   print_option(out, CMDParamNames::chartw, "<FILE>",
                "path to save the training chart into");
+  print_option(out, CMDParamNames::save_charts_every_iterw, "",
+               "save the training chart on every iteration, not every 100");
   print_option(out, CMDParamNames::dont_save_charts_every_iterw, "",
-               "do not save the training chart on every iteration");
+               "save the training chart every 100 iterations (the default)");
   print_option(out, CMDParamNames::draw_precisionw, "",
-               "draw the precision curve on the training chart");
+               "draw the mAP curve on every iteration once it's calculated");
 
   out << "\nDetection and output options:\n";
   print_option(out, CMDParamNames::threshw, "<VALUE>",
@@ -133,51 +131,63 @@ int ApplicationHelpPrinter::run(std::shared_ptr<ApplicationContext> ctx)
   print_option(out, CMDParamNames::hierw, "<VALUE>",
                "hierarchical detection threshold (default 0.5)");
   print_option(out, CMDParamNames::pointsw, "<N>",
-               "number of points to use for the mAP calculation");
+               "recall points of the training mAP calculation (101 for MS "
+               "COCO, 11 for PascalVOC 2007, 0 for the area under the curve)");
   print_option(out, CMDParamNames::letter_boxw, "",
                "resize the image keeping the aspect ratio (letter box)");
   print_option(out, CMDParamNames::ext_outputw, "",
                "print extended output with the bounding box coordinates");
   print_option(out, CMDParamNames::save_labelsw, "",
                "save the detected labels");
-  print_option(out, CMDParamNames::dontdraw_bboxw, "",
-               "do not draw the detected bounding boxes");
-  print_option(out, CMDParamNames::prefixw, "<PREFIX>",
-               "prefix for the saved output file names");
   print_option(out, CMDParamNames::outw, "<FILE>",
                "file to write the results into");
-  print_option(out, CMDParamNames::out_filenamew, "<FILE>",
-               "output video/image file name");
   print_option(out, CMDParamNames::benchmarkw, "",
-               "benchmark the detection performance");
+               "benchmark the detection performance (implies --dont-show)");
+  print_option(out, CMDParamNames::benchmark_layersw, "",
+               "benchmark every network layer performance (GPU builds only)");
 
-  out << "\nCamera, video and streaming options:\n";
-  print_option(out, CMDParamNames::showw, "",
-               "show the GUI window (enabled by default)");
+  out << "\nWindow options:\n";
+  print_option(
+      out, CMDParamNames::showw, "",
+      "show the GUI windows (enabled by default, reverts --dont-show)");
   print_option(out, CMDParamNames::dont_showw, "",
-               "do not show the GUI window");
+               "do not show the GUI windows");
   print_option(out, CMDParamNames::show_imgsw, "",
                "show the augmented training images");
+
+  out << "\nNot supported yet options (the original Darknet video, streaming\n"
+      << "and anchors calculation ones, rejected when given):\n";
+  print_option(out, CMDParamNames::widthw + ", " + CMDParamNames::heightw,
+               "<N>", "the anchors calculation input size");
+  print_option(out, CMDParamNames::num_of_clustersw, "<N>",
+               "the number of the anchor clusters");
+  print_option(out, CMDParamNames::prefixw, "<PREFIX>",
+               "the prefix of the saved video frames");
+  print_option(out, CMDParamNames::out_filenamew, "<FILE>",
+               "the output video file");
+  print_option(out, CMDParamNames::dontdraw_bboxw, "",
+               "no bounding boxes on the video frames");
   print_option(out, CMDParamNames::cam_indexw, "<N>",
-               "camera (web cam) index to capture from");
+               "the camera (web cam) to capture from");
   print_option(out, CMDParamNames::frame_skipw, "<N>",
-               "number of frames to skip between the detections");
+               "the frames to skip between the detections");
   print_option(out, CMDParamNames::avgframesw, "<N>",
-               "number of frames to average the detections over (default 3)");
+               "the frames to average the detections over");
   print_option(out, CMDParamNames::time_limit_secw, "<SEC>",
-               "stop the processing after the given number of seconds");
+               "the video processing time limit");
   print_option(out, CMDParamNames::mjpeg_portw, "<PORT>",
-               "port to stream the MJPEG result on");
+               "the port to stream the MJPEG result on");
   print_option(out, CMDParamNames::json_portw, "<PORT>",
-               "port to stream the JSON result on");
+               "the port to stream the JSON result on");
   print_option(out, CMDParamNames::http_post_hostw, "<HOST>",
-               "host to send the HTTP POST results to");
+               "the host to send the HTTP POST results to");
   print_option(out, CMDParamNames::json_file_outputw, "<FILE>",
-               "file to write the JSON results into");
+               "the file to write the video JSON results into");
 
   out << std::endl;
 
-  return 0;
+  // the usage printed because of an invalid command line is a failure
+  return ctx->errors.empty() ? 0 : INVALID;
 }
 
 }  // namespace app

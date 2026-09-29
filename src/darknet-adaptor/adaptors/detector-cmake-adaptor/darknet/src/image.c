@@ -5,6 +5,9 @@
 
 #include <limits.h>
 #include <stdio.h>
+#ifdef __linux__
+#include <unistd.h>
+#endif  // __linux__
 
 #include "blas.h"
 #include "dark_cuda.h"
@@ -48,7 +51,7 @@ static float get_pixel(image m, int x, int y, int c)
   assert(y < m.h);
   assert(c < m.c);
 
-  if (c >= c < m.c) {
+  if (c >= m.c) {
     c = m.c - 1;
   }
 
@@ -283,12 +286,67 @@ void draw_bbox(image a, box bbox, int w, float r, float g, float b)
   }
 }
 
+// Finds the directory of the label glyph images, trying in the order: the
+// data/labels of the working directory (the original Darknet layout), the data
+// installed next to the executable (a relocated installation or a package),
+// the configure time installation prefix one and the source tree one.
+static const char *find_labels_dir(char *dir, const size_t size)
+{
+  char exe_labels[PATH_MAX + 1] = {0};
+
+#ifdef __linux__
+  char exe_path[PATH_MAX + 1] = {0};
+
+  if (readlink("/proc/self/exe", exe_path, PATH_MAX) > 0) {
+    char *const exe_name = strrchr(exe_path, '/');
+
+    if (exe_name != NULL) {
+      *exe_name = '\0';
+      snprintf(exe_labels, sizeof(exe_labels), "%s/../%sdata/labels", exe_path,
+               Darknet_data_sub_dir);
+    }
+  }
+#endif  // __linux__
+
+  const char *const candidates[] = {
+      "data/labels",
+      exe_labels,
+      Darknet_data_dir "data/labels",
+      Darknet_source_data_dir "data/labels",
+  };
+
+  for (size_t i = 0; i < sizeof(candidates) / sizeof(candidates[0]); ++i) {
+    if (candidates[i][0] == '\0') {
+      continue;
+    }
+
+    snprintf(dir, size, "%s/32_0.png", candidates[i]);
+
+    FILE *const glyph = fopen(dir, "rb");
+
+    if (glyph != NULL) {
+      fclose(glyph);
+      snprintf(dir, size, "%s", candidates[i]);
+      return dir;
+    }
+  }
+
+  return NULL;
+}
+
 image **load_alphabet()
 {
-  static const char *const labelsfmt = Darknet_data_dir "data/labels/%d_%d.png";
   static const size_t BUFF_SIZE = PATH_MAX + 1;
 
+  char labels_dir[BUFF_SIZE];
   char buff[BUFF_SIZE];
+
+  if (find_labels_dir(labels_dir, BUFF_SIZE) == NULL) {
+    CLOGWM("No label glyph images (data/labels) found, no labels are drawn");
+    return NULL;
+  }
+
+  CLOGD("Loading the label glyph images from %s", labels_dir);
 
   int i, j;
   const int nsize = 8;
@@ -297,8 +355,7 @@ image **load_alphabet()
   for (j = 0; j < nsize; ++j) {
     alphabets[j] = (image *)xcalloc(128, sizeof(image));
     for (i = 32; i < 127; ++i) {
-      memset(buff, 0, BUFF_SIZE);
-      sprintf(buff, labelsfmt, i, j);
+      snprintf(buff, BUFF_SIZE, "%s/%d_%d.png", labels_dir, i, j);
       alphabets[j][i] = load_image_color(buff, 0, 0);
     }
   }
@@ -307,6 +364,10 @@ image **load_alphabet()
 
 void free_alphabet(image **alphabet)
 {
+  if (alphabet == NULL) {
+    return;
+  }
+
   int i, j;
   const int nsize = 8;
   for (j = 0; j < nsize; ++j) {
@@ -373,6 +434,24 @@ int compare_by_probs(const void *a_ptr, const void *b_ptr)
   return delta < 0 ? -1 : delta > 0 ? 1 : 0;
 }
 
+// Prints a detection result as a single plain stdout line, the same way the
+// original Darknet did, so the scripts parsing the detector output keep working
+static void print_detection_line(image im, const detection *det,
+                                 const char *name, const float prob,
+                                 const int ext_output)
+{
+  if (ext_output) {
+    printf(
+        "%s: %.0f%%\t(left_x: %4.0f   top_y: %4.0f   width: %4.0f   height: "
+        "%4.0f)\n",
+        name, prob * 100, round((det->bbox.x - det->bbox.w / 2) * im.w),
+        round((det->bbox.y - det->bbox.h / 2) * im.h),
+        round(det->bbox.w * im.w), round(det->bbox.h * im.h));
+  } else {
+    printf("%s: %.0f%%\n", name, prob * 100);
+  }
+}
+
 void draw_detections_v3(image im, detection *dets, int num, float thresh,
                         char **names, image **alphabet, int classes,
                         int ext_output, const int names_size)
@@ -384,9 +463,10 @@ void draw_detections_v3(image im, detection *dets, int num, float thresh,
   detection_with_class *selected_detections = get_actual_detections(
       dets, num, thresh, &selected_detections_num, names, names_size);
 
-  CLOGI("Detected %d classes present in the image", selected_detections_num);
+  CLOGI("Detected %d objects in the image", selected_detections_num);
 
   if (selected_detections_num <= 0) {
+    free(selected_detections);
     return;
   }
 
@@ -396,39 +476,21 @@ void draw_detections_v3(image im, detection *dets, int num, float thresh,
   int i;
   for (i = 0; i < selected_detections_num; ++i) {
     const int best_class = selected_detections[i].best_class;
-    CLOGI("%s: %.0f%%", names[best_class],
-          selected_detections[i].det.prob[best_class] * 100);
-    if (ext_output)
-      CLOGI("\t(left_x: %4.0f   top_y: %4.0f   width: %4.0f   height: %4.0f)",
-            round((selected_detections[i].det.bbox.x -
-                   selected_detections[i].det.bbox.w / 2) *
-                  im.w),
-            round((selected_detections[i].det.bbox.y -
-                   selected_detections[i].det.bbox.h / 2) *
-                  im.h),
-            round(selected_detections[i].det.bbox.w * im.w),
-            round(selected_detections[i].det.bbox.h * im.h));
+    print_detection_line(im, &selected_detections[i].det, names[best_class],
+                         selected_detections[i].det.prob[best_class],
+                         ext_output);
 
     int j;
     for (j = 0; j < classes; ++j) {
       if (selected_detections[i].det.prob[j] > thresh && j != best_class) {
-        CLOGI("%s: %.0f%%", names[j], selected_detections[i].det.prob[j] * 100);
-
-        if (ext_output)
-          CLOGI(
-              "\t(left_x: %4.0f   top_y: %4.0f   width: %4.0f   height: "
-              "%4.0f)",
-              round((selected_detections[i].det.bbox.x -
-                     selected_detections[i].det.bbox.w / 2) *
-                    im.w),
-              round((selected_detections[i].det.bbox.y -
-                     selected_detections[i].det.bbox.h / 2) *
-                    im.h),
-              round(selected_detections[i].det.bbox.w * im.w),
-              round(selected_detections[i].det.bbox.h * im.h));
+        print_detection_line(im, &selected_detections[i].det, names[j],
+                             selected_detections[i].det.prob[j], ext_output);
       }
     }
   }
+
+  // the results are complete, so let them reach a pipe reader right away
+  fflush(stdout);
 
   // image output
   qsort(selected_detections, selected_detections_num,

@@ -75,7 +75,10 @@ struct detector_context
   float max_img_loss;
   int number_of_lines;
   int img_size;
+  // the --draw-precision flag: the mAP curve is drawn on every iteration
   int draw_precision;
+  // the mAP is calculated on the current iteration
+  int map_calculated;
 
   int init_w;
   int init_h;
@@ -137,6 +140,8 @@ struct detector_context
 
   image **alphabet;  // the alphabet images to display dets
 
+  // the class names file given on the command line, NULL to use the names=
+  // key of the network cfg [net] section
   char *name_list;
 
   // customs
@@ -145,8 +150,16 @@ struct detector_context
   // do reload images every iteration
   int reload_data;
 
-  /// @brief A 1 value to stop computation
-  int stop;
+  // a background load of the next training batch into the buffer is running
+  int data_loading;
+
+  // the next iteration must load a fresh batch (the network input changed)
+  int data_reload_forced;
+
+  /// @brief A non zero value asks the computation to stop. Another thread
+  /// raises it, so access it with the detector_context_is_stopped and the
+  /// detector_context_set_stop functions only.
+  volatile int stop;
 
   unsigned int resize_network_every_nth;
 
@@ -155,6 +168,28 @@ struct detector_context
   // stop training when less than specified value is reached
   double stop_less_avg_loss;
 };
+
+/// @brief Tells if the computation is asked to stop. Thread safe.
+static inline int detector_context_is_stopped(
+    const struct detector_context *ctx)
+{
+#if defined(__GNUC__) || defined(__clang__)
+  return __atomic_load_n(&ctx->stop, __ATOMIC_ACQUIRE) != 0;
+#else
+  return ctx->stop != 0;
+#endif
+}
+
+/// @brief Asks the computation to stop with a non zero value. Thread safe.
+static inline void detector_context_set_stop(struct detector_context *ctx,
+                                             const int stop)
+{
+#if defined(__GNUC__) || defined(__clang__)
+  __atomic_store_n(&ctx->stop, stop, __ATOMIC_RELEASE);
+#else
+  ctx->stop = stop;
+#endif
+}
 
 #ifdef __cplusplus
 }

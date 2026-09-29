@@ -13,43 +13,6 @@
 #include "src/clog/clog.h"
 #include "utils.h"
 
-detection_layer make_detection_layer(int batch, int inputs, int n, int side,
-                                     int classes, int coords, int rescore)
-{
-  detection_layer l = {(LAYER_TYPE)0};
-  l.type = DETECTION;
-
-  l.n = n;
-  l.batch = batch;
-  l.inputs = inputs;
-  l.classes = classes;
-  l.coords = coords;
-  l.rescore = rescore;
-  l.side = side;
-  l.w = side;
-  l.h = side;
-  assert(side * side * ((1 + l.coords) * l.n + l.classes) == inputs);
-  l.cost = (float *)xcalloc(1, sizeof(float));
-  l.outputs = l.inputs;
-  l.truths = l.side * l.side * (1 + l.coords + l.classes);
-  l.output = (float *)xcalloc(batch * l.outputs, sizeof(float));
-  l.delta = (float *)xcalloc(batch * l.outputs, sizeof(float));
-
-  l.forward = forward_detection_layer;
-  l.backward = backward_detection_layer;
-#ifdef GPU
-  l.forward_gpu = forward_detection_layer_gpu;
-  l.backward_gpu = backward_detection_layer_gpu;
-  l.output_gpu = cuda_make_array(l.output, batch * l.outputs);
-  l.delta_gpu = cuda_make_array(l.delta, batch * l.outputs);
-#endif
-
-  CLOGIM("Detection Layer");
-  srand(time(0));
-
-  return l;
-}
-
 void forward_detection_layer(const detection_layer l, network_state state)
 {
   int locations = l.side * l.side;

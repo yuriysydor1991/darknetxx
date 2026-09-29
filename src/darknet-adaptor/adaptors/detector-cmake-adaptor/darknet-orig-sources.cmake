@@ -15,12 +15,13 @@ set(
   DARKNET_ORIG_C_SOURCES
   ${MOD_DARKNET_SRC_ROOT}/src/detector/subs/trainer/train_detector_ctx.c
   ${MOD_DARKNET_SRC_ROOT}/src/detector/subs/trainer/calc_map_init_ctx.c
-  ${MOD_DARKNET_SRC_ROOT}/src/detector/subs/trainer/load_net_weights_ctx.c
+  ${MOD_DARKNET_SRC_ROOT}/src/detector/subs/trainer/prepare_train_ctx.c
   ${MOD_DARKNET_SRC_ROOT}/src/detector/subs/trainer/print_net_init_stats_ctx.c
   ${MOD_DARKNET_SRC_ROOT}/src/detector/subs/trainer/traverse_detection_layers_ctx.c
   ${MOD_DARKNET_SRC_ROOT}/src/detector/subs/trainer/prepare_load_args_ctx.c
   ${MOD_DARKNET_SRC_ROOT}/src/detector/subs/trainer/draw_train_chart_ctx.c
   ${MOD_DARKNET_SRC_ROOT}/src/detector/subs/trainer/train_detector_iteration_ctx.c
+  ${MOD_DARKNET_SRC_ROOT}/src/detector/subs/trainer/train_data_ctx.c
   ${MOD_DARKNET_SRC_ROOT}/src/detector/subs/trainer/sync_gpu_nets_ctx.c
   ${MOD_DARKNET_SRC_ROOT}/src/detector/subs/trainer/save_weights_final_ctx.c
   ${MOD_DARKNET_SRC_ROOT}/src/detector/subs/trainer/clear_context.c
@@ -41,13 +42,14 @@ set(
   ${MOD_DARKNET_SRC_ROOT}/src/detector/subs/tester/show_detections_ctx.c
   ${MOD_DARKNET_SRC_ROOT}/src/detector/subs/tester/test_detector_ctx.c
   ${MOD_DARKNET_SRC_ROOT}/src/detector/subs/tester/refine_image_filename_ctx.c
-  ${MOD_DARKNET_SRC_ROOT}/src/detector/subs/tester/load_and_prepare_net.c
+  ${MOD_DARKNET_SRC_ROOT}/src/detector/subs/tester/prepare_detection_ctx.c
+  ${MOD_DARKNET_SRC_ROOT}/src/detector/subs/tester/load_class_names_ctx.c
+  ${MOD_DARKNET_SRC_ROOT}/src/detector/subs/tester/detect_objects_ctx.c
   ${MOD_DARKNET_SRC_ROOT}/src/darknet-fcns.c
   ${MOD_DARKNET_SRC_ROOT}/src/network.c
   ${MOD_DARKNET_SRC_ROOT}/src/data.c
   ${MOD_DARKNET_SRC_ROOT}/src/option_list.c
   ${MOD_DARKNET_SRC_ROOT}/src/utils.c
-  ${MOD_DARKNET_SRC_ROOT}/src/parser.c
   ${MOD_DARKNET_SRC_ROOT}/src/list.c
   ${MOD_DARKNET_SRC_ROOT}/src/detector.c
   ${MOD_DARKNET_SRC_ROOT}/src/blas.c
@@ -93,7 +95,6 @@ set(
   ${MOD_DARKNET_SRC_ROOT}/src/memory.c
   ${MOD_DARKNET_SRC_ROOT}/src/string_tools.c
   ${MOD_DARKNET_SRC_ROOT}/src/error.c
-  ${MOD_DARKNET_SRC_ROOT}/src/layers/layers_tools.c
   ${MOD_DARKNET_SRC_ROOT}/src/clog/clog.c
   ${MOD_DARKNET_SRC_ROOT}/src/gpu_index_decls.c
 )

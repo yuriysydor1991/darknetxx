@@ -14,13 +14,6 @@ void save_weights_final_ctx(struct detector_context* ctx)
 
   assert(ctx != NULL);
 
-  if ((ctx->current_iteration + 1) < ctx->net.max_batches) {
-    CLOGIM(
-        "This isn't network's final iteration, skipping saving *_final.weights "
-        "file");
-    return;
-  }
-
   char buff[BUFF_SIZE];
 
   sprintf(buff, "%s/%s_final.weights", ctx->net.backup_directory, ctx->base);

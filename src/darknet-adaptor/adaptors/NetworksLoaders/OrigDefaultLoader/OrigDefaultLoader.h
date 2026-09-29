@@ -2,122 +2,202 @@
 #define DARKNET_CXX_PORT_PROJECT_ORIG_DEFAULT_LOADER_FOR_NETWORK_CLASS_H
 
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "src/darknet-adaptor/DarknetContext.h"
 #include "src/darknet-adaptor/adaptors/ALayerAdaptor/ALayerAdaptor.h"
 #include "src/darknet-adaptor/adaptors/ANetworkAdaptor/ANetworkAdaptor.h"
 #include "src/darknet-adaptor/adaptors/NetworksLoaders/INetworkLoader.h"
+#include "src/darknet-adaptor/adaptors/NetworksLoaders/OrigDefaultLoader/CfgSection.h"
 #include "src/darknet-adaptor/adaptors/orig-includes.h"
 
 namespace darknet_adaptor::loaders
 {
 
 /**
- * @brief The original darknet code for network conf and data loader.
+ * @brief The original darknet network loader: the C++ port of the network
+ * cfg file parser of the original darknet parser.c (parse_network_cfg(),
+ * parse_network_cfg_custom(), load_network() and the like).
+ *
+ * The loader builds the networks of the C++ adaptors: the layers are made by
+ * the layer classes of the Layers directory, the network memory belongs to
+ * the ANetworkAdaptor and the darknet C code computes with it's struct view.
+ * The weights are loaded by the OrigWeightsFile.
+ *
+ * The parse errors, where the original darknet ended the process with the
+ * error() call, throw NetworkError here; the load() of the context catches
+ * and logs them instead.
  */
 class OrigDefaultLoader : virtual public INetworkLoader
 {
  public:
   using OrigDefaultLoaderPtr = std::shared_ptr<OrigDefaultLoader>;
+  using ALayerAdaptorPtr = adaptors::ALayerAdaptorPtr;
+  using ANetworkAdaptor = adaptors::ANetworkAdaptor;
+  using ANetworkAdaptorPtr = adaptors::ANetworkAdaptorPtr;
 
   virtual ~OrigDefaultLoader() = default;
   OrigDefaultLoader() = default;
 
+  static OrigDefaultLoaderPtr create();
+
+  /**
+   * @brief Loads the networks the work of the context needs and hands them
+   * to the context (see DarknetContext::set_train_networks() and the like):
+   * - the --train-cfg one: a training network per GPU with the given weights
+   *   (the --clear dropping their iteration) and the mAP calculation network
+   *   for the --map, which computes with the layers of the first one;
+   * - the --detect-cfg one: the single image batch network with the given
+   *   weights, the batch normalization fused into them.
+   *
+   * @return False on the failure, which is logged.
+   */
   virtual bool load(DarknetContextPtr dctx) override;
 
+  /**
+   * @brief The parse_network_cfg_custom(): builds the network of the cfg
+   * file. The positive batch builds the inference network of the batch
+   * (without the training buffers), the zero one the training network of the
+   * cfg batch. The positive time_steps replaces the cfg ones.
+   *
+   * Throws NetworkError on the failure.
+   */
+  ANetworkAdaptorPtr parse_network_cfg_custom(const std::string& filename,
+                                              int batch, int time_steps);
+
+  /// @brief The parse_network_cfg(): the training network of the cfg file.
+  ANetworkAdaptorPtr parse_network_cfg(const std::string& filename);
+
+  /**
+   * @brief The load_network(): the training network of the cfg file with the
+   * weights of the file (the random ones for the empty weights path), the
+   * clear dropping the seen images and the iteration.
+   *
+   * Throws NetworkError on the failure.
+   */
+  ANetworkAdaptorPtr load_network(const std::string& cfg,
+                                  const std::string& weights, bool clear);
+
+  /**
+   * @brief The load_network_custom(): the inference network of the given
+   * batch with the weights of the file, the batch normalization fused into
+   * them.
+   *
+   * Throws NetworkError on the failure.
+   */
+  ANetworkAdaptorPtr load_network_custom(const std::string& cfg,
+                                         const std::string& weights, bool clear,
+                                         int batch);
+
  private:
-  typedef struct
+  /// @brief The state of the network parse passed to the parse_*() methods.
+  struct size_params
   {
-    std::string type;
-    list *options;
-  } section;
+    int batch{0};
+    int inputs{0};
+    int h{0};
+    int w{0};
+    int c{0};
+    int index{0};
+    int time_steps{0};
+    int train{0};
+    /// the network of the layers parsed so far
+    ANetworkAdaptor* net{nullptr};
+  };
 
-  typedef struct size_params
-  {
-    int batch;
-    int inputs;
-    int h;
-    int w;
-    int c;
-    int index;
-    int time_steps;
-    int train;
-    network net;
-  } size_params;
+  bool load_train_networks(const DarknetContextPtr& dctx);
+  bool load_detect_network(const DarknetContextPtr& dctx);
 
-  network *load_network(const std::string &cfg, const std::string &weights,
-                        int clear);
-  network *load_network_custom(const std::string &cfg,
-                               const std::string &weights, int clear,
-                               int batch);
-  void load_weights(network *net, const std::string &filename);
-  void load_weights_upto(network *net, const std::string &filename, int cutoff);
-  void load_implicit_weights(layer l, FILE *fp);
-  void load_shortcut_weights(layer l, FILE *fp);
-  void load_convolutional_weights(layer l, FILE *fp);
-  void load_convolutional_weights_binary(layer l, FILE *fp);
-  void load_batchnorm_weights(layer l, FILE *fp);
-  void load_connected_weights(layer l, FILE *fp, int transpose);
-  void transpose_matrix(float *a, int rows, int cols);
-  void save_weights(network net, const std::string &filename);
-  void save_weights_upto(network net, const std::string &filename, int cutoff,
-                         int save_ema);
-  void save_connected_weights(layer l, FILE *fp);
-  void save_batchnorm_weights(layer l, FILE *fp);
-  void save_convolutional_weights_ema(layer l, FILE *fp);
-  void save_convolutional_weights(layer l, FILE *fp);
-  void save_implicit_weights(layer l, FILE *fp);
-  void save_shortcut_weights(layer l, FILE *fp);
-  void save_convolutional_weights_binary(layer l, FILE *fp);
-  list *read_cfg(const std::string &filename);
-  network parse_network_cfg_custom(const std::string &filename, int batch,
-                                   int time_steps);
-  network parse_network_cfg(const std::string &filename);
-  void set_train_only_bn(network net);
-  int is_network(section *s);
-  void parse_net_options(list *options, network *net);
-  learning_rate_policy get_policy(const std::string &s);
-  route_layer parse_route(list *options, size_params params);
-  layer parse_upsample(list *options, size_params params, network net);
-  layer parse_activation(list *options, size_params params);
-  layer parse_implicit(list *options, size_params params, network net);
-  layer parse_sam(list *options, size_params params, network net);
-  layer parse_scale_channels(list *options, size_params params, network net);
-  layer parse_shortcut(list *options, size_params params, network net);
-  layer parse_batchnorm(list *options, size_params params);
-  layer parse_normalization(list *options, size_params params);
-  dropout_layer parse_dropout(list *options, size_params params);
-  avgpool_layer parse_avgpool(list *options, size_params params);
-  maxpool_layer parse_maxpool(list *options, size_params params);
-  maxpool_layer parse_local_avgpool(list *options, size_params params);
-  layer parse_reorg_old(list *options, size_params params);
-  layer parse_reorg(list *options, size_params params);
-  crop_layer parse_crop(list *options, size_params params);
-  cost_layer parse_cost(list *options, size_params params);
-  detection_layer parse_detection(list *options, size_params params);
-  layer parse_region(list *options, size_params params);
-  layer parse_gaussian_yolo(list *options, size_params params);
-  std::vector<int> parse_gaussian_yolo_mask(const std::string &a);
-  layer parse_yolo(list *options, size_params params);
-  float *get_classes_multipliers(const std::string &cpc, const int classes,
-                                 const float max_delta);
-  std::vector<int> parse_yolo_mask(const std::string &a);
-  contrastive_layer parse_contrastive(list *options, size_params params);
-  softmax_layer parse_softmax(list *options, size_params params);
-  connected_layer parse_connected(list *options, size_params params);
-  layer parse_history(list *options, size_params params);
-  layer parse_conv_lstm(list *options, size_params params);
-  layer parse_lstm(list *options, size_params params);
-  layer parse_gru(list *options, size_params params);
-  layer parse_rnn(list *options, size_params params);
-  layer parse_crnn(list *options, size_params params);
-  convolutional_layer parse_convolutional(list *options, size_params params);
-  local_layer parse_local(list *options, size_params params);
-  void parse_data(const std::string &data, float *a, int n);
-  void free_section(section *s);
-  LAYER_TYPE string_to_layer_type(const std::string &type);
+  /**
+   * @brief The mAP calculation network of the single image batch: the cfg
+   * [net] section options and the layers of the given training network,
+   * which it computes with.
+   */
+  ANetworkAdaptorPtr make_map_network(const DarknetContextPtr& dctx,
+                                      const ANetworkAdaptorPtr& train);
 
-  std::vector<int> parse_mask(const std::string &a);
+  void parse_net_options(CfgSection& options, ANetworkAdaptor& net);
+  static learning_rate_policy get_policy(const std::string& s);
+  static LAYER_TYPE string_to_layer_type(const std::string& type);
+  static void set_train_only_bn(network& net);
+
+  /// @brief The layer of the index of the network parsed so far, throws
+  /// NetworkError for the one not parsed yet.
+  static const layer& parsed_layer(const size_params& params, int index);
+
+  ALayerAdaptorPtr parse_local(CfgSection& options, const size_params& params);
+  ALayerAdaptorPtr parse_convolutional(CfgSection& options,
+                                       const size_params& params);
+  ALayerAdaptorPtr parse_crnn(CfgSection& options, const size_params& params);
+  ALayerAdaptorPtr parse_rnn(CfgSection& options, const size_params& params);
+  ALayerAdaptorPtr parse_gru(CfgSection& options, const size_params& params);
+  ALayerAdaptorPtr parse_lstm(CfgSection& options, const size_params& params);
+  ALayerAdaptorPtr parse_conv_lstm(CfgSection& options,
+                                   const size_params& params);
+  ALayerAdaptorPtr parse_history(CfgSection& options,
+                                 const size_params& params);
+  ALayerAdaptorPtr parse_connected(CfgSection& options,
+                                   const size_params& params);
+  ALayerAdaptorPtr parse_softmax(CfgSection& options,
+                                 const size_params& params);
+  ALayerAdaptorPtr parse_contrastive(CfgSection& options,
+                                     const size_params& params);
+  ALayerAdaptorPtr parse_yolo(CfgSection& options, const size_params& params);
+  ALayerAdaptorPtr parse_gaussian_yolo(CfgSection& options,
+                                       const size_params& params);
+  ALayerAdaptorPtr parse_region(CfgSection& options, const size_params& params);
+  ALayerAdaptorPtr parse_detection(CfgSection& options,
+                                   const size_params& params);
+  ALayerAdaptorPtr parse_cost(CfgSection& options, const size_params& params);
+  ALayerAdaptorPtr parse_crop(CfgSection& options, const size_params& params);
+  ALayerAdaptorPtr parse_reorg(CfgSection& options, const size_params& params);
+  ALayerAdaptorPtr parse_reorg_old(CfgSection& options,
+                                   const size_params& params);
+  ALayerAdaptorPtr parse_local_avgpool(CfgSection& options,
+                                       const size_params& params);
+  ALayerAdaptorPtr parse_maxpool(CfgSection& options,
+                                 const size_params& params);
+  ALayerAdaptorPtr parse_avgpool(CfgSection& options,
+                                 const size_params& params);
+  ALayerAdaptorPtr parse_dropout(CfgSection& options,
+                                 const size_params& params);
+  ALayerAdaptorPtr parse_normalization(CfgSection& options,
+                                       const size_params& params);
+  ALayerAdaptorPtr parse_batchnorm(CfgSection& options,
+                                   const size_params& params);
+  ALayerAdaptorPtr parse_shortcut(CfgSection& options,
+                                  const size_params& params);
+  ALayerAdaptorPtr parse_scale_channels(CfgSection& options,
+                                        const size_params& params);
+  ALayerAdaptorPtr parse_sam(CfgSection& options, const size_params& params);
+  ALayerAdaptorPtr parse_implicit(CfgSection& options,
+                                  const size_params& params);
+  ALayerAdaptorPtr parse_activation(CfgSection& options,
+                                    const size_params& params);
+  ALayerAdaptorPtr parse_upsample(CfgSection& options,
+                                  const size_params& params);
+  ALayerAdaptorPtr parse_route(CfgSection& options, const size_params& params);
+  ALayerAdaptorPtr parse_empty(const size_params& params);
+
+  /**
+   * @brief The comma separated integers of the value up to the first '#',
+   * as parse_yolo_mask() read them, the empty vector for the NULL one.
+   */
+  static std::vector<int> parse_int_list(const char* a);
+
+  /// @brief The comma separated floats of the value, at most count of them.
+  static std::vector<float> parse_float_list(const char* a, bool stop_at_hash);
+
+  static std::vector<float> get_classes_multipliers(const char* cpc,
+                                                    int classes,
+                                                    float max_delta);
+
+  /// @brief The read_map() of the class ids map file, one per line.
+  static std::vector<int> read_map(const std::string& filename);
+
+  /// @brief The read_tree() of the hierarchical softmax tree file.
+  static std::shared_ptr<tree> read_tree(const std::string& filename);
 };
 
 using OrigDefaultLoaderPtr = OrigDefaultLoader::OrigDefaultLoaderPtr;

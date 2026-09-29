@@ -12,9 +12,7 @@ interface IApplication {
 class Application {
   +run(ctx) : int
   #deal_omp(ctx) : bool
-  #stop_catch() : bool
-  -{static} init_signals() : bool
-  -{static} handle_sigint(sig)
+  #{static} init_computation_traps()
 }
 
 class ApplicationHelpPrinter {
@@ -28,6 +26,7 @@ class ApplicationVersionPrinter {
 class ApplicationFactory {
   +create_default_context(argc, argv) : ApplicationContext
   +create_default_arg_parser() : CommandLineParser
+  +create_default_signals_handler() : ISignalsHandler
   +create_application(ctx) : IApplication
   +create_help_printer() : IApplication
   +create_version_printer() : IApplication
@@ -46,6 +45,23 @@ class CMDParamNames {
   +{static} HELPW, VERSIONW, ... : string
 }
 
+interface ISignalsHandler {
+  +install(ctx) : bool
+  +uninstall()
+}
+
+class SignalsHandler {
+  +install(ctx) : bool
+  +uninstall()
+  #create_handlers() : vector<ISignalsHandler>
+}
+
+note right of SignalsHandler
+  The covered OS signals categories are
+  described by the OS signals handlers
+  section of the very same documentation
+end note
+
 struct ApplicationContext {
   +argc : int&
   +argv : char**&
@@ -54,19 +70,24 @@ struct ApplicationContext {
   +train_cfg / detect_cfg / weights : string
   +thresh / iou_thresh / hier_thresh : float
   +threads : unsigned
-  +stop : atomic_bool
+  +stop / pause / reload : atomic_bool
+  +first_user_request : atomic_bool
+  +second_user_request : atomic_bool
   +push_error(desc)
 }
 
 IApplication <|.. Application
 IApplication <|.. ApplicationHelpPrinter
 IApplication <|.. ApplicationVersionPrinter
+ISignalsHandler <|.. SignalsHandler
 
 ApplicationFactory ..> IApplication : creates
 ApplicationFactory ..> CommandLineParser : creates
 ApplicationFactory ..> ApplicationContext : creates
+ApplicationFactory ..> ISignalsHandler : creates and installs
 CommandLineParser ..> CMDParamNames : uses names
 CommandLineParser --> ApplicationContext : fills
 Application --> ApplicationContext : holds actx
+SignalsHandler --> ApplicationContext : raises the signals flags
 
 @enduml

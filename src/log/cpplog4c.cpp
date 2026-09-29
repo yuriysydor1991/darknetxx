@@ -1,27 +1,87 @@
 #include "src/log/cpplog4c.h"
 
+#include <cstdio>
+
 #include "src/log/log.h"
+
+namespace
+{
+
+/**
+ * @brief Writes the message straight to the stderr, the fallback of a failed
+ * logging (a std::bad_alloc when the memory is out, for example). No exception
+ * may leave the functions below, since their C callers can't handle it.
+ */
+void fallback_log(const char* const buff)
+{
+  if (buff != nullptr) {
+    std::fputs(buff, stderr);
+    std::fputc('\n', stderr);
+  }
+}
+
+}  // namespace
 
 extern "C" {
 
-void cpploge(const char* const file, const size_t line, const char* const buff)
+int cpplog_enabled(const unsigned int level)
 {
-  ELOGE(file, line, buff);
+  return default_logger::DefaultLogger::enabled(
+             static_cast<unsigned short>(level))
+             ? 1
+             : 0;
 }
-void cpplogw(const char* const file, const size_t line, const char* const buff)
+
+// The file and the line are unused by the levels the MAX_LOG_LEVEL value
+// compiles out.
+void cpploge([[maybe_unused]] const char* const file,
+             [[maybe_unused]] const size_t line, const char* const buff)
 {
-  ELOGW(file, line, buff);
+  try {
+    ELOGE(file, line, buff);
+  }
+  catch (...) {
+    fallback_log(buff);
+  }
 }
-void cpplogi(const char* const file, const size_t line, const char* const buff)
+void cpplogw([[maybe_unused]] const char* const file,
+             [[maybe_unused]] const size_t line, const char* const buff)
 {
-  ELOGI(file, line, buff);
+  try {
+    ELOGW(file, line, buff);
+  }
+  catch (...) {
+    fallback_log(buff);
+  }
 }
-void cpplogd(const char* const file, const size_t line, const char* const buff)
+void cpplogi([[maybe_unused]] const char* const file,
+             [[maybe_unused]] const size_t line, const char* const buff)
 {
-  ELOGD(file, line, buff);
+  try {
+    ELOGI(file, line, buff);
+  }
+  catch (...) {
+    fallback_log(buff);
+  }
 }
-void cpplogt(const char* const file, const size_t line, const char* const buff)
+void cpplogd([[maybe_unused]] const char* const file,
+             [[maybe_unused]] const size_t line, const char* const buff)
 {
-  ELOGT(file, line, buff);
+  try {
+    ELOGD(file, line, buff);
+  }
+  catch (...) {
+    fallback_log(buff);
+  }
+}
+void cpplogt([[maybe_unused]] const char* const file,
+             [[maybe_unused]] const size_t line, const char* const buff)
+{
+  try {
+    ELOGT(file, line, buff);
+  }
+  catch (...) {
+    fallback_log(buff);
+  }
 }
 }

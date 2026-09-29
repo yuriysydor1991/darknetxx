@@ -1,7 +1,10 @@
 #ifndef DARKNET_CXX_PORT_PROJECT_DARKNETCONTEXT_CLASS_H
 #define DARKNET_CXX_PORT_PROJECT_DARKNETCONTEXT_CLASS_H
 
+#include <atomic>
 #include <memory>
+#include <thread>
+#include <vector>
 
 #include "src/app/ApplicationContext.h"
 #include "src/darknet-adaptor/DarknetStrings.h"
@@ -9,6 +12,11 @@
 
 namespace darknet_adaptor
 {
+
+namespace adaptors
+{
+class ANetworkAdaptor;
+}  // namespace adaptors
 
 /**
  * @brief The adaptors data context class.
@@ -19,8 +27,11 @@ class DarknetContext
   using AppCtxPtr = app::AppCtxPtr;
   using DarknetContextPtr = std::shared_ptr<DarknetContext>;
   using detector_context_ptr = std::shared_ptr<detector_context>;
-  using stop_subs = app::ApplicationContext::stop_subs;
+  using ANetworkAdaptorPtr = std::shared_ptr<adaptors::ANetworkAdaptor>;
+  using ANetworkAdaptorPtrs = std::vector<ANetworkAdaptorPtr>;
 
+  /// @brief Releases the DarknetContext::watch_the_app_stop_flag poller and
+  /// the networks of the computation context.
   virtual ~DarknetContext();
   explicit DarknetContext(AppCtxPtr nactx);
 
@@ -28,28 +39,28 @@ class DarknetContext
 
   detector_context_ptr get_darknet_ctx();
 
-  const bool& get_Dont_show() const;
+  bool get_Dont_show() const;
   void set_Dont_show(const bool& ndont_show);
   void set_Dont_show(bool&& ndont_show);
-  const bool& get_Benchmark() const;
+  bool get_Benchmark() const;
   void set_Benchmark(const bool& nbenchmark);
   void set_Benchmark(bool&& nbenchmark);
-  const bool& get_Benchmark_layers() const;
+  bool get_Benchmark_layers() const;
   void set_Benchmark_layers(const bool& nbenchmark_layers);
   void set_Benchmark_layers(bool&& nbenchmark_layers);
-  const bool& get_Show() const;
+  bool get_Show() const;
   void set_Show(const bool& nshow);
   void set_Show(bool&& nshow);
-  const bool& get_Letter_box() const;
+  bool get_Letter_box() const;
   void set_Letter_box(const bool& nletter_box);
   void set_Letter_box(bool&& nletter_box);
-  const bool& get_Map() const;
+  bool get_Map() const;
   void set_Map(const bool& nmap);
   void set_Map(bool&& nmap);
   const int& get_Points() const;
   void set_Points(const int& npoints);
   void set_Points(int&& npoints);
-  const bool& get_Show_imgs() const;
+  bool get_Show_imgs() const;
   void set_Show_imgs(const bool& nshow_imgs);
   void set_Show_imgs(bool&& nshow_imgs);
   const int& get_Mjpeg_port() const;
@@ -58,7 +69,7 @@ class DarknetContext
   const int& get_Avgframes() const;
   void set_Avgframes(const int& navgframes);
   void set_Avgframes(int&& navgframes);
-  const bool& get_Dontdraw_bbox() const;
+  bool get_Dontdraw_bbox() const;
   void set_Dontdraw_bbox(const bool& ndontdraw_bbox);
   void set_Dontdraw_bbox(bool&& ndontdraw_bbox);
   const int& get_Json_port() const;
@@ -106,10 +117,10 @@ class DarknetContext
   const int& get_Height() const;
   void set_Height(const int& nheight);
   void set_Height(int&& nheight);
-  const bool& get_Ext_output() const;
+  bool get_Ext_output() const;
   void set_Ext_output(const bool& next_output);
   void set_Ext_output(bool&& next_output);
-  const bool& get_Save_labels() const;
+  bool get_Save_labels() const;
   void set_Save_labels(const bool& nsave_labels);
   void set_Save_labels(bool&& nsave_labels);
   const std::string& get_Chart_path() const;
@@ -121,14 +132,14 @@ class DarknetContext
   const std::string& get_Gpus() const;
   void set_Gpus(const std::string& ngpus);
   void set_Gpus(std::string&& ngpus);
-  const bool& get_Clear() const;
+  bool get_Clear() const;
   void set_Clear(const bool& nclear);
   void set_Clear(bool&& nclear);
   bool get_Dont_save_charts_every_iter() const;
   void set_Dont_save_charts_every_iter(
       const bool& ndont_save_charts_every_iter);
   void set_Dont_save_charts_every_iter(bool&& ndont_save_charts_every_iter);
-  const bool& get_Draw_precision() const;
+  bool get_Draw_precision() const;
   void set_Draw_precision(const bool& ndraw_precision);
   void set_Draw_precision(bool&& ndraw_precision);
   const std::string& get_Train_cfg() const;
@@ -137,6 +148,9 @@ class DarknetContext
   const std::string& get_Detect_cfg() const;
   void set_Detect_cfg(const std::string& ndetect_cfg);
   void set_Detect_cfg(std::string&& ndetect_cfg);
+  const std::string& get_Names() const;
+  void set_Names(const std::string& nnames);
+  void set_Names(std::string&& nnames);
   const std::string& get_Latest_weights() const;
   void set_Latest_weights(const std::string& nlatest_weights);
   void set_Latest_weights(std::string&& nlatest_weights);
@@ -161,6 +175,35 @@ class DarknetContext
   void stop_less_avg_loss(const double& avglosslim);
   const double& stop_less_avg_loss();
 
+  /**
+   * @brief Hands the training networks, one per GPU, to the original Darknet
+   * computation: the nets array and the net of the computation context
+   * become their views, the networks are kept alive and registered for the
+   * darknet C API calls of the computation (resize_network() and the like)
+   * until the release_networks() call.
+   */
+  void set_train_networks(ANetworkAdaptorPtrs nnets);
+
+  /**
+   * @brief Hands the mAP calculation network to the computation: the net_map
+   * of the computation context becomes it's view. None clears the net_map.
+   */
+  void set_map_network(ANetworkAdaptorPtr nnet);
+
+  /// @brief Hands the detection network to the computation: the net of the
+  /// computation context becomes it's view.
+  void set_detect_network(ANetworkAdaptorPtr nnet);
+
+  const ANetworkAdaptorPtrs& get_train_networks() const;
+  const ANetworkAdaptorPtr& get_map_network() const;
+  const ANetworkAdaptorPtr& get_detect_network() const;
+
+  /**
+   * @brief Takes the networks back from the computation context (it's views
+   * cleared) and releases them.
+   */
+  void release_networks();
+
  private:
   static detector_context_ptr create_subcontext();
 
@@ -169,7 +212,38 @@ class DarknetContext
 
   bool propagate_context_params();
 
-  app::ApplicationContext::stop_subs mysub;
+  /**
+   * @brief Starts the DarknetContext::watch_the_app_stop_flag poller, so an
+   * arrived OS stop signal reaches the original Darknet computation context.
+   *
+   * The whole Darknet work happens inside a single blocking call of the
+   * original C code, so nothing of the C++ side is reached while it runs and
+   * the poller is the only one to mirror the flag in time.
+   */
+  void start_stop_watcher();
+
+  /// @brief Asks the DarknetContext::watch_the_app_stop_flag poller to return
+  /// and waits for it's thread. Harmless when no poller was started.
+  void stop_stop_watcher();
+
+  /**
+   * @brief The poller body, which mirrors the app::ApplicationContext::stop
+   * flag into the original Darknet computation context until the flag is
+   * raised or the DarknetContext::stop_stop_watcher method is called.
+   *
+   * The poller exists because the routine the OS calls on a signal arrival is
+   * allowed to use the async signal safe calls only, so the app::SignalsHandler
+   * component touches the context atomic flag and nothing else. See the
+   * handling the OS signals section of the project documentation.
+   */
+  void watch_the_app_stop_flag();
+
+  /// @brief The poller thread of the latest DarknetContext::init call.
+  std::thread mstop_watcher;
+
+  /// @brief Lowered to ask the DarknetContext::watch_the_app_stop_flag poller
+  /// to return.
+  std::atomic_bool mwatching{false};
 
   /// @brief The app context
   AppCtxPtr actx;
@@ -185,9 +259,19 @@ class DarknetContext
   std::string gpus;
   std::string train_cfg;
   std::string detect_cfg;
+  std::string names;
   std::vector<int> gpuslist;
   std::string latest_weights;
   std::string image;
+
+  /// @brief The networks the computation context computes with.
+  ANetworkAdaptorPtrs train_networks;
+  ANetworkAdaptorPtr map_network;
+  ANetworkAdaptorPtr detect_network;
+
+  /// @brief The views of the training networks, the nets array of the
+  /// computation context.
+  std::vector<network> train_views;
 };
 
 using DarknetContextPtr = DarknetContext::DarknetContextPtr;

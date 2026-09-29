@@ -7,19 +7,18 @@
 #include "src/clog/clog.h"
 #include "utils.h"
 
-void pretrain_net_prepare_ctx(struct detector_context* ctx)
+int pretrain_net_prepare_ctx(struct detector_context* ctx)
 {
   assert(ctx != NULL);
 
   if (ctx == NULL) {
     CLOGEM("invalid context pointer provided");
-    return;
+    return 0;
   }
 
   if ((!(ctx->l.random && ctx->count++ % ctx->resize_network_every_nth == 0)) ||
       ctx->dont_resize_network) {
-    ctx->train = ctx->buffer;
-    return;
+    return 0;
   }
 
   float rand_coef = 1.4;
@@ -80,20 +79,11 @@ void pretrain_net_prepare_ctx(struct detector_context* ctx)
   } else
     CLOGI("%d x %d", dim_w, dim_h);
 
-  // pthread_join(ctx->load_thread, 0);
-
-  ctx->train = ctx->buffer;
-
-  free_data(ctx->train);
-
-  ctx->load_thread = load_data(ctx->args);
-
   for (int k = 0; k < ctx->ngpus; ++k) {
     resize_network(ctx->nets + k, dim_w, dim_h);
   }
 
   ctx->net = ctx->nets[0];
 
-  pthread_join(ctx->load_thread, 0);
-  ctx->train = ctx->buffer;
+  return 1;
 }

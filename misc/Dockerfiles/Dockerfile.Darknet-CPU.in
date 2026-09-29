@@ -80,7 +80,9 @@ ARG CACHEBUST=$CACHEBUST
 
 ENV DOCKER_BUILD_DATE=$CACHEBUST
 
-COPY src/NNs/darknet-yolo/ $darknetB/
+# the original Darknet checkout is the darknetmod build context (see the
+# DARKNET_ORIG_SOURCE_DIR CMake variable)
+COPY --from=darknetmod . $darknetB/
 
 WORKDIR $darknetB
 

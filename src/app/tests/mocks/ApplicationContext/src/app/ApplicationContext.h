@@ -4,7 +4,6 @@
 #include <gmock/gmock.h>
 
 #include <atomic>
-#include <functional>
 #include <memory>
 #include <string>
 #include <vector>
@@ -64,23 +63,25 @@ struct ApplicationContext
   int mAP_epochs{4};
   std::string gpus;
   bool clear{false};
-  bool dont_save_charts_every_iter{false};
+  bool dont_save_charts_every_iter{true};
   bool draw_precision{false};
   std::string train_cfg;
   std::string detect_cfg;
+  std::string names;
   std::string latest_weights;
   bool dont_resize_network{false};
   std::string image;
-  bool reload_data{false};
+  bool reload_data{true};
   unsigned int threads{0};
   std::atomic_bool stop{false};
+  std::atomic_int stop_signal{0};
+  std::atomic_bool pause{false};
+  std::atomic_bool reload{false};
+  std::atomic_bool first_user_request{false};
+  std::atomic_bool second_user_request{false};
   unsigned int net_nth_resize{10};
   unsigned int nth_iteration_reload{0U};
   double stop_less_avg_loss{0.0};
-
-  using stop_subs = std::shared_ptr<std::function<void()>>;
-
-  std::vector<stop_subs> stop_subscribers;
 };
 
 using AppCtxPtr = std::shared_ptr<ApplicationContext>;

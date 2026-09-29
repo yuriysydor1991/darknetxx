@@ -2,6 +2,8 @@
 
 #include <assert.h>
 
+#include "network.h"
+
 void sync_gpu_nets_ctx(struct detector_context* ctx)
 {
   assert(ctx != NULL);

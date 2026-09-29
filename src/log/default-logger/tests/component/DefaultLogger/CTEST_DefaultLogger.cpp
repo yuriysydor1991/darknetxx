@@ -177,6 +177,74 @@ TEST_F(CTEST_DefaultLogger, error_with_max_warning_log_present)
   EXPECT_THAT(logs, EndsWith(expect + "\n"));
 }
 
+// The presence of the lower severities at the matching level proves that their
+// absence above is the level filtering and not an unflushed buffer.
+TEST_F(CTEST_DefaultLogger, info_with_max_info_log_present)
+{
+  static const std::string expect = "expect present";
+
+  default_log_lvl_init(DefaultLogger::LVL_INFO);
+
+  DefaultLogger::log(DefaultLogger::LVL_INFO, expect);
+
+  EXPECT_THAT(get_default_log_file_contents(), EndsWith(expect + "\n"));
+}
+
+TEST_F(CTEST_DefaultLogger, debug_with_max_debug_log_present)
+{
+  static const std::string expect = "expect present";
+
+  default_log_lvl_init(DefaultLogger::LVL_DEBUG);
+
+  DefaultLogger::log(DefaultLogger::LVL_DEBUG, expect);
+
+  EXPECT_THAT(get_default_log_file_contents(), EndsWith(expect + "\n"));
+}
+
+TEST_F(CTEST_DefaultLogger, trace_with_max_trace_log_present)
+{
+  static const std::string expect = "expect present";
+
+  default_log_lvl_init(DefaultLogger::LVL_TRACE);
+
+  DefaultLogger::log(DefaultLogger::LVL_TRACE, expect);
+
+  EXPECT_THAT(get_default_log_file_contents(), EndsWith(expect + "\n"));
+}
+
+TEST_F(CTEST_DefaultLogger, prepare_buff_formats_exactly)
+{
+  const std::string formatted = DefaultLogger::prepare_buff("%d-%s", 42, "x");
+
+  EXPECT_EQ(formatted, std::string{"42-x"});
+  EXPECT_EQ(formatted.size(), 4U);
+}
+
+TEST_F(CTEST_DefaultLogger, prepare_buff_formats_a_long_message)
+{
+  const std::string longArg(300000U, 'a');
+
+  const std::string formatted =
+      DefaultLogger::prepare_buff("[%s]", longArg.c_str());
+
+  EXPECT_EQ(formatted.size(), longArg.size() + 2U);
+  EXPECT_EQ(formatted, "[" + longArg + "]");
+}
+
+TEST_F(CTEST_DefaultLogger, unopenable_log_file_is_not_fatal)
+{
+  EXPECT_FALSE(DefaultLogger::logfile("/nonexistent-dir/for-sure/log.log"));
+
+  // the console only logging keeps working
+  default_log_init();
+
+  static const std::string expect = "expect present";
+
+  DefaultLogger::log(DefaultLogger::LVL_ERROR, expect);
+
+  EXPECT_THAT(get_default_log_file_contents(), EndsWith(expect + "\n"));
+}
+
 TEST_F(CTEST_DefaultLogger, multithread_logs)
 {
   static constexpr const unsigned int iters_per_thread = 1000U;

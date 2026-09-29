@@ -29,8 +29,14 @@ option(
 )
 
 option(
-  ENABLE_COMPONENT_TESTS 
+  ENABLE_COMPONENT_TESTS
   "Set to ON value if component tests build and run should be available"
+  OFF
+)
+
+option(
+  ENABLE_INTEGRATION_TESTS
+  "Set to ON value if integration tests (a whole application training and detection runs) build and run should be available"
   OFF
 )
 
@@ -170,6 +176,19 @@ option(
   OFF
 )
 
+option(
+  ENABLE_FP_TRAPS
+  "Set to ON to terminate the application on a floating point division by zero, invalid operation or overflow (a diagnostic: the Darknet computations rely on the IEEE semantics of them here and there)"
+  OFF
+)
+
+set(
+  PROFILED_RUN_ARGS
+  "--detect-cfg;${CMAKE_SOURCE_DIR}/src/darknet-adaptor/adaptors/NetworksLoaders/OrigDefaultLoader/tests/component/OrigDefaultLoader/data/1.cfg;--weights;${CMAKE_SOURCE_DIR}/src/darknet-adaptor/adaptors/NetworksLoaders/OrigDefaultLoader/tests/component/OrigDefaultLoader/data/1.weights;--names;${CMAKE_SOURCE_DIR}/src/darknet-adaptor/adaptors/NetworksLoaders/OrigDefaultLoader/tests/component/OrigDefaultLoader/data/1.names;--image;${CMAKE_SOURCE_DIR}/misc/data/dog.jpg;--dont-show"
+  CACHE STRING
+  "The darknetxx command line arguments (a semicolon separated list) of the valgrind, callgrind and gprof-analyze target runs, a short detection on the bundled test data by default"
+)
+
 set(Darknet_data_sub_install "share/darknetxx/${CMAKE_PROJECT_VERSION}")
 set(Darknet_data_path "${CMAKE_INSTALL_PREFIX}/${Darknet_data_sub_install}/")
 
@@ -201,12 +220,14 @@ string(TIMESTAMP PROJECT_CONFIGURE_DATE "%Y-%m-%d %H:%M:%S")
 
 execute_process(
   COMMAND "${GIT_EXECUTABLE}" rev-parse HEAD
+  WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
   OUTPUT_VARIABLE PROJECT_GIT_COMMIT
   OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
 execute_process(
   COMMAND "${GIT_EXECUTABLE}" branch --show-current
+  WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
   OUTPUT_VARIABLE PROJECT_CURRENT_BRANCH_NAME
   OUTPUT_STRIP_TRAILING_WHITESPACE
 )

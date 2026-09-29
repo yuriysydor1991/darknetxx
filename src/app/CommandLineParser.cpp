@@ -4,8 +4,11 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cstddef>
 #include <memory>
 #include <set>
+#include <sstream>
+#include <stdexcept>
 #include <string>
 
 #include "src/app/ApplicationContext.h"
@@ -14,6 +17,86 @@
 
 namespace app
 {
+
+namespace
+{
+
+/**
+ * @brief Converts the whole value text into an int.
+ *
+ * @throws std::invalid_argument or std::out_of_range for a malformed value,
+ * including a value with trailing garbage like "10abc".
+ */
+int to_int(const std::string& value)
+{
+  std::size_t parsed = 0;
+  const int result = std::stoi(value, &parsed);
+
+  if (parsed != value.size()) {
+    throw std::invalid_argument{value};
+  }
+
+  return result;
+}
+
+/// @brief The to_int for the counts, which may not be negative.
+unsigned int to_unsigned(const std::string& value)
+{
+  const int result = to_int(value);
+
+  if (result < 0) {
+    throw std::out_of_range{value};
+  }
+
+  return static_cast<unsigned int>(result);
+}
+
+/// @brief The to_int for the float values.
+float to_float(const std::string& value)
+{
+  std::size_t parsed = 0;
+  const float result = std::stof(value, &parsed);
+
+  if (parsed != value.size()) {
+    throw std::invalid_argument{value};
+  }
+
+  return result;
+}
+
+/// @brief The to_int for the double values.
+double to_double(const std::string& value)
+{
+  std::size_t parsed = 0;
+  const double result = std::stod(value, &parsed);
+
+  if (parsed != value.size()) {
+    throw std::invalid_argument{value};
+  }
+
+  return result;
+}
+
+/**
+ * @brief Checks the value to be a comma separated list of the GPU indexes.
+ *
+ * @throws std::invalid_argument or std::out_of_range otherwise.
+ */
+void check_gpus_list(const std::string& value)
+{
+  if (value.empty() || value.back() == ',') {
+    throw std::invalid_argument{value};
+  }
+
+  std::stringstream indexes{value};
+  std::string index;
+
+  while (std::getline(indexes, index, ',')) {
+    to_unsigned(index);
+  }
+}
+
+}  // namespace
 
 bool CommandLineParser::parse_args(std::shared_ptr<ApplicationContext> ctx)
 {
@@ -42,6 +125,19 @@ bool CommandLineParser::parse_args(std::shared_ptr<ApplicationContext> ctx)
     }
   }
 
+  // Both modes share the network cfg of the computation, so a combination of
+  // them would run one mode with the cfg of the other one.
+  if (!ctx->train_cfg.empty() && !ctx->detect_cfg.empty()) {
+    ctx->print_help_and_exit = true;
+    ctx->push_error("The " + CMDParamNames::train_cfgw + " and the " +
+                    CMDParamNames::detect_cfgw +
+                    " parameters can't be combined");
+    LOGE("The " << CMDParamNames::train_cfgw << " and the "
+                << CMDParamNames::detect_cfgw
+                << " parameters can't be combined");
+    return false;
+  }
+
   return true;
 }
 
@@ -59,7 +155,7 @@ bool CommandLineParser::check_4_data(
   const bool requiresData = requires_data(param);
 
   if (requiresData && !hasNext) {
-    ctx->print_version_and_exit = true;
+    ctx->print_help_and_exit = true;
     ctx->push_error("Parameter " + param + " requires the data next to it.");
     LOGE("Parameter " << param << " requires the data next to it.");
     return false;
@@ -80,9 +176,58 @@ bool CommandLineParser::parse_arg(std::shared_ptr<ApplicationContext> ctx,
     return false;
   }
 
+  // The value conversions throw on a malformed value, which is reported as
+  // an invalid command line instead of the application termination.
+  try {
+    if (!parse_known_arg(ctx, param, nextParam)) {
+      return false;
+    }
+  }
+  catch (const std::logic_error&) {
+    ctx->print_help_and_exit = true;
+    ctx->push_error("Invalid value '" + nextParam + "' of the parameter " +
+                    param);
+    LOGE("Invalid value '" << nextParam << "' of the parameter " << param);
+    return false;
+  }
+
+  if (hasNext && requires_data(param)) {
+    LOGD("Increasing the paramIndex by one");
+    paramIndex++;
+  }
+
+  return true;
+}
+
+bool CommandLineParser::parse_known_arg(std::shared_ptr<ApplicationContext> ctx,
+                                        const std::string& param,
+                                        const std::string& nextParam)
+{
+  assert(ctx != nullptr);
+
+  // The parameters of the original Darknet modes the darknetxx has no code of
+  // (the video demo, the results streaming and the anchors calculation) are
+  // rejected instead of being silently ignored.
+  static const std::set<std::string> notSupported{
+      CMDParamNames::widthw,           CMDParamNames::heightw,
+      CMDParamNames::num_of_clustersw, CMDParamNames::prefixw,
+      CMDParamNames::out_filenamew,    CMDParamNames::dontdraw_bboxw,
+      CMDParamNames::cam_indexw,       CMDParamNames::frame_skipw,
+      CMDParamNames::avgframesw,       CMDParamNames::time_limit_secw,
+      CMDParamNames::mjpeg_portw,      CMDParamNames::json_portw,
+      CMDParamNames::http_post_hostw,  CMDParamNames::json_file_outputw,
+  };
+
+  if (notSupported.count(param) != 0U) {
+    ctx->print_help_and_exit = true;
+    ctx->push_error("The parameter " + param + " is not supported yet");
+    LOGE("The parameter " << param << " is not supported yet");
+    return false;
+  }
+
   // add a new params parse over here
   // Also register new command line parameters in the ApplicationhelpPrinter's
-  // help.
+  // help and the value taking ones in the get_params_requiring_data.
   if (param == CMDParamNames::HELPW || param == CMDParamNames::HELP) {
     ctx->print_help_and_exit = true;
   } else if (param == CMDParamNames::VERSIONW ||
@@ -93,30 +238,34 @@ bool CommandLineParser::parse_arg(std::shared_ptr<ApplicationContext> ctx,
     // skipping already parsed cmd params
   } else if (param == CMDParamNames::dont_showw) {
     ctx->dont_show = true;
+    ctx->show = false;
   } else if (param == CMDParamNames::benchmarkw) {
     ctx->benchmark = true;
+  } else if (param == CMDParamNames::benchmark_layersw) {
+    ctx->benchmark_layers = true;
   } else if (param == CMDParamNames::showw) {
     ctx->show = true;
+    ctx->dont_show = false;
   } else if (param == CMDParamNames::letter_boxw) {
     ctx->letter_box = true;
   } else if (param == CMDParamNames::mapw) {
     ctx->map = true;
   } else if (param == CMDParamNames::pointsw) {
-    ctx->points = std::stoi(nextParam);
+    ctx->points = to_int(nextParam);
   } else if (param == CMDParamNames::show_imgsw) {
     ctx->show_imgs = true;
   } else if (param == CMDParamNames::mjpeg_portw) {
-    ctx->mjpeg_port = std::stoi(nextParam);
+    ctx->mjpeg_port = to_int(nextParam);
   } else if (param == CMDParamNames::avgframesw) {
-    ctx->avgframes = std::stoi(nextParam);
+    ctx->avgframes = to_int(nextParam);
   } else if (param == CMDParamNames::dontdraw_bboxw) {
-    ctx->dontdraw_bbox = false;
+    ctx->dontdraw_bbox = true;
   } else if (param == CMDParamNames::json_portw) {
-    ctx->json_port = std::stoi(nextParam);
+    ctx->json_port = to_int(nextParam);
   } else if (param == CMDParamNames::http_post_hostw) {
     ctx->http_post_host = nextParam;
   } else if (param == CMDParamNames::time_limit_secw) {
-    ctx->time_limit_sec = std::stoi(nextParam);
+    ctx->time_limit_sec = to_int(nextParam);
   } else if (param == CMDParamNames::out_filenamew) {
     ctx->out_filename = nextParam;
   } else if (param == CMDParamNames::json_file_outputw) {
@@ -126,21 +275,21 @@ bool CommandLineParser::parse_arg(std::shared_ptr<ApplicationContext> ctx,
   } else if (param == CMDParamNames::prefixw) {
     ctx->prefix = nextParam;
   } else if (param == CMDParamNames::threshw) {
-    ctx->thresh = std::stof(nextParam);
+    ctx->thresh = to_float(nextParam);
   } else if (param == CMDParamNames::iou_threshw) {
-    ctx->iou_thresh = std::stof(nextParam);
+    ctx->iou_thresh = to_float(nextParam);
   } else if (param == CMDParamNames::hierw) {
-    ctx->hier_thresh = std::stof(nextParam);
+    ctx->hier_thresh = to_float(nextParam);
   } else if (param == CMDParamNames::cam_indexw) {
-    ctx->cam_index = std::stoi(nextParam);
+    ctx->cam_index = to_int(nextParam);
   } else if (param == CMDParamNames::frame_skipw) {
-    ctx->frame_skip = std::stoi(nextParam);
+    ctx->frame_skip = to_int(nextParam);
   } else if (param == CMDParamNames::num_of_clustersw) {
-    ctx->num_of_clusters = std::stoi(nextParam);
+    ctx->num_of_clusters = to_int(nextParam);
   } else if (param == CMDParamNames::widthw) {
-    ctx->width = std::stoi(nextParam);
+    ctx->width = to_int(nextParam);
   } else if (param == CMDParamNames::heightw) {
-    ctx->height = std::stoi(nextParam);
+    ctx->height = to_int(nextParam);
   } else if (param == CMDParamNames::ext_outputw) {
     ctx->ext_output = true;
   } else if (param == CMDParamNames::save_labelsw) {
@@ -148,13 +297,16 @@ bool CommandLineParser::parse_arg(std::shared_ptr<ApplicationContext> ctx,
   } else if (param == CMDParamNames::chartw) {
     ctx->chart_path = nextParam;
   } else if (param == CMDParamNames::mAP_epochsw) {
-    ctx->mAP_epochs = std::stoi(nextParam);
+    ctx->mAP_epochs = to_int(nextParam);
   } else if (param == CMDParamNames::gpusw) {
+    check_gpus_list(nextParam);
     ctx->gpus = nextParam;
   } else if (param == CMDParamNames::clearw) {
     ctx->clear = true;
   } else if (param == CMDParamNames::dont_save_charts_every_iterw) {
     ctx->dont_save_charts_every_iter = true;
+  } else if (param == CMDParamNames::save_charts_every_iterw) {
+    ctx->dont_save_charts_every_iter = false;
   } else if (param == CMDParamNames::draw_precisionw) {
     ctx->draw_precision = true;
   } else if (param == CMDParamNames::train_cfgw) {
@@ -163,6 +315,9 @@ bool CommandLineParser::parse_arg(std::shared_ptr<ApplicationContext> ctx,
   } else if (param == CMDParamNames::detect_cfgw) {
     ctx->detect_cfg = nextParam;
     LOGD("Found detect cfg file: " << ctx->detect_cfg);
+  } else if (param == CMDParamNames::namesw) {
+    ctx->names = nextParam;
+    LOGD("Found class names file: " << ctx->names);
   } else if (param == CMDParamNames::latest_weightsw) {
     ctx->latest_weights = nextParam;
     LOGD("Found the weights file: " << ctx->latest_weights);
@@ -174,22 +329,19 @@ bool CommandLineParser::parse_arg(std::shared_ptr<ApplicationContext> ctx,
     LOGD("Found image file given: " << ctx->image);
   } else if (param == CMDParamNames::dontreload_dataw) {
     ctx->reload_data = false;
-    LOGD("Found image file given: " << ctx->image);
+    LOGD("Found don't reload the data every iteration flag");
   } else if (param == CMDParamNames::threadsw) {
-    ctx->threads = static_cast<unsigned int>(std::stoi(nextParam));
+    ctx->threads = to_unsigned(nextParam);
     LOGD("Found threads parameter: " << ctx->threads);
   } else if (param == CMDParamNames::netnthresizew) {
-    /// @todo: stoi may fire exception here
-    ctx->net_nth_resize = static_cast<unsigned int>(std::stoi(nextParam));
-    LOGD("Found every nth iteration net resize: " << ctx->threads);
+    ctx->net_nth_resize = to_unsigned(nextParam);
+    LOGD("Found every nth iteration net resize: " << ctx->net_nth_resize);
   } else if (param == CMDParamNames::data_reload_nthw) {
-    /// @todo: stoi may fire exception here
-    ctx->nth_iteration_reload = static_cast<unsigned int>(std::stoi(nextParam));
+    ctx->nth_iteration_reload = to_unsigned(nextParam);
     LOGD(
         "Found every nth iteration data reload: " << ctx->nth_iteration_reload);
   } else if (param == CMDParamNames::stop_less_avg_lossw) {
-    /// @todo: stoi may fire exception here
-    ctx->stop_less_avg_loss = std::stod(nextParam);
+    ctx->stop_less_avg_loss = to_double(nextParam);
     LOGD("Found stop during avg loss is reached or less: "
          << ctx->stop_less_avg_loss);
   } else {
@@ -197,11 +349,6 @@ bool CommandLineParser::parse_arg(std::shared_ptr<ApplicationContext> ctx,
     ctx->push_error("Unknown parameter: " + param);
     LOGE("Unknown parameter: " << param);
     return false;
-  }
-
-  if (hasNext && requires_data(param)) {
-    LOGD("Increasing the paramIndex by one");
-    paramIndex++;
   }
 
   return true;
@@ -223,18 +370,20 @@ const std::set<std::string>& CommandLineParser::get_params_requiring_data()
       CMDParamNames::out_filenamew,
       CMDParamNames::json_file_outputw,
       CMDParamNames::outw,
+      CMDParamNames::prefixw,
       CMDParamNames::threshw,
       CMDParamNames::iou_threshw,
       CMDParamNames::hierw,
       CMDParamNames::cam_indexw,
+      CMDParamNames::frame_skipw,
       CMDParamNames::num_of_clustersw,
       CMDParamNames::widthw,
       CMDParamNames::heightw,
-      CMDParamNames::ext_outputw,
       CMDParamNames::chartw,
       CMDParamNames::mAP_epochsw,
       CMDParamNames::gpusw,
       CMDParamNames::detect_cfgw,
+      CMDParamNames::namesw,
       CMDParamNames::train_cfgw,
       CMDParamNames::latest_weightsw,
       CMDParamNames::detect_imagew,

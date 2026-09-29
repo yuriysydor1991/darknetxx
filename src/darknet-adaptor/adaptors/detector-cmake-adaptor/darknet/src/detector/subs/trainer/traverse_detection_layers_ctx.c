@@ -20,7 +20,7 @@ void traverse_detection_layers_ctx(struct detector_context* ctx)
     layer lk = ctx->net.layers[k];
     if (lk.type == YOLO || lk.type == GAUSSIAN_YOLO || lk.type == REGION) {
       ctx->l = lk;
-      CLOGI(" Detection layer: %d - type = %d", k, ctx->l.type, 0);
+      CLOGI(" Detection layer: %d - type = %d", k, ctx->l.type);
     }
   }
 

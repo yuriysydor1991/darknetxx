@@ -33,48 +33,6 @@ char *get_cost_string(COST_TYPE a)
   }
 }
 
-cost_layer make_cost_layer(int batch, int inputs, COST_TYPE cost_type,
-                           float scale)
-{
-  CLOGI("cost                                           %4d", inputs);
-  cost_layer l = {(LAYER_TYPE)0};
-  l.type = COST;
-
-  l.scale = scale;
-  l.batch = batch;
-  l.inputs = inputs;
-  l.outputs = inputs;
-  l.cost_type = cost_type;
-  l.delta = (float *)xcalloc(inputs * batch, sizeof(float));
-  l.output = (float *)xcalloc(inputs * batch, sizeof(float));
-  l.cost = (float *)xcalloc(1, sizeof(float));
-
-  l.forward = forward_cost_layer;
-  l.backward = backward_cost_layer;
-#ifdef GPU
-  l.forward_gpu = forward_cost_layer_gpu;
-  l.backward_gpu = backward_cost_layer_gpu;
-
-  l.delta_gpu = cuda_make_array(l.delta, inputs * batch);
-  l.output_gpu = cuda_make_array(l.output, inputs * batch);
-#endif
-  return l;
-}
-
-void resize_cost_layer(cost_layer *l, int inputs)
-{
-  l->inputs = inputs;
-  l->outputs = inputs;
-  l->delta = (float *)xrealloc(l->delta, inputs * l->batch * sizeof(float));
-  l->output = (float *)xrealloc(l->output, inputs * l->batch * sizeof(float));
-#ifdef GPU
-  cuda_free(l->delta_gpu);
-  cuda_free(l->output_gpu);
-  l->delta_gpu = cuda_make_array(l->delta, inputs * l->batch);
-  l->output_gpu = cuda_make_array(l->output, inputs * l->batch);
-#endif
-}
-
 void forward_cost_layer(cost_layer l, network_state state)
 {
   if (!state.truth) return;

@@ -1,8 +1,7 @@
 #include "src/detector/subs/trainer/calc_map_free_ctx.h"
 
 #include <assert.h>
-
-#include "network.h"
+#include <string.h>
 
 void calc_map_free_ctx(struct detector_context* ctx)
 {
@@ -12,6 +11,7 @@ void calc_map_free_ctx(struct detector_context* ctx)
     return;
   }
 
-  ctx->net_map.n = 0;
-  free_network(ctx->net_map);
+  // The mAP calculation network belongs to the C++ network infrastructure,
+  // which releases it after the training, so only the view is dropped here.
+  memset(&ctx->net_map, 0, sizeof(ctx->net_map));
 }

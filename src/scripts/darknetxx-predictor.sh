@@ -21,7 +21,7 @@ cfgFile="${yoloDataRoot}/cfg/yolo4-tiniest.cfg"
 dataFile="${yoloDataRoot}/data/obj.data"
 
 if [[ ! -f "$cfgFile" ]] ; then
-  cfgFile=$(find "$dataDir/cfg/" -name '*.cfg' | head -n 1) 
+  cfgFile=$(find "${yoloDataRoot}/cfg/" -name '*.cfg' | head -n 1)
   
   if [[ ! -f "$cfgFile" ]] ; then
     echo "Absent cfg file at $cfgFile"
@@ -49,7 +49,8 @@ fi
 declare -i cnt=0
 declare -i maxTries=10
 
-for randImage in $(find /var/share/images -type f \( -name '*.png' -o -name "*.jpg" -o -name "*.jpeg" \) | shuf)
+# the image paths may contain spaces, so they are read line by line
+while IFS= read -r randImage
 do
   echo "Trying with image: $randImage"
 
@@ -61,9 +62,9 @@ do
 
   if [[ ! -z "${latestSavedWeights}" ]]
   then
-    echo "Trying command: time darknetxx --detect-cfg ${cfgFile} --weights ${latestSavedWeights} --image $randImage"
+    echo "Trying command: time darknetxx --detect-cfg ${cfgFile} --weights ${latestSavedWeights} --image \"$randImage\""
 
-    if ! time darknetxx --detect-cfg "${cfgFile}" --weights "${latestSavedWeights}" --image $randImage
+    if ! time darknetxx --detect-cfg "${cfgFile}" --weights "${latestSavedWeights}" --image "$randImage"
     then
       echo "Failure to train!"
       exit 1
@@ -73,15 +74,15 @@ do
   cnt=cnt+1
   
   if [[ $cnt -ge $maxTries ]] ; then break; fi
-done
+done < <(find /var/share/images -type f \( -name '*.png' -o -name "*.jpg" -o -name "*.jpeg" \) | shuf)
 
 exit 0 
 
 if [[ ! -z "${latestSavedWeights}" ]]
 then
-  echo "Trying command: valgrind --tool=callgrind darknetxx --detect-cfg ${cfgFile} --weights ${latestSavedWeights} --image $randImage"
+  echo "Trying command: valgrind --tool=callgrind darknetxx --detect-cfg ${cfgFile} --weights ${latestSavedWeights} --image \"$randImage\""
 
-  if ! valgrind --tool=callgrind darknetxx --detect-cfg "${cfgFile}" --weights "${latestSavedWeights}" --image $randImage
+  if ! valgrind --tool=callgrind darknetxx --detect-cfg "${cfgFile}" --weights "${latestSavedWeights}" --image "$randImage"
   then
     echo "Failure to train!"
     exit 1

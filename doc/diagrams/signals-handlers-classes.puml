@@ -1,0 +1,96 @@
+@startuml signals-handlers-classes
+title app namespace - the OS signals handlers class structure
+
+skinparam shadowing false
+hide empty members
+
+interface ISignalsHandler {
+  +install(ctx) : bool
+  +uninstall()
+}
+
+class SignalsHandler {
+  +install(ctx) : bool
+  +uninstall()
+  #create_handlers() : vector<ISignalsHandler>
+  -mhandlers : vector<ISignalsHandler>
+}
+
+abstract class ASignalsHandler {
+  +install(ctx) : bool
+  +uninstall()
+  #{abstract} get_handled_signals() : set<int>
+  #{abstract} get_signal_disposition() : SignalDisposition
+  #{abstract} store_context(ctx)
+  #is_ignored(signalNumber) : bool
+  -minstalled_signals : map<int, SignalDisposition>
+}
+
+abstract class PosixSignalsHandler {
+  the POSIX platforms family base
+  #is_ignored(signalNumber) : bool
+}
+
+class StopSignalsHandler {
+  SIGINT, SIGTERM, SIGQUIT, SIGHUP
+  +{static} GRACE_PERIOD_MS : int64_t
+  #{static} stop_context(signalNumber)
+}
+
+class PauseSignalsHandler {
+  SIGTSTP, SIGTTIN, SIGTTOU
+  #{static} pause_context(signalNumber)
+}
+
+class ContinueSignalsHandler {
+  SIGCONT
+  #{static} continue_context(signalNumber)
+}
+
+class ReloadSignalsHandler {
+  SIGHUP
+  #{static} reload_context(signalNumber)
+}
+
+class UserSignalsHandler {
+  SIGUSR1, SIGUSR2
+  #{static} request_context(signalNumber)
+}
+
+class IgnoredSignalsHandler {
+  SIGPIPE, the SIG_IGN disposition
+}
+
+struct ApplicationContext {
+  +stop : atomic_bool
+  +stop_signal : atomic_int
+  +pause : atomic_bool
+  +reload : atomic_bool
+  +first_user_request : atomic_bool
+  +second_user_request : atomic_bool
+}
+
+ISignalsHandler <|.. SignalsHandler
+ISignalsHandler <|.. ASignalsHandler
+ASignalsHandler <|-- PosixSignalsHandler
+PosixSignalsHandler <|-- StopSignalsHandler
+PosixSignalsHandler <|-- PauseSignalsHandler
+PosixSignalsHandler <|-- ContinueSignalsHandler
+PosixSignalsHandler <|-- ReloadSignalsHandler
+PosixSignalsHandler <|-- UserSignalsHandler
+PosixSignalsHandler <|-- IgnoredSignalsHandler
+
+SignalsHandler o--> ISignalsHandler : creates and forwards to
+
+StopSignalsHandler --> ApplicationContext : raises stop
+PauseSignalsHandler --> ApplicationContext : raises pause
+ContinueSignalsHandler --> ApplicationContext : lowers pause
+ReloadSignalsHandler --> ApplicationContext : raises reload
+UserSignalsHandler --> ApplicationContext : raises the user requests
+
+note bottom of IgnoredSignalsHandler
+  Touches no context at all: the OS
+  drops the ignored signals itself
+end note
+
+@enduml

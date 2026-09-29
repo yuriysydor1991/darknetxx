@@ -14,6 +14,24 @@ project(
   LANGUAGES CXX C
 )
 
+# The Darknet C core runs an order of magnitude slower without optimization,
+# so a single-config build without an explicit build type defaults to Release
+# (as the original Darknet CMake project did).
+get_property(PROJECT_GENERATOR_IS_MULTI_CONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+
+if(NOT CMAKE_BUILD_TYPE AND NOT PROJECT_GENERATOR_IS_MULTI_CONFIG)
+  message(STATUS "No build type specified, defaulting to Release")
+  set(
+    CMAKE_BUILD_TYPE "Release"
+    CACHE STRING "Choose the type of build: Debug, Release, RelWithDebInfo or MinSizeRel"
+    FORCE
+  )
+  set_property(
+    CACHE CMAKE_BUILD_TYPE
+    PROPERTY STRINGS "Debug" "Release" "RelWithDebInfo" "MinSizeRel"
+  )
+endif()
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 

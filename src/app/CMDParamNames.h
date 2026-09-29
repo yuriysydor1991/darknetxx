@@ -60,11 +60,14 @@ class CMDParamNames
   inline static const std::string clearw{"--clear"};
   inline static const std::string dont_save_charts_every_iterw{
       "--dont-save-charts-every-iter"};
+  inline static const std::string save_charts_every_iterw{
+      "--save-charts-every-iter"};
   inline static const std::string draw_precisionw{"--draw-precision"};
 
   /// @brief newly introduced
   inline static const std::string train_cfgw{"--train-cfg"};
   inline static const std::string detect_cfgw{"--detect-cfg"};
+  inline static const std::string namesw{"--names"};
   inline static const std::string latest_weightsw{"--weights"};
   inline static const std::string dont_resize_networkw{"--dont-resize-network"};
   inline static const std::string detect_imagew{"--image"};

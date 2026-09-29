@@ -7,6 +7,8 @@
 extern "C" {
 #endif
 
+/// @brief Saves the result of the finished training as the
+/// <base>_final.weights file.
 void save_weights_final_ctx(struct detector_context* ctx);
 
 #ifdef __cplusplus

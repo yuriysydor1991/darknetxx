@@ -44,12 +44,14 @@ The very same sections are also available in Ukrainian under [doc/README.uk_UA.m
         1. [Application runtime components](/doc/sections/en_US/4-7-1-application-runtime-components.md)
         1. [Darknet adaptor components](/doc/sections/en_US/4-7-2-darknet-adaptor-components.md)
         1. [Supporting components](/doc/sections/en_US/4-7-3-supporting-components.md)
+    1. [Handling the OS signals](/doc/sections/en_US/4-8-handling-the-OS-signals.md)
 1. [Project build](/doc/sections/en_US/5-project-build.md)
     1. [IDE build](/doc/sections/en_US/5-1-IDE-build.md)
     1. [Command line build](/doc/sections/en_US/5-2-command-line-build.md)
     1. Enabling testing
         1. [Enabling unit testing](/doc/sections/en_US/5-3-1-enabling-unit-testing.md)
         1. [Disabling system GTest probe](/doc/sections/en_US/5-3-2-disabling-system-GTest-probe.md)
+        1. [Enabling integration testing](/doc/sections/en_US/5-3-3-enabling-integration-testing.md)
     1. [Documentation build](/doc/sections/en_US/5-4-documentation-build.md)
     1. [Configuring the documentation install support](/doc/sections/en_US/5-5-configuring-the-documentation-install-support.md)
     1. [Enabling and performing code formatting target](/doc/sections/en_US/5-6-enabling-and-performing-code-formatting-target.md)
@@ -80,6 +82,7 @@ The very same sections are also available in Ukrainian under [doc/README.uk_UA.m
     1. [Enabling the OpenJPEG library (JPEG 2000)](/doc/sections/en_US/5-31-enabling-the-openjpeg-library.md)
     1. [Enabling the libavif library (AVIF)](/doc/sections/en_US/5-32-enabling-the-libavif-library.md)
     1. [Enabling the libheif library (HEIF/HEIC)](/doc/sections/en_US/5-33-enabling-the-libheif-library.md)
+    1. [Quick build scripts](/doc/sections/en_US/5-34-quick-build-scripts.md)
 1. [Run the executable](/doc/sections/en_US/6-run-the-executable.md)
     1. [IDE run](/doc/sections/en_US/6-1-IDE-run.md)
     1. Command line run

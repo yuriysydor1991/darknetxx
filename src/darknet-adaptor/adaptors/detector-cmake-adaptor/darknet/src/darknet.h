@@ -260,7 +260,8 @@ typedef struct box_label
 //} list;
 // -----------------------------------------------------
 
-// parser.c
+// parser.c, implemented by the C++ network infrastructure (NetworksCApi):
+// the networks live until the free_network() of their view
 char *layer_type_2_string(const LAYER_TYPE type);
 LIB_API network *load_network(char *cfg, char *weights, int clear);
 LIB_API network *load_network_custom(char *cfg, char *weights, int clear,
@@ -284,6 +285,7 @@ LIB_API float *network_predict_ptr(network *net, float *input);
 LIB_API float *network_predict_gl_texture(network *net, uint32_t texture_id);
 #endif  // CUDA_OPENGL_INTEGRATION
 
+// implemented by the C++ network infrastructure (NetworksCApi)
 LIB_API void set_batch_network(network *net, int b);
 LIB_API detection *get_network_boxes(network *net, int w, int h, float thresh,
                                      float hier, int *map, int relative,
@@ -294,6 +296,7 @@ LIB_API det_num_pair *network_predict_batch(network *net, image im,
                                             int relative, int letter);
 LIB_API void free_detections(detection *dets, int n);
 LIB_API void free_batch_detections(det_num_pair *det_num_pairs, int n);
+// implemented by the C++ network infrastructure (NetworksCApi)
 LIB_API void fuse_conv_batchnorm(network net);
 LIB_API void calculate_binary_weights(network net);
 LIB_API char *detection_to_json(detection *dets, int nboxes, int classes,
@@ -335,10 +338,6 @@ LIB_API void free_image(image m);
 LIB_API image crop_image(image im, int dx, int dy, int w, int h);
 LIB_API image resize_min(image im, int min);
 
-// layer.h
-LIB_API void free_layer_custom(layer l, int keep_cudnn_desc);
-LIB_API void free_layer(layer l);
-
 // data.c
 LIB_API void free_data(data d);
 LIB_API pthread_t load_data(load_args args);
@@ -355,9 +354,6 @@ LIB_API void *cuda_get_context();
 // utils.h
 LIB_API void free_ptrs(void **ptrs, int n);
 LIB_API void top_k(float *a, int n, int k, int *index);
-
-// tree.h
-LIB_API tree *read_tree(char *filename);
 
 // option_list.h
 LIB_API metadata get_metadata(char *file);

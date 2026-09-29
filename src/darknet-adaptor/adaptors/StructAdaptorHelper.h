@@ -2,6 +2,7 @@
 #define DARKNET_CXX_PORT_PROJECT_STRUCT_ADAPTOR_PARENT_CLASS_H
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "src/darknet-adaptor/adaptors/orig-includes.h"
@@ -25,6 +26,21 @@ class StructAdaptorHelper
   StructAdaptorHelper() = default;
 
   void place_pointers(vrfloats& dst, vvfloats& psrc);
+
+  /**
+   * @brief The pointer the darknet struct field gets for the container: the
+   * NULL for the empty one, as darknet tests the fields for the NULL to tell
+   * the absent buffers (the std::vector::data() of an emptied container is
+   * not guaranteed to be the NULL).
+   */
+  template <typename T>
+  static T* data_or_null(std::vector<T>& values)
+  {
+    return values.empty() ? nullptr : values.data();
+  }
+
+  /// @brief The data_or_null() of the byte buffers kept in a std::string.
+  static char* data_or_null(std::string& bytes);
 };
 
 using layerptr = StructAdaptorHelper::layerptr;

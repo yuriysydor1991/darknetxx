@@ -47,12 +47,14 @@
         1. [Компоненти виконання програми](/doc/sections/uk_UA/4-7-1-application-runtime-components.md)
         1. [Компоненти адаптера Darknet](/doc/sections/uk_UA/4-7-2-darknet-adaptor-components.md)
         1. [Допоміжні компоненти](/doc/sections/uk_UA/4-7-3-supporting-components.md)
+    1. [Обробка сигналів операційної системи](/doc/sections/uk_UA/4-8-handling-the-OS-signals.md)
 1. [Побудова проекту](/doc/sections/uk_UA/5-project-build.md)
     1. [Побудова за допомогою IDE](/doc/sections/uk_UA/5-1-IDE-build.md)
     1. [Побудова проекту-шаблону через командний рядок](/doc/sections/uk_UA/5-2-command-line-build.md)
     1. Вмикання тестів
         1. [Вмикання юніт-тестів](/doc/sections/uk_UA/5-3-1-enabling-unit-testing.md)
         1. [Запобігання використання GTest з ОС](/doc/sections/uk_UA/5-3-2-disabling-system-GTest-probe.md)
+        1. [Вмикання інтеграційних тестів](/doc/sections/uk_UA/5-3-3-enabling-integration-testing.md)
     1. [Побудова документації](/doc/sections/uk_UA/5-4-documentation-build.md)
     1. [Вмикання підтримки встановлення документації](/doc/sections/uk_UA/5-5-configuring-the-documentation-install-support.md)
     1. [Вмикання підтримки форматування коду](/doc/sections/uk_UA/5-6-enabling-and-performing-code-formatting-target.md)
@@ -83,6 +85,7 @@
     1. [Вмикання інтеграції OpenJPEG (JPEG 2000)](/doc/sections/uk_UA/5-31-enabling-the-openjpeg-library.md)
     1. [Вмикання інтеграції libavif (AVIF)](/doc/sections/uk_UA/5-32-enabling-the-libavif-library.md)
     1. [Вмикання інтеграції libheif (HEIF/HEIC)](/doc/sections/uk_UA/5-33-enabling-the-libheif-library.md)
+    1. [Швидкі скрипти побудови](/doc/sections/uk_UA/5-34-quick-build-scripts.md)
 1. [Запуск головного виконуваного файлу](/doc/sections/uk_UA/6-run-the-executable.md)
     1. [Запуск через IDE](/doc/sections/uk_UA/6-1-IDE-run.md)
     1. Запуск з терміналу

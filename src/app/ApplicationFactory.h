@@ -6,6 +6,7 @@
 #include "src/app/ApplicationContext.h"
 #include "src/app/CommandLineParser.h"
 #include "src/app/IApplication.h"
+#include "src/app/signals-handlers/ISignalsHandler.h"
 
 namespace app
 {
@@ -39,6 +40,14 @@ class ApplicationFactory
    * @return Returns created parser instance.
    */
   virtual std::shared_ptr<CommandLineParser> create_default_arg_parser();
+
+  /**
+   * @brief Creates the default OS signals handler instance, which covers every
+   * signals category the application reacts on.
+   *
+   * @return Returns created signals handler instance.
+   */
+  virtual std::shared_ptr<ISignalsHandler> create_default_signals_handler();
 
   /**
    * @brief Creates default instance for the application implementation.
@@ -102,6 +111,26 @@ class ApplicationFactory
    * @return Returns application run status. See run method.
    */
   static int execute(int& gargc, char**& gargv);
+
+ private:
+  /**
+   * @brief Ends the process by the OS default disposition of the given stop
+   * signal, which is where a gracefully stopped run ends, so the parent
+   * process (a shell script, for example) sees the process the signal
+   * terminated and reacts the way it reacts on the signal, instead of seeing
+   * a normal exit.
+   *
+   * The SIGQUIT signal is the exception, since it's default disposition adds a
+   * core dump of the already stopped process. A signal blocked by the process
+   * does not end it either, so the method returns in those cases and in the
+   * no signal (zero) one.
+   *
+   * @param signalNumber The number of the signal which stopped the run.
+   */
+  static void end_by_the_stop_signal(int signalNumber);
+
+  /// @brief The number of the OS signal which stopped the latest run, or zero.
+  int mstop_signal{0};
 };
 
 }  // namespace app

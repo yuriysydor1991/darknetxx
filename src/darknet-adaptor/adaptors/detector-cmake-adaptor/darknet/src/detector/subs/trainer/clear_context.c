@@ -5,6 +5,7 @@
 #include "image.h"
 #include "src/clog/clog.h"
 #include "src/detector/subs/trainer/calc_map_free_ctx.h"
+#include "src/detector/subs/trainer/train_data_ctx.h"
 
 void clear_context(struct detector_context* ctx)
 {
@@ -20,9 +21,8 @@ void clear_context(struct detector_context* ctx)
   release_mat(&ctx->img);
 #endif
 
-  // free memory
-  // pthread_join(ctx->load_thread, 0);
-  free_data(ctx->buffer);
+  // free memory (waits for a batch loading in the background first)
+  free_train_data_ctx(ctx);
 
   free_load_threads(&ctx->args);
 
@@ -31,9 +31,8 @@ void clear_context(struct detector_context* ctx)
   free_list_contents(ctx->plist);
   free_list(ctx->plist);
 
-  for (int k = 0; k < ctx->ngpus; ++k) free_network(ctx->nets[k]);
-  free(ctx->nets);
-  ctx->nets = NULL;
+  // the networks belong to the C++ network infrastructure, which releases
+  // them after the training
 
   calc_map_free_ctx(ctx);
 }

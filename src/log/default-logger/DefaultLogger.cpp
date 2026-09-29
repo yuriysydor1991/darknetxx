@@ -19,27 +19,26 @@ namespace default_logger
 
 void DefaultLogger::log(const unsigned short& loglvl, const std::string& msg)
 {
-  if (loglvl > lvl) {
+  if (!enabled(loglvl)) {
     return;
   }
 
-  std::lock_guard<std::mutex> alogfile_m_guard{alogfile_m};
+  std::lock_guard<std::mutex> alogfile_m_guard{alogfile_m()};
 
   std::ostringstream finalLog;
 
   insert_current_timestamp(finalLog);
 
   finalLog << " " << lvl_repr(loglvl) << " " << std::this_thread::get_id()
-           << " " << msg << std::endl;
+           << " " << msg << '\n';
 
   const std::string finalLogStr = finalLog.str();
 
-  if (alogfile.is_open()) {
-    alogfile << finalLogStr;
-
-    if (loglvl <= LVL_WARNING) {
-      alogfile.flush();
-    }
+  // Every record is flushed right away, so neither a crash, a kill nor a pipe
+  // reader loses or delays the latest messages (the training progress ones
+  // included).
+  if (alogfile().is_open()) {
+    alogfile() << finalLogStr << std::flush;
   }
 
   if (!toPrintMsgs.load()) {
@@ -47,9 +46,9 @@ void DefaultLogger::log(const unsigned short& loglvl, const std::string& msg)
   }
 
   if (loglvl <= LVL_WARNING) {
-    std::cerr << finalLogStr;
+    std::cerr << finalLogStr << std::flush;
   } else {
-    std::cout << finalLogStr;
+    std::cout << finalLogStr << std::flush;
   }
 }
 
@@ -57,6 +56,10 @@ void DefaultLogger::log(const unsigned short& loglvl,
                         const char* const filePath, const int& fileLine,
                         const std::string& msg)
 {
+  if (!enabled(loglvl)) {
+    return;
+  }
+
   std::filesystem::path fullPath{filePath};
 
   std::string filename = fullPath.filename().string();
@@ -64,21 +67,48 @@ void DefaultLogger::log(const unsigned short& loglvl,
   log(loglvl, filename + ":" + std::to_string(fileLine) + " : " + msg);
 }
 
-void DefaultLogger::logfile(const std::string& filepath)
+bool DefaultLogger::enabled(const unsigned short& loglvl)
+{
+  return loglvl <= lvl.load();
+}
+
+bool DefaultLogger::logfile(const std::string& filepath)
 {
   if (filepath.empty()) {
-    return;
+    return true;
   }
 
-  if (alogfile.is_open()) {
-    alogfile.close();
+  std::lock_guard<std::mutex> alogfile_m_guard{alogfile_m()};
+
+  if (alogfile().is_open()) {
+    alogfile().close();
   }
 
-  alogfile.open(filepath.c_str(), std::fstream::app);
+  alogfile().open(filepath.c_str(), std::fstream::app);
 
-  if (!alogfile.is_open()) {
-    throw std::runtime_error{"Fail to open the log file at " + filepath};
+  if (!alogfile().is_open()) {
+    std::cerr << "Fail to open the log file at " << filepath
+              << ", logging to the console only" << std::endl;
+    return false;
   }
+
+  return true;
+}
+
+std::fstream& DefaultLogger::alogfile()
+{
+  // never destroyed on purpose, see the declaration
+  static std::fstream* const stream = new std::fstream{};
+
+  return *stream;
+}
+
+std::mutex& DefaultLogger::alogfile_m()
+{
+  // never destroyed on purpose, see the declaration
+  static std::mutex* const mutex = new std::mutex{};
+
+  return *mutex;
 }
 
 void DefaultLogger::print(const bool toPrintValue)
@@ -86,7 +116,7 @@ void DefaultLogger::print(const bool toPrintValue)
   toPrintMsgs.store(toPrintValue);
 }
 
-void DefaultLogger::level(const unsigned short& nlvl) { lvl = nlvl; }
+void DefaultLogger::level(const unsigned short& nlvl) { lvl.store(nlvl); }
 
 void DefaultLogger::init(const std::string& filepath,
                          const unsigned short& nlvl, const bool toPrintValue)
@@ -124,16 +154,18 @@ inline void DefaultLogger::insert_current_timestamp(std::ostringstream& oss)
 const std::string& DefaultLogger::lvl_repr(const unsigned short& glvl)
 {
   static constexpr const unsigned short maxLvls = 6U;
-  static const std::array<const std::string, maxLvls> reprs{
-      std::string{"UNK"}, std::string{"ERR"}, std::string{"WRN"},
-      std::string{"INF"}, std::string{"DBG"}, std::string{"TRA"},
-  };
+  // never destroyed, since a thread may log during the exit() of another one
+  static const std::array<const std::string, maxLvls>* const reprs =
+      new std::array<const std::string, maxLvls>{
+          std::string{"UNK"}, std::string{"ERR"}, std::string{"WRN"},
+          std::string{"INF"}, std::string{"DBG"}, std::string{"TRA"},
+      };
 
   if (glvl >= maxLvls) {
-    return reprs[0U];
+    return (*reprs)[0U];
   }
 
-  return reprs[glvl];
+  return (*reprs)[glvl];
 }
 
 std::string DefaultLogger::get_full_log_path(const std::string& logname)
@@ -154,22 +186,29 @@ std::string DefaultLogger::get_default_full_log_path()
 
 std::string DefaultLogger::prepare_buff(const char* fmt, ...)
 {
-  static const size_t DEF_BUFF_CHUNK_SIZE = 102400U;
-
-  size_t chunks = 1;
-  size_t buff_size = chunks * DEF_BUFF_CHUNK_SIZE;
-
-  std::string rt(buff_size + 1, static_cast<char>(0));
-
   va_list args;
   va_start(args, fmt);
 
-  while (std::vsnprintf(rt.data(), buff_size, fmt, args) >= buff_size) {
-    buff_size = ++chunks * DEF_BUFF_CHUNK_SIZE;
-    rt.resize(buff_size + 1, static_cast<char>(0));
+  // the first pass only measures the message, so it works on a copy of the
+  // arguments, which the second pass consumes then
+  va_list sizing_args;
+  va_copy(sizing_args, args);
+  const int size = std::vsnprintf(nullptr, 0, fmt, sizing_args);
+  va_end(sizing_args);
+
+  if (size < 0) {
+    va_end(args);
+    return std::string{"Fail to format the message: "} + fmt;
   }
 
+  std::string rt(static_cast<std::string::size_type>(size) + 1U, '\0');
+
+  std::vsnprintf(rt.data(), rt.size(), fmt, args);
+
   va_end(args);
+
+  // the string holds the message characters only, no terminating zero
+  rt.resize(static_cast<std::string::size_type>(size));
 
   return rt;
 }

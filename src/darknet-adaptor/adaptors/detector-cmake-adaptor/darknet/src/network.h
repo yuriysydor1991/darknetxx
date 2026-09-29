@@ -47,7 +47,6 @@ int64_t get_current_iteration(network net);
 // void free_network(network net); // darknet.h
 void compare_networks(network n1, network n2, data d);
 
-network make_network(int n);
 void forward_network(network net, network_state state);
 void backward_network(network net, network_state state);
 void update_network(network net);
@@ -76,6 +75,7 @@ image get_network_image_layer(network net, int i);
 int get_predicted_class_network(network net);
 void print_network(network net);
 void visualize_network(network net);
+// implemented by the C++ network infrastructure (NetworksCApi)
 int resize_network(network *net, int w, int h);
 // LIB_API void set_batch_network(network *net, int b);
 int get_network_input_size(network net);
@@ -101,7 +101,7 @@ int get_network_nuisance(network net);
 int get_network_background(network net);
 // LIB_API void fuse_conv_batchnorm(network net);
 // LIB_API void calculate_binary_weights(network net);
-network combine_train_valid_networks(network net_train, network net_map);
+// implemented by the C++ network infrastructure (NetworksCApi)
 void copy_weights_net(network net_train, network *net_map);
 void free_network_recurrent_state(network net);
 void randomize_network_recurrent_state(network net);

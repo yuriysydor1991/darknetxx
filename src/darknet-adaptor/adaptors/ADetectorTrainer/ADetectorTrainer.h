@@ -5,6 +5,7 @@
 
 #include "src/darknet-adaptor/DarknetContext.h"
 #include "src/darknet-adaptor/adaptors/IDarknetAdaptor.h"
+#include "src/darknet-adaptor/adaptors/NetworksLoaders/INetworkLoader.h"
 
 namespace darknet_adaptor::adaptors
 {
@@ -24,6 +25,10 @@ class ADetectorTrainer : virtual public IDarknetAdaptor
   virtual bool perform(DarknetContextPtr dctx) override;
 
   static ADetectorTrainerPtr create();
+
+ protected:
+  /// @brief The loader of the networks the work computes with.
+  virtual loaders::INetworkLoaderPtr create_loader();
 };
 
 using ADetectorTrainerPtr = ADetectorTrainer::ADetectorTrainerPtr;

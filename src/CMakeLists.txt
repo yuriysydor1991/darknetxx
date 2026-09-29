@@ -7,13 +7,11 @@ add_compile_definitions(${EXTRA_COMPILE_DEFINITIONS})
 
 # GCC 14+ turned several legacy C diagnostics into errors by default. Keep them
 # as warnings for the vendored original Darknet C sources (compiled directly by
-# some component tests), without relaxing the C++ strictness.
-add_compile_options(
-  $<$<COMPILE_LANGUAGE:C>:-Wno-error=incompatible-pointer-types>
-  $<$<COMPILE_LANGUAGE:C>:-Wno-error=int-conversion>
-  $<$<COMPILE_LANGUAGE:C>:-Wno-error=implicit-int>
-  $<$<COMPILE_LANGUAGE:C>:-Wno-error=return-mismatch>
-)
+# some component tests), without relaxing the C++ strictness. The list holds
+# only the options the compiler supports (see the compile options module).
+foreach(demoted_error_option IN LISTS C_DEMOTED_ERRORS_OPTIONS)
+  add_compile_options($<$<COMPILE_LANGUAGE:C>:${demoted_error_option}>)
+endforeach()
 
 add_executable(
   ${PROJECT_BINARY_NAME}
@@ -43,4 +41,5 @@ add_subdirectory(darknet-adaptor)
 add_subdirectory(scripts)
 add_subdirectory(helpers)
 add_subdirectory(OMP)
+add_subdirectory(tests)
 

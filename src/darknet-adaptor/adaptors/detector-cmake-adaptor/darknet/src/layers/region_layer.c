@@ -14,81 +14,6 @@
 
 #define DOABS 1
 
-region_layer make_region_layer(int batch, int w, int h, int n, int classes,
-                               int coords, int max_boxes)
-{
-  region_layer l = {(LAYER_TYPE)0};
-  l.type = REGION;
-
-  l.n = n;
-  l.batch = batch;
-  l.h = h;
-  l.w = w;
-  l.c = n * (classes + coords + 1);
-  l.out_w = l.w;
-  l.out_h = l.h;
-  l.out_c = l.c;
-  l.classes = classes;
-  l.coords = coords;
-  l.cost = (float *)xcalloc(1, sizeof(float));
-  l.biases = (float *)xcalloc(n * 2, sizeof(float));
-  l.bias_updates = (float *)xcalloc(n * 2, sizeof(float));
-  l.outputs = h * w * n * (classes + coords + 1);
-  l.inputs = l.outputs;
-  l.max_boxes = max_boxes;
-  l.truth_size = 4 + 2;
-  l.truths = max_boxes * l.truth_size;
-  l.delta = (float *)xcalloc(batch * l.outputs, sizeof(float));
-  l.output = (float *)xcalloc(batch * l.outputs, sizeof(float));
-  int i;
-  for (i = 0; i < n * 2; ++i) {
-    l.biases[i] = .5;
-  }
-
-  l.forward = forward_region_layer;
-  l.backward = backward_region_layer;
-#ifdef GPU
-  l.forward_gpu = forward_region_layer_gpu;
-  l.backward_gpu = backward_region_layer_gpu;
-  l.output_gpu = cuda_make_array(l.output, batch * l.outputs);
-  l.delta_gpu = cuda_make_array(l.delta, batch * l.outputs);
-#endif
-
-  CLOGIM("detection");
-
-  srand(time(0));
-
-  return l;
-}
-
-void resize_region_layer(layer *l, int w, int h)
-{
-#ifdef GPU
-  int old_w = l->w;
-  int old_h = l->h;
-#endif
-  l->w = w;
-  l->h = h;
-
-  l->outputs = h * w * l->n * (l->classes + l->coords + 1);
-  l->inputs = l->outputs;
-
-  l->output =
-      (float *)xrealloc(l->output, l->batch * l->outputs * sizeof(float));
-  l->delta = (float *)xrealloc(l->delta, l->batch * l->outputs * sizeof(float));
-
-#ifdef GPU
-  // if (old_w < w || old_h < h)
-  {
-    cuda_free(l->delta_gpu);
-    cuda_free(l->output_gpu);
-
-    l->delta_gpu = cuda_make_array(l->delta, l->batch * l->outputs);
-    l->output_gpu = cuda_make_array(l->output, l->batch * l->outputs);
-  }
-#endif
-}
-
 box get_region_box(float *x, float *biases, int n, int index, int i, int j,
                    int w, int h)
 {
@@ -425,7 +350,7 @@ void get_region_boxes(layer l, int w, int h, float thresh, float **probs,
 {
   int i;
   float *const predictions = l.output;
-  // #pragma omp parallel for
+#pragma omp parallel for
   for (i = 0; i < l.w * l.h; ++i) {
     int j, n;
     int row = i / l.w;

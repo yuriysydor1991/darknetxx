@@ -6,73 +6,6 @@
 #include "src/clog/clog.h"
 #include "utils.h"
 
-layer make_normalization_layer(int batch, int w, int h, int c, int size,
-                               float alpha, float beta, float kappa)
-{
-  CLOGI("Local Response Normalization Layer: %d x %d x %d image, %d size", w, h,
-        c, size);
-
-  layer layer = {(LAYER_TYPE)0};
-  layer.type = NORMALIZATION;
-  layer.batch = batch;
-  layer.h = layer.out_h = h;
-  layer.w = layer.out_w = w;
-  layer.c = layer.out_c = c;
-  layer.kappa = kappa;
-  layer.size = size;
-  layer.alpha = alpha;
-  layer.beta = beta;
-  layer.output = (float *)xcalloc(h * w * c * batch, sizeof(float));
-  layer.delta = (float *)xcalloc(h * w * c * batch, sizeof(float));
-  layer.squared = (float *)xcalloc(h * w * c * batch, sizeof(float));
-  layer.norms = (float *)xcalloc(h * w * c * batch, sizeof(float));
-  layer.inputs = w * h * c;
-  layer.outputs = layer.inputs;
-
-  layer.forward = forward_normalization_layer;
-  layer.backward = backward_normalization_layer;
-#ifdef GPU
-  layer.forward_gpu = forward_normalization_layer_gpu;
-  layer.backward_gpu = backward_normalization_layer_gpu;
-
-  layer.output_gpu = cuda_make_array(layer.output, h * w * c * batch);
-  layer.delta_gpu = cuda_make_array(layer.delta, h * w * c * batch);
-  layer.squared_gpu = cuda_make_array(layer.squared, h * w * c * batch);
-  layer.norms_gpu = cuda_make_array(layer.norms, h * w * c * batch);
-#endif
-  return layer;
-}
-
-void resize_normalization_layer(layer *layer, int w, int h)
-{
-  int c = layer->c;
-  int batch = layer->batch;
-  layer->h = h;
-  layer->w = w;
-  layer->out_h = h;
-  layer->out_w = w;
-  layer->inputs = w * h * c;
-  layer->outputs = layer->inputs;
-  layer->output =
-      (float *)xrealloc(layer->output, h * w * c * batch * sizeof(float));
-  layer->delta =
-      (float *)xrealloc(layer->delta, h * w * c * batch * sizeof(float));
-  layer->squared =
-      (float *)xrealloc(layer->squared, h * w * c * batch * sizeof(float));
-  layer->norms =
-      (float *)xrealloc(layer->norms, h * w * c * batch * sizeof(float));
-#ifdef GPU
-  cuda_free(layer->output_gpu);
-  cuda_free(layer->delta_gpu);
-  cuda_free(layer->squared_gpu);
-  cuda_free(layer->norms_gpu);
-  layer->output_gpu = cuda_make_array(layer->output, h * w * c * batch);
-  layer->delta_gpu = cuda_make_array(layer->delta, h * w * c * batch);
-  layer->squared_gpu = cuda_make_array(layer->squared, h * w * c * batch);
-  layer->norms_gpu = cuda_make_array(layer->norms, h * w * c * batch);
-#endif
-}
-
 void forward_normalization_layer(const layer layer, network_state state)
 {
   int k, b;
@@ -88,7 +21,9 @@ void forward_normalization_layer(const layer layer, network_state state)
     pow_cpu(w * h * c, 2, input, 1, squared, 1);
 
     const_cpu(w * h, layer.kappa, norms, 1);
-    for (k = 0; k < layer.size / 2; ++k) {
+    // the channels of the input only (the original read past the squares of
+    // the input of less channels than the half of the window)
+    for (k = 0; k < layer.size / 2 && k < layer.c; ++k) {
       axpy_cpu(w * h, layer.alpha, squared + w * h * k, 1, norms, 1);
     }
 

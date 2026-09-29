@@ -13,7 +13,7 @@ threadsCount=@DOCKER_STARTER_NUM_THREADS@
 netNthResize=@DOCKER_STARTER_NET_NTH_RESIZE@
 nthDataReload=@DOCKER_STARTER_NTH_ITER_DATA_RELOAD@
 avgLossLimit=@DOCKER_STARTER_AVG_LOSS_LIMIT@
-resizeParam=""
+resizeParam=()
 
 if [[ -z "$dataDir" ]] ; then
   echo "No root YOLO4 data dir path provided!"
@@ -81,28 +81,29 @@ then
   echo "Found and using latest saved weights file: $latestSavedWeights"
 fi
 
+# an array, so the option and it's value stay the separate arguments
 if [[ $netNthResize -gt 0 ]]
 then
-  resizeParam=--net-resize-nth ${netNthResize}
+  resizeParam=(--net-resize-nth "${netNthResize}")
 else
-  resizeParam=--dont-resize-network
+  resizeParam=(--dont-resize-network)
 fi
 
 # exit 0
 
 if [[ ! -z "${latestSavedWeights}" ]]
 then
-  echo "Trying command: time darknetxx --train-cfg ${cfgFile} --weights ${latestSavedWeights} --threads ${threadsCount} --dont-show --draw-precision ${resizeParam} --data-reload-nth $nthDataReload --stop-less-avg-loss $avgLossLimit"
+  echo "Trying command: time darknetxx --train-cfg ${cfgFile} --weights ${latestSavedWeights} --threads ${threadsCount} --dont-show --draw-precision ${resizeParam[*]} --data-reload-nth $nthDataReload --stop-less-avg-loss $avgLossLimit"
 
-  if ! time darknetxx --train-cfg "${cfgFile}" --weights "${latestSavedWeights}" --threads ${threadsCount} --dont-show --draw-precision ${resizeParam}  --data-reload-nth $nthDataReload  --stop-less-avg-loss $avgLossLimit
+  if ! time darknetxx --train-cfg "${cfgFile}" --weights "${latestSavedWeights}" --threads ${threadsCount} --dont-show --draw-precision "${resizeParam[@]}"  --data-reload-nth $nthDataReload  --stop-less-avg-loss $avgLossLimit
   then
     echo "Failure to train!"
     exit 1
   fi
 else
-  echo "Trying command: time darknetxx --train-cfg ${cfgFile} --threads ${threadsCount} --dont-show --draw-precision ${resizeParam}  --data-reload-nth $nthDataReload  --stop-less-avg-loss $avgLossLimit"
+  echo "Trying command: time darknetxx --train-cfg ${cfgFile} --threads ${threadsCount} --dont-show --draw-precision ${resizeParam[*]}  --data-reload-nth $nthDataReload  --stop-less-avg-loss $avgLossLimit"
 
-  if ! time darknetxx --train-cfg "${cfgFile}" --threads ${threadsCount} --dont-show --draw-precision ${resizeParam}  --data-reload-nth $nthDataReload  --stop-less-avg-loss $avgLossLimit
+  if ! time darknetxx --train-cfg "${cfgFile}" --threads ${threadsCount} --dont-show --draw-precision "${resizeParam[@]}"  --data-reload-nth $nthDataReload  --stop-less-avg-loss $avgLossLimit
   then
     echo "Failure to train!"
     exit 1
@@ -113,17 +114,17 @@ exit 0
 
 if [[ ! -z "${latestSavedWeights}" ]]
 then
-  echo "Trying command: valgrind --tool=callgrind darknetxx --train-cfg ${cfgFile} --weights ${latestSavedWeights} --threads ${threadsCount} --draw-precision ${resizeParam} --data-reload-nth $nthDataReload  --stop-less-avg-loss $avgLossLimit"
+  echo "Trying command: valgrind --tool=callgrind darknetxx --train-cfg ${cfgFile} --weights ${latestSavedWeights} --threads ${threadsCount} --draw-precision ${resizeParam[*]} --data-reload-nth $nthDataReload  --stop-less-avg-loss $avgLossLimit"
 
-  if ! valgrind --tool=callgrind darknetxx --train-cfg "${cfgFile}" --weights "${latestSavedWeights}" --threads ${threadsCount} --draw-precision ${resizeParam}  --data-reload-nth $nthDataReload  --stop-less-avg-loss $avgLossLimit
+  if ! valgrind --tool=callgrind darknetxx --train-cfg "${cfgFile}" --weights "${latestSavedWeights}" --threads ${threadsCount} --draw-precision "${resizeParam[@]}"  --data-reload-nth $nthDataReload  --stop-less-avg-loss $avgLossLimit
   then
     echo "Failure to train!"
     exit 1
   fi
 else
-  echo "Trying command: valgrind --tool=callgrind darknetxx --train-cfg ${cfgFile} --threads ${threadsCount} --draw-precision ${resizeParam}  --data-reload-nth $nthDataReload  --stop-less-avg-loss $avgLossLimit"
+  echo "Trying command: valgrind --tool=callgrind darknetxx --train-cfg ${cfgFile} --threads ${threadsCount} --draw-precision ${resizeParam[*]}  --data-reload-nth $nthDataReload  --stop-less-avg-loss $avgLossLimit"
 
-  if ! valgrind --tool=callgrind darknetxx --train-cfg "${cfgFile}" --threads ${threadsCount} --draw-precision ${resizeParam} --data-reload-nth $nthDataReload  --stop-less-avg-loss $avgLossLimit
+  if ! valgrind --tool=callgrind darknetxx --train-cfg "${cfgFile}" --threads ${threadsCount} --draw-precision "${resizeParam[@]}" --data-reload-nth $nthDataReload  --stop-less-avg-loss $avgLossLimit
   then
     echo "Failure to train!"
     exit 1

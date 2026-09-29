@@ -15,6 +15,7 @@ include(docker-darknet-cpu-train-data)
 include(docker-darknet-cpu-train-data-predictor)
 include(docker-darknetxx-cpu-train-data)
 include(docker-darknetxx-cpu-train-data-predictor)
+include(docker-darknetxx-gpu-train-data)
 
 # Jenkins pipeline inside a Docker container. The module self-declares its
 # ENABLE_JENKINS_DOCKER_PIPELINE option and returns early when disabled.

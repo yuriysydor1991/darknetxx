@@ -6,9 +6,34 @@
   "command": "${PROJECT_BINARY_NAME}",
   "modules": [
     {
+      "name": "opencv",
+      "buildsystem": "cmake-ninja",
+      "builddir": true,
+      "config-opts": [
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DBUILD_LIST=core,imgproc,imgcodecs,highgui,videoio",
+        "-DBUILD_TESTS=OFF",
+        "-DBUILD_PERF_TESTS=OFF",
+        "-DBUILD_EXAMPLES=OFF",
+        "-DBUILD_opencv_apps=OFF",
+        "-DBUILD_JAVA=OFF",
+        "-DBUILD_opencv_python3=OFF"
+      ],
+      "sources": [
+        {
+          "type": "git",
+          "url": "https://github.com/opencv/opencv.git",
+          "tag": "4.10.0"
+        }
+      ]
+    },
+    {
       "name": "${PROJECT_NAME}",
       "buildsystem": "cmake",
-      "config-opts": ["-DCMAKE_BUILD_TYPE=Release"],
+      "config-opts": [
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DENABLE_SSE_AND_AVX_FLAGS=OFF"
+      ],
       "sources": [
         {
           "type": "dir",

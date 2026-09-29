@@ -4,10 +4,17 @@
 
 #include <algorithm>
 #include <cassert>
+#include <chrono>
+#include <cstring>
 #include <iterator>
 #include <memory>
+#include <stdexcept>
+#include <thread>
 
 #include "src/app/ApplicationContext.h"
+#include "src/darknet-adaptor/adaptors/ANetworkAdaptor/ANetworkAdaptor.h"
+#include "src/darknet-adaptor/adaptors/NetworksCApi/NetworksRegistry.h"
+#include "src/gpu_index_decls.h"
 #include "src/helpers/StringTools.h"
 #include "src/log/log.h"
 
@@ -16,20 +23,10 @@ namespace darknet_adaptor
 
 DarknetContext::~DarknetContext()
 {
-  if (mysub == nullptr) {
-    return;
-  }
+  stop_stop_watcher();
 
-  if (actx == nullptr) {
-    return;
-  }
-
-  auto& subs = actx->stop_subscribers;
-
-  auto siter = std::find(subs.begin(), subs.end(), mysub);
-
-  if (siter != subs.end()) {
-    subs.erase(siter);
+  if (internal != nullptr) {
+    release_networks();
   }
 }
 
@@ -48,6 +45,8 @@ bool DarknetContext::init()
     LOGE("Fail to propagate app context params into internal");
     return false;
   }
+
+  start_stop_watcher();
 
   return true;
 }
@@ -69,6 +68,7 @@ bool DarknetContext::propagate_context_params()
   set_Chart_path(actx->chart_path);
   set_Clear(actx->clear);
   set_Detect_cfg(actx->detect_cfg);
+  set_Names(actx->names);
   set_Dontdraw_bbox(actx->dontdraw_bbox);
   set_Dont_save_charts_every_iter(actx->dont_save_charts_every_iter);
   set_Dont_show(actx->dont_show);
@@ -102,39 +102,76 @@ bool DarknetContext::propagate_context_params()
   set_Dont_resize_network(actx->dont_resize_network);
   set_image(actx->image);
   set_reload_data(actx->reload_data);
-  set_stop(static_cast<int>(actx->stop.load()));
+  set_stop(actx->stop.load());
   set_net_nth_resize(actx->net_nth_resize);
   nth_iteration_reload(actx->nth_iteration_reload);
   stop_less_avg_loss(actx->stop_less_avg_loss);
 
-  static std::function<void()> mysubfcn = [this]() -> void {
-    if (actx == nullptr) {
+  return true;
+}
+
+void DarknetContext::start_stop_watcher()
+{
+  assert(actx != nullptr);
+
+  if (actx == nullptr) {
+    LOGE("No valid application context to watch the stop flag of");
+    return;
+  }
+
+  stop_stop_watcher();
+
+  mwatching.store(true);
+
+  mstop_watcher = std::thread{[this]() -> void { watch_the_app_stop_flag(); }};
+
+  LOGD("Watching the application stop flag");
+}
+
+void DarknetContext::stop_stop_watcher()
+{
+  mwatching.store(false);
+
+  if (mstop_watcher.joinable()) {
+    mstop_watcher.join();
+  }
+}
+
+void DarknetContext::watch_the_app_stop_flag()
+{
+  // Long enough to cost nothing at all and short enough to reach the original
+  // Darknet loops long before their current iteration ends.
+  static constexpr const std::chrono::milliseconds pollInterval{200};
+
+  while (mwatching.load()) {
+    if (actx != nullptr && actx->stop.load()) {
+      set_stop(true);
+
+      // the only feedback before the current step of the work ends, since the
+      // signal handler is not allowed to log
+      LOGW("Stopping on the signal "
+           << actx->stop_signal.load()
+           << " once the current step ends, repeat the signal a second later "
+              "to terminate right away");
       return;
     }
 
-    set_stop(static_cast<int>(actx->stop.load()));
-  };
-
-  mysub = std::make_shared<std::function<void()>>(mysubfcn);
-
-  actx->stop_subscribers.emplace_back(mysub);
-
-  return true;
+    std::this_thread::sleep_for(pollInterval);
+  }
 }
 
 void DarknetContext::set_stop(const bool nstop)
 {
   assert(internal != nullptr);
 
-  // atomic_store(internal->stop, static_cast<bool>(nstop));
-  internal->stop = static_cast<bool>(nstop);
+  detector_context_set_stop(internal.get(), nstop ? 1 : 0);
 }
 
 bool DarknetContext::get_stop()
 {
   assert(internal != nullptr);
 
-  return internal->stop != 0;
+  return detector_context_is_stopped(internal.get()) != 0;
 }
 
 DarknetContext::detector_context_ptr DarknetContext::create_subcontext()
@@ -146,11 +183,11 @@ DarknetContext::detector_context_ptr DarknetContext::create_subcontext()
   return ctx;
 }
 
-const bool& DarknetContext::get_Dont_show() const
+bool DarknetContext::get_Dont_show() const
 {
   assert(internal != nullptr);
 
-  return internal->dont_show;
+  return internal->dont_show != 0;
 }
 
 void DarknetContext::set_Dont_show(const bool& ndont_show)
@@ -167,11 +204,11 @@ void DarknetContext::set_Dont_show(bool&& ndont_show)
   internal->dont_show = std::move(ndont_show);
 }
 
-const bool& DarknetContext::get_Benchmark() const
+bool DarknetContext::get_Benchmark() const
 {
   assert(internal != nullptr);
 
-  return internal->benchmark;
+  return internal->benchmark != 0;
 }
 
 void DarknetContext::set_Benchmark(const bool& nbenchmark)
@@ -188,11 +225,11 @@ void DarknetContext::set_Benchmark(bool&& nbenchmark)
   internal->benchmark = std::move(nbenchmark);
 }
 
-const bool& DarknetContext::get_Benchmark_layers() const
+bool DarknetContext::get_Benchmark_layers() const
 {
   assert(internal != nullptr);
 
-  return internal->benchmark_layers;
+  return internal->benchmark_layers != 0;
 }
 
 void DarknetContext::set_Benchmark_layers(const bool& nbenchmark_layers)
@@ -209,11 +246,11 @@ void DarknetContext::set_Benchmark_layers(bool&& nbenchmark_layers)
   internal->benchmark_layers = std::move(nbenchmark_layers);
 }
 
-const bool& DarknetContext::get_Show() const
+bool DarknetContext::get_Show() const
 {
   assert(internal != nullptr);
 
-  return internal->show;
+  return internal->show != 0;
 }
 
 void DarknetContext::set_Show(const bool& nshow)
@@ -230,11 +267,11 @@ void DarknetContext::set_Show(bool&& nshow)
   internal->show = std::move(nshow);
 }
 
-const bool& DarknetContext::get_Letter_box() const
+bool DarknetContext::get_Letter_box() const
 {
   assert(internal != nullptr);
 
-  return internal->letter_box;
+  return internal->letter_box != 0;
 }
 
 void DarknetContext::set_Letter_box(const bool& nletter_box)
@@ -251,11 +288,11 @@ void DarknetContext::set_Letter_box(bool&& nletter_box)
   internal->letter_box = std::move(nletter_box);
 }
 
-const bool& DarknetContext::get_Map() const
+bool DarknetContext::get_Map() const
 {
   assert(internal != nullptr);
 
-  return internal->calc_map;
+  return internal->calc_map != 0;
 }
 
 void DarknetContext::set_Map(const bool& nmap)
@@ -293,11 +330,11 @@ void DarknetContext::set_Points(int&& npoints)
   internal->map_points = std::move(npoints);
 }
 
-const bool& DarknetContext::get_Show_imgs() const
+bool DarknetContext::get_Show_imgs() const
 {
   assert(internal != nullptr);
 
-  return internal->show_imgs;
+  return internal->show_imgs != 0;
 }
 
 void DarknetContext::set_Show_imgs(const bool& nshow_imgs)
@@ -356,11 +393,11 @@ void DarknetContext::set_Avgframes(int&& navgframes)
   internal->avgframes = std::move(navgframes);
 }
 
-const bool& DarknetContext::get_Dontdraw_bbox() const
+bool DarknetContext::get_Dontdraw_bbox() const
 {
   assert(internal != nullptr);
 
-  return internal->dontdraw_bbox;
+  return internal->dontdraw_bbox != 0;
 }
 
 void DarknetContext::set_Dontdraw_bbox(const bool& ndontdraw_bbox)
@@ -739,11 +776,11 @@ void DarknetContext::set_Height(int&& nheight)
   internal->height = std::move(nheight);
 }
 
-const bool& DarknetContext::get_Ext_output() const
+bool DarknetContext::get_Ext_output() const
 {
   assert(internal != nullptr);
 
-  return internal->ext_output;
+  return internal->ext_output != 0;
 }
 
 void DarknetContext::set_Ext_output(const bool& next_output)
@@ -760,11 +797,11 @@ void DarknetContext::set_Ext_output(bool&& next_output)
   internal->ext_output = std::move(next_output);
 }
 
-const bool& DarknetContext::get_Save_labels() const
+bool DarknetContext::get_Save_labels() const
 {
   assert(internal != nullptr);
 
-  return internal->save_labels;
+  return internal->save_labels != 0;
 }
 
 void DarknetContext::set_Save_labels(const bool& nsave_labels)
@@ -794,7 +831,7 @@ void DarknetContext::set_Chart_path(const std::string& nchart_path)
 
   chart_path = nchart_path;
 
-  if (prefix.empty()) {
+  if (chart_path.empty()) {
     internal->chart_path = NULL;
     return;
   }
@@ -810,7 +847,7 @@ void DarknetContext::set_Chart_path(std::string&& nchart_path)
 
   chart_path = std::move(nchart_path);
 
-  if (prefix.empty()) {
+  if (chart_path.empty()) {
     internal->chart_path = NULL;
     return;
   }
@@ -857,8 +894,16 @@ inline std::vector<int> DarknetContext::prepare_gpus_list(
 
   intlist.reserve(src.size());
 
-  std::transform(src.begin(), src.end(), std::back_inserter(intlist),
-                 [](const std::string& ii) { return std::stoi(ii); });
+  // The command line parser validates the list already, so a malformed index
+  // is reported and skipped here instead of terminating the application.
+  for (const std::string& index : src) {
+    try {
+      intlist.push_back(std::stoi(index));
+    }
+    catch (const std::logic_error&) {
+      LOGE("Skipping the invalid GPU index: '" << index << "'");
+    }
+  }
 
   return intlist;
 }
@@ -871,7 +916,13 @@ void DarknetContext::set_Gpus(const std::string& ngpus)
 
   gpuslist = prepare_gpus_list(helpers::StringTools::split(gpus, ','));
 
-  internal->ngpus = gpuslist.empty() ? 1 : gpuslist.size();
+  // without the --gpus list the computation takes the default GPU (the
+  // original Darknet one), so the ctx->gpus is never a NULL pointer
+  if (gpuslist.empty()) {
+    gpuslist.push_back(gpu_index);
+  }
+
+  internal->ngpus = static_cast<int>(gpuslist.size());
   internal->gpu_list = gpus.data();
   internal->gpus = gpuslist.data();
 }
@@ -884,16 +935,22 @@ void DarknetContext::set_Gpus(std::string&& ngpus)
 
   gpuslist = prepare_gpus_list(helpers::StringTools::split(gpus, ','));
 
-  internal->ngpus = gpuslist.empty() ? 1 : gpuslist.size();
+  // without the --gpus list the computation takes the default GPU (the
+  // original Darknet one), so the ctx->gpus is never a NULL pointer
+  if (gpuslist.empty()) {
+    gpuslist.push_back(gpu_index);
+  }
+
+  internal->ngpus = static_cast<int>(gpuslist.size());
   internal->gpu_list = gpus.data();
   internal->gpus = gpuslist.data();
 }
 
-const bool& DarknetContext::get_Clear() const
+bool DarknetContext::get_Clear() const
 {
   assert(internal != nullptr);
 
-  return internal->clear;
+  return internal->clear != 0;
 }
 
 void DarknetContext::set_Clear(const bool& nclear)
@@ -925,11 +982,11 @@ void DarknetContext::set_Dont_save_charts_every_iter(
   internal->save_chart_every_iter = !ndont_save_charts_every_iter;
 }
 
-const bool& DarknetContext::get_Draw_precision() const
+bool DarknetContext::get_Draw_precision() const
 {
   assert(internal != nullptr);
 
-  return internal->draw_precision;
+  return internal->draw_precision != 0;
 }
 
 void DarknetContext::set_Draw_precision(const bool& ndraw_precision)
@@ -1007,7 +1064,7 @@ void DarknetContext::set_Detect_cfg(std::string&& ndetect_cfg)
 
   detect_cfg = std::move(ndetect_cfg);
 
-  if (ndetect_cfg.empty()) {
+  if (detect_cfg.empty()) {
     internal->cfg = NULL;
     return;
   }
@@ -1015,6 +1072,40 @@ void DarknetContext::set_Detect_cfg(std::string&& ndetect_cfg)
   internal->cfg = detect_cfg.data();
 
   LOGD("Enabled detect cfg: " << detect_cfg);
+}
+
+const std::string& DarknetContext::get_Names() const { return names; }
+
+void DarknetContext::set_Names(const std::string& nnames)
+{
+  assert(internal != nullptr);
+
+  names = nnames;
+
+  if (names.empty()) {
+    internal->name_list = NULL;
+    return;
+  }
+
+  internal->name_list = names.data();
+
+  LOGD("Class names file: " << names);
+}
+
+void DarknetContext::set_Names(std::string&& nnames)
+{
+  assert(internal != nullptr);
+
+  names = std::move(nnames);
+
+  if (names.empty()) {
+    internal->name_list = NULL;
+    return;
+  }
+
+  internal->name_list = names.data();
+
+  LOGD("Class names file: " << names);
 }
 
 const std::string& DarknetContext::get_Latest_weights() const
@@ -1155,6 +1246,116 @@ const double& DarknetContext::stop_less_avg_loss()
   assert(internal != nullptr);
 
   return internal->stop_less_avg_loss;
+}
+
+void DarknetContext::set_train_networks(ANetworkAdaptorPtrs nnets)
+{
+  assert(internal != nullptr);
+
+  for (const auto& net : train_networks) {
+    adaptors::NetworksRegistry::remove(*net->get());
+  }
+
+  train_networks = std::move(nnets);
+  train_views.clear();
+
+  for (const auto& net : train_networks) {
+    assert(net != nullptr);
+
+    adaptors::NetworksRegistry::add(net, false);
+    train_views.push_back(*net->get());
+  }
+
+  internal->nets = train_views.empty() ? nullptr : train_views.data();
+
+  if (train_views.empty()) {
+    std::memset(&internal->net, 0, sizeof(internal->net));
+  } else {
+    internal->net = train_views.front();
+  }
+}
+
+void DarknetContext::set_map_network(ANetworkAdaptorPtr nnet)
+{
+  assert(internal != nullptr);
+
+  if (map_network) {
+    adaptors::NetworksRegistry::remove(*map_network->get());
+  }
+
+  map_network = std::move(nnet);
+
+  if (!map_network) {
+    std::memset(&internal->net_map, 0, sizeof(internal->net_map));
+    return;
+  }
+
+  adaptors::NetworksRegistry::add(map_network, false);
+  internal->net_map = *map_network->get();
+}
+
+void DarknetContext::set_detect_network(ANetworkAdaptorPtr nnet)
+{
+  assert(internal != nullptr);
+
+  if (detect_network) {
+    adaptors::NetworksRegistry::remove(*detect_network->get());
+  }
+
+  detect_network = std::move(nnet);
+
+  if (!detect_network) {
+    std::memset(&internal->net, 0, sizeof(internal->net));
+    return;
+  }
+
+  adaptors::NetworksRegistry::add(detect_network, false);
+  internal->net = *detect_network->get();
+}
+
+const DarknetContext::ANetworkAdaptorPtrs& DarknetContext::get_train_networks()
+    const
+{
+  return train_networks;
+}
+
+const DarknetContext::ANetworkAdaptorPtr& DarknetContext::get_map_network()
+    const
+{
+  return map_network;
+}
+
+const DarknetContext::ANetworkAdaptorPtr& DarknetContext::get_detect_network()
+    const
+{
+  return detect_network;
+}
+
+void DarknetContext::release_networks()
+{
+  assert(internal != nullptr);
+
+  // the computation context must not refer to the released networks
+  internal->nets = nullptr;
+  std::memset(&internal->net, 0, sizeof(internal->net));
+  std::memset(&internal->net_map, 0, sizeof(internal->net_map));
+
+  for (const auto& net : train_networks) {
+    adaptors::NetworksRegistry::remove(*net->get());
+  }
+
+  if (map_network) {
+    adaptors::NetworksRegistry::remove(*map_network->get());
+  }
+
+  if (detect_network) {
+    adaptors::NetworksRegistry::remove(*detect_network->get());
+  }
+
+  train_views.clear();
+  train_networks.clear();
+  map_network.reset();
+  detect_network.reset();
 }
 
 }  // namespace darknet_adaptor

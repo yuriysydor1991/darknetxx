@@ -9,61 +9,6 @@
 #include "src/clog/clog.h"
 #include "utils.h"
 
-layer make_sam_layer(int batch, int index, int w, int h, int c, int w2, int h2,
-                     int c2)
-{
-  CLOGI("scale Layer: %d", index);
-
-  layer l = {(LAYER_TYPE)0};
-  l.type = SAM;
-  l.batch = batch;
-  l.w = w;
-  l.h = h;
-  l.c = c;
-
-  l.out_w = w2;
-  l.out_h = h2;
-  l.out_c = c2;
-  assert(l.out_c == l.c);
-  assert(l.w == l.out_w && l.h == l.out_h);
-
-  l.outputs = l.out_w * l.out_h * l.out_c;
-  l.inputs = l.outputs;
-  l.index = index;
-
-  l.delta = (float *)xcalloc(l.outputs * batch, sizeof(float));
-  l.output = (float *)xcalloc(l.outputs * batch, sizeof(float));
-
-  l.forward = forward_sam_layer;
-  l.backward = backward_sam_layer;
-#ifdef GPU
-  l.forward_gpu = forward_sam_layer_gpu;
-  l.backward_gpu = backward_sam_layer_gpu;
-
-  l.delta_gpu = cuda_make_array(l.delta, l.outputs * batch);
-  l.output_gpu = cuda_make_array(l.output, l.outputs * batch);
-#endif
-  return l;
-}
-
-void resize_sam_layer(layer *l, int w, int h)
-{
-  l->out_w = w;
-  l->out_h = h;
-  l->outputs = l->out_w * l->out_h * l->out_c;
-  l->inputs = l->outputs;
-  l->delta = (float *)xrealloc(l->delta, l->outputs * l->batch * sizeof(float));
-  l->output =
-      (float *)xrealloc(l->output, l->outputs * l->batch * sizeof(float));
-
-#ifdef GPU
-  cuda_free(l->output_gpu);
-  cuda_free(l->delta_gpu);
-  l->output_gpu = cuda_make_array(l->output, l->outputs * l->batch);
-  l->delta_gpu = cuda_make_array(l->delta, l->outputs * l->batch);
-#endif
-}
-
 void forward_sam_layer(const layer l, network_state state)
 {
   int size = l.batch * l.out_c * l.out_w * l.out_h;
@@ -71,7 +16,7 @@ void forward_sam_layer(const layer l, network_state state)
   float *from_output = state.net.layers[l.index].output;
 
   int i;
-  // #pragma omp parallel for
+#pragma omp parallel for
   for (i = 0; i < size; ++i) {
     l.output[i] = state.input[i] * from_output[i];
   }
@@ -92,7 +37,7 @@ void backward_sam_layer(const layer l, network_state state)
   float *from_delta = state.net.layers[l.index].delta;
 
   int i;
-  // #pragma omp parallel for
+#pragma omp parallel for
   for (i = 0; i < size; ++i) {
     state.delta[i] +=
         l.delta[i] *

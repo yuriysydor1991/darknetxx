@@ -11,32 +11,6 @@
 #include "src/clog/clog.h"
 #include "utils.h"
 
-layer make_activation_layer(int batch, int inputs, ACTIVATION activation)
-{
-  layer l = {(LAYER_TYPE)0};
-  l.type = ACTIVE;
-
-  l.inputs = inputs;
-  l.outputs = inputs;
-  l.batch = batch;
-
-  l.output = (float*)xcalloc(batch * inputs, sizeof(float));
-  l.delta = (float*)xcalloc(batch * inputs, sizeof(float));
-
-  l.forward = forward_activation_layer;
-  l.backward = backward_activation_layer;
-#ifdef GPU
-  l.forward_gpu = forward_activation_layer_gpu;
-  l.backward_gpu = backward_activation_layer_gpu;
-
-  l.output_gpu = cuda_make_array(l.output, inputs * batch);
-  l.delta_gpu = cuda_make_array(l.delta, inputs * batch);
-#endif
-  l.activation = activation;
-  CLOGI("Activation Layer: %d inputs", inputs);
-  return l;
-}
-
 void forward_activation_layer(layer l, network_state state)
 {
   copy_cpu(l.outputs * l.batch, state.input, 1, l.output, 1);

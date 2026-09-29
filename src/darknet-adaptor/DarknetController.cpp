@@ -29,10 +29,11 @@ bool DarknetController::perform([[maybe_unused]] AppCtxPtr ctx)
 
   auto worker = create_appropriate_worker(dctx);
 
-  assert(worker != nullptr);
-
+  // no worker is a user error (neither --train-cfg nor --detect-cfg given)
   if (worker == nullptr) {
-    LOGE("Failure whire creating appropriate worker");
+    LOGE(
+        "Failure while creating appropriate worker: provide the "
+        "--train-cfg or the --detect-cfg parameter");
     return false;
   }
 

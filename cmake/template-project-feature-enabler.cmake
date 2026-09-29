@@ -4,7 +4,16 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/enablers")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/enablers/packagers")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/profilers")
 
-if(ENABLE_UNIT_TESTS OR ENABLE_COMPONENT_TESTS)
+# Included before the sources are added, since they extend the compile options.
+if(ENABLE_GPROF)
+  include(template-project-profiler-gprof)
+endif()
+
+if(ENABLE_CALLGRIND)
+  include(template-project-profiler-valgrind-callgrind)
+endif()
+
+if(ENABLE_UNIT_TESTS OR ENABLE_COMPONENT_TESTS OR ENABLE_INTEGRATION_TESTS)
   enable_testing()
   include(template-project-GTest-enabler)
 endif()

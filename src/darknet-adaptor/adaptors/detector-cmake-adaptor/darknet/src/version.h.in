@@ -5,6 +5,10 @@
 #define MINOR_VERSION @Darknet_MINOR_VERSION@
 #define PATCH_VERSION @Darknet_PATCH_VERSION@
 #define Darknet_data_dir "@Darknet_data_path@"
+// the installed data dir relative to the installation prefix
+#define Darknet_data_sub_dir "@Darknet_data_sub_install@/"
+// the data dir of the source tree, for the runs from the build tree
+#define Darknet_source_data_dir "@CMAKE_SOURCE_DIR@/misc/"
 
 #endif // DARKNET_GLOBAL_CMAKE_PROJECT_DECLS_H
 

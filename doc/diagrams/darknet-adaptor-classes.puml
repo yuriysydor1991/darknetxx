@@ -16,6 +16,13 @@ class DarknetContext {
   +init() : bool
   +get_darknet_ctx() : detector_context
   +get/set_Dont_show(), get/set_Map(), ... : accessors
+  +set_train_networks(nets)
+  +set_map_network(net)
+  +set_detect_network(net)
+  +release_networks()
+  -start_stop_watcher()
+  -stop_stop_watcher()
+  -watch_the_app_stop_flag()
 }
 
 interface IDarknetAdaptor {
@@ -24,30 +31,101 @@ interface IDarknetAdaptor {
 
 class ADetector {
   +perform(dctx) : bool
+  #create_loader() : INetworkLoaderPtr
 }
 class ADetectorTrainer {
   +perform(dctx) : bool
+  #create_loader() : INetworkLoaderPtr
 }
-class ALayerAdaptor {
-  +perform(dctx) : bool
+
+interface INetworkLoader {
+  +load(dctx) : bool
 }
+
+class OrigDefaultLoader {
+  +load(dctx) : bool
+  +parse_network_cfg(cfg) : ANetworkAdaptorPtr
+  +parse_network_cfg_custom(cfg, batch, time_steps) : ANetworkAdaptorPtr
+  +load_network(cfg, weights, clear) : ANetworkAdaptorPtr
+  +load_network_custom(cfg, weights, clear, batch) : ANetworkAdaptorPtr
+}
+
+class CfgSection {
+  +{static} read_cfg(filename) : CfgSections
+  +find_int/find_float/find_str(key, def)
+  +unused()
+}
+
+class OrigWeightsFile {
+  +{static} load(net, filename, cutoff) : bool
+  +{static} save(net, filename, cutoff, save_ema) : bool
+}
+
 class ANetworkAdaptor {
-  +perform(dctx) : bool
+  +get() : networkptr
+  +layers(adaptors)
+  +allocate_layers(count)
+  +bind_layer(index, adaptor)
+  +resize(w, h)
+  +set_batch(b)
+  +fuse_conv_batchnorm()
+  +calculate_binary_weights()
+  +{static} copy_weights_net(train, map)
+}
+
+class ALayerAdaptor {
+  +get() : layerptr
+  +bind(slot)
+  +relink()
+  +borrow_output(buffer), borrow_weights(buffer), ...
+}
+
+class "layers::ConvolutionalLayer, layers::YoloLayer, ..." as Layers {
+  +{static} make(...) : ALayerAdaptorPtr
+  +{static} resize(adaptor, w, h)
+}
+
+class NetworksRegistry {
+  +{static} add(net, owned)
+  +{static} find(view) : ANetworkAdaptorPtr
+  +{static} remove(view) : bool
+}
+
+class "NetworksCApi (extern C)" as NetworksCApi {
+  +parse_network_cfg(), load_network(), free_network()
+  +load_weights(), save_weights()
+  +resize_network(), set_batch_network()
+  +fuse_conv_batchnorm(), calculate_binary_weights()
 }
 
 class StructAdaptorHelper {
-  +converts orig Darknet structs
+  +data_or_null(buffer)
 }
 
 IDarknetAdaptor <|.. ADetector
 IDarknetAdaptor <|.. ADetectorTrainer
 IDarknetAdaptor <|.. ALayerAdaptor
 IDarknetAdaptor <|.. ANetworkAdaptor
+INetworkLoader <|.. OrigDefaultLoader
+StructAdaptorHelper <|-- ALayerAdaptor
+StructAdaptorHelper <|-- ANetworkAdaptor
 
 DarknetController --> DarknetContext : creates
 DarknetController ..> IDarknetAdaptor : selects worker
 IDarknetAdaptor --> DarknetContext : reads/writes
-DarknetContext ..> StructAdaptorHelper : struct mapping
+ADetector ..> INetworkLoader : loads the network
+ADetectorTrainer ..> INetworkLoader : loads the networks
+OrigDefaultLoader ..> CfgSection : reads the cfg
+OrigDefaultLoader ..> Layers : makes the layers
+OrigDefaultLoader ..> OrigWeightsFile : loads the weights
+OrigDefaultLoader --> ANetworkAdaptor : makes
+OrigDefaultLoader ..> DarknetContext : hands the networks to
+Layers --> ALayerAdaptor : makes and resizes
+ANetworkAdaptor "1" *-- "*" ALayerAdaptor : binds to the layers array
+DarknetContext --> NetworksRegistry : registers the networks
+NetworksCApi ..> NetworksRegistry : finds the network of the view
+NetworksCApi ..> OrigDefaultLoader : parses
+NetworksCApi ..> OrigWeightsFile : reads and writes
 DarknetContext --> "app::ApplicationContext" : built from
 
 @enduml

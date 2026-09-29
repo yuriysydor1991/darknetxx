@@ -4,6 +4,7 @@
 #include "src/clog/clog.h"
 #include "src/detector/subs/trainer/calc_map_init_ctx.h"
 #include "src/detector/subs/trainer/save_weights_best_ctx.h"
+#include "src/detector/subs/trainer/train_data_ctx.h"
 #include "src/utils.h"
 
 void calc_map_iteration_ctx(struct detector_context *ctx)
@@ -17,7 +18,7 @@ void calc_map_iteration_ctx(struct detector_context *ctx)
 
   const int iteration = ctx->current_iteration;
 
-  ctx->draw_precision = 0;
+  ctx->map_calculated = 0;
 
   if (!(ctx->calc_map && (iteration >= ctx->next_map_calc ||
                           iteration == ctx->net.max_batches))) {
@@ -44,11 +45,10 @@ void calc_map_iteration_ctx(struct detector_context *ctx)
       CLOGI(" %d x %d  (batch = %d)", ctx->init_w, ctx->init_h, ctx->init_b);
     }
 
-    // pthread_join(ctx->load_thread, 0);
-    // free_data(ctx->train);
-
-    ctx->train = ctx->buffer;
-    // ctx->load_thread = load_data(ctx->args);
+    // The batch loaded in advance for the current input size doesn't fit the
+    // network of the initial one, so the next iteration loads a fresh batch.
+    drop_train_data_load_ctx(ctx);
+    ctx->data_reload_forced = 1;
 
     for (int k = 0; k < ctx->ngpus; ++k) {
       resize_network(ctx->nets + k, ctx->init_w, ctx->init_h);
@@ -63,15 +63,15 @@ void calc_map_iteration_ctx(struct detector_context *ctx)
   // network net_combined = combine_train_valid_networks(net, net_map);
 
   ctx->iter_map = iteration;
-  ctx->mean_average_precision =
-      validate_detector_map(ctx->datacfg, ctx->cfg, ctx->weights, ctx->thresh,
-                            ctx->iou_thresh, 0, ctx->net.letter_box,
-                            &ctx->net_map);  // &net_combined);
+  ctx->mean_average_precision = validate_detector_map(
+      ctx->datacfg, ctx->cfg, ctx->weights, ctx->thresh, ctx->iou_thresh,
+      ctx->map_points, ctx->net.letter_box,
+      &ctx->net_map);  // &net_combined);
 
   CLOGI(" mean_average_precision (mAP@%0.2f) = %f", ctx->iou_thresh,
         ctx->mean_average_precision);
 
   save_weights_best_ctx(ctx);
 
-  ctx->draw_precision = 1;
+  ctx->map_calculated = 1;
 }

@@ -4,7 +4,12 @@ USER root
 
 RUN apt update
 RUN apt install -y libstdc++6 build-essential git cmake g++
-RUN apt install -y clang-format
+# the OpenCV is the mandatory dependency of the project
+RUN apt install -y libopencv-dev
+# the misc/.clang-format style needs the clang-format 16 or newer
+RUN apt install -y clang-format && \
+ (clang-format --version | grep -Eq 'version (1[6-9]|[2-9][0-9])\.' || \
+  apt install -y clang-format-16)
 RUN apt install -y cppcheck
 RUN apt install -y valgrind
 RUN apt install -y flatpak

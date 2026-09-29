@@ -1,6 +1,7 @@
 #include "src/darknet-adaptor/adaptors/StructAdaptorHelper.h"
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "src/darknet-adaptor/adaptors/orig-includes.h"
@@ -15,8 +16,13 @@ void StructAdaptorHelper::place_pointers(vrfloats& dst, vvfloats& psrc)
   auto vriter = dst.begin();
 
   for (auto& vv : psrc) {
-    *(vriter++) = vv.data();
+    *(vriter++) = data_or_null(vv);
   }
+}
+
+char* StructAdaptorHelper::data_or_null(std::string& bytes)
+{
+  return bytes.empty() ? nullptr : bytes.data();
 }
 
 }  // namespace darknet_adaptor::adaptors

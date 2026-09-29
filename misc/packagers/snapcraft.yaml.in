@@ -10,7 +10,7 @@ confinement: ${TEMPLATE_PROJECT_SNAP_CONFINEMENT}
 
 apps:
   ${PROJECT_BINARY_NAME}:
-    command: ${PROJECT_BINARY_INSTALLATION_DIR}/${PROJECT_BINARY_NAME}
+    command: usr/${PROJECT_BINARY_INSTALLATION_DIR}/${PROJECT_BINARY_NAME}
     plugs:
       - home
 
@@ -21,4 +21,17 @@ parts:
     cmake-generator: '${CMAKE_GENERATOR}'
     cmake-parameters:
       - -DCMAKE_BUILD_TYPE=Release
-      - -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
+      # the snap command above expects the binary under the usr of the snap
+      - -DCMAKE_INSTALL_PREFIX=/usr
+      # the package runs on other machines, which may lack the AVX2 and FMA
+      - -DENABLE_SSE_AND_AVX_FLAGS=OFF
+    build-packages:
+      - libopencv-dev
+    # the runtime libraries of the OpenCV modules the project links with
+    stage-packages:
+      - libgomp1
+      - libopencv-core406t64
+      - libopencv-imgproc406t64
+      - libopencv-imgcodecs406t64
+      - libopencv-highgui406t64
+      - libopencv-videoio406t64

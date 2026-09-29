@@ -1,3 +1,9 @@
+# The original AlexeyAB Darknet CPU image recipe, kept for the comparisons: it
+# builds the Darknet with it's own Makefile, so the build context must be an
+# original Darknet checkout and not the darknetxx one, for example:
+#   docker build -f misc/Dockerfiles/Dockerfile.cpu /path/to/darknet
+# No CMake target uses it, see the ENABLE_DOCKER_DARKNET ones instead.
+
 FROM ubuntu:latest AS builder
 
 ENV DEBIAN_FRONTEND noninteractive

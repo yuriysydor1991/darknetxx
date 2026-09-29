@@ -15,10 +15,15 @@ void log_backtrace()
 {
 #ifndef WIN32
   void *buffer[PATH_MAX];
-  int count = backtrace(buffer, sizeof(buffer));
+  // the capacity is counted in the frames, not in the bytes
+  int count = backtrace(buffer, sizeof(buffer) / sizeof(buffer[0]));
   char **symbols = backtrace_symbols(buffer, count);
 
   CLOGE("backtrace (%d entries)", count);
+
+  if (symbols == NULL) {
+    return;
+  }
 
   for (int idx = 0; idx < count; idx++) {
     CLOGE("%d/%d: %s", idx + 1, count, symbols[idx]);
@@ -53,8 +58,9 @@ void error(const char *const msg, const char *const filename,
            const char *const funcname, const int line)
 {
   const int en = errno;
-  CLOGE("Darknet error location: %s, %s(), line #%d - %s", filename, funcname,
-        line, strerror(en));
+  // the reason first, the way the original perror(msg) call printed it
+  CLOGE("%s: %s", msg, strerror(en));
+  CLOGE("Darknet error location: %s, %s(), line #%d", filename, funcname, line);
 
   log_backtrace();
 

@@ -548,13 +548,6 @@ float validate_detector_map(char *datacfg, char *cfgfile, char *weightfile,
                             network *existing_net)
 {
   int j;
-  list *options = read_data_cfg(datacfg);
-  char *valid_images = option_find_str(options, "valid", "data/train.txt");
-  char *difficult_valid_images = option_find_str(options, "difficult", NULL);
-  char *name_list = option_find_str(options, "names", "data/names.list");
-  int names_size = 0;
-  char **names =
-      get_labels_custom(name_list, &names_size);  // get_labels(name_list);
   // char *mapf = option_find_str(options, "map", 0);
   // int *map = 0;
   // if (mapf) map = read_map(mapf);
@@ -563,8 +556,6 @@ float validate_detector_map(char *datacfg, char *cfgfile, char *weightfile,
   network net;
   // int initial_batch;
   if (existing_net) {
-    char *train_images = option_find_str(options, "train", "data/train.txt");
-    valid_images = option_find_str(options, "valid", train_images);
     net = *existing_net;
     remember_network_recurrent_state(*existing_net);
     free_network_recurrent_state(*existing_net);
@@ -577,9 +568,30 @@ float validate_detector_map(char *datacfg, char *cfgfile, char *weightfile,
     fuse_conv_batchnorm(net);
     calculate_binary_weights(net);
   }
+
+  // The data file is optional: without it the validation images and the class
+  // names come from the [net] section of the network cfg file.
+  list *options = datacfg ? read_data_cfg(datacfg) : NULL;
+  char *valid_images = net.valid_images;
+  char *difficult_valid_images = NULL;
+  char *name_list = net.names;
+
+  if (options) {
+    valid_images = option_find_str(options, "valid", "data/train.txt");
+    if (existing_net) {
+      char *train_images = option_find_str(options, "train", "data/train.txt");
+      valid_images = option_find_str(options, "valid", train_images);
+    }
+    difficult_valid_images = option_find_str(options, "difficult", NULL);
+    name_list = option_find_str(options, "names", "data/names.list");
+  }
+
+  int names_size = 0;
+  char **names =
+      get_labels_custom(name_list, &names_size);  // get_labels(name_list);
   if (net.layers[net.n - 1].classes != names_size) {
-    CLOGI(
-        "\n Error: in the file %s number of names %d that isn't equal to "
+    CLOGE(
+        "Error: in the file %s number of names %d that isn't equal to "
         "classes=%d in the file %s",
         name_list, names_size, net.layers[net.n - 1].classes, cfgfile);
     error("Error!", DARKNET_LOC);
@@ -658,7 +670,8 @@ float validate_detector_map(char *datacfg, char *cfgfile, char *weightfile,
   }
   time_t start = time(0);
   for (i = nthreads; i < m + nthreads; i += nthreads) {
-    CLOGI("%d", i);
+    // the in place progress of the validation images, not a log record
+    fprintf(stderr, "\r%d", i);
     for (t = 0; t < nthreads && (i + t - nthreads) < m; ++t) {
       pthread_join(thr[t], 0);
       val[t] = buf[t];
@@ -817,6 +830,9 @@ float validate_detector_map(char *datacfg, char *cfgfile, char *weightfile,
     }
   }
 
+  // ends the in place progress line of the validation images
+  fprintf(stderr, "\n");
+
   // for (t = 0; t < nthreads; ++t) {
   //     pthread_join(thr[t], 0);
   // }
@@ -862,7 +878,7 @@ float validate_detector_map(char *datacfg, char *cfgfile, char *weightfile,
   int rank;
   for (rank = 0; rank < detections_count; ++rank) {
     if (rank % 100 == 0)
-      CLOGI(" rank = %d of ranks = %d", rank, detections_count);
+      fprintf(stderr, "\r rank = %d of ranks = %d", rank, detections_count);
 
     if (rank > 0) {
       int class_id;
@@ -907,6 +923,9 @@ float validate_detector_map(char *datacfg, char *cfgfile, char *weightfile,
       }
     }
   }
+
+  // ends the in place progress line of the ranks
+  fprintf(stderr, "\n");
 
   free(truth_flags);
 
@@ -1000,7 +1019,7 @@ float validate_detector_map(char *datacfg, char *cfgfile, char *weightfile,
 
   mean_average_precision = mean_average_precision / classes;
   CLOGI("\n IoU threshold = %2.0f %%, ", iou_thresh * 100);
-  if (map_points) printf("used %d Recall-points \n", map_points);
+  if (map_points) CLOGI("used %d Recall-points", map_points);
   else
     CLOGIM("used Area-Under-Curve for each unique Recall");
 
@@ -1027,12 +1046,12 @@ float validate_detector_map(char *datacfg, char *cfgfile, char *weightfile,
   free(fp_for_thresh_per_class);
 
   CLOGI("Total Detection Time: %d Seconds", (int)(time(0) - start));
-  CLOGIM("Set -points flag:");
-  CLOGIM(" `-points 101` for MS COCO");
+  CLOGIM("Set --points flag:");
+  CLOGIM(" `--points 101` for MS COCO");
   CLOGIM(
-      " `-points 11` for PascalVOC 2007 (uncomment `difficult` in voc.data)");
+      " `--points 11` for PascalVOC 2007 (uncomment `difficult` in voc.data)");
   CLOGIM(
-      " `-points 0` (AUC) for ImageNet, PascalVOC 2010-2012, your custom "
+      " `--points 0` (AUC) for ImageNet, PascalVOC 2010-2012, your custom "
       "dataset");
   if (reinforcement_fd != NULL) fclose(reinforcement_fd);
 
@@ -1320,7 +1339,6 @@ void draw_object(char *datacfg, char *cfgfile, char *weightfile, char *filename,
   char buff[256];
   char *input = buff;
 
-  int j;
   float nms = .45;  // 0.4F
   while (1) {
     if (filename) {
@@ -1328,7 +1346,7 @@ void draw_object(char *datacfg, char *cfgfile, char *weightfile, char *filename,
       if (strlen(input) > 0)
         if (input[strlen(input) - 1] == 0x0d) input[strlen(input) - 1] = 0;
     } else {
-      CLOGI("Enter Image Path: ");
+      CLOGIM("Enter Image Path: ");
       fflush(stdout);
       input = fgets(input, 256, stdin);
       if (!input) break;
@@ -1447,15 +1465,8 @@ void draw_object(char *datacfg, char *cfgfile, char *weightfile, char *filename,
   free_list_contents_kvp(options);
   free_list(options);
 
-  int i;
-  const int nsize = 8;
-  for (j = 0; j < nsize; ++j) {
-    for (i = 32; i < 127; ++i) {
-      free_image(alphabet[j][i]);
-    }
-    free(alphabet[j]);
-  }
-  free(alphabet);
+  // the alphabet is NULL when no labels directory is found
+  free_alphabet(alphabet);
 
   free_network(net);
 }

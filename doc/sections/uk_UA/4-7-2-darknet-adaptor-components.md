@@ -23,6 +23,13 @@ class DarknetContext {
   +init() : bool
   +get_darknet_ctx() : detector_context
   +get/set_Dont_show(), get/set_Map(), ... : accessors
+  +set_train_networks(nets)
+  +set_map_network(net)
+  +set_detect_network(net)
+  +release_networks()
+  -start_stop_watcher()
+  -stop_stop_watcher()
+  -watch_the_app_stop_flag()
 }
 
 interface IDarknetAdaptor {
@@ -31,41 +38,137 @@ interface IDarknetAdaptor {
 
 class ADetector {
   +perform(dctx) : bool
+  #create_loader() : INetworkLoaderPtr
 }
 class ADetectorTrainer {
   +perform(dctx) : bool
+  #create_loader() : INetworkLoaderPtr
 }
-class ALayerAdaptor {
-  +perform(dctx) : bool
+
+interface INetworkLoader {
+  +load(dctx) : bool
 }
+
+class OrigDefaultLoader {
+  +load(dctx) : bool
+  +parse_network_cfg(cfg) : ANetworkAdaptorPtr
+  +parse_network_cfg_custom(cfg, batch, time_steps) : ANetworkAdaptorPtr
+  +load_network(cfg, weights, clear) : ANetworkAdaptorPtr
+  +load_network_custom(cfg, weights, clear, batch) : ANetworkAdaptorPtr
+}
+
+class CfgSection {
+  +{static} read_cfg(filename) : CfgSections
+  +find_int/find_float/find_str(key, def)
+  +unused()
+}
+
+class OrigWeightsFile {
+  +{static} load(net, filename, cutoff) : bool
+  +{static} save(net, filename, cutoff, save_ema) : bool
+}
+
 class ANetworkAdaptor {
-  +perform(dctx) : bool
+  +get() : networkptr
+  +layers(adaptors)
+  +allocate_layers(count)
+  +bind_layer(index, adaptor)
+  +resize(w, h)
+  +set_batch(b)
+  +fuse_conv_batchnorm()
+  +calculate_binary_weights()
+  +{static} copy_weights_net(train, map)
+}
+
+class ALayerAdaptor {
+  +get() : layerptr
+  +bind(slot)
+  +relink()
+  +borrow_output(buffer), borrow_weights(buffer), ...
+}
+
+class "layers::ConvolutionalLayer, layers::YoloLayer, ..." as Layers {
+  +{static} make(...) : ALayerAdaptorPtr
+  +{static} resize(adaptor, w, h)
+}
+
+class NetworksRegistry {
+  +{static} add(net, owned)
+  +{static} find(view) : ANetworkAdaptorPtr
+  +{static} remove(view) : bool
+}
+
+class "NetworksCApi (extern C)" as NetworksCApi {
+  +parse_network_cfg(), load_network(), free_network()
+  +load_weights(), save_weights()
+  +resize_network(), set_batch_network()
+  +fuse_conv_batchnorm(), calculate_binary_weights()
 }
 
 class StructAdaptorHelper {
-  +converts orig Darknet structs
+  +data_or_null(buffer)
 }
 
 IDarknetAdaptor <|.. ADetector
 IDarknetAdaptor <|.. ADetectorTrainer
 IDarknetAdaptor <|.. ALayerAdaptor
 IDarknetAdaptor <|.. ANetworkAdaptor
+INetworkLoader <|.. OrigDefaultLoader
+StructAdaptorHelper <|-- ALayerAdaptor
+StructAdaptorHelper <|-- ANetworkAdaptor
 
 DarknetController --> DarknetContext : creates
 DarknetController ..> IDarknetAdaptor : selects worker
 IDarknetAdaptor --> DarknetContext : reads/writes
-DarknetContext ..> StructAdaptorHelper : struct mapping
+ADetector ..> INetworkLoader : loads the network
+ADetectorTrainer ..> INetworkLoader : loads the networks
+OrigDefaultLoader ..> CfgSection : reads the cfg
+OrigDefaultLoader ..> Layers : makes the layers
+OrigDefaultLoader ..> OrigWeightsFile : loads the weights
+OrigDefaultLoader --> ANetworkAdaptor : makes
+OrigDefaultLoader ..> DarknetContext : hands the networks to
+Layers --> ALayerAdaptor : makes and resizes
+ANetworkAdaptor "1" *-- "*" ALayerAdaptor : binds to the layers array
+DarknetContext --> NetworksRegistry : registers the networks
+NetworksCApi ..> NetworksRegistry : finds the network of the view
+NetworksCApi ..> OrigDefaultLoader : parses
+NetworksCApi ..> OrigWeightsFile : reads and writes
 DarknetContext --> "app::ApplicationContext" : built from
 @enduml
 
 ## Призначення кожного класу
 
 - **`DarknetController`** ([`DarknetController.h`](/src/darknet-adaptor/DarknetController.h)) - точка входу адаптера. Маючи `app::ApplicationContext`, він будує `DarknetContext`, обирає відповідного робітника і викликає його метод `perform`. Створюється через статичний фабричний метод `create()`.
-- **`DarknetContext`** ([`DarknetContext.h`](/src/darknet-adaptor/DarknetContext.h)) - контекст даних адаптера. Він перетворює поля контексту програми у значення, очікувані оригінальними процедурами Darknet, і володіє внутрішнім `detector_context`. Він надає типізовані гетери і сетери для окремих параметрів Darknet.
+- **`DarknetContext`** ([`DarknetContext.h`](/src/darknet-adaptor/DarknetContext.h)) - контекст даних адаптера. Він перетворює поля контексту програми у значення, очікувані оригінальними процедурами Darknet, і володіє внутрішнім `detector_context`. Він надає типізовані гетери і сетери для окремих параметрів Darknet. Його метод `init` також запускає потік-спостерігач зупинки, який перевіряє прапорець `app::ApplicationContext::stop` і переносить його до поля `detector_context::stop`, що його цикли мовою C перевіряють щоітерації, тож комбінація клавіш Ctrl+C припиняє тривале навчання - дивись секцію [Обробка сигналів операційної системи](/doc/sections/uk_UA/4-8-handling-the-OS-signals.md).
 - **`IDarknetAdaptor`** ([`IDarknetAdaptor.h`](/src/darknet-adaptor/adaptors/IDarknetAdaptor.h)) - абстрактний інтерфейс конкретного робітника Darknet. Він оголошує єдиний метод `perform(dctx)`, тому нових робітників можна додавати без зміни логіки контролера.
-- **`ADetector`** / **`ADetectorTrainer`** - конкретні робітники, які виконують розпізнавання і навчання над підготованим `DarknetContext`.
-- **`ALayerAdaptor`** / **`ANetworkAdaptor`** - адаптери, які відображають оригінальні структури шару і мережі Darknet у код на стороні C++ проекту.
-- **`StructAdaptorHelper`** ([`StructAdaptorHelper.h`](/src/darknet-adaptor/adaptors/StructAdaptorHelper.h)) - помічник, який перетворює оригінальні структури Darknet на C у структури проекту і навпаки.
+- **`ADetector`** / **`ADetectorTrainer`** - конкретні робітники, які завантажують нейромережі своїм завантажувачем (тим, що повертає метод `create_loader()`, за замовчуванням `OrigDefaultLoader`), виконують розпізнавання і навчання над підготованим `DarknetContext` і звільняють нейромережі після роботи.
+- **`INetworkLoader`** ([`INetworkLoader.h`](/src/darknet-adaptor/adaptors/NetworksLoaders/INetworkLoader.h)) - інтерфейс завантажувачів нейромереж: метод `load(dctx)` створює нейромережі, потрібні для роботи контексту, і передає їх контексту.
+- **`OrigDefaultLoader`** ([`OrigDefaultLoader.h`](/src/darknet-adaptor/adaptors/NetworksLoaders/OrigDefaultLoader/OrigDefaultLoader.h)) - перенесений на C++ оригінальний аналізатор файлів cfg нейромереж (функції `parse_network_cfg()`, `load_network()` та інші з оригінального `parser.c`). Він створює нейромережі для навчання (по одній на GPU), нейромережу для обчислення mAP, яка обчислює шарами першої нейромережі для навчання, і нейромережу для розпізнавання одного зображення з нормалізацією батчів, об'єднаною з її вагами. Помилки аналізу, які в оригіналі завершували процес, кидають виняток `NetworkError`, який метод `load` записує у журнал.
+- **`CfgSection`** ([`CfgSection.h`](/src/darknet-adaptor/adaptors/NetworksLoaders/OrigDefaultLoader/CfgSection.h)) - одна секція `[section]` файлу cfg з її параметрами `key=value`, перенесені на C++ оригінальні функції `read_cfg()` і `option_find*()`.
+- **`OrigWeightsFile`** ([`OrigWeightsFile.h`](/src/darknet-adaptor/adaptors/NetworksLoaders/OrigWeightsFile/OrigWeightsFile.h)) - читання і запис файлів ваг, перенесені на C++ оригінальні функції `load_weights_upto()`, `save_weights_upto()` і процедури окремих шарів, байт у байт сумісні з оригінальними файлами.
+- **`ANetworkAdaptor`** ([`ANetworkAdaptor.h`](/src/darknet-adaptor/adaptors/ANetworkAdaptor/ANetworkAdaptor.h)) - власник пам'яті нейромережі: масиву шарів, робочого буфера, лічильників, спільних для всіх копій структури нейромережі тощо. Він реалізує процедури нейромережі, які виділяють пам'ять: `resize` (оригінальна `resize_network()`), `set_batch`, `fuse_conv_batchnorm`, `calculate_binary_weights` і `copy_weights_net`.
+- **`ALayerAdaptor`** ([`ALayerAdaptor.h`](/src/darknet-adaptor/adaptors/ALayerAdaptor/ALayerAdaptor.h)) - власник пам'яті шару: кожен буфер є контейнером `std::vector` адаптера, на який вказує поле структури шару (`NULL` для порожнього контейнера). Буфери, які Darknet використовує спільно (вихід попереднього шару для шару `[dropout]`, ваги шару, що ділить їх з іншим шаром тощо), позичаються сетерами `borrow_*`. Нейромережа прив'язує структуру шару до її комірки у масиві шарів, тож код Darknet і адаптер працюють з однією структурою.
+- **Класи шарів** ([`src/darknet-adaptor/adaptors/Layers`](/src/darknet-adaptor/adaptors/Layers)) - процедури `make` і `resize` кожного виду шарів (`ConvolutionalLayer`, `YoloLayer` та інші), перенесені на C++ оригінальні функції `make_*_layer()` і `resize_*_layer()`.
+- **`NetworksRegistry`** / **NetworksCApi** ([`src/darknet-adaptor/adaptors/NetworksCApi`](/src/darknet-adaptor/adaptors/NetworksCApi)) - функції C API Darknet, які оригінальний код на C продовжує викликати (`parse_network_cfg()`, `load_weights()`, `save_weights()`, `resize_network()`, `set_batch_network()`, `free_network()` та інші), реалізовані на основі адаптерів. Код на C передає структуру нейромережі за значенням, тож реєстр знаходить нейромережу копії структури за її масивом шарів. Помилки завершують процес так само, як це робили оригінальні функції.
+- **`StructAdaptorHelper`** ([`StructAdaptorHelper.h`](/src/darknet-adaptor/adaptors/StructAdaptorHelper.h)) - помічник адаптерів, який надає полям структур вказівники на дані контейнерів.
+
+## Пам'ять нейромереж
+
+Оригінальний код Darknet на C у проекті лише обчислює: він ніколи не виділяє,
+не перевиділяє і не звільняє пам'ять нейромережі. Нейромережі створює
+завантажувач, і вони належать адаптерам C++, а `DarknetContext` передає їхні
+структури оригінальному контексту обчислень і забирає їх після роботи. Кожна
+копія структури нейромережі на C використовує ті самі буфери, а зміни
+скалярних полів, які код на C робить у своїй копії (розмір батчу динамічного
+міні-батчу тощо), адаптер переймає під час наступного виклику C API.
+
+Перенесені процедури зміни розміру виправляють помилки роботи з пам'яттю
+оригінальних процедур: буфери входу XNOR згорткового шару, розмиваючий підшар
+згорткового шару і шару maxpool з антиаліасингом, буфери `x` і `x_norm` шару
+`[batchnorm]` і буфер
+стовпців шару `[local]` з відступом, більшим за його ядро, мають розмір для
+нового входу, а наступний шар отримує нові розміри виходів шарів `[yolo]`,
+`[Gaussian_yolo]` і `[region]`.
 
 Вибір конкретного робітника тримає оригінальні точки входу Darknet ізольованими
 за інтерфейсом `IDarknetAdaptor`, що й уможливлює поступове портування

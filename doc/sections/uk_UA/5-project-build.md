@@ -5,6 +5,7 @@
 1. Вмикання тестів
     1. [Вмикання юніт-тестів](/doc/sections/uk_UA/5-3-1-enabling-unit-testing.md)
     1. [Запобігання використання GTest з ОС](/doc/sections/uk_UA/5-3-2-disabling-system-GTest-probe.md)
+    1. [Вмикання інтеграційних тестів](/doc/sections/uk_UA/5-3-3-enabling-integration-testing.md)
 1. [Побудова документації](/doc/sections/uk_UA/5-4-documentation-build.md)
 1. [Вмикання підтримки встановлення документації](/doc/sections/uk_UA/5-5-configuring-the-documentation-install-support.md)
 1. [Вмикання підтримки форматування коду](/doc/sections/uk_UA/5-6-enabling-and-performing-code-formatting-target.md)

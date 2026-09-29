@@ -21,7 +21,11 @@ add_custom_target(
   COMMAND ${VALGRIND_EXECUTABLE} --leak-check=full
     --error-exitcode=1 
     --show-leak-kinds=all 
-    $<TARGET_FILE:${PROJECT_BINARY_NAME}>
+    # the OpenMP (libgomp) worker threads keep their thread local storage till
+    # the process exit, which counts as the possibly lost memory, so only the
+    # definitely lost blocks fail the check, while all of them are shown
+    --errors-for-leak-kinds=definite
+    $<TARGET_FILE:${PROJECT_BINARY_NAME}> ${PROFILED_RUN_ARGS}
   COMMENT "Executing valgrind command for the project main binary file. Output all findings into the stdout."
   DEPENDS ${PROJECT_BINARY_NAME}
 )

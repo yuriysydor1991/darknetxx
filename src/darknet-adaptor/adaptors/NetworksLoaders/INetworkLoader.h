@@ -10,6 +10,11 @@ namespace darknet_adaptor::loaders
 
 /**
  * @brief The NN loader abstract class.
+ *
+ * The loader makes the networks the work of the context computes with and
+ * hands them over to the context (the DarknetContext::set_train_networks()
+ * and the like). The networks memory stays on the C++ side, the darknet C
+ * code computes with their views.
  */
 class INetworkLoader
 {
@@ -19,6 +24,7 @@ class INetworkLoader
   virtual ~INetworkLoader() = default;
   INetworkLoader() = default;
 
+  /// @brief Loads the networks of the context work, false for the failure.
   virtual bool load(DarknetContextPtr dctx) = 0;
 };
 

@@ -34,6 +34,11 @@ void prepare_load_args_ctx(struct detector_context* ctx)
   ctx->args.d = &ctx->buffer;
   ctx->args.type = DETECTION_DATA;
   ctx->args.threads = 64;  // 16 or 64
+#ifdef OPENCV
+  // The OpenCV augmentation keeps up with a few loaders per GPU, while every
+  // loader thread keeps its own images in memory (the original Darknet value).
+  ctx->args.threads = 6 * ctx->ngpus;
+#endif  // OPENCV
 
   ctx->args.angle = ctx->net.angle;
   ctx->args.gaussian_noise = ctx->net.gaussian_noise;

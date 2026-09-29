@@ -27,12 +27,14 @@
 /**
  * @brief The internal logger macro to define the general logging code body.
  */
-#define LOG_BODY(LOGLVL, msg)                                      \
-  {                                                                \
-    std::stringstream logMessageContainer;                         \
-    logMessageContainer << msg;                                    \
-    default_logger::DefaultLogger::log(LOGLVL, __FILE__, __LINE__, \
-                                       logMessageContainer.str()); \
+#define LOG_BODY(LOGLVL, msg)                                        \
+  {                                                                  \
+    if (default_logger::DefaultLogger::enabled(LOGLVL)) {            \
+      std::stringstream logMessageContainer;                         \
+      logMessageContainer << msg;                                    \
+      default_logger::DefaultLogger::log(LOGLVL, __FILE__, __LINE__, \
+                                         logMessageContainer.str()); \
+    }                                                                \
   }
 #endif  // LOG_BODY
 
@@ -47,7 +49,7 @@
 #endif  // LOGE
 
 #ifndef LOGI
-#if MAX_LOG_LEVEL >= MACRO_LOG_LEVEL_INFO
+#if MAX_LOG_LEVEL >= MACRO_LVL_INFO
 /**
  * @brief Perform the info logging.
  *
@@ -61,7 +63,7 @@
 #endif  // LOGI
 
 #ifndef LOGW
-#if MAX_LOG_LEVEL >= MACRO_LOG_LEVEL_WARNING
+#if MAX_LOG_LEVEL >= MACRO_LVL_WARNING
 /**
  * @brief Perform the warning logging.
  *
@@ -75,7 +77,7 @@
 #endif  // LOGW
 
 #ifndef LOGD
-#if MAX_LOG_LEVEL >= MACRO_LOG_LEVEL_DEBUG
+#if MAX_LOG_LEVEL >= MACRO_LVL_DEBUG
 /**
  * @brief Perform the debug logging.
  *
@@ -89,7 +91,7 @@
 #endif  // LOGD
 
 #ifndef LOGT
-#if MAX_LOG_LEVEL >= MACRO_LOG_LEVEL_TRACE
+#if MAX_LOG_LEVEL >= MACRO_LVL_TRACE
 /**
  * @brief Perform the trace logging.
  *
@@ -106,11 +108,14 @@
 /**
  * @brief The internal logger macro to define the general logging code body.
  */
-#define FMTLOGI(fmt, ...)                                               \
-  {                                                                     \
-    default_logger::DefaultLogger::log(                                 \
-        default_logger::DefaultLogger::LVL_INFO, __FILE__, __LINE__,    \
-        default_logger::DefaultLogger::prepare_buff(fmt, __VA_ARGS__)); \
+#define FMTLOGI(fmt, ...)                                                 \
+  {                                                                       \
+    if (default_logger::DefaultLogger::enabled(                           \
+            default_logger::DefaultLogger::LVL_INFO)) {                   \
+      default_logger::DefaultLogger::log(                                 \
+          default_logger::DefaultLogger::LVL_INFO, __FILE__, __LINE__,    \
+          default_logger::DefaultLogger::prepare_buff(fmt, __VA_ARGS__)); \
+    }                                                                     \
   }
 #endif  // FMTLOGI
 
@@ -118,13 +123,15 @@
 /**
  * @brief The logger macro to define the extended logging code body.
  */
-#define LOG_BODY_EXT(FILE_STR, LINE_INT, LOGLVL, msg)              \
-  {                                                                \
-    std::stringstream logMessageContainer;                         \
-    logMessageContainer << msg;                                    \
-    default_logger::DefaultLogger::log((LOGLVL), (FILE_STR),       \
-                                       static_cast<int>(LINE_INT), \
-                                       logMessageContainer.str()); \
+#define LOG_BODY_EXT(FILE_STR, LINE_INT, LOGLVL, msg)                \
+  {                                                                  \
+    if (default_logger::DefaultLogger::enabled(LOGLVL)) {            \
+      std::stringstream logMessageContainer;                         \
+      logMessageContainer << msg;                                    \
+      default_logger::DefaultLogger::log((LOGLVL), (FILE_STR),       \
+                                         static_cast<int>(LINE_INT), \
+                                         logMessageContainer.str()); \
+    }                                                                \
   }
 #endif  // LOG_BODY
 
@@ -141,7 +148,7 @@
 #endif  // ELOGE
 
 #ifndef ELOGI
-#if MAX_LOG_LEVEL >= MACRO_LOG_LEVEL_INFO
+#if MAX_LOG_LEVEL >= MACRO_LVL_INFO
 /**
  * @brief Perform the info logging.
  *
@@ -157,7 +164,7 @@
 #endif  // ELOGI
 
 #ifndef ELOGW
-#if MAX_LOG_LEVEL >= MACRO_LOG_LEVEL_WARNING
+#if MAX_LOG_LEVEL >= MACRO_LVL_WARNING
 /**
  * @brief Perform the warning logging.
  *
@@ -173,7 +180,7 @@
 #endif  // ELOGW
 
 #ifndef ELOGD
-#if MAX_LOG_LEVEL >= MACRO_LOG_LEVEL_DEBUG
+#if MAX_LOG_LEVEL >= MACRO_LVL_DEBUG
 /**
  * @brief Perform the debug logging.
  *
@@ -189,7 +196,7 @@
 #endif  // ELOGD
 
 #ifndef ELOGT
-#if MAX_LOG_LEVEL >= MACRO_LOG_LEVEL_TRACE
+#if MAX_LOG_LEVEL >= MACRO_LVL_TRACE
 /**
  * @brief Perform the trace logging.
  *

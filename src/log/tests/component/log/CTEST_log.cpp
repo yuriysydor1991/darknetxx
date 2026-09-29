@@ -8,6 +8,11 @@
 #include <string>
 #include <thread>
 
+// Every level is compiled in, so the runtime level filtering below is what the
+// test cases exercise, whatever the MAX_LOG_LEVEL of the build is.
+#undef MAX_LOG_LEVEL
+#define MAX_LOG_LEVEL 5U
+
 #include "src/log/log.h"
 #include "src/log/severity-macro-consts.h"
 
@@ -20,11 +25,9 @@ using namespace testing;
  * branches that swap the underlying logger (appLog4Cpp5, appBoostBeast, ...).
  *
  * The runtime level (the second LOG_INIT argument) is driven through the
- * branch-agnostic MACRO_LVL_* severities. Presence is asserted only for ERROR
- * and WARNING messages, because the facade exposes no flush and a logger is
- * only required to flush at the WARNING severity or above; the lower severities
- * are exercised through their absence when the runtime level drops them, which
- * needs no flush.
+ * branch-agnostic MACRO_LVL_* severities. The logger flushes every record, so
+ * the presence of a message at every severity proves that its absence at a
+ * lower runtime level is the level filtering and not an unflushed buffer.
  */
 class CTEST_log : public Test
 {
@@ -124,6 +127,39 @@ TEST_F(CTEST_log, trace_is_dropped_when_runtime_level_is_debug)
   LOGT("must be dropped at the debug runtime level");
 
   EXPECT_TRUE(log_contents().empty());
+}
+
+TEST_F(CTEST_log, info_is_written_when_runtime_level_is_info)
+{
+  static const std::string expect = "facade info is present";
+
+  init(MACRO_LVL_INFO);
+
+  LOGI(expect);
+
+  EXPECT_THAT(log_contents(), EndsWith(expect + "\n"));
+}
+
+TEST_F(CTEST_log, debug_is_written_when_runtime_level_is_debug)
+{
+  static const std::string expect = "facade debug is present";
+
+  init(MACRO_LVL_DEBUG);
+
+  LOGD(expect);
+
+  EXPECT_THAT(log_contents(), EndsWith(expect + "\n"));
+}
+
+TEST_F(CTEST_log, trace_is_written_when_runtime_level_is_trace)
+{
+  static const std::string expect = "facade trace is present";
+
+  init(MACRO_LVL_TRACE);
+
+  LOGT(expect);
+
+  EXPECT_THAT(log_contents(), EndsWith(expect + "\n"));
 }
 
 TEST_F(CTEST_log, multithread_error_logs)

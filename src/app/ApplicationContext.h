@@ -2,7 +2,6 @@
 #define YOUR_CPP_APP_TEMPLATE_PROJECT_APPLICATIONCONTEXT_CLASS_H
 
 #include <atomic>
-#include <functional>
 #include <memory>
 #include <string>
 #include <vector>
@@ -103,32 +102,59 @@ struct ApplicationContext
   int mAP_epochs{4};
   std::string gpus;
   bool clear{false};
-  bool dont_save_charts_every_iter{false};
+  /// @brief The training charts are saved every 100 iterations by default
+  /// (the original Darknet cadence), the --save-charts-every-iter flag saves
+  /// them on every iteration.
+  bool dont_save_charts_every_iter{true};
   bool draw_precision{false};
   std::string train_cfg;
   std::string detect_cfg;
+  /// @brief The class names file. Takes precedence over the names= key of the
+  /// network cfg [net] section when given.
+  std::string names;
   std::string latest_weights;
   /// @brief If enable training network resize (disabling worse the result)
   bool dont_resize_network{false};
   /// @brief The image to try to detect on
   std::string image;
-  /// @brief If to reaload data for the each iteration (disabling worse the
-  /// result)
-  bool reload_data{false};
+  /// @brief If to load a new training batch for every iteration (disabling it
+  /// reuses the loaded batch, which worsens the result). Lowered by the
+  /// --dont-reload-data-every-iteration flag, while the --data-reload-nth one
+  /// takes precedence over it.
+  bool reload_data{true};
   /// @brief The OpenMP max threads
   unsigned int threads{0};
-  /// @brief true if application should stop it's execution
+  /// @brief true if application should stop it's execution. Raised by the
+  /// app::StopSignalsHandler on a SIGINT, a SIGTERM, a SIGQUIT or a SIGHUP
+  /// arrival.
   std::atomic_bool stop{false};
+  /// @brief The number of the OS signal which raised the stop flag, or zero.
+  /// The application reports it with the 128 + signal number exit status, the
+  /// way a shell does for a process the signal killed.
+  std::atomic_int stop_signal{0};
+  /// @brief true while the application was asked to hold it's work without
+  /// leaving the IApplication::run method. Raised by the
+  /// app::PauseSignalsHandler and lowered by the app::ContinueSignalsHandler.
+  std::atomic_bool pause{false};
+  /// @brief true once the application was asked to reread it's configuration
+  /// by the app::ReloadSignalsHandler. The application is expected to lower it
+  /// back on it's own once the configuration is reread.
+  std::atomic_bool reload{false};
+  /// @brief true while the first user defined request is pending. Raised by
+  /// the app::UserSignalsHandler on a SIGUSR1 arrival. The meaning of the
+  /// request is the application own one and the application is expected to
+  /// lower the flag back on it's own after serving it.
+  std::atomic_bool first_user_request{false};
+  /// @brief true while the second user defined request is pending. Raised by
+  /// the app::UserSignalsHandler on a SIGUSR2 arrival. See the
+  /// first_user_request flag.
+  std::atomic_bool second_user_request{false};
   /// @brief Every 10 train iterations (by default) resize network
   unsigned int net_nth_resize{10};
   /// @brief if non-zero the training data will reload every specified iteration
   unsigned int nth_iteration_reload{0U};
   /// @brief stop training when this value reached or less
   double stop_less_avg_loss{0.0};
-
-  using stop_subs = std::shared_ptr<std::function<void()>>;
-
-  std::vector<stop_subs> stop_subscribers;
 };
 
 using AppCtxPtr = std::shared_ptr<ApplicationContext>;

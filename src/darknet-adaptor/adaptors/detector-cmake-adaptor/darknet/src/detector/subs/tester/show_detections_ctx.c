@@ -4,86 +4,67 @@
 #include <limits.h>
 #include <stdlib.h>
 
-#include "box.h"
-#include "data.h"
 #include "image.h"
+#include "image_opencv.h"
 #include "src/clog/clog.h"
 #include "src/detector/detector_context.h"
 
+static const char* const PREDICTIONS = "predictions";
+
+// Waits for a key press in the predictions window, but not after the window is
+// closed and not after the computation is asked to stop, so a stop request
+// isn't held by the shown window.
+static void wait_for_key_or_stop(struct detector_context* ctx)
+{
+  static const int POLL_MS = 100;
+
+  // the first poll gets the window shown
+  if (wait_key_cv(POLL_MS) >= 0) {
+    return;
+  }
+
+  // A highgui backend which doesn't report the window visibility can't tell a
+  // closed window apart, so it gets the original blocking wait for a key.
+  if (is_window_visible_cv(PREDICTIONS) < 0) {
+    wait_until_press_key_cv();
+    return;
+  }
+
+  while (!detector_context_is_stopped(ctx) &&
+         is_window_visible_cv(PREDICTIONS) > 0) {
+    if (wait_key_cv(POLL_MS) >= 0) {
+      return;
+    }
+  }
+}
+
 int show_detections_ctx(struct detector_context* ctx)
 {
-  static const float nms = .45f;  // 0.4F
+  assert(ctx != NULL);
 
-  ctx->nboxes = 0;
-  ctx->dets =
-      get_network_boxes(&ctx->net, ctx->im.w, ctx->im.h, ctx->thresh,
-                        ctx->hier_thresh, 0, 1, &ctx->nboxes, ctx->letter_box);
-
-  if (ctx->nboxes <= 0) {
-    CLOGIM("NO DETECTIONS!");
+  if (ctx == NULL) {
+    CLOGEM("Invalid context pointer provided");
     return 0;
   }
-
-  int selected_detections_num = 0;
-  detection_with_class* selected_detections = get_actual_detections(
-      ctx->dets, ctx->nboxes, ctx->thresh, &selected_detections_num, ctx->names,
-      ctx->names_size);
-
-  if (selected_detections_num <= 0) {
-    CLOGIM("NO DETECTIONS!");
-    free(selected_detections);
-    return 0;
-  }
-
-  if (ctx->net.names == NULL) {
-    CLOGEM("No class names file path");
-    free(selected_detections);
-    return 0;
-  }
-
-  ctx->names_size = 0;
-
-  ctx->names = get_labels_custom(ctx->net.names, &ctx->names_size);
-
-  if (ctx->net.layers[ctx->net.n - 1].classes != ctx->names_size) {
-    CLOGE(
-        "Error: in the file %s number of names %d that isn't equal to "
-        "classes=%d in the file %s",
-        ctx->net.names, ctx->names_size,
-        ctx->net.layers[ctx->net.n - 1].classes, ctx->cfg);
-  }
-
-  CLOGI("Classes count: %d", ctx->names_size);
 
   ctx->alphabet = load_alphabet();
 
-  CLOGI("Detected %d classes", ctx->nboxes);
-
-  if (nms) {
-    if (ctx->l.nms_kind == DEFAULT_NMS)
-      do_nms_sort(ctx->dets, ctx->nboxes, ctx->l.classes, nms);
-    else
-      diounms_sort(ctx->dets, ctx->nboxes, ctx->l.classes, nms, ctx->l.nms_kind,
-                   ctx->l.beta_nms);
-  }
-
+  // An image without detections is a regular result too, so it gets saved
+  // (and shown) the same way to never leave a stale predictions image behind.
   draw_detections_v3(ctx->im, ctx->dets, ctx->nboxes, ctx->thresh, ctx->names,
                      ctx->alphabet, ctx->l.classes, ctx->ext_output,
                      ctx->names_size);
 
-  save_image(ctx->im, "predictions");
+  save_image(ctx->im, PREDICTIONS);
 
   if (!ctx->dont_show) {
-    show_image(ctx->im, "predictions");
-    wait_until_press_key_cv();
+    show_image(ctx->im, PREDICTIONS);
+    wait_for_key_or_stop(ctx);
     destroy_all_windows_cv();
   }
 
-  free_detections(ctx->dets, ctx->nboxes);
-  free_image(ctx->im);
-  free_image(ctx->sized);
   free_alphabet(ctx->alphabet);
-  free(selected_detections);
+  ctx->alphabet = NULL;
 
   return 1;
 }

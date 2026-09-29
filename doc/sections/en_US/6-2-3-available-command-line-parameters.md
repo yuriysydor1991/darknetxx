@@ -23,13 +23,11 @@ The options are grouped below by their purpose. The options with a value placeho
 | --- | --- | --- |
 | `--train-cfg` | `<FILE>` | training network configuration (`*.cfg`) file |
 | `--detect-cfg` | `<FILE>` | detection network configuration (`*.cfg`) file |
+| `--names` | `<FILE>` | class names file (overrides the cfg `[net]` `names=` key) |
 | `--weights` | `<FILE>` | network weights file to load |
 | `--image` | `<FILE>` | image file to run the detection on |
 | `--gpus` | `<LIST>` | comma separated list of GPU indexes to use |
 | `--threads` | `<N>` | number of worker threads to use |
-| `--width` | `<N>` | override the network input width |
-| `--height` | `<N>` | override the network input height |
-| `--num-of-clusters` | `<N>` | number of anchor clusters (default 5) |
 
 ## Training options
 
@@ -40,12 +38,13 @@ The options are grouped below by their purpose. The options with a value placeho
 | `--mAP-epochs` | `<N>` | calculate mAP every given number of epochs (default 4) |
 | `--dont-resize-network` | | do not resize the network during the training |
 | `--net-resize-nth` | `<N>` | resize the network every Nth training iteration (default 10) |
-| `--data-reload-nth` | `<N>` | reload the training data every Nth iteration |
-| `--dont-reload-data-every-iteration` | | do not reload the training data on every iteration |
+| `--data-reload-nth` | `<N>` | load a new training batch every Nth iteration only, reusing it in between (takes precedence over the flag below) |
+| `--dont-reload-data-every-iteration` | | keep training on the loaded batch instead of loading a new one every iteration (a network resize still reloads it) |
 | `--stop-less-avg-loss` | `<VALUE>` | stop the training once the average loss reaches the given value or less |
 | `--chart-path` | `<FILE>` | path to save the training chart into |
-| `--dont-save-charts-every-iter` | | do not save the training chart on every iteration |
-| `--draw-precision` | | draw the precision curve on the training chart |
+| `--save-charts-every-iter` | | save the training chart on every iteration, not every 100 |
+| `--dont-save-charts-every-iter` | | save the training chart every 100 iterations (the default) |
+| `--draw-precision` | | draw the mAP curve on every iteration once it's calculated, not only on the calculations |
 
 ## Detection and output options
 
@@ -54,30 +53,57 @@ The options are grouped below by their purpose. The options with a value placeho
 | `--thresh` | `<VALUE>` | detection confidence threshold (default 0.25) |
 | `--iou-thresh` | `<VALUE>` | intersection over union threshold (default 0.5) |
 | `--hier` | `<VALUE>` | hierarchical detection threshold (default 0.5) |
-| `--points` | `<N>` | number of points to use for the mAP calculation |
+| `--points` | `<N>` | recall points of the training mAP calculation (`101` for MS COCO, `11` for PascalVOC 2007, `0` for the area under the curve) |
 | `--letter-box` | | resize the image keeping the aspect ratio (letter box) |
 | `--ext-output` | | print extended output with the bounding box coordinates |
 | `--save-labels` | | save the detected labels |
-| `--dontdraw-bbox` | | do not draw the detected bounding boxes |
-| `--prefix` | `<PREFIX>` | prefix for the saved output file names |
 | `--out` | `<FILE>` | file to write the results into |
-| `--out-filename` | `<FILE>` | output video/image file name |
-| `--benchmark` | | benchmark the detection performance |
+| `--benchmark` | | benchmark the detection performance (implies `--dont-show`) |
+| `--benchmark-layers` | | benchmark every network layer performance (GPU builds only) |
 
-## Camera, video and streaming options
+## Window options
 
 | Option | Value | Description |
 | --- | --- | --- |
-| `--show` | | show the GUI window (enabled by default) |
-| `--dont-show` | | do not show the GUI window |
+| `--show` | | show the GUI windows (enabled by default, reverts `--dont-show`) |
+| `--dont-show` | | do not show the GUI windows |
 | `--show-imgs` | | show the augmented training images |
-| `--cam-index` | `<N>` | camera (web cam) index to capture from |
-| `--frame-skip` | `<N>` | number of frames to skip between the detections |
-| `--avg-frames` | `<N>` | number of frames to average the detections over (default 3) |
-| `--time-limit-sec` | `<SEC>` | stop the processing after the given number of seconds |
-| `--mjpeg-port` | `<PORT>` | port to stream the MJPEG result on |
-| `--json-port` | `<PORT>` | port to stream the JSON result on |
-| `--http-post-host` | `<HOST>` | host to send the HTTP POST results to |
-| `--json-file-output` | `<FILE>` | file to write the JSON results into |
+
+## Not supported yet options
+
+The options of the original Darknet video demo, results streaming and anchors calculation modes, which the `darknetxx` has no code of yet. They are reserved and rejected with an error when given, instead of being silently ignored.
+
+| Option | Value | Original meaning |
+| --- | --- | --- |
+| `--width`, `--height` | `<N>` | the anchors calculation input size |
+| `--num-of-clusters` | `<N>` | the number of the anchor clusters |
+| `--prefix` | `<PREFIX>` | the prefix of the saved video frames |
+| `--out-filename` | `<FILE>` | the output video file |
+| `--dontdraw-bbox` | | no bounding boxes on the video frames |
+| `--cam-index` | `<N>` | the camera (web cam) to capture from |
+| `--frame-skip` | `<N>` | the frames to skip between the detections |
+| `--avg-frames` | `<N>` | the frames to average the detections over |
+| `--time-limit-sec` | `<SEC>` | the video processing time limit |
+| `--mjpeg-port` | `<PORT>` | the port to stream the MJPEG result on |
+| `--json-port` | `<PORT>` | the port to stream the JSON result on |
+| `--http-post-host` | `<HOST>` | the host to send the HTTP POST results to |
+| `--json-file-output` | `<FILE>` | the file to write the video JSON results into |
+
+## Data files of the network configuration
+
+The original Darknet took the class names, the training and validation image lists and the backup directory from a separate `*.data` file. The `darknetxx` reads them from the `[net]` section of the network configuration (`*.cfg`) file instead:
+
+| Key | Default | Description |
+| --- | --- | --- |
+| `names=` | `data/names.list` | class names file, one name per line |
+| `train=` | `data/train.txt` | list of the training images |
+| `valid=` | the `train=` value | list of the validation images for the mAP calculation (`--map`) |
+| `backup=` | `backup` | directory to save the trained weights into |
+
+The relative paths are resolved against the current working directory. The `--names` command line parameter takes precedence over the `names=` key, so a stock configuration file may be used for the detection as is, for example:
+
+```
+darknetxx --detect-cfg yolov4.cfg --weights yolov4.weights --names coco.names --image dog.jpg
+```
 
 To introduce a new command line parameter of your own examine the [Application runtime components](/doc/sections/en_US/4-7-1-application-runtime-components.md) section.

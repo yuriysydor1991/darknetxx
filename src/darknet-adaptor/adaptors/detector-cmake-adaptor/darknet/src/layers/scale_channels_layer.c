@@ -9,67 +9,6 @@
 #include "src/clog/clog.h"
 #include "utils.h"
 
-layer make_scale_channels_layer(int batch, int index, int w, int h, int c,
-                                int w2, int h2, int c2, int scale_wh)
-{
-  CLOGI("scale Layer: %d", index);
-
-  layer l = {(LAYER_TYPE)0};
-  l.type = SCALE_CHANNELS;
-  l.batch = batch;
-  l.scale_wh = scale_wh;
-  l.w = w;
-  l.h = h;
-  l.c = c;
-  if (!l.scale_wh) assert(w == 1 && h == 1);
-  else
-    assert(c == 1);
-
-  l.out_w = w2;
-  l.out_h = h2;
-  l.out_c = c2;
-  if (!l.scale_wh) assert(l.out_c == l.c);
-  else
-    assert(l.out_w == l.w && l.out_h == l.h);
-
-  l.outputs = l.out_w * l.out_h * l.out_c;
-  l.inputs = l.outputs;
-  l.index = index;
-
-  l.delta = (float *)xcalloc(l.outputs * batch, sizeof(float));
-  l.output = (float *)xcalloc(l.outputs * batch, sizeof(float));
-
-  l.forward = forward_scale_channels_layer;
-  l.backward = backward_scale_channels_layer;
-#ifdef GPU
-  l.forward_gpu = forward_scale_channels_layer_gpu;
-  l.backward_gpu = backward_scale_channels_layer_gpu;
-
-  l.delta_gpu = cuda_make_array(l.delta, l.outputs * batch);
-  l.output_gpu = cuda_make_array(l.output, l.outputs * batch);
-#endif
-  return l;
-}
-
-void resize_scale_channels_layer(layer *l, network *net)
-{
-  layer first = net->layers[l->index];
-  l->out_w = first.out_w;
-  l->out_h = first.out_h;
-  l->outputs = l->out_w * l->out_h * l->out_c;
-  l->inputs = l->outputs;
-  l->delta = (float *)xrealloc(l->delta, l->outputs * l->batch * sizeof(float));
-  l->output =
-      (float *)xrealloc(l->output, l->outputs * l->batch * sizeof(float));
-
-#ifdef GPU
-  cuda_free(l->output_gpu);
-  cuda_free(l->delta_gpu);
-  l->output_gpu = cuda_make_array(l->output, l->outputs * l->batch);
-  l->delta_gpu = cuda_make_array(l->delta, l->outputs * l->batch);
-#endif
-}
-
 void forward_scale_channels_layer(const layer l, network_state state)
 {
   int size = l.batch * l.out_c * l.out_w * l.out_h;
@@ -79,7 +18,7 @@ void forward_scale_channels_layer(const layer l, network_state state)
 
   if (l.scale_wh) {
     int i;
-    // #pragma omp parallel for
+#pragma omp parallel for
     for (i = 0; i < size; ++i) {
       int input_index = i % channel_size + (i / batch_size) * channel_size;
 
@@ -87,7 +26,7 @@ void forward_scale_channels_layer(const layer l, network_state state)
     }
   } else {
     int i;
-    // #pragma omp parallel for
+#pragma omp parallel for
     for (i = 0; i < size; ++i) {
       l.output[i] = state.input[i / channel_size] * from_output[i];
     }
@@ -111,6 +50,8 @@ void backward_scale_channels_layer(const layer l, network_state state)
 
   if (l.scale_wh) {
     int i;
+    // Stays serial: the iterations accumulate into the shared state.delta
+    // elements.
     // #pragma omp parallel for
     for (i = 0; i < size; ++i) {
       int input_index = i % channel_size + (i / batch_size) * channel_size;
@@ -124,6 +65,8 @@ void backward_scale_channels_layer(const layer l, network_state state)
     }
   } else {
     int i;
+    // Stays serial: the iterations accumulate into the shared state.delta
+    // elements.
     // #pragma omp parallel for
     for (i = 0; i < size; ++i) {
       state.delta[i / channel_size] +=

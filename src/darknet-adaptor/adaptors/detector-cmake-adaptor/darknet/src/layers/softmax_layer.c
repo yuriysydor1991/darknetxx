@@ -29,34 +29,6 @@ void softmax_tree(float *input, int batch, int inputs, float temp,
   }
 }
 
-softmax_layer make_softmax_layer(int batch, int inputs, int groups)
-{
-  assert(inputs % groups == 0);
-  CLOGI("softmax                                        %4d", inputs);
-  softmax_layer l = {(LAYER_TYPE)0};
-  l.type = SOFTMAX;
-  l.batch = batch;
-  l.groups = groups;
-  l.inputs = inputs;
-  l.outputs = inputs;
-  l.loss = (float *)xcalloc(inputs * batch, sizeof(float));
-  l.output = (float *)xcalloc(inputs * batch, sizeof(float));
-  l.delta = (float *)xcalloc(inputs * batch, sizeof(float));
-  l.cost = (float *)xcalloc(1, sizeof(float));
-
-  l.forward = forward_softmax_layer;
-  l.backward = backward_softmax_layer;
-#ifdef GPU
-  l.forward_gpu = forward_softmax_layer_gpu;
-  l.backward_gpu = backward_softmax_layer_gpu;
-
-  l.output_gpu = cuda_make_array(l.output, inputs * batch);
-  l.loss_gpu = cuda_make_array(l.loss, inputs * batch);
-  l.delta_gpu = cuda_make_array(l.delta, inputs * batch);
-#endif
-  return l;
-}
-
 void forward_softmax_layer(const softmax_layer l, network_state net)
 {
   if (l.softmax_tree) {
@@ -138,96 +110,6 @@ void backward_softmax_layer_gpu(const softmax_layer layer, network_state state)
 #endif
 
 // -------------------------------------
-
-// Supervised Contrastive Learning: https://arxiv.org/pdf/2004.11362.pdf
-contrastive_layer make_contrastive_layer(int batch, int w, int h, int c,
-                                         int classes, int inputs,
-                                         layer *yolo_layer)
-{
-  contrastive_layer l = {(LAYER_TYPE)0};
-  l.type = CONTRASTIVE;
-  l.batch = batch;
-  l.inputs = inputs;
-  l.w = w;
-  l.h = h;
-  l.c = c;
-  l.temperature = 1;
-
-  l.max_boxes = 0;
-  if (yolo_layer) {
-    l.detection = 1;
-    l.max_boxes = yolo_layer->max_boxes;
-    l.labels = yolo_layer->labels;        // track id
-    l.class_ids = yolo_layer->class_ids;  // class_ids
-    l.n = yolo_layer->n;  // num of embeddings per cell = num of anchors
-    l.classes = yolo_layer->classes;  // num of classes
-    classes = l.classes;
-    l.embedding_size = l.inputs / (l.n * l.h * l.w);
-    l.truths = yolo_layer->truths;
-    if (l.embedding_size != yolo_layer->embedding_size) {
-      CLOGE(
-          " Error: [contrastive] embedding_size=%d isn't equal to [yolo] "
-          "embedding_size=%d. They should use the same [convolutional] layer",
-          l.embedding_size, yolo_layer->embedding_size);
-      error("Error!", DARKNET_LOC);
-    }
-    if (l.inputs % (l.n * l.h * l.w) != 0) {
-      CLOGW(
-          " Warning: filters= number in the previous (embedding) layer isn't "
-          "divisable by number of anchors %d",
-          l.n);
-    }
-  } else {
-    l.detection = 0;
-    l.labels = (int *)xcalloc(l.batch, sizeof(int));  // labels
-    l.n = 1;              // num of embeddings per cell
-    l.classes = classes;  // num of classes
-    l.embedding_size = l.c;
-  }
-  l.outputs = inputs;
-
-  l.loss = (float *)xcalloc(1, sizeof(float));
-  l.output = (float *)xcalloc(inputs * batch, sizeof(float));
-  l.delta = (float *)xcalloc(inputs * batch, sizeof(float));
-  l.cost = (float *)xcalloc(1, sizeof(float));
-
-  const size_t step = l.batch * l.n * l.h * l.w;
-  l.cos_sim = NULL;
-  l.exp_cos_sim = NULL;
-  l.p_constrastive = NULL;
-  if (!l.detection) {
-    l.cos_sim = (float *)xcalloc(step * step, sizeof(float));
-    l.exp_cos_sim = (float *)xcalloc(step * step, sizeof(float));
-    l.p_constrastive = (float *)xcalloc(step * step, sizeof(float));
-  }
-  // l.p_constrastive = (float*)xcalloc(step*step, sizeof(float));
-  // l.contrast_p_size = (int*)xcalloc(1, sizeof(int));
-  //*l.contrast_p_size = step;
-  // l.contrast_p = (contrastive_params*)xcalloc(*l.contrast_p_size,
-  // sizeof(contrastive_params));
-
-  l.forward = forward_contrastive_layer;
-  l.backward = backward_contrastive_layer;
-#ifdef GPU
-  l.forward_gpu = forward_contrastive_layer_gpu;
-  l.backward_gpu = backward_contrastive_layer_gpu;
-
-  l.output_gpu = cuda_make_array(l.output, inputs * batch);
-  l.delta_gpu = cuda_make_array(l.delta, inputs * batch);
-
-  const int max_contr_size = (l.max_boxes * l.batch) * (l.max_boxes * l.batch) *
-                             sizeof(contrastive_params) / 4;
-  CLOGI(" max_contr_size = %d MB", max_contr_size / (1024 * 1024));
-  l.contrast_p_gpu =
-      (contrastive_params *)cuda_make_array(NULL, max_contr_size);
-#endif
-  CLOGI(
-      "contrastive %4d x%4d x%4d x emb_size %4d x batch: %4d  classes = "
-      "%4d, step = %4zu",
-      w, h, l.n, l.embedding_size, batch, l.classes, step);
-  if (l.detection) CLOGIM(" detection");
-  return l;
-}
 
 static inline float clip_value(float val, const float max_val)
 {
@@ -451,7 +333,7 @@ void forward_contrastive_layer(contrastive_layer l, network_state state)
         (l.max_boxes * l.batch) * (l.max_boxes * l.batch);
     if (max_contr_size < contr_size) {
       CLOGE(
-          " Error: too large number of bboxes: contr_size = %d > "
+          " Error: too large number of bboxes: contr_size = %zu > "
           "max_contr_size  = %d",
           contr_size, max_contr_size);
       error("Error!", DARKNET_LOC);
@@ -536,7 +418,7 @@ void forward_contrastive_layer(contrastive_layer l, network_state state)
   }
 
   // calc deltas
-  // #pragma omp parallel for collapse(4)
+#pragma omp parallel for collapse(4)
   for (int bd = 0; bd < l.batch; ++bd) {
     for (int nd = 0; nd < l.n; ++nd) {
       for (int hd = 0; hd < l.h; ++hd) {

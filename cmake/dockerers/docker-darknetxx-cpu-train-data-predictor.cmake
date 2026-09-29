@@ -34,6 +34,13 @@ set(
   CACHE STRING "The yolov4-tiny.conv.29 file location"
 )
 
+set(
+  HOST_RESOURCES_IMAGES
+  ""
+  CACHE STRING
+  "Host images dir to predict on, mounted into the predictor container"
+)
+
 if(YOLO4_TRAINING_DATA_DIR STREQUAL "")
   message(FATAL_ERROR "No YOLO4 training data dir provided")
 endif()
@@ -46,7 +53,7 @@ configure_file(${DARKNETXX_CPU_PREDICTOR_DOCKERFILE_SRC} ${DARKNETXX_CPU_PREDICT
 
 set(
   DARKNETXX_CPU_PREDICTOR_DOCKER_SINGLE_RUN_NAME
-  "${PROJECT_BINARY_NAME_lower}-darknetxx-cpu-train-docker"
+  "${PROJECT_BINARY_NAME_lower}-darknetxx-cpu-predictor-docker"
 )
 
 # Insert next into command to expand the traces
@@ -78,10 +85,6 @@ set(
     -v $(XDG_RUNTIME_DIR)/bus:$(XDG_RUNTIME_DIR)/bus
     -v $(XDG_RUNTIME_DIR)/at-spi/bus_0:$(XDG_RUNTIME_DIR)/at-spi/bus_0
     -e XDG_RUNTIME_DIR=$(XDG_RUNTIME_DIR)
-    --device /dev/dri
-    --group-add video
-    --gpus all
-    --runtime=nvidia
     -v ${HOST_RESOURCES_IMAGES}:/var/share/images:ro
     -v ${YOLO4_137_PRESET_DATA_FILE}:/usr/share/yolov4.conv.137:ro
     -v ${YOLO4_TINY_PRESET_DATA_FILE}:/usr/share/yolov4-tiny.conv.29:ro
@@ -90,13 +93,13 @@ set(
     xhost -local:docker
 )
 
-message(STATUS "docker darkentxx CPU single build command: ${DOCKERXX_CPU_SINGLE_BUILD_CMD}")
-message(STATUS "docker darkentxx CPU single run command: ${DOCKERXX_CPU_SINGLE_RUN_CMD}")
+message(STATUS "docker darkentxx CPU single build command: ${DARKNETXX_CPU_PREDICTOR_DOCKER_SINGLE_BUILD_CMD}")
+message(STATUS "docker darkentxx CPU single run command: ${DARKNETXX_CPU_PREDICTOR_DOCKER_SINGLE_RUN_CMD}")
 
 add_custom_target(
   docker-single-build-darknetxx-cpu-predict
   COMMAND ${DARKNETXX_CPU_PREDICTOR_DOCKER_SINGLE_BUILD_CMD}
-  COMMENT "Building the docker single run image ${DARKNETXX_CPU_TRAIN_DOCKER_SINGLE_RUN_NAME}"
+  COMMENT "Building the docker single run image ${DARKNETXX_CPU_PREDICTOR_DOCKER_SINGLE_RUN_NAME}"
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 )
 
@@ -104,5 +107,5 @@ add_custom_target(
   docker-single-run-darknetxx-cpu-predict
   COMMAND ${DARKNETXX_CPU_PREDICTOR_DOCKER_SINGLE_RUN_CMD}
   DEPENDS docker-single-build-darknetxx-cpu-predict
-  COMMENT "Running the docker single run image ${DARKNETXX_CPU_TRAIN_DOCKER_SINGLE_RUN_NAME}"
+  COMMENT "Running the docker single run image ${DARKNETXX_CPU_PREDICTOR_DOCKER_SINGLE_RUN_NAME}"
 )

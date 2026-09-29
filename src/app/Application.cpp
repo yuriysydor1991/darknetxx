@@ -1,12 +1,12 @@
 #include "src/app/Application.h"
 
 #include <fenv.h>
+#include <unistd.h>
 
 #include <cassert>
 #include <cfenv>
 #include <csignal>
-#include <cstring>
-#include <iostream>
+#include <cstdlib>
 #include <memory>
 
 #include "src/OMP/OMPController.h"
@@ -16,16 +16,30 @@
 namespace app
 {
 
+#ifdef ENABLE_FP_TRAPS
+
 namespace
 {
 
+/**
+ * @brief Reports the trapped floating point exception and terminates the
+ * process. Runs in the signal context of whichever thread computed, so it uses
+ * the async signal safe calls only: no logging and no exit handlers.
+ */
 void fpe_handler(int)
 {
-  LOGE("Floating point exception caught!");
-  std::exit(1);
+  static const char message[] = "Floating point exception caught!\n";
+
+  // nothing to do about a failed write of a dying process
+  [[maybe_unused]] const ssize_t written =
+      write(STDERR_FILENO, message, sizeof(message) - 1);
+
+  _exit(EXIT_FAILURE);
 }
 
 }  // namespace
+
+#endif  // ENABLE_FP_TRAPS
 
 Application::Application() {}
 
@@ -38,18 +52,9 @@ int Application::run(AppCtxPtr ctx)
     return INVALID;
   }
 
-  if (apt == nullptr) {
-    apt = shared_from_this();
-
-    if (!init_signals()) {
-      LOGE("Failure during signals init");
-      return INVALID;
-    }
-  } else {
-    LOGW("Application instance is already created");
-  }
-
   actx = ctx;
+
+  init_computation_traps();
 
   if (!deal_omp(ctx)) {
     LOGE("Adjust OpenMP values failure");
@@ -61,11 +66,34 @@ int Application::run(AppCtxPtr ctx)
   assert(darknet != nullptr);
 
   if (!darknet->perform(ctx)) {
+    if (ctx->stop.load()) {
+      return stopped_status(ctx);
+    }
+
     LOGE("Fail to init the darknet");
     return INVALID;
   }
 
+  // the work was cut short by a stop request, which is not a success
+  if (ctx->stop.load()) {
+    return stopped_status(ctx);
+  }
+
   return 0;
+}
+
+int Application::stopped_status(AppCtxPtr ctx)
+{
+  // the exit status a shell reports for a process the signal killed
+  static constexpr const int SIGNAL_EXIT_STATUS_BASE = 128;
+
+  assert(ctx != nullptr);
+
+  const int signalNumber = ctx->stop_signal.load();
+
+  LOGW("The work is stopped by the signal " << signalNumber);
+
+  return signalNumber > 0 ? SIGNAL_EXIT_STATUS_BASE + signalNumber : INVALID;
 }
 
 bool Application::deal_omp(AppCtxPtr ctx)
@@ -89,73 +117,14 @@ bool Application::deal_omp(AppCtxPtr ctx)
   return true;
 }
 
-bool Application::stop_catch()
+void Application::init_computation_traps()
 {
-  if (actx == nullptr) {
-    LOGW("No application context available");
-    return false;
-  }
-
-  LOGD("Setting up stop flag");
-  actx->stop.store(true);
-
-  for (auto& sub : actx->stop_subscribers) {
-    if (sub != nullptr) {
-      auto f = *sub;
-      if (f != nullptr) {
-        f();
-      }
-    }
-  }
-
-  return true;
-}
-
-bool Application::init_signals()
-{
-  static std::shared_ptr<struct sigaction> sa;
-
-  if (sa != nullptr) {
-    LOGT("Signals already initialized");
-    return true;
-  }
-
-  sa = std::make_shared<struct sigaction>();
-
-  sa->sa_handler = &Application::handle_sigint;
-  sigemptyset(&sa->sa_mask);
-  sa->sa_flags = 0;
-
-  if (sigaction(SIGINT, sa.get(), nullptr) == -1) {
-    const auto err = errno;
-    LOGE("Failure during sigaction: " << std::strerror(err));
-    return false;
-  }
-
-  if (sigaction(SIGTERM, sa.get(), nullptr) == -1) {
-    const auto err = errno;
-    LOGE("Failure during sigaction: " << std::strerror(err));
-    return false;
-  }
-
-#ifdef DEBUG
+#ifdef ENABLE_FP_TRAPS
   LOGD("Initing computation exceptions");
 
   std::signal(SIGFPE, fpe_handler);
   feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW);
-#endif  // DEBUG
-
-  return true;
-}
-
-void Application::handle_sigint([[maybe_unused]] int sig)
-{
-  if (apt == nullptr) {
-    LOGE("No application instance declared");
-    return;
-  }
-
-  apt->stop_catch();
+#endif  // ENABLE_FP_TRAPS
 }
 
 }  // namespace app

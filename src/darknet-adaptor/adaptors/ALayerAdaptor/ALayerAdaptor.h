@@ -2,6 +2,7 @@
 #define DARKNET_CXX_PORT_PROJECT_ALAYERADAPTOR_CLASS_H
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "src/darknet-adaptor/adaptors/IDarknetAdaptor.h"
@@ -13,477 +14,540 @@ namespace darknet_adaptor::adaptors
 
 /**
  * @brief The original darknet adaptor for a layer structure.
+ *
+ * The adaptor owns the memory of the wrapped darknet layer: every buffer is
+ * kept in the adaptor's own C++ containers and the pointer fields of the
+ * struct point at them. The darknet C code only computes with the struct, it
+ * never allocates, reallocates nor frees the layer memory, all of that is
+ * done here and by the layer classes of the Layers directory. Therefore:
+ * - The struct returned by get() is a VIEW of the adaptor's storage. It keeps
+ *   the adaptor alive and it is the struct darknet computes with.
+ * - The getters return const references: a buffer is changed only through
+ *   its setter, which re-points the struct field. The setter of an empty
+ *   container sets the field to the NULL, as darknet expects for an absent
+ *   buffer.
+ * - Some fields borrow a buffer of another layer instead, the way darknet
+ *   aliases them (the borrow_*() setters): the previous layer output and
+ *   delta of the DROPOUT and EMPTY layers, the output sub-layer ones of the
+ *   RNN and CRNN layers, the weights of a layer sharing them with another one,
+ *   the YOLO labels of a CONTRASTIVE layer. The getter of a borrowed field
+ *   returns the empty own container and the owner of the buffer has to
+ *   outlive the borrowing layer, as the layers of one network do.
+ * - Sub-layers are child adaptors kept alive by their parent; they must not
+ *   form cycles.
+ * - The network keeps the structs of it's layers in one array, which darknet
+ *   indexes. ANetworkAdaptor moves the layer struct into it's slot of that
+ *   array with bind(), so the adaptor and darknet share the one struct.
+ * - The adaptor has to be owned by a std::shared_ptr (see create()), which
+ *   get() relies on.
  */
 class ALayerAdaptor : virtual public IDarknetAdaptor,
-                      virtual public StructAdaptorHelper
+                      virtual public StructAdaptorHelper,
+                      public std::enable_shared_from_this<ALayerAdaptor>
 {
  public:
   using ALayerAdaptorPtr = std::shared_ptr<ALayerAdaptor>;
+  using forward_fn = decltype(layer::forward);
+  using backward_fn = decltype(layer::backward);
+  using update_fn = decltype(layer::update);
 
   virtual ~ALayerAdaptor() = default;
   ALayerAdaptor();
   ALayerAdaptor(const ALayerAdaptor&) = delete;
   ALayerAdaptor(ALayerAdaptor&&) = delete;
 
-  ALayerAdaptorPtr create();
+  static ALayerAdaptorPtr create();
 
   virtual bool perform(DarknetContextPtr dctx) override;
 
+  /**
+   * @brief Returns the adaptor's layer struct as a view.
+   *
+   * The returned pointer shares the ownership of the adaptor, so the struct
+   * and its buffers stay valid for as long as the pointer is held. The
+   * buffers belong to the adaptor's containers, darknet computes with them
+   * but never frees nor reallocates them. Throws std::bad_weak_ptr if the
+   * adaptor is not owned by a std::shared_ptr.
+   */
   layerptr get();
 
-  LAYER_TYPE type();
-  ACTIVATION activation();
-  ACTIVATION lstm_activation();
-  COST_TYPE cost_type();
+  /**
+   * @brief Moves the layer struct into the given slot and keeps using the
+   * slot as the layer struct from now on.
+   *
+   * ANetworkAdaptor binds every layer to it's slot of the network layers
+   * array. The slot owner has to be kept alive by the slot pointer (an
+   * aliasing std::shared_ptr of the array). The layers referring to this
+   * one's struct (the share_layer field of another layer) have to be
+   * relink()ed afterwards.
+   */
+  void bind(layerptr slot);
 
-  //  void (*forward)(struct layer, struct network_state);
-  //  void (*backward)(struct layer, struct network_state);
-  //  void (*update)(struct layer, int, float, float, float);
+  /**
+   * @brief Points the share_layer and the sub-layer fields at the current
+   * structs of their adaptors, after one of them was bound to a slot.
+   */
+  void relink();
+
+  /**
+   * @brief Tells if the adaptor keeps the buffers of the batch normalization
+   * shared with another layer (the share_layer ones).
+   */
+  bool borrows_batchnorm() const;
+
+  LAYER_TYPE type() const;
+  ACTIVATION activation() const;
+  ACTIVATION lstm_activation() const;
+  COST_TYPE cost_type() const;
+
+  forward_fn forward() const;
+  backward_fn backward() const;
+  update_fn update() const;
   //  void (*forward_gpu)(struct layer, struct network_state);
   //  void (*backward_gpu)(struct layer, struct network_state);
   //  void (*update_gpu)(struct layer, int, float, float, float, float);
 
-  layerptr share_layer();
-  int train();
-  int avgpool();
-  int batch_normalize();
-  int shortcut();
-  int batch();
-  int dynamic_minibatch();
-  int forced();
-  int flipped();
-  int inputs();
-  int outputs();
-  float mean_alpha();
-  int nweights();
-  int nbiases();
-  int extra();
-  int truths();
-  int h();
-  int w();
-  int c();
-  int out_h();
-  int out_w();
-  int out_c();
-  int n();
-  int max_boxes();
-  int truth_size();
-  int groups();
-  int group_id();
-  int size();
-  int side();
-  int stride();
-  int stride_x();
-  int stride_y();
-  int dilation();
-  int antialiasing();
-  int maxpool_depth();
-  int maxpool_zero_nonmax();
-  int out_channels();
-  float reverse();
-  int coordconv();
-  int flatten();
-  int spatial();
-  int pad();
-  int sqrt();
-  int flip();
-  int index();
-  int scale_wh();
-  int binary();
-  int xnor();
-  int peephole();
-  int use_bin_output();
-  int keep_delta_gpu();
-  int optimized_memory();
-  int steps();
-  int history_size();
-  int bottleneck();
-  float time_normalizer();
-  int state_constrain();
-  int hidden();
-  int truth();
-  float smooth();
-  float dot();
-  int deform();
-  int grad_centr();
-  int sway();
-  int rotate();
-  int stretch();
-  int stretch_sway();
-  float angle();
-  float jitter();
-  float resize();
-  float saturation();
-  float exposure();
-  float shift();
-  float ratio();
-  float learning_rate_scale();
-  float clip();
-  int focal_loss();
-  std::vector<float>& classes_multipliers();
-  float label_smooth_eps();
-  int noloss();
-  int softmax();
-  int classes();
-  int detection();
-  int embedding_layer_id();
-  std::vector<float>& embedding_output();
-  int embedding_size();
-  float sim_thresh();
-  int track_history_size();
-  int dets_for_track();
-  int dets_for_show();
-  float track_ciou_norm();
-  int coords();
-  int background();
-  int rescore();
-  int objectness();
-  int does_cost();
-  int joint();
-  int noadjust();
-  int reorg();
-  int log();
-  int tanh();
-  std::vector<int>& mask();
-  int total();
-  float bflops();
+  ALayerAdaptorPtr share_layer() const;
+  int train() const;
+  int avgpool() const;
+  int batch_normalize() const;
+  int shortcut() const;
+  int batch() const;
+  int dynamic_minibatch() const;
+  int forced() const;
+  int flipped() const;
+  int inputs() const;
+  int outputs() const;
+  float mean_alpha() const;
+  int nweights() const;
+  int nbiases() const;
+  int extra() const;
+  int truths() const;
+  int h() const;
+  int w() const;
+  int c() const;
+  int out_h() const;
+  int out_w() const;
+  int out_c() const;
+  int n() const;
+  int max_boxes() const;
+  int truth_size() const;
+  int groups() const;
+  int group_id() const;
+  int size() const;
+  int side() const;
+  int stride() const;
+  int stride_x() const;
+  int stride_y() const;
+  int dilation() const;
+  int antialiasing() const;
+  int maxpool_depth() const;
+  int maxpool_zero_nonmax() const;
+  int out_channels() const;
+  float reverse() const;
+  int coordconv() const;
+  int flatten() const;
+  int spatial() const;
+  int pad() const;
+  int sqrt() const;
+  int flip() const;
+  int index() const;
+  int scale_wh() const;
+  int binary() const;
+  int xnor() const;
+  int peephole() const;
+  int use_bin_output() const;
+  int keep_delta_gpu() const;
+  int optimized_memory() const;
+  int steps() const;
+  int history_size() const;
+  int bottleneck() const;
+  float time_normalizer() const;
+  int state_constrain() const;
+  int hidden() const;
+  int truth() const;
+  float smooth() const;
+  float dot() const;
+  int deform() const;
+  int grad_centr() const;
+  int sway() const;
+  int rotate() const;
+  int stretch() const;
+  int stretch_sway() const;
+  float angle() const;
+  float jitter() const;
+  float resize() const;
+  float saturation() const;
+  float exposure() const;
+  float shift() const;
+  float ratio() const;
+  float learning_rate_scale() const;
+  float clip() const;
+  int focal_loss() const;
+  const std::vector<float>& classes_multipliers() const;
+  float label_smooth_eps() const;
+  int noloss() const;
+  int softmax() const;
+  int classes() const;
+  int detection() const;
+  int embedding_layer_id() const;
+  const std::vector<float>& embedding_output() const;
+  int embedding_size() const;
+  float sim_thresh() const;
+  int track_history_size() const;
+  int dets_for_track() const;
+  int dets_for_show() const;
+  float track_ciou_norm() const;
+  int coords() const;
+  int background() const;
+  int rescore() const;
+  int objectness() const;
+  int does_cost() const;
+  int joint() const;
+  int noadjust() const;
+  int reorg() const;
+  int log() const;
+  int tanh() const;
+  const std::vector<int>& mask() const;
+  int total() const;
+  float bflops() const;
 
-  int adam();
-  float B1();
-  float B2();
-  float eps();
+  int adam() const;
+  float B1() const;
+  float B2() const;
+  float eps() const;
 
-  int t();
+  int t() const;
 
-  float alpha();
-  float beta();
-  float kappa();
+  float alpha() const;
+  float beta() const;
+  float kappa() const;
 
-  float coord_scale();
-  float object_scale();
-  float noobject_scale();
-  float mask_scale();
-  float class_scale();
-  int bias_match();
-  float random();
-  float ignore_thresh();
-  float truth_thresh();
-  float iou_thresh();
-  float thresh();
-  float focus();
-  int classfix();
-  int absolute();
-  int assisted_excitation();
+  float coord_scale() const;
+  float object_scale() const;
+  float noobject_scale() const;
+  float mask_scale() const;
+  float class_scale() const;
+  int bias_match() const;
+  float random() const;
+  float ignore_thresh() const;
+  float truth_thresh() const;
+  float iou_thresh() const;
+  float thresh() const;
+  float focus() const;
+  int classfix() const;
+  int absolute() const;
+  int assisted_excitation() const;
 
-  int onlyforward();
-  int stopbackward();
-  int train_only_bn();
-  int dont_update();
-  int burnin_update();
-  int dontload();
-  int dontsave();
-  int dontloadscales();
-  int numload();
+  int onlyforward() const;
+  int stopbackward() const;
+  int train_only_bn() const;
+  int dont_update() const;
+  int burnin_update() const;
+  int dontload() const;
+  int dontsave() const;
+  int dontloadscales() const;
+  int numload() const;
 
-  float temperature();
-  float probability();
-  float dropblock_size_rel();
-  int dropblock_size_abs();
-  int dropblock();
-  float scale();
+  float temperature() const;
+  float probability() const;
+  float dropblock_size_rel() const;
+  int dropblock_size_abs() const;
+  int dropblock() const;
+  float scale() const;
 
-  int receptive_w();
-  int receptive_h();
-  int receptive_w_scale();
-  int receptive_h_scale();
+  int receptive_w() const;
+  int receptive_h() const;
+  int receptive_w_scale() const;
+  int receptive_h_scale() const;
 
-  std::string cweights();
-  std::vector<int>& indexes();
-  std::vector<int>& input_layers();
-  std::vector<int>& input_sizes();
-  vvfloats layers_output();
-  vvfloats layers_delta();
-  WEIGHTS_TYPE_T weights_type();
-  WEIGHTS_NORMALIZATION_T weights_normalization();
-  std::vector<int>& map();
-  std::vector<int>& counts();
-  vvfloats sums();
-  std::vector<float>& rand();
-  std::vector<float>& cost();
-  std::vector<int>& labels();
-  std::vector<int>& class_ids();
-  int contrastive_neg_max();
-  std::vector<float>& cos_sim();
-  std::vector<float>& exp_cos_sim();
-  std::vector<float>& p_constrastive();
-  vcontrastive_params contrast_p_gpu();
-  std::vector<float>& state();
-  std::vector<float>& prev_state();
-  std::vector<float>& forgot_state();
-  std::vector<float>& forgot_delta();
-  std::vector<float>& state_delta();
-  std::vector<float>& combine_cpu();
-  std::vector<float>& combine_delta_cpu();
+  const std::string& cweights() const;
+  const std::vector<int>& indexes() const;
+  const std::vector<int>& input_layers() const;
+  const std::vector<int>& input_sizes() const;
+  const vrfloats& layers_output() const;
+  const vrfloats& layers_delta() const;
+  WEIGHTS_TYPE_T weights_type() const;
+  WEIGHTS_NORMALIZATION_T weights_normalization() const;
+  const std::vector<int>& map() const;
+  const std::vector<int>& counts() const;
+  const vvfloats& sums() const;
+  const std::vector<float>& rand() const;
+  const std::vector<float>& cost() const;
+  const std::vector<int>& labels() const;
+  const std::vector<int>& class_ids() const;
+  int contrastive_neg_max() const;
+  const std::vector<float>& cos_sim() const;
+  const std::vector<float>& exp_cos_sim() const;
+  const std::vector<float>& p_constrastive() const;
+  const vcontrastive_params& contrast_p_gpu() const;
+  const std::vector<float>& state() const;
+  const std::vector<float>& prev_state() const;
+  const std::vector<float>& forgot_state() const;
+  const std::vector<float>& forgot_delta() const;
+  const std::vector<float>& state_delta() const;
+  const std::vector<float>& combine_cpu() const;
+  const std::vector<float>& combine_delta_cpu() const;
 
-  std::vector<float>& concat();
-  std::vector<float>& concat_delta();
+  const std::vector<float>& concat() const;
+  const std::vector<float>& concat_delta() const;
 
-  std::vector<float>& binary_weights();
+  const std::vector<float>& binary_weights() const;
 
-  std::vector<float>& biases();
-  std::vector<float>& bias_updates();
+  const std::vector<float>& biases() const;
+  const std::vector<float>& bias_updates() const;
 
-  std::vector<float>& scales();
-  std::vector<float>& scale_updates();
+  const std::vector<float>& scales() const;
+  const std::vector<float>& scale_updates() const;
 
-  std::vector<float>& weights_ema();
-  std::vector<float>& biases_ema();
-  std::vector<float>& scales_ema();
+  const std::vector<float>& weights_ema() const;
+  const std::vector<float>& biases_ema() const;
+  const std::vector<float>& scales_ema() const;
 
-  std::vector<float>& weights();
-  std::vector<float>& weight_updates();
+  const std::vector<float>& weights() const;
+  const std::vector<float>& weight_updates() const;
 
-  float scale_x_y();
-  int objectness_smooth();
-  int new_coords();
-  int show_details();
-  float max_delta();
-  float uc_normalizer();
-  float iou_normalizer();
-  float obj_normalizer();
-  float cls_normalizer();
-  float delta_normalizer();
-  IOU_LOSS iou_loss();
-  IOU_LOSS iou_thresh_kind();
-  NMS_KIND nms_kind();
-  float beta_nms();
-  YOLO_POINT yolo_point();
+  float scale_x_y() const;
+  int objectness_smooth() const;
+  int new_coords() const;
+  int show_details() const;
+  float max_delta() const;
+  float uc_normalizer() const;
+  float iou_normalizer() const;
+  float obj_normalizer() const;
+  float cls_normalizer() const;
+  float delta_normalizer() const;
+  IOU_LOSS iou_loss() const;
+  IOU_LOSS iou_thresh_kind() const;
+  NMS_KIND nms_kind() const;
+  float beta_nms() const;
+  YOLO_POINT yolo_point() const;
 
-  std::string align_bit_weights_gpu();
-  std::vector<float>& mean_arr_gpu();
-  std::vector<float>& align_workspace_gpu();
-  std::vector<float>& transposed_align_workspace_gpu();
-  int align_workspace_size();
+  const std::string& align_bit_weights_gpu() const;
+  const std::vector<float>& mean_arr_gpu() const;
+  const std::vector<float>& align_workspace_gpu() const;
+  const std::vector<float>& transposed_align_workspace_gpu() const;
+  int align_workspace_size() const;
 
-  std::string align_bit_weights();
-  std::vector<float>& mean_arr();
-  int align_bit_weights_size();
-  int lda_align();
-  int new_lda();
-  int bit_align();
+  const std::string& align_bit_weights() const;
+  const std::vector<float>& mean_arr() const;
+  int align_bit_weights_size() const;
+  int lda_align() const;
+  int new_lda() const;
+  int bit_align() const;
 
-  std::vector<float>& col_image();
-  std::vector<float>& delta();
-  std::vector<float>& output();
-  std::vector<float>& activation_input();
-  int delta_pinned();
-  int output_pinned();
-  std::vector<float>& loss();
-  std::vector<float>& squared();
-  std::vector<float>& norms();
+  const std::vector<float>& col_image() const;
+  const std::vector<float>& delta() const;
+  const std::vector<float>& output() const;
+  const std::vector<float>& activation_input() const;
+  int delta_pinned() const;
+  int output_pinned() const;
+  const std::vector<float>& loss() const;
+  const std::vector<float>& squared() const;
+  const std::vector<float>& norms() const;
 
-  std::vector<float>& spatial_mean();
-  std::vector<float>& mean();
-  std::vector<float>& variance();
+  const std::vector<float>& spatial_mean() const;
+  const std::vector<float>& mean() const;
+  const std::vector<float>& variance() const;
 
-  std::vector<float>& mean_delta();
-  std::vector<float>& variance_delta();
+  const std::vector<float>& mean_delta() const;
+  const std::vector<float>& variance_delta() const;
 
-  std::vector<float>& rolling_mean();
-  std::vector<float>& rolling_variance();
+  const std::vector<float>& rolling_mean() const;
+  const std::vector<float>& rolling_variance() const;
 
-  std::vector<float>& x();
-  std::vector<float>& x_norm();
+  const std::vector<float>& x() const;
+  const std::vector<float>& x_norm() const;
 
-  std::vector<float>& m();
-  std::vector<float>& v();
+  const std::vector<float>& m() const;
+  const std::vector<float>& v() const;
 
-  std::vector<float>& bias_m();
-  std::vector<float>& bias_v();
-  std::vector<float>& scale_m();
-  std::vector<float>& scale_v();
+  const std::vector<float>& bias_m() const;
+  const std::vector<float>& bias_v() const;
+  const std::vector<float>& scale_m() const;
+  const std::vector<float>& scale_v() const;
 
-  std::vector<float>& z_cpu();
-  std::vector<float>& r_cpu();
-  std::vector<float>& h_cpu();
-  std::vector<float>& stored_h_cpu();
-  std::vector<float>& prev_state_cpu();
+  const std::vector<float>& z_cpu() const;
+  const std::vector<float>& r_cpu() const;
+  const std::vector<float>& h_cpu() const;
+  const std::vector<float>& stored_h_cpu() const;
+  const std::vector<float>& prev_state_cpu() const;
 
-  std::vector<float>& temp_cpu();
-  std::vector<float>& temp2_cpu();
-  std::vector<float>& temp3_cpu();
+  const std::vector<float>& temp_cpu() const;
+  const std::vector<float>& temp2_cpu() const;
+  const std::vector<float>& temp3_cpu() const;
 
-  std::vector<float>& dh_cpu();
-  std::vector<float>& hh_cpu();
-  std::vector<float>& prev_cell_cpu();
-  std::vector<float>& cell_cpu();
-  std::vector<float>& f_cpu();
-  std::vector<float>& i_cpu();
-  std::vector<float>& g_cpu();
-  std::vector<float>& o_cpu();
-  std::vector<float>& c_cpu();
-  std::vector<float>& stored_c_cpu();
-  std::vector<float>& dc_cpu();
+  const std::vector<float>& dh_cpu() const;
+  const std::vector<float>& hh_cpu() const;
+  const std::vector<float>& prev_cell_cpu() const;
+  const std::vector<float>& cell_cpu() const;
+  const std::vector<float>& f_cpu() const;
+  const std::vector<float>& i_cpu() const;
+  const std::vector<float>& g_cpu() const;
+  const std::vector<float>& o_cpu() const;
+  const std::vector<float>& c_cpu() const;
+  const std::vector<float>& stored_c_cpu() const;
+  const std::vector<float>& dc_cpu() const;
 
-  std::vector<float>& binary_input();
-  std::vector<uint32_t> bin_re_packed_input();
-  std::string t_bit_input();
+  const std::vector<float>& binary_input() const;
+  const std::vector<uint32_t>& bin_re_packed_input() const;
+  const std::string& t_bit_input() const;
 
-  layerptr input_layer();
-  layerptr self_layer();
-  layerptr output_layer();
+  ALayerAdaptorPtr input_layer() const;
+  ALayerAdaptorPtr self_layer() const;
+  ALayerAdaptorPtr output_layer() const;
 
-  layerptr reset_layer();
-  layerptr update_layer();
-  layerptr state_layer();
+  ALayerAdaptorPtr reset_layer() const;
+  ALayerAdaptorPtr update_layer() const;
+  ALayerAdaptorPtr state_layer() const;
 
-  layerptr input_gate_layer();
-  layerptr state_gate_layer();
-  layerptr input_save_layer();
-  layerptr state_save_layer();
-  layerptr input_state_layer();
-  layerptr state_state_layer();
+  ALayerAdaptorPtr input_gate_layer() const;
+  ALayerAdaptorPtr state_gate_layer() const;
+  ALayerAdaptorPtr input_save_layer() const;
+  ALayerAdaptorPtr state_save_layer() const;
+  ALayerAdaptorPtr input_state_layer() const;
+  ALayerAdaptorPtr state_state_layer() const;
 
-  layerptr input_z_layer();
-  layerptr state_z_layer();
+  ALayerAdaptorPtr input_z_layer() const;
+  ALayerAdaptorPtr state_z_layer() const;
 
-  layerptr input_r_layer();
-  layerptr state_r_layer();
+  ALayerAdaptorPtr input_r_layer() const;
+  ALayerAdaptorPtr state_r_layer() const;
 
-  layerptr input_h_layer();
-  layerptr state_h_layer();
+  ALayerAdaptorPtr input_h_layer() const;
+  ALayerAdaptorPtr state_h_layer() const;
 
-  layerptr wz();
-  layerptr uz();
-  layerptr wr();
-  layerptr ur();
-  layerptr wh();
-  layerptr uh();
-  layerptr uo();
-  layerptr wo();
-  layerptr vo();
-  layerptr uf();
-  layerptr wf();
-  layerptr vf();
-  layerptr ui();
-  layerptr wi();
-  layerptr vi();
-  layerptr ug();
-  layerptr wg();
+  ALayerAdaptorPtr wz() const;
+  ALayerAdaptorPtr uz() const;
+  ALayerAdaptorPtr wr() const;
+  ALayerAdaptorPtr ur() const;
+  ALayerAdaptorPtr wh() const;
+  ALayerAdaptorPtr uh() const;
+  ALayerAdaptorPtr uo() const;
+  ALayerAdaptorPtr wo() const;
+  ALayerAdaptorPtr vo() const;
+  ALayerAdaptorPtr uf() const;
+  ALayerAdaptorPtr wf() const;
+  ALayerAdaptorPtr vf() const;
+  ALayerAdaptorPtr ui() const;
+  ALayerAdaptorPtr wi() const;
+  ALayerAdaptorPtr vi() const;
+  ALayerAdaptorPtr ug() const;
+  ALayerAdaptorPtr wg() const;
 
-  tree* softmax_tree();
+  tree* softmax_tree() const;
 
-  size_t workspace_size();
+  size_t workspace_size() const;
 
   // #ifdef GPU
-  std::vector<int>& indexes_gpu();
+  const std::vector<int>& indexes_gpu() const;
 
-  int stream();
-  int wait_stream_id();
+  int stream() const;
+  int wait_stream_id() const;
 
-  std::vector<float>& z_gpu();
-  std::vector<float>& r_gpu();
-  std::vector<float>& h_gpu();
-  std::vector<float>& stored_h_gpu();
-  std::vector<float>& bottelneck_hi_gpu();
-  std::vector<float>& bottelneck_delta_gpu();
+  const std::vector<float>& z_gpu() const;
+  const std::vector<float>& r_gpu() const;
+  const std::vector<float>& h_gpu() const;
+  const std::vector<float>& stored_h_gpu() const;
+  const std::vector<float>& bottelneck_hi_gpu() const;
+  const std::vector<float>& bottelneck_delta_gpu() const;
 
-  std::vector<float>& temp_gpu();
-  std::vector<float>& temp2_gpu();
-  std::vector<float>& temp3_gpu();
+  const std::vector<float>& temp_gpu() const;
+  const std::vector<float>& temp2_gpu() const;
+  const std::vector<float>& temp3_gpu() const;
 
-  std::vector<float>& dh_gpu();
-  std::vector<float>& hh_gpu();
-  std::vector<float>& prev_cell_gpu();
-  std::vector<float>& prev_state_gpu();
-  std::vector<float>& last_prev_state_gpu();
-  std::vector<float>& last_prev_cell_gpu();
-  std::vector<float>& cell_gpu();
-  std::vector<float>& f_gpu();
-  std::vector<float>& i_gpu();
-  std::vector<float>& g_gpu();
-  std::vector<float>& o_gpu();
-  std::vector<float>& c_gpu();
-  std::vector<float>& stored_c_gpu();
-  std::vector<float>& dc_gpu();
+  const std::vector<float>& dh_gpu() const;
+  const std::vector<float>& hh_gpu() const;
+  const std::vector<float>& prev_cell_gpu() const;
+  const std::vector<float>& prev_state_gpu() const;
+  const std::vector<float>& last_prev_state_gpu() const;
+  const std::vector<float>& last_prev_cell_gpu() const;
+  const std::vector<float>& cell_gpu() const;
+  const std::vector<float>& f_gpu() const;
+  const std::vector<float>& i_gpu() const;
+  const std::vector<float>& g_gpu() const;
+  const std::vector<float>& o_gpu() const;
+  const std::vector<float>& c_gpu() const;
+  const std::vector<float>& stored_c_gpu() const;
+  const std::vector<float>& dc_gpu() const;
 
   // adam
-  std::vector<float>& m_gpu();
-  std::vector<float>& v_gpu();
-  std::vector<float>& bias_m_gpu();
-  std::vector<float>& scale_m_gpu();
-  std::vector<float>& bias_v_gpu();
-  std::vector<float>& scale_v_gpu();
+  const std::vector<float>& m_gpu() const;
+  const std::vector<float>& v_gpu() const;
+  const std::vector<float>& bias_m_gpu() const;
+  const std::vector<float>& scale_m_gpu() const;
+  const std::vector<float>& bias_v_gpu() const;
+  const std::vector<float>& scale_v_gpu() const;
 
-  std::vector<float>& combine_gpu();
-  std::vector<float>& combine_delta_gpu();
+  const std::vector<float>& combine_gpu() const;
+  const std::vector<float>& combine_delta_gpu() const;
 
-  std::vector<float>& forgot_state_gpu();
-  std::vector<float>& forgot_delta_gpu();
-  std::vector<float>& state_gpu();
-  std::vector<float>& state_delta_gpu();
-  std::vector<float>& gate_gpu();
-  std::vector<float>& gate_delta_gpu();
-  std::vector<float>& save_gpu();
-  std::vector<float>& save_delta_gpu();
-  std::vector<float>& concat_gpu();
-  std::vector<float>& concat_delta_gpu();
+  const std::vector<float>& forgot_state_gpu() const;
+  const std::vector<float>& forgot_delta_gpu() const;
+  const std::vector<float>& state_gpu() const;
+  const std::vector<float>& state_delta_gpu() const;
+  const std::vector<float>& gate_gpu() const;
+  const std::vector<float>& gate_delta_gpu() const;
+  const std::vector<float>& save_gpu() const;
+  const std::vector<float>& save_delta_gpu() const;
+  const std::vector<float>& concat_gpu() const;
+  const std::vector<float>& concat_delta_gpu() const;
 
-  std::vector<float>& binary_input_gpu();
-  std::vector<float>& binary_weights_gpu();
-  std::vector<float>& bin_conv_shortcut_in_gpu();
-  std::vector<float>& bin_conv_shortcut_out_gpu();
+  const std::vector<float>& binary_input_gpu() const;
+  const std::vector<float>& binary_weights_gpu() const;
+  const std::vector<float>& bin_conv_shortcut_in_gpu() const;
+  const std::vector<float>& bin_conv_shortcut_out_gpu() const;
 
-  std::vector<float>& mean_gpu();
-  std::vector<float>& variance_gpu();
-  std::vector<float>& m_cbn_avg_gpu();
-  std::vector<float>& v_cbn_avg_gpu();
+  const std::vector<float>& mean_gpu() const;
+  const std::vector<float>& variance_gpu() const;
+  const std::vector<float>& m_cbn_avg_gpu() const;
+  const std::vector<float>& v_cbn_avg_gpu() const;
 
-  std::vector<float>& rolling_mean_gpu();
-  std::vector<float>& rolling_variance_gpu();
+  const std::vector<float>& rolling_mean_gpu() const;
+  const std::vector<float>& rolling_variance_gpu() const;
 
-  std::vector<float>& variance_delta_gpu();
-  std::vector<float>& mean_delta_gpu();
+  const std::vector<float>& variance_delta_gpu() const;
+  const std::vector<float>& mean_delta_gpu() const;
 
-  std::vector<float>& col_image_gpu();
+  const std::vector<float>& col_image_gpu() const;
 
-  std::vector<float>& x_gpu();
-  std::vector<float>& x_norm_gpu();
-  std::vector<float>& weights_gpu();
-  std::vector<float>& weight_updates_gpu();
-  std::vector<float>& weight_deform_gpu();
-  std::vector<float>& weight_change_gpu();
+  const std::vector<float>& x_gpu() const;
+  const std::vector<float>& x_norm_gpu() const;
+  const std::vector<float>& weights_gpu() const;
+  const std::vector<float>& weight_updates_gpu() const;
+  const std::vector<float>& weight_deform_gpu() const;
+  const std::vector<float>& weight_change_gpu() const;
 
-  std::vector<float>& weights_gpu16();
-  std::vector<float>& weight_updates_gpu16();
+  const std::vector<float>& weights_gpu16() const;
+  const std::vector<float>& weight_updates_gpu16() const;
 
-  std::vector<float>& biases_gpu();
-  std::vector<float>& bias_updates_gpu();
-  std::vector<float>& bias_change_gpu();
+  const std::vector<float>& biases_gpu() const;
+  const std::vector<float>& bias_updates_gpu() const;
+  const std::vector<float>& bias_change_gpu() const;
 
-  std::vector<float>& scales_gpu();
-  std::vector<float>& scale_updates_gpu();
-  std::vector<float>& scale_change_gpu();
+  const std::vector<float>& scales_gpu() const;
+  const std::vector<float>& scale_updates_gpu() const;
+  const std::vector<float>& scale_change_gpu() const;
 
-  std::vector<float>& input_antialiasing_gpu();
-  std::vector<float>& output_gpu();
-  std::vector<float>& output_avg_gpu();
-  std::vector<float>& activation_input_gpu();
-  std::vector<float>& loss_gpu();
-  std::vector<float>& delta_gpu();
-  std::vector<float>& cos_sim_gpu();
-  std::vector<float>& rand_gpu();
-  std::vector<float>& drop_blocks_scale();
-  std::vector<float>& drop_blocks_scale_gpu();
-  std::vector<float>& squared_gpu();
-  std::vector<float>& norms_gpu();
+  const std::vector<float>& input_antialiasing_gpu() const;
+  const std::vector<float>& output_gpu() const;
+  const std::vector<float>& output_avg_gpu() const;
+  const std::vector<float>& activation_input_gpu() const;
+  const std::vector<float>& loss_gpu() const;
+  const std::vector<float>& delta_gpu() const;
+  const std::vector<float>& cos_sim_gpu() const;
+  const std::vector<float>& rand_gpu() const;
+  const std::vector<float>& drop_blocks_scale() const;
+  const std::vector<float>& drop_blocks_scale_gpu() const;
+  const std::vector<float>& squared_gpu() const;
+  const std::vector<float>& norms_gpu() const;
 
-  std::vector<float>& gt_gpu();
-  std::vector<float>& a_avg_gpu();
+  const std::vector<float>& gt_gpu() const;
+  const std::vector<float>& a_avg_gpu() const;
 
-  std::vector<int>& input_sizes_gpu();
-  vvfloats layers_output_gpu();
-  vvfloats layers_delta_gpu();
+  const std::vector<int>& input_sizes_gpu() const;
+  const vrfloats& layers_output_gpu() const;
+  const vrfloats& layers_delta_gpu() const;
 
 #ifdef CUDNN
   cudnnTensorDescriptor_t srcTensorDesc, dstTensorDesc;
@@ -501,31 +565,31 @@ class ALayerAdaptor : virtual public IDarknetAdaptor,
   cudnnPoolingDescriptor_t poolingDesc;
 #else   // CUDNN
 
-  void* srcTensorDesc();
-  void* dstTensorDesc();
-  void* srcTensorDesc16();
-  void* dstTensorDesc16();
-  void* dsrcTensorDesc();
-  void* ddstTensorDesc();
-  void* dsrcTensorDesc16();
-  void* ddstTensorDesc16();
-  void* normTensorDesc();
-  void* normDstTensorDesc();
-  void* normDstTensorDescF16();
-  void* weightDesc();
-  void* weightDesc16();
-  void* dweightDesc();
-  void* dweightDesc16();
-  void* convDesc();
+  void* srcTensorDesc() const;
+  void* dstTensorDesc() const;
+  void* srcTensorDesc16() const;
+  void* dstTensorDesc16() const;
+  void* dsrcTensorDesc() const;
+  void* ddstTensorDesc() const;
+  void* dsrcTensorDesc16() const;
+  void* ddstTensorDesc16() const;
+  void* normTensorDesc() const;
+  void* normDstTensorDesc() const;
+  void* normDstTensorDescF16() const;
+  void* weightDesc() const;
+  void* weightDesc16() const;
+  void* dweightDesc() const;
+  void* dweightDesc16() const;
+  void* convDesc() const;
 
-  UNUSED_ENUM_TYPE fw_algo();
-  UNUSED_ENUM_TYPE fw_algo16();
-  UNUSED_ENUM_TYPE bd_algo();
-  UNUSED_ENUM_TYPE bd_algo16();
-  UNUSED_ENUM_TYPE bf_algo();
-  UNUSED_ENUM_TYPE bf_algo16();
+  UNUSED_ENUM_TYPE fw_algo() const;
+  UNUSED_ENUM_TYPE fw_algo16() const;
+  UNUSED_ENUM_TYPE bd_algo() const;
+  UNUSED_ENUM_TYPE bd_algo16() const;
+  UNUSED_ENUM_TYPE bf_algo() const;
+  UNUSED_ENUM_TYPE bf_algo16() const;
 
-  void* poolingDesc();
+  void* poolingDesc() const;
 #endif  // CUDNN
 
   /**
@@ -537,8 +601,43 @@ class ALayerAdaptor : virtual public IDarknetAdaptor,
   void lstm_activation(const ACTIVATION& nval);
   void cost_type(const COST_TYPE& nval);
 
-  void share_layer(const layerptr& nval);
-  void share_layer(layerptr&& nval);
+  void forward(forward_fn nval);
+  void backward(backward_fn nval);
+  void update(update_fn nval);
+
+  /**
+   * The borrowed buffers: the field points at the buffer of another layer,
+   * which owns it, and the own container of the field is released. See the
+   * class description.
+   */
+  void borrow_output(float* buffer);
+  void borrow_delta(float* buffer);
+  void borrow_weights(float* buffer);
+  void borrow_weight_updates(float* buffer);
+  void borrow_biases(float* buffer);
+  void borrow_bias_updates(float* buffer);
+  void borrow_scales(float* buffer);
+  void borrow_scale_updates(float* buffer);
+  void borrow_mean(float* buffer);
+  void borrow_variance(float* buffer);
+  void borrow_mean_delta(float* buffer);
+  void borrow_variance_delta(float* buffer);
+  void borrow_rolling_mean(float* buffer);
+  void borrow_rolling_variance(float* buffer);
+  void borrow_labels(int* buffer);
+  void borrow_class_ids(int* buffer);
+
+  /**
+   * @brief Keeps the given softmax tree alive with the layer and points the
+   * softmax_tree field at it, the NULL for none. The softmax_tree(tree*)
+   * setter borrows the tree instead.
+   */
+  void own_softmax_tree(std::shared_ptr<tree> nval);
+
+  // The sub-layer setters (share_layer and input_layer .. wg) keep the child
+  // adaptor alive and point the struct field at the child's layer struct.
+  void share_layer(const ALayerAdaptorPtr& nval);
+  void share_layer(ALayerAdaptorPtr&& nval);
   void train(const int& nval);
   void avgpool(const int& nval);
   void batch_normalize(const int& nval);
@@ -703,8 +802,13 @@ class ALayerAdaptor : virtual public IDarknetAdaptor,
   void input_layers(std::vector<int>&& nval);
   void input_sizes(const std::vector<int>& nval);
   void input_sizes(std::vector<int>&& nval);
-  void layers_output(const vvfloats& nval);
-  void layers_delta(const vvfloats& nval);
+  // layers_output/layers_delta (and their _gpu twins) borrow the output and
+  // delta buffers of other layers, as darknet's parse_shortcut() does: only
+  // the pointer array is stored, the buffers must outlive the view.
+  void layers_output(const vrfloats& nval);
+  void layers_output(vrfloats&& nval);
+  void layers_delta(const vrfloats& nval);
+  void layers_delta(vrfloats&& nval);
   void weights_type(const WEIGHTS_TYPE_T& nval);
   void weights_type(WEIGHTS_TYPE_T&& nval);
   void weights_normalization(const WEIGHTS_NORMALIZATION_T& nval);
@@ -915,82 +1019,82 @@ class ALayerAdaptor : virtual public IDarknetAdaptor,
   void t_bit_input(const std::string& nval);
   void t_bit_input(std::string&& nval);
 
-  void input_layer(const layerptr& nval);
-  void input_layer(layerptr&& nval);
-  void self_layer(const layerptr& nval);
-  void self_layer(layerptr&& nval);
-  void output_layer(const layerptr& nval);
-  void output_layer(layerptr&& nval);
+  void input_layer(const ALayerAdaptorPtr& nval);
+  void input_layer(ALayerAdaptorPtr&& nval);
+  void self_layer(const ALayerAdaptorPtr& nval);
+  void self_layer(ALayerAdaptorPtr&& nval);
+  void output_layer(const ALayerAdaptorPtr& nval);
+  void output_layer(ALayerAdaptorPtr&& nval);
 
-  void reset_layer(const layerptr& nval);
-  void reset_layer(layerptr&& nval);
-  void update_layer(const layerptr& nval);
-  void update_layer(layerptr&& nval);
-  void state_layer(const layerptr& nval);
-  void state_layer(layerptr&& nval);
+  void reset_layer(const ALayerAdaptorPtr& nval);
+  void reset_layer(ALayerAdaptorPtr&& nval);
+  void update_layer(const ALayerAdaptorPtr& nval);
+  void update_layer(ALayerAdaptorPtr&& nval);
+  void state_layer(const ALayerAdaptorPtr& nval);
+  void state_layer(ALayerAdaptorPtr&& nval);
 
-  void input_gate_layer(const layerptr& nval);
-  void input_gate_layer(layerptr&& nval);
-  void state_gate_layer(const layerptr& nval);
-  void state_gate_layer(layerptr&& nval);
-  void input_save_layer(const layerptr& nval);
-  void input_save_layer(layerptr&& nval);
-  void state_save_layer(const layerptr& nval);
-  void state_save_layer(layerptr&& nval);
-  void input_state_layer(const layerptr& nval);
-  void input_state_layer(layerptr&& nval);
-  void state_state_layer(const layerptr& nval);
-  void state_state_layer(layerptr&& nval);
+  void input_gate_layer(const ALayerAdaptorPtr& nval);
+  void input_gate_layer(ALayerAdaptorPtr&& nval);
+  void state_gate_layer(const ALayerAdaptorPtr& nval);
+  void state_gate_layer(ALayerAdaptorPtr&& nval);
+  void input_save_layer(const ALayerAdaptorPtr& nval);
+  void input_save_layer(ALayerAdaptorPtr&& nval);
+  void state_save_layer(const ALayerAdaptorPtr& nval);
+  void state_save_layer(ALayerAdaptorPtr&& nval);
+  void input_state_layer(const ALayerAdaptorPtr& nval);
+  void input_state_layer(ALayerAdaptorPtr&& nval);
+  void state_state_layer(const ALayerAdaptorPtr& nval);
+  void state_state_layer(ALayerAdaptorPtr&& nval);
 
-  void input_z_layer(const layerptr& nval);
-  void input_z_layer(layerptr&& nval);
-  void state_z_layer(const layerptr& nval);
-  void state_z_layer(layerptr&& nval);
+  void input_z_layer(const ALayerAdaptorPtr& nval);
+  void input_z_layer(ALayerAdaptorPtr&& nval);
+  void state_z_layer(const ALayerAdaptorPtr& nval);
+  void state_z_layer(ALayerAdaptorPtr&& nval);
 
-  void input_r_layer(const layerptr& nval);
-  void input_r_layer(layerptr&& nval);
-  void state_r_layer(const layerptr& nval);
-  void state_r_layer(layerptr&& nval);
+  void input_r_layer(const ALayerAdaptorPtr& nval);
+  void input_r_layer(ALayerAdaptorPtr&& nval);
+  void state_r_layer(const ALayerAdaptorPtr& nval);
+  void state_r_layer(ALayerAdaptorPtr&& nval);
 
-  void input_h_layer(const layerptr& nval);
-  void input_h_layer(layerptr&& nval);
-  void state_h_layer(const layerptr& nval);
-  void state_h_layer(layerptr&& nval);
+  void input_h_layer(const ALayerAdaptorPtr& nval);
+  void input_h_layer(ALayerAdaptorPtr&& nval);
+  void state_h_layer(const ALayerAdaptorPtr& nval);
+  void state_h_layer(ALayerAdaptorPtr&& nval);
 
-  void wz(const layerptr& nval);
-  void wz(layerptr&& nval);
-  void uz(const layerptr& nval);
-  void uz(layerptr&& nval);
-  void wr(const layerptr& nval);
-  void wr(layerptr&& nval);
-  void ur(const layerptr& nval);
-  void ur(layerptr&& nval);
-  void wh(const layerptr& nval);
-  void wh(layerptr&& nval);
-  void uh(const layerptr& nval);
-  void uh(layerptr&& nval);
-  void uo(const layerptr& nval);
-  void uo(layerptr&& nval);
-  void wo(const layerptr& nval);
-  void wo(layerptr&& nval);
-  void vo(const layerptr& nval);
-  void vo(layerptr&& nval);
-  void uf(const layerptr& nval);
-  void uf(layerptr&& nval);
-  void wf(const layerptr& nval);
-  void wf(layerptr&& nval);
-  void vf(const layerptr& nval);
-  void vf(layerptr&& nval);
-  void ui(const layerptr& nval);
-  void ui(layerptr&& nval);
-  void wi(const layerptr& nval);
-  void wi(layerptr&& nval);
-  void vi(const layerptr& nval);
-  void vi(layerptr&& nval);
-  void ug(const layerptr& nval);
-  void ug(layerptr&& nval);
-  void wg(const layerptr& nval);
-  void wg(layerptr&& nval);
+  void wz(const ALayerAdaptorPtr& nval);
+  void wz(ALayerAdaptorPtr&& nval);
+  void uz(const ALayerAdaptorPtr& nval);
+  void uz(ALayerAdaptorPtr&& nval);
+  void wr(const ALayerAdaptorPtr& nval);
+  void wr(ALayerAdaptorPtr&& nval);
+  void ur(const ALayerAdaptorPtr& nval);
+  void ur(ALayerAdaptorPtr&& nval);
+  void wh(const ALayerAdaptorPtr& nval);
+  void wh(ALayerAdaptorPtr&& nval);
+  void uh(const ALayerAdaptorPtr& nval);
+  void uh(ALayerAdaptorPtr&& nval);
+  void uo(const ALayerAdaptorPtr& nval);
+  void uo(ALayerAdaptorPtr&& nval);
+  void wo(const ALayerAdaptorPtr& nval);
+  void wo(ALayerAdaptorPtr&& nval);
+  void vo(const ALayerAdaptorPtr& nval);
+  void vo(ALayerAdaptorPtr&& nval);
+  void uf(const ALayerAdaptorPtr& nval);
+  void uf(ALayerAdaptorPtr&& nval);
+  void wf(const ALayerAdaptorPtr& nval);
+  void wf(ALayerAdaptorPtr&& nval);
+  void vf(const ALayerAdaptorPtr& nval);
+  void vf(ALayerAdaptorPtr&& nval);
+  void ui(const ALayerAdaptorPtr& nval);
+  void ui(ALayerAdaptorPtr&& nval);
+  void wi(const ALayerAdaptorPtr& nval);
+  void wi(ALayerAdaptorPtr&& nval);
+  void vi(const ALayerAdaptorPtr& nval);
+  void vi(ALayerAdaptorPtr&& nval);
+  void ug(const ALayerAdaptorPtr& nval);
+  void ug(ALayerAdaptorPtr&& nval);
+  void wg(const ALayerAdaptorPtr& nval);
+  void wg(ALayerAdaptorPtr&& nval);
 
   void softmax_tree(tree* nval);
 
@@ -1188,11 +1292,14 @@ class ALayerAdaptor : virtual public IDarknetAdaptor,
 
   void input_sizes_gpu(const std::vector<int>& nval);
   void input_sizes_gpu(std::vector<int>&& nval);
-  void layers_output_gpu(const vvfloats& nval);
-  void layers_delta_gpu(const vvfloats& nval);
+  void layers_output_gpu(const vrfloats& nval);
+  void layers_output_gpu(vrfloats&& nval);
+  void layers_delta_gpu(const vrfloats& nval);
+  void layers_delta_gpu(vrfloats&& nval);
 
  private:
   static layerptr create_layer();
+  static layer* layer_of(const ALayerAdaptorPtr& adaptor);
 
   layerptr l;
 
@@ -1364,69 +1471,66 @@ class ALayerAdaptor : virtual public IDarknetAdaptor,
 
   std::vector<uint32_t> vbin_re_packed_input;
 
-  layerptr mshare_layer;
+  ALayerAdaptorPtr mshare_layer;
 
-  layerptr minput_layer;
-  layerptr mself_layer;
-  layerptr moutput_layer;
+  std::shared_ptr<tree> msoftmax_tree;
 
-  layerptr mreset_layer;
-  layerptr mupdate_layer;
-  layerptr mstate_layer;
+  ALayerAdaptorPtr minput_layer;
+  ALayerAdaptorPtr mself_layer;
+  ALayerAdaptorPtr moutput_layer;
 
-  layerptr minput_gate_layer;
-  layerptr mstate_gate_layer;
-  layerptr minput_save_layer;
-  layerptr mstate_save_layer;
-  layerptr minput_state_layer;
-  layerptr mstate_state_layer;
+  ALayerAdaptorPtr mreset_layer;
+  ALayerAdaptorPtr mupdate_layer;
+  ALayerAdaptorPtr mstate_layer;
 
-  layerptr minput_z_layer;
-  layerptr mstate_z_layer;
+  ALayerAdaptorPtr minput_gate_layer;
+  ALayerAdaptorPtr mstate_gate_layer;
+  ALayerAdaptorPtr minput_save_layer;
+  ALayerAdaptorPtr mstate_save_layer;
+  ALayerAdaptorPtr minput_state_layer;
+  ALayerAdaptorPtr mstate_state_layer;
 
-  layerptr minput_r_layer;
-  layerptr mstate_r_layer;
+  ALayerAdaptorPtr minput_z_layer;
+  ALayerAdaptorPtr mstate_z_layer;
 
-  layerptr minput_h_layer;
-  layerptr mstate_h_layer;
+  ALayerAdaptorPtr minput_r_layer;
+  ALayerAdaptorPtr mstate_r_layer;
 
-  layerptr mwz;
-  layerptr muz;
-  layerptr mwr;
-  layerptr mur;
-  layerptr mwh;
-  layerptr muh;
-  layerptr muo;
-  layerptr mwo;
-  layerptr mvo;
-  layerptr muf;
-  layerptr mwf;
-  layerptr mvf;
-  layerptr mui;
-  layerptr mwi;
-  layerptr mvi;
-  layerptr mug;
-  layerptr mwg;
+  ALayerAdaptorPtr minput_h_layer;
+  ALayerAdaptorPtr mstate_h_layer;
+
+  ALayerAdaptorPtr mwz;
+  ALayerAdaptorPtr muz;
+  ALayerAdaptorPtr mwr;
+  ALayerAdaptorPtr mur;
+  ALayerAdaptorPtr mwh;
+  ALayerAdaptorPtr muh;
+  ALayerAdaptorPtr muo;
+  ALayerAdaptorPtr mwo;
+  ALayerAdaptorPtr mvo;
+  ALayerAdaptorPtr muf;
+  ALayerAdaptorPtr mwf;
+  ALayerAdaptorPtr mvf;
+  ALayerAdaptorPtr mui;
+  ALayerAdaptorPtr mwi;
+  ALayerAdaptorPtr mvi;
+  ALayerAdaptorPtr mug;
+  ALayerAdaptorPtr mwg;
 
   std::string scweights;
   std::string salign_bit_weights_gpu;
   std::string salign_bit_weights;
   std::string st_bit_input;
 
-  vvfloats vlayers_output;
-  vvfloats vlayers_delta;
   vvfloats vsums;
-  vvfloats vlayers_output_gpu;
-  vvfloats vlayers_delta_gpu;
+  vrfloats vrsums;
 
-  std::vector<float*> vrlayers_output;
-  std::vector<float*> vrlayers_delta;
-  std::vector<float*> vrsums;
-  std::vector<float*> vrlayers_output_gpu;
-  std::vector<float*> vrlayers_delta_gpu;
+  vrfloats vrlayers_output;
+  vrfloats vrlayers_delta;
+  vrfloats vrlayers_output_gpu;
+  vrfloats vrlayers_delta_gpu;
 
-  vcontrastive_params scontrastive_params;
-  vcontrastive_params scontrast_p_gpu;
+  vcontrastive_params vcontrast_p_gpu;
 };
 
 using ALayerAdaptorPtr = ALayerAdaptor::ALayerAdaptorPtr;

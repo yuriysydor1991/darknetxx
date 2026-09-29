@@ -332,8 +332,7 @@ void top_k(float *a, int n, int k, int *index)
     return;
   }
 
-  if (k <= 1) {
-    index[0] = 0;
+  if (k <= 0) {
     return;
   }
 
@@ -438,12 +437,9 @@ char *fgetl(FILE *fp)
     return 0;
   }
 
-  CLOGT("Read the line: %s", line);
-
   size_t curr = strlen(line);
 
   while ((line[curr - 1] != '\n') && !feof(fp)) {
-    CLOGTM("Rereading file line");
     if (curr == size - 1) {
       size *= 2;
       line = (char *)xrealloc(line, size * sizeof(char));
@@ -459,9 +455,9 @@ char *fgetl(FILE *fp)
   if (curr >= 1)
     if (line[curr - 1] == 0x0a) line[curr - 1] = 0x00;
 
-  CLOGT("returning cleaned line: %s", line);
-
-  return line;
+  // The callers keep the lines (an image list holds all of them for the whole
+  // training), so a line gets no more memory than it needs.
+  return (char *)xrealloc(line, strlen(line) + 1);
 }
 
 int read_int(int fd)

@@ -1,0 +1,30 @@
+#ifndef DARKNETXX_PROJECT_CTEST_ORIG_DEFAULT_LOADER_DATA_PROVIDER_CLASS_H
+#define DARKNETXX_PROJECT_CTEST_ORIG_DEFAULT_LOADER_DATA_PROVIDER_CLASS_H
+
+#include <cstddef>
+#include <vector>
+
+#include "dlinfo.h"
+
+class CTEST_OrigDefaultLoader_provider
+{
+ public:
+  // the root of the per test directories of the generated cfg files, the
+  // tests remove their files at the end
+  inline static constexpr const char* const GENERATED_DIR = "@CMAKE_CURRENT_BINARY_DIR@/generated";
+
+  inline static constexpr const char* const CFG_1 = "@CMAKE_CURRENT_SOURCE_DIR@/data/1.cfg";
+  inline static constexpr const char* const W_1 = "@CMAKE_CURRENT_SOURCE_DIR@/data/1.weights";
+  
+  inline static constexpr const char* const CFG_2 = "@CMAKE_CURRENT_SOURCE_DIR@/data/2.cfg";
+  inline static constexpr const char* const W_2 = "@CMAKE_CURRENT_SOURCE_DIR@/data/2.weights";
+
+  // a cfg with the sections that have no option at all
+  inline static constexpr const char* const CFG_3 = "@CMAKE_CURRENT_SOURCE_DIR@/data/3.cfg";
+  
+  static const dlinfov& get_1();
+  static const dlinfov& get_2();
+};
+
+
+#endif // DARKNETXX_PROJECT_CTEST_ORIG_DEFAULT_LOADER_DATA_PROVIDER_CLASS_H

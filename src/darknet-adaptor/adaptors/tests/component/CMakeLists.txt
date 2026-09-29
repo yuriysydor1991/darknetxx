@@ -4,9 +4,4 @@ if (NOT ENABLE_COMPONENT_TESTS)
   return()
 endif()
 
-# disabling the asserts for the tests
-add_compile_options(-DNDEBUG=1)
-
 add_subdirectory(randoms)
-add_subdirectory(parser.c)
-

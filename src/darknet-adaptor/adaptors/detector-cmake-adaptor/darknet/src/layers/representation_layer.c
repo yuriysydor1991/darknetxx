@@ -8,61 +8,10 @@
 #include "src/clog/clog.h"
 #include "utils.h"
 
-layer make_implicit_layer(int batch, int index, float mean_init, float std_init,
-                          int filters, int atoms)
-{
-  CLOGI("implicit Layer: %d x %d \t mean=%.2f, std=%.2f", filters, atoms,
-        mean_init, std_init);
-
-  layer l = {(LAYER_TYPE)0};
-  l.type = IMPLICIT;
-  l.batch = batch;
-  l.w = 1;
-  l.h = 1;
-  l.c = 1;
-
-  l.out_w = 1;
-  l.out_h = atoms;
-  l.out_c = filters;
-
-  l.outputs = l.out_w * l.out_h * l.out_c;
-  l.inputs = 1;
-  l.index = index;
-
-  l.nweights = l.out_w * l.out_h * l.out_c;
-
-  l.weight_updates = (float *)xcalloc(l.nweights, sizeof(float));
-  l.weights = (float *)xcalloc(l.nweights, sizeof(float));
-  int i;
-  for (i = 0; i < l.nweights; ++i)
-    l.weights[i] = mean_init + rand_uniform(-std_init, std_init);
-
-  l.delta = (float *)xcalloc(l.outputs * batch, sizeof(float));
-  l.output = (float *)xcalloc(l.outputs * batch, sizeof(float));
-
-  l.forward = forward_implicit_layer;
-  l.backward = backward_implicit_layer;
-  l.update = update_implicit_layer;
-#ifdef GPU
-  l.forward_gpu = forward_implicit_layer_gpu;
-  l.backward_gpu = backward_implicit_layer_gpu;
-  l.update_gpu = update_implicit_layer_gpu;
-
-  l.delta_gpu = cuda_make_array(l.delta, l.outputs * batch);
-  l.output_gpu = cuda_make_array(l.output, l.outputs * batch);
-
-  l.weight_updates_gpu = cuda_make_array(l.weight_updates, l.nweights);
-  l.weights_gpu = cuda_make_array(l.weights, l.nweights);
-#endif
-  return l;
-}
-
-void resize_implicit_layer(layer *l, int w, int h) {}
-
 void forward_implicit_layer(const layer l, network_state state)
 {
   int i;
-  // #pragma omp parallel for
+#pragma omp parallel for
   for (i = 0; i < l.nweights * l.batch; ++i) {
     l.output[i] = l.weights[i % l.nweights];
   }

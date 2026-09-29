@@ -6,41 +6,6 @@
 #include "src/clog/clog.h"
 #include "utils.h"
 
-avgpool_layer make_avgpool_layer(int batch, int w, int h, int c)
-{
-  CLOGI("avg                          %4d x%4d x%4d ->   %4d", w, h, c, c);
-  avgpool_layer l = {(LAYER_TYPE)0};
-  l.type = AVGPOOL;
-  l.batch = batch;
-  l.h = h;
-  l.w = w;
-  l.c = c;
-  l.out_w = 1;
-  l.out_h = 1;
-  l.out_c = c;
-  l.outputs = l.out_c;
-  l.inputs = h * w * c;
-  int output_size = l.outputs * batch;
-  l.output = (float *)xcalloc(output_size, sizeof(float));
-  l.delta = (float *)xcalloc(output_size, sizeof(float));
-  l.forward = forward_avgpool_layer;
-  l.backward = backward_avgpool_layer;
-#ifdef GPU
-  l.forward_gpu = forward_avgpool_layer_gpu;
-  l.backward_gpu = backward_avgpool_layer_gpu;
-  l.output_gpu = cuda_make_array(l.output, output_size);
-  l.delta_gpu = cuda_make_array(l.delta, output_size);
-#endif
-  return l;
-}
-
-void resize_avgpool_layer(avgpool_layer *l, int w, int h)
-{
-  l->w = w;
-  l->h = h;
-  l->inputs = h * w * l->c;
-}
-
 void forward_avgpool_layer(const avgpool_layer l, network_state state)
 {
   int b, i, k;

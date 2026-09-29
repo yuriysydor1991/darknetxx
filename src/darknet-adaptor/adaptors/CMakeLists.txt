@@ -22,8 +22,9 @@ target_link_libraries(
 
 add_subdirectory(ADetectorTrainer)
 add_subdirectory(ADetector)
+add_subdirectory(ALayerAdaptor)
+add_subdirectory(ANetworkAdaptor)
+add_subdirectory(Layers)
+add_subdirectory(NetworksLoaders)
+add_subdirectory(NetworksCApi)
 add_subdirectory(tests)
-#add_subdirectory(NetworksLoaders)
-#add_subdirectory(ALayerAdaptor)
-#add_subdirectory(ANetworkAdaptor)
-

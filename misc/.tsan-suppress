@@ -1,0 +1,10 @@
+# The ThreadSanitizer suppressions of the known races, which are left as they
+# are for now. The tests of the threads sanitizer build (ENABLE_SANITIZERS_THREADS)
+# pass the file by the TSAN_OPTIONS environment variable, while the rest of the
+# races are reported the usual way.
+#
+# The training threads of the yolo layer count the ground truth boxes of the
+# training statistics in the shared network counter with no synchronization, the
+# same way the original Darknet does. The race_top type suppresses the races
+# of the process_batch function body alone, not of the functions it calls.
+race_top:process_batch

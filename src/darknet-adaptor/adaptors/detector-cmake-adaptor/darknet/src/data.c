@@ -96,12 +96,6 @@ char **get_random_paths_custom(char **paths, int n, int m, int contrastive)
 
   CLOGT("N for rand gen: %d", n);
 
-  static const size_t bsize = PATH_MAX * 10;
-
-  char buff[bsize + 1];
-
-  memset(&buff, 0, bsize + 1);
-
   for (i = 0; i < n; ++i) {
     do {
       int index = random_gen() % m;
@@ -109,8 +103,6 @@ char **get_random_paths_custom(char **paths, int n, int m, int contrastive)
       if (contrastive && (i % 2 == 1)) index = old_index;
       else
         old_index = index;
-
-      snprintf(buff + strlen(buff), bsize, "%d ", index);
 
       random_paths[i] = paths[index];
 
@@ -124,8 +116,6 @@ char **get_random_paths_custom(char **paths, int n, int m, int contrastive)
   }
 
   pthread_mutex_unlock(&mutex);
-
-  CLOGT("Random images indexes from train.txt: %s", buff);
 
   return random_paths;
 }
@@ -1441,7 +1431,7 @@ data load_data_detection(int n, char **paths, int m, int w, int h, int c,
           wait_until_press_key_cv();
         }
         CLOGIM(
-            "You use flag -show_imgs, so will be saved aug_...jpg images. "
+            "You use flag --show-imgs, so will be saved aug_...jpg images. "
             "Click on window and press ESC button");
         free_image(tmp_ai);
       }
@@ -1452,14 +1442,17 @@ data load_data_detection(int n, char **paths, int m, int w, int h, int c,
     if (random_paths) free(random_paths);
   }
 
+  free(cut_x);
+  free(cut_y);
+
   return d;
 }
-#else   // OPENCV
+#else  // OPENCV
 void blend_images(image new_img, float alpha, image old_img, float beta)
 {
   int data_size = new_img.w * new_img.h * new_img.c;
   int i;
-  // #pragma omp parallel for
+#pragma omp parallel for
   for (i = 0; i < data_size; ++i)
     new_img.data[i] = new_img.data[i] * alpha + old_img.data[i] * beta;
 }
@@ -1662,7 +1655,7 @@ data load_data_detection(int n, char **paths, int m, int w, int h, int c,
           show_image(sized, buff);
           wait_until_press_key_cv();
         }
-        CLOGI("You use flag -show_imgs, so will be saved aug_...jpg images");
+        CLOGI("You use flag --show-imgs, so will be saved aug_...jpg images");
       }
 
       free_image(orig);
@@ -2186,7 +2179,7 @@ data load_data_augment(char **paths, int n, int m, char **labels, int k,
       }
     }
     CLOGIM(
-        "You use flag -show_imgs, so will be saved aug_...jpg images. Click "
+        "You use flag --show-imgs, so will be saved aug_...jpg images. Click "
         "on window and press ESC button");
   }
 

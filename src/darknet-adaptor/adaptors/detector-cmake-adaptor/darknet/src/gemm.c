@@ -249,7 +249,7 @@ void gemm_nn_custom_bin_mean(int M, int N, int K, float ALPHA_UNUSED,
 
     int i;
 
-// #pragma omp parallel for
+#pragma omp parallel for
     for (i = 0; i < M; ++i) {   // l.n - filters [16 - 55 - 1024]
         int j, k, h;
         for (k = 0; k < K; ++k) {   // l.size*l.size*l.c - one filter size [27 -
@@ -313,7 +313,7 @@ void gemm_nn_custom_bin_mean_transposed(int M, int N, int K, float ALPHA_UNUSED,
 {
     int i;
 
-// #pragma omp parallel for
+#pragma omp parallel for
     for (i = 0; i < M; ++i) {   // l.n - filters [16 - 55 - 1024]
         int j, k, h;
         float mean_val = mean_arr[i];
@@ -516,7 +516,7 @@ void transpose_bin(char *A, char *B, const int n, const int m,
 {
     //printf("\n n = %d, ldb = %d \t\t m = %d, lda = %d \n", n, ldb, m, lda);
     int i;
-    // #pragma omp parallel for
+#pragma omp parallel for
     for (i = 0; i < n; i += 8) {
         int j;
         for (j = 0; j < m; j += 8) {
@@ -543,7 +543,7 @@ void transpose_bin(uint32_t *A, uint32_t *B, const int n, const int m,
   // m, m % 32); printf("\n lda = %d (lda mod 32 = %d), ldb = %d (ldb mod 32 =
   // %d) \n", lda, lda % 32, ldb, ldb % 32);
   int i;
-  // #pragma omp parallel for
+#pragma omp parallel for
   for (i = 0; i < n; i += 32) {
     int j;
     for (j = 0; j < m; j += 32) {
@@ -817,7 +817,7 @@ void gemm_nn_fast(int M, int N, int K, float ALPHA, float *A, int lda, float *B,
 {
   int i;
 
-  // #pragma omp parallel for
+#pragma omp parallel for
   for (i = 0; i < (M / TILE_M) * TILE_M; i += TILE_M) {
     int j, k;
     int i_d, k_d;
@@ -938,7 +938,7 @@ void gemm_nn_bin_32bit_packed(int M, int N, int K, float ALPHA, uint32_t *A,
                               float *mean_arr)
 {
   int i;
-  // #pragma omp parallel for
+#pragma omp parallel for
   for (i = 0; i < M; ++i) {  // l.n
     int j, s;
     float mean_val = mean_arr[i];
@@ -1002,7 +1002,7 @@ void convolution_2d_old(int w, int h, int ksize, int n, int c, int pad,
 
   int fil;
   // filter index
-  // #pragma omp parallel for  // "omp parallel for" - automatic parallelization
+#pragma omp parallel for  // "omp parallel for" - automatic parallelization
   // of loop by using OpenMP
   for (fil = 0; fil < n; ++fil) {
     // int i, f, j;
@@ -1091,7 +1091,7 @@ void convolution_2d(int w, int h, int ksize, int n, int c, int pad, int stride,
 
   int fil;
   // filter index
-  // #pragma omp parallel for  // "omp parallel for" - automatic parallelization
+#pragma omp parallel for  // "omp parallel for" - automatic parallelization
   // of loop by using OpenMP
   for (fil = 0; fil < n; ++fil) {
     int chan, y, x, f_y, f_x;
@@ -1270,7 +1270,7 @@ void gemm_nn_custom_bin_mean_transposed(int M, int N, int K, float ALPHA_UNUSED,
 
   //// #pragma omp parallel for
   // for (i = 0; i < M; ++i)
-  // #pragma omp parallel for
+#pragma omp parallel for
   for (i = 0; i < (M / 2) * 2; i += 2) {  // l.n - filters [16 - 55 - 1024]
     float mean_val_0 = mean_arr[i + 0];
     float mean_val_1 = mean_arr[i + 1];
@@ -1392,7 +1392,7 @@ void im2col_cpu_custom_transpose(float *data_im, int channels, int height,
 
   // optimized version
   if (height_col == height && width_col == width && stride == 1 && pad == 1) {
-    // #pragma omp parallel for
+#pragma omp parallel for
     for (c = 0; c < channels_col; ++c) {
       int h, w;
       int w_offset = c % ksize;
@@ -1490,7 +1490,7 @@ void im2col_cpu_custom_transpose(float *data_im, int channels, int height,
     }
 
   } else {
-    // #pragma omp parallel for
+#pragma omp parallel for
     for (c = 0; c < channels_col; ++c) {
       int h, w;
       int w_offset = c % ksize;
@@ -1524,7 +1524,7 @@ void im2col_cpu_custom(float *data_im, int channels, int height, int width,
   // optimized version
   if (height_col == height && width_col == width && stride == 1 && pad == 1 &&
       is_fma_avx2()) {
-    // #pragma omp parallel for
+#pragma omp parallel for
     for (c = 0; c < channels_col; ++c) {
       int h, w;
       int w_offset = c % ksize;
@@ -1620,7 +1620,7 @@ void im2col_cpu_custom_align(float *data_im, int channels, int height,
       is_fma_avx2()) {
     int new_ldb = bit_align;
 
-    // #pragma omp parallel for
+#pragma omp parallel for
     for (c = 0; c < channels_col; ++c) {
       int h, w;
       int w_offset = c % ksize;
@@ -1729,7 +1729,7 @@ void im2col_cpu_custom_bin(float *data_im, int channels, int height, int width,
 
     int new_ldb = bit_align;
 
-    // #pragma omp parallel for
+#pragma omp parallel for
     for (c = 0; c < channels_col; ++c) {
       int h, w;
       int w_offset = c % ksize;
@@ -1926,7 +1926,7 @@ void transpose_block_SSE4x4(float *A, float *B, const int n, const int m,
                             const int lda, const int ldb, const int block_size)
 {
   int i;
-  // #pragma omp parallel for
+#pragma omp parallel for
   for (i = 0; i < n; i += block_size) {
     int j, i2, j2;
     // int max_i2 = (i + block_size < n) ? (i + block_size) : n;
@@ -1968,7 +1968,7 @@ void forward_maxpool_layer_avx(float *src, float *dst, int *indexes, int size,
   int b, k;
 
   for (b = 0; b < batch; ++b) {
-    // #pragma omp parallel for
+#pragma omp parallel for
     for (k = 0; k < c; ++k) {
       int i, j, m, n;
       for (i = 0; i < out_h; ++i) {
@@ -2076,7 +2076,7 @@ void gemm_nn_fast(int M, int N, int K, float ALPHA, float *A, int lda, float *B,
                   int ldb, float *C, int ldc)
 {
   int i, j, k;
-  // #pragma omp parallel for
+#pragma omp parallel for
   for (i = 0; i < M; ++i) {
     for (k = 0; k < K; ++k) {
       PUT_IN_REGISTER float A_PART = ALPHA * A[i * lda + k];
@@ -2092,7 +2092,7 @@ void gemm_nn_bin_32bit_packed(int M, int N, int K, float ALPHA, uint32_t *A,
                               float *mean_arr)
 {
   int i;
-  // #pragma omp parallel for
+#pragma omp parallel for
   for (i = 0; i < M; ++i) {  // l.n
     int j, s;
     float mean_val = mean_arr[i];
@@ -2127,7 +2127,7 @@ void convolution_2d(int w, int h, int ksize, int n, int c, int pad, int stride,
 
   int fil;
   // filter index
-  // #pragma omp parallel for  // "omp parallel for" - automatic parallelization
+#pragma omp parallel for  // "omp parallel for" - automatic parallelization
   // of loop by using OpenMP
   for (fil = 0; fil < n; ++fil) {
     int chan, y, x, f_y, f_x;
@@ -2173,7 +2173,7 @@ void gemm_nn_custom_bin_mean_transposed(int M, int N, int K, float ALPHA_UNUSED,
 {
   int i;
 
-  // #pragma omp parallel for
+#pragma omp parallel for
   for (i = 0; i < M; ++i) {  // l.n - filters [16 - 55 - 1024]
     int j, k;
     float mean_val = mean_arr[i];
@@ -2224,7 +2224,7 @@ void im2col_cpu_custom(float *data_im, int channels, int height, int width,
 
   // optimized version
   if (height_col == height && width_col == width && stride == 1 && pad == 1) {
-    // #pragma omp parallel for
+#pragma omp parallel for
     for (c = 0; c < channels_col; ++c) {
       int h, w;
       int w_offset = c % ksize;
@@ -2316,7 +2316,7 @@ void im2col_cpu_custom_bin(float *data_im, int channels, int height, int width,
   if (height_col == height && width_col == width && stride == 1 && pad == 1) {
     int new_ldb = bit_align;
 
-    // #pragma omp parallel for
+#pragma omp parallel for
     for (c = 0; c < channels_col; ++c) {
       int h, w;
       int w_offset = c % ksize;
@@ -2482,7 +2482,7 @@ void transpose_block_SSE4x4(float *A, float *B, const int n, const int m,
                             const int lda, const int ldb, const int block_size)
 {
   int i;
-  // #pragma omp parallel for
+#pragma omp parallel for
   for (i = 0; i < n; i += block_size) {
     int j, i2, j2;
     for (j = 0; j < m; j += block_size) {
@@ -2506,7 +2506,7 @@ void forward_maxpool_layer_avx(float *src, float *dst, int *indexes, int size,
   const int h_offset = -pad / 2;
 
   for (b = 0; b < batch; ++b) {
-    // #pragma omp parallel for
+#pragma omp parallel for
     for (k = 0; k < c; ++k) {
       int i, j, m, n;
       for (i = 0; i < out_h; ++i) {
@@ -2578,7 +2578,7 @@ void gemm_nn_bin_transposed_32bit_packed(int M, int N, int K, float ALPHA,
                                          float *mean_arr)
 {
   int i;
-  // #pragma omp parallel for
+#pragma omp parallel for
   for (i = 0; i < M; ++i) {  // l.n
     int j, s;
     float mean_val = mean_arr[i];
@@ -2605,7 +2605,7 @@ void convolution_repacked(uint32_t *packed_input, uint32_t *packed_weights,
 {
   int fil;
   // filter index
-  // #pragma omp parallel for
+#pragma omp parallel for
   for (fil = 0; fil < n; ++fil) {
     float mean_val = mean_arr[fil];
     int chan, y, x, f_y, f_x;  // c_pack
@@ -2675,15 +2675,18 @@ void convolution_repacked(uint32_t *packed_input, uint32_t *packed_weights,
   }
 }
 
+// The gemm_nt, gemm_tn and gemm_tt are called by the gemm_cpu for a single
+// row each from inside of its parallel loop over the rows, so they must stay
+// serial: a nested region per element costs a lot, and splitting the reduction
+// index between threads races on the C row.
 void gemm_nt(int M, int N, int K, float ALPHA, float *A, int lda, float *B,
              int ldb, float *C, int ldc)
 {
-#pragma omp parallel for collapse(2)
-  for (size_t i = 0; i < M; ++i) {
-    for (size_t j = 0; j < N; ++j) {
+  int i, j, k;
+  for (i = 0; i < M; ++i) {
+    for (j = 0; j < N; ++j) {
       PUT_IN_REGISTER float sum = 0;
-#pragma omp parallel for reduction(+ : sum)
-      for (size_t k = 0; k < K; ++k) {
+      for (k = 0; k < K; ++k) {
         sum += ALPHA * A[i * lda + k] * B[j * ldb + k];
       }
       C[i * ldc + j] += sum;
@@ -2694,11 +2697,11 @@ void gemm_nt(int M, int N, int K, float ALPHA, float *A, int lda, float *B,
 void gemm_tn(int M, int N, int K, float ALPHA, float *A, int lda, float *B,
              int ldb, float *C, int ldc)
 {
-#pragma omp parallel for collapse(2)
-  for (size_t i = 0; i < M; ++i) {
-    for (size_t k = 0; k < K; ++k) {
+  int i, j, k;
+  for (i = 0; i < M; ++i) {
+    for (k = 0; k < K; ++k) {
       PUT_IN_REGISTER float A_PART = ALPHA * A[k * lda + i];
-      for (size_t j = 0; j < N; ++j) {
+      for (j = 0; j < N; ++j) {
         C[i * ldc + j] += A_PART * B[k * ldb + j];
       }
     }
@@ -2708,12 +2711,11 @@ void gemm_tn(int M, int N, int K, float ALPHA, float *A, int lda, float *B,
 void gemm_tt(int M, int N, int K, float ALPHA, float *A, int lda, float *B,
              int ldb, float *C, int ldc)
 {
-#pragma omp parallel for collapse(2)
-  for (size_t i = 0; i < M; ++i) {
-    for (size_t j = 0; j < N; ++j) {
+  int i, j, k;
+  for (i = 0; i < M; ++i) {
+    for (j = 0; j < N; ++j) {
       PUT_IN_REGISTER float sum = 0;
-#pragma omp parallel for reduction(+ : sum)
-      for (size_t k = 0; k < K; ++k) {
+      for (k = 0; k < K; ++k) {
         sum += ALPHA * A[i + k * lda] * B[k + j * ldb];
       }
       C[i * ldc + j] += sum;
@@ -2724,9 +2726,6 @@ void gemm_tt(int M, int N, int K, float ALPHA, float *A, int lda, float *B,
 void gemm_cpu(int TA, int TB, int M, int N, int K, float ALPHA, float *A,
               int lda, float *B, int ldb, float BETA, float *C, int ldc)
 {
-  CLOGT("cpu: %d %d %d %d %d %f %d %d %f %d", TA, TB, M, N, K, ALPHA, lda, ldb,
-        BETA, ldc);
-
   if (BETA != 1) {
 #pragma omp parallel for collapse(2)
     for (int i = 0; i < M; ++i) {

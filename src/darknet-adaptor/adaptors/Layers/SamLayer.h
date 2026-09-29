@@ -1,0 +1,28 @@
+#ifndef DARKNET_CXX_PORT_PROJECT_SAM_LAYER_CLASS_H
+#define DARKNET_CXX_PORT_PROJECT_SAM_LAYER_CLASS_H
+
+#include "src/darknet-adaptor/adaptors/ALayerAdaptor/ALayerAdaptor.h"
+#include "src/darknet-adaptor/adaptors/orig-includes.h"
+
+namespace darknet_adaptor::adaptors::layers
+{
+
+/**
+ * @brief The memory of the [sam] layer: the C++ port of the make_sam_layer()
+ * and resize_sam_layer() functions of the original darknet sam_layer.c, the
+ * computation stays there.
+ */
+class SamLayer
+{
+ public:
+  /// @brief The make_sam_layer().
+  static ALayerAdaptorPtr make(int batch, int index, int w, int h, int c,
+                               int w2, int h2, int c2);
+
+  /// @brief The resize_sam_layer() to the w x h input.
+  static void resize(ALayerAdaptor& adaptor, int w, int h);
+};
+
+}  // namespace darknet_adaptor::adaptors::layers
+
+#endif  // DARKNET_CXX_PORT_PROJECT_SAM_LAYER_CLASS_H

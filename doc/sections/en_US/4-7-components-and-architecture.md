@@ -12,6 +12,8 @@ The application is organized into a few cooperating layers:
 1. [Darknet adaptor components](/doc/sections/en_US/4-7-2-darknet-adaptor-components.md) - the bridge that drives the original Darknet code to train or to detect (the `darknet_adaptor` namespace).
 1. [Supporting components](/doc/sections/en_US/4-7-3-supporting-components.md) - the OpenMP controller, the logging subsystem and the helper utilities.
 
+The OS signals the whole application reacts on are covered by the `src/app/signals-handlers` subcomponent of the `app` layer, described by the [Handling the OS signals](/doc/sections/en_US/4-8-handling-the-OS-signals.md) section.
+
 ## Components overview
 
 The `main()` function only forwards the command line arguments to the
@@ -38,12 +40,15 @@ package "app (application infrastructure)" {
   [CommandLineParser] as parser
   [ApplicationContext] as ctx
   [IApplication\n(+ Application,\nHelpPrinter,\nVersionPrinter)] as iapp
+  [ISignalsHandler\n(+ SignalsHandler,\nStop/Pause/Continue/\nReload/User/Ignored)] as signals
 }
 
 package "darknet-adaptor (Darknet bridge)" {
   [DarknetController] as dctrl
   [DarknetContext] as dctx
-  [IDarknetAdaptor\n(+ ADetector,\nADetectorTrainer,\nALayer/ANetwork)] as adaptor
+  [IDarknetAdaptor\n(+ ADetector,\nADetectorTrainer)] as adaptor
+  [Network infrastructure\n(NetworksLoaders, Layers,\nALayer/ANetwork adaptors,\nNetworksCApi)] as netinfra
+  [Original Darknet\nC computation] as darknetc
 }
 
 package "Supporting components" {
@@ -56,12 +61,19 @@ main --> factory
 factory --> parser
 factory --> ctx
 factory --> iapp : creates by ctx
+factory --> signals : creates and installs
+signals --> ctx : raises the OS signals flags
 parser --> ctx : fills
 iapp --> dctrl : default app drives
 iapp --> omp : adjust threads
 dctrl --> dctx
+dctx --> ctx : watches the stop flag
 dctrl --> adaptor : selects worker
 adaptor --> dctx : reads/writes
+adaptor --> netinfra : loads the networks
+netinfra --> dctx : hands the networks to
+adaptor --> darknetc : trains / detects
+darknetc --> netinfra : parses, resizes,\nreads and writes weights
 factory ..> log
 iapp ..> log
 dctrl ..> log

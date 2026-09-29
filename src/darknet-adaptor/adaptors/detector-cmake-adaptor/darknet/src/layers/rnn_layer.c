@@ -28,68 +28,6 @@ static void increment_layer(layer *l, int steps)
 #endif
 }
 
-layer make_rnn_layer(int batch, int inputs, int hidden, int outputs, int steps,
-                     ACTIVATION activation, int batch_normalize, int log)
-{
-  CLOGI("RNN Layer: %d inputs, %d outputs", inputs, outputs);
-
-  batch = batch / steps;
-  layer l = {(LAYER_TYPE)0};
-  l.batch = batch;
-  l.type = RNN;
-  l.steps = steps;
-  l.hidden = hidden;
-  l.inputs = inputs;
-  l.out_w = 1;
-  l.out_h = 1;
-  l.out_c = outputs;
-
-  l.state = (float *)xcalloc(batch * hidden * (steps + 1), sizeof(float));
-
-  l.input_layer = (layer *)xcalloc(1, sizeof(layer));
-  CLOGIM("\t\t");
-  *(l.input_layer) = make_connected_layer(batch, steps, inputs, hidden,
-                                          activation, batch_normalize);
-  l.input_layer->batch = batch;
-  if (l.workspace_size < l.input_layer->workspace_size)
-    l.workspace_size = l.input_layer->workspace_size;
-
-  l.self_layer = (layer *)xcalloc(1, sizeof(layer));
-  CLOGIM("\t\t");
-  *(l.self_layer) = make_connected_layer(
-      batch, steps, hidden, hidden,
-      (log == 2) ? LOGGY : (log == 1 ? LOGISTIC : activation), batch_normalize);
-  l.self_layer->batch = batch;
-  if (l.workspace_size < l.self_layer->workspace_size)
-    l.workspace_size = l.self_layer->workspace_size;
-
-  l.output_layer = (layer *)xcalloc(1, sizeof(layer));
-  CLOGIM("\t\t");
-  *(l.output_layer) = make_connected_layer(batch, steps, hidden, outputs,
-                                           activation, batch_normalize);
-  l.output_layer->batch = batch;
-  if (l.workspace_size < l.output_layer->workspace_size)
-    l.workspace_size = l.output_layer->workspace_size;
-
-  l.outputs = outputs;
-  l.output = l.output_layer->output;
-  l.delta = l.output_layer->delta;
-
-  l.forward = forward_rnn_layer;
-  l.backward = backward_rnn_layer;
-  l.update = update_rnn_layer;
-#ifdef GPU
-  l.forward_gpu = forward_rnn_layer_gpu;
-  l.backward_gpu = backward_rnn_layer_gpu;
-  l.update_gpu = update_rnn_layer_gpu;
-  l.state_gpu = cuda_make_array(l.state, batch * hidden * (steps + 1));
-  l.output_gpu = l.output_layer->output_gpu;
-  l.delta_gpu = l.output_layer->delta_gpu;
-#endif
-
-  return l;
-}
-
 void update_rnn_layer(layer l, int batch, float learning_rate, float momentum,
                       float decay)
 {

@@ -12,6 +12,8 @@
 1. [Компоненти адаптера Darknet](/doc/sections/uk_UA/4-7-2-darknet-adaptor-components.md) - місток, який керує оригінальним кодом Darknet для навчання чи розпізнавання (простір імен `darknet_adaptor`).
 1. [Допоміжні компоненти](/doc/sections/uk_UA/4-7-3-supporting-components.md) - контролер OpenMP, підсистема журналювання і допоміжні утиліти.
 
+Сигнали операційної системи, на які реагує уся програма, охоплює підкомпонент `src/app/signals-handlers` рівня `app`, описаний у секції [Обробка сигналів операційної системи](/doc/sections/uk_UA/4-8-handling-the-OS-signals.md).
+
 ## Огляд компонентів
 
 Функція `main()` лише передає параметри командного рядка до
@@ -38,12 +40,15 @@ package "app (application infrastructure)" {
   [CommandLineParser] as parser
   [ApplicationContext] as ctx
   [IApplication\n(+ Application,\nHelpPrinter,\nVersionPrinter)] as iapp
+  [ISignalsHandler\n(+ SignalsHandler,\nStop/Pause/Continue/\nReload/User/Ignored)] as signals
 }
 
 package "darknet-adaptor (Darknet bridge)" {
   [DarknetController] as dctrl
   [DarknetContext] as dctx
-  [IDarknetAdaptor\n(+ ADetector,\nADetectorTrainer,\nALayer/ANetwork)] as adaptor
+  [IDarknetAdaptor\n(+ ADetector,\nADetectorTrainer)] as adaptor
+  [Network infrastructure\n(NetworksLoaders, Layers,\nALayer/ANetwork adaptors,\nNetworksCApi)] as netinfra
+  [Original Darknet\nC computation] as darknetc
 }
 
 package "Supporting components" {
@@ -56,12 +61,19 @@ main --> factory
 factory --> parser
 factory --> ctx
 factory --> iapp : creates by ctx
+factory --> signals : creates and installs
+signals --> ctx : raises the OS signals flags
 parser --> ctx : fills
 iapp --> dctrl : default app drives
 iapp --> omp : adjust threads
 dctrl --> dctx
+dctx --> ctx : watches the stop flag
 dctrl --> adaptor : selects worker
 adaptor --> dctx : reads/writes
+adaptor --> netinfra : loads the networks
+netinfra --> dctx : hands the networks to
+adaptor --> darknetc : trains / detects
+darknetc --> netinfra : parses, resizes,\nreads and writes weights
 factory ..> log
 iapp ..> log
 dctrl ..> log

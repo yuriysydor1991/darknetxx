@@ -72,9 +72,10 @@ void print_net_stat_ctx(struct detector_context* ctx)
              ctx->resize_network_every_nth);
   }
 
+  // the smoothed estimate is the "hours left" value of the original darknet
   CLOGI(
       "%d: %f, %f avg loss, %f rate, %lf seconds, %d images, "
-      "%f hours total, %f hours left, %s",
+      "%f hours left (%f by the last iteration), %s",
       iteration, ctx->loss, ctx->avg_loss, get_current_rate(ctx->net),
       (what_time_is_it_now() - ctx->time), iteration * ctx->imgs, ctx->avg_time,
       ctx->time_remaining, netresizebuff);
