@@ -122,10 +122,12 @@ set(
   "Sets the maximum severity of the compiled log messages. Error=0. Trace=5. By default Info=3"
 )
 
+# The dxxwjz1 network weights files are the JSON documents, so the library is
+# required (see the template-project-feature-enabler module).
 option(
   ENABLE_NLOHMANN_JSON
   "Set to ON to enable the nlohmann json library (by using system wide available or through Internet)"
-  OFF
+  ON
 )
 
 option(

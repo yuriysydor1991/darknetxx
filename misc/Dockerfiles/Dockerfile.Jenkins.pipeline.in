@@ -6,6 +6,8 @@ RUN apt update
 RUN apt install -y libstdc++6 build-essential git cmake g++
 # the OpenCV is the mandatory dependency of the project
 RUN apt install -y libopencv-dev
+# the dxxwjz1 network weights files are the gzip compressed JSON documents
+RUN apt install -y zlib1g-dev nlohmann-json3-dev
 # the misc/.clang-format style needs the clang-format 16 or newer
 RUN apt install -y clang-format && \
  (clang-format --version | grep -Eq 'version (1[6-9]|[2-9][0-9])\.' || \

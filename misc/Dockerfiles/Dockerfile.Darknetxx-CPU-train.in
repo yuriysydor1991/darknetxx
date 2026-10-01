@@ -13,6 +13,8 @@ RUN localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
 ENV LANG en_US.utf8
 
 RUN apt install -y libstdc++6 build-essential git cmake g++
+# the dxxwjz1 network weights files are the gzip compressed JSON documents
+RUN apt install -y zlib1g-dev nlohmann-json3-dev
 # RUN apt install -y libopencv-dev
 # RUN apt install -y libopencv-imgcodecs-dev
 # RUN apt install -y libopencv-shape-dev

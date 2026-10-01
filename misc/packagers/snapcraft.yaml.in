@@ -27,9 +27,15 @@ parts:
       - -DENABLE_SSE_AND_AVX_FLAGS=OFF
     build-packages:
       - libopencv-dev
-    # the runtime libraries of the OpenCV modules the project links with
+      # the dxxwjz1 network weights files are the gzip compressed JSON
+      # documents
+      - zlib1g-dev
+      - nlohmann-json3-dev
+    # the runtime libraries the project links with: the OpenMP, the zlib and
+    # the OpenCV modules
     stage-packages:
       - libgomp1
+      - zlib1g
       - libopencv-core406t64
       - libopencv-imgproc406t64
       - libopencv-imgcodecs406t64

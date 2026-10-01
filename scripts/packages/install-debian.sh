@@ -18,6 +18,10 @@ PACKAGES=(
     # the OpenCV is the mandatory dependency of the Darknet code
     libopencv-dev
     libstdc++6
+    # the zlib and the nlohmann json are the mandatory dependencies of the
+    # dxxwjz1 network weights files (the gzip compressed JSON documents)
+    nlohmann-json3-dev
+    zlib1g-dev
 )
 
 APT_SUDO=""
