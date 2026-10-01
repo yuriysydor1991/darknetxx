@@ -80,6 +80,7 @@ target_sources(
     $<TARGET_OBJECTS:DarknetCXXWeightsModelOBJ>
     $<TARGET_OBJECTS:DarknetCXXOrigWeightsOBJ>
     $<TARGET_OBJECTS:DarknetCXXDxxwjz1V1OBJ>
+    $<TARGET_OBJECTS:DarknetCXXWeightsConverterOBJ>
     $<TARGET_OBJECTS:DarknetCXXNetworksCApiOBJ>
     $<TARGET_OBJECTS:DarknetCXXDarknetContextOBJ>
     $<TARGET_OBJECTS:DarknetCXXHelpersComponentOBJ>
