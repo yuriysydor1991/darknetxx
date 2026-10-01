@@ -6,3 +6,5 @@ endif()
 
 add_subdirectory(digits)
 add_subdirectory(digits-bash)
+add_subdirectory(converter)
+add_subdirectory(converter-bash)

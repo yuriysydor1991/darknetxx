@@ -1,0 +1,19 @@
+#ifndef DARKNETXX_PROJECT_ITEST_CONVERTER_DATA_PROVIDER_CLASS_H
+#define DARKNETXX_PROJECT_ITEST_CONVERTER_DATA_PROVIDER_CLASS_H
+
+class ITEST_converter_provider
+{
+ public:
+  // the executables paths are known at the build time only
+  inline static constexpr const char* const CONVERTER = ITEST_CONVERTER_BINARY;
+  inline static constexpr const char* const DARKNETXX = ITEST_DARKNETXX_BINARY;
+
+  // the root of the per test directories of the generated files, the tests
+  // remove their files at the end
+  inline static constexpr const char* const GENERATED_DIR = "@ITEST_CONVERTER_GENERATED_DIR@";
+
+  // the reference networks and weights files of the loader component test
+  inline static constexpr const char* const REFERENCE_DIR = "@ITEST_CONVERTER_REFERENCE_DIR@";
+};
+
+#endif  // DARKNETXX_PROJECT_ITEST_CONVERTER_DATA_PROVIDER_CLASS_H
