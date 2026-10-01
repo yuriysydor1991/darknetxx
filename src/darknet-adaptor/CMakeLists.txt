@@ -79,11 +79,13 @@ target_sources(
     $<TARGET_OBJECTS:DarknetCXXNetworkLoaderOrigDefaultOBJ>
     $<TARGET_OBJECTS:DarknetCXXWeightsModelOBJ>
     $<TARGET_OBJECTS:DarknetCXXOrigWeightsOBJ>
+    $<TARGET_OBJECTS:DarknetCXXDxxwjz1V1OBJ>
     $<TARGET_OBJECTS:DarknetCXXNetworksCApiOBJ>
     $<TARGET_OBJECTS:DarknetCXXDarknetContextOBJ>
     $<TARGET_OBJECTS:DarknetCXXHelpersComponentOBJ>
     $<TARGET_OBJECTS:DarknetXXLog4CInterfaceObj>
     $<TARGET_OBJECTS:TemplateProjectDefaultLoggerObj>
+    $<TARGET_OBJECTS:TemplateProjectZlibControllerObj>
     # the application context the DarknetContext is made of
     ${CMAKE_SOURCE_DIR}/src/app/ApplicationContext.cpp
 )
@@ -107,6 +109,8 @@ target_link_libraries(
   INTERFACE
     ${OpenCV_LIBS}
     Threads::Threads
+    nlohmann_json::nlohmann_json
+    ZLIB::ZLIB
 )
 
 target_compile_definitions(
