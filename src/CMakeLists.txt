@@ -41,5 +41,6 @@ add_subdirectory(darknet-adaptor)
 add_subdirectory(scripts)
 add_subdirectory(helpers)
 add_subdirectory(OMP)
+add_subdirectory(zlib)
 add_subdirectory(tests)
 
