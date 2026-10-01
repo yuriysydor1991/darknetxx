@@ -23,7 +23,7 @@ namespace darknet_adaptor::loaders
  * The loader builds the networks of the C++ adaptors: the layers are made by
  * the layer classes of the Layers directory, the network memory belongs to
  * the ANetworkAdaptor and the darknet C code computes with it's struct view.
- * The weights are loaded by the OrigWeightsFile.
+ * The weights are loaded by the OrigWeightsReader.
  *
  * The parse errors, where the original darknet ended the process with the
  * error() call, throw NetworkError here; the load() of the context catches

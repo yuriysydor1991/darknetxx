@@ -1,35 +1,23 @@
 #include "WeightsChecks.h"
 
 #include <algorithm>
-#include <cctype>
-#include <cstdlib>
-#include <filesystem>
-#include <fstream>
 #include <iterator>
 #include <limits>
 #include <random>
 #include <set>
 
-#include "CTEST_OrigWeightsFile_provider.h"
 #include "NetworkChecks.h"
-#include "src/darknet-adaptor/adaptors/NetworksLoaders/OrigWeightsFile/OrigWeightsFile.h"
-#include "version.h"
+#include "src/darknet-adaptor/adaptors/NetworksLoaders/original-weights/OrigWeightsReader.h"
+#include "src/darknet-adaptor/adaptors/NetworksLoaders/original-weights/OrigWeightsWriter.h"
 
 namespace weights_test
 {
 
-using darknet_adaptor::loaders::OrigWeightsFile;
+using darknet_adaptor::loaders::OrigWeightsReader;
+using darknet_adaptor::loaders::OrigWeightsWriter;
 
 namespace
 {
-
-/// @brief The per process token, which keeps the files of the tests running
-/// in parallel apart.
-const std::string& process_token()
-{
-  static const std::string token = std::to_string(std::random_device{}());
-  return token;
-}
 
 /// @brief The loaded arrays are the saved ones: the loader skips nothing and
 /// transposes nothing, so the saved file loads and saves the same bytes.
@@ -75,105 +63,25 @@ Pattern before_pattern(const WeightsVariant& variant)
 
 }  // namespace
 
-WeightsWorkspace::WeightsWorkspace()
-{
-  const ::testing::TestInfo* const info =
-      ::testing::UnitTest::GetInstance()->current_test_info();
-
-  std::string name = info == nullptr ? std::string{"weights"}
-                                     : std::string{info->test_suite_name()} +
-                                           "." + info->name();
-
-  std::replace_if(
-      name.begin(), name.end(),
-      [](char symbol) {
-        return std::isalnum(static_cast<unsigned char>(symbol)) == 0 &&
-               symbol != '_' && symbol != '.' && symbol != '-';
-      },
-      '_');
-
-  const char* const keep = std::getenv("DARKNETXX_WEIGHTS_TESTS_KEEP_DIR");
-
-  std::filesystem::path path;
-
-  if (keep != nullptr && *keep != '\0') {
-    mkeep = true;
-    path = std::filesystem::path{keep} / name;
-  } else {
-    path =
-        std::filesystem::path{CTEST_OrigWeightsFile_provider::GENERATED_DIR} /
-        (process_token() + "-" + name);
-  }
-
-  mdir = path.string();
-
-  std::filesystem::create_directories(path);
-}
-
-WeightsWorkspace::~WeightsWorkspace()
-{
-  if (!mkeep) {
-    std::error_code error;
-    std::filesystem::remove_all(mdir, error);
-  }
-}
-
-std::string WeightsWorkspace::file(const std::string& name) const
-{
-  return (std::filesystem::path{mdir} / name).string();
-}
-
-std::string WeightsWorkspace::write_cfg(const NetSpec& spec) const
-{
-  const std::string path =
-      file((spec.name.empty() ? "net" : spec.name) + ".cfg");
-
-  std::ofstream cfg(path, std::ios::trunc);
-  cfg << spec.cfg();
-
-  return path;
-}
-
-WeightsHeader saved_header(uint64_t seen)
-{
-  return WeightsHeader{MAJOR_VERSION, MINOR_VERSION, PATCH_VERSION, seen};
-}
-
-uint64_t saved_seen(const NetSpec& spec, ParseMode mode, int iteration)
-{
-  return static_cast<uint64_t>(iteration) *
-         static_cast<uint64_t>(spec.mini_batch(mode == ParseMode::Train)) *
-         static_cast<uint64_t>(spec.subdivisions);
-}
-
-int loaded_iteration(const NetSpec& spec, ParseMode mode, uint64_t seen)
-{
-  const uint64_t images =
-      static_cast<uint64_t>(spec.mini_batch(mode == ParseMode::Train)) *
-      static_cast<uint64_t>(spec.subdivisions);
-
-  return static_cast<int>(seen / images);
-}
-
 void save(network& net, const std::string& path)
 {
-  EXPECT_TRUE(OrigWeightsFile::save(net, path)) << "the save of " << path;
+  EXPECT_TRUE(OrigWeightsWriter{}.save(net, path)) << "the save of " << path;
 }
 
 void save_upto(network& net, const std::string& path, int cutoff, bool ema)
 {
-  EXPECT_TRUE(OrigWeightsFile::save(net, path, cutoff, ema))
+  EXPECT_TRUE(OrigWeightsWriter{}.save(net, path, cutoff, ema))
       << "the save of " << path;
 }
 
 void load(network& net, const std::string& path)
 {
-  EXPECT_TRUE(OrigWeightsFile::load(net, path)) << "the load of " << path;
+  EXPECT_TRUE(OrigWeightsReader{}.load(net, path)) << "the load of " << path;
 }
 
 void load_upto(network& net, const std::string& path, int cutoff)
 {
-  EXPECT_TRUE(OrigWeightsFile::load(net, path, cutoff))
+  EXPECT_TRUE(OrigWeightsReader{}.load(net, path, cutoff))
       << "the load of " << path;
 }
 

@@ -44,6 +44,16 @@ struct Resolution
   int height{0};
 };
 
+/// @brief The header the save_weights() writes for the given seen.
+WeightsHeader saved_header(uint64_t seen);
+
+/// @brief The seen the save_weights() writes for the network at the iteration:
+/// the iteration images count.
+uint64_t saved_seen(const NetSpec& spec, ParseMode mode, int iteration);
+
+/// @brief The iteration load_weights() sets for the loaded seen.
+int loaded_iteration(const NetSpec& spec, ParseMode mode, uint64_t seen);
+
 namespace variants
 {
 

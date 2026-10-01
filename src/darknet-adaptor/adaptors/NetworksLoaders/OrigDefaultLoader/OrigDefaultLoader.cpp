@@ -51,7 +51,7 @@
 #include "src/darknet-adaptor/adaptors/Layers/YoloLayer.h"
 #include "src/darknet-adaptor/adaptors/NetworkError.h"
 #include "src/darknet-adaptor/adaptors/NetworksLoaders/OrigDefaultLoader/CfgSection.h"
-#include "src/darknet-adaptor/adaptors/NetworksLoaders/OrigWeightsFile/OrigWeightsFile.h"
+#include "src/darknet-adaptor/adaptors/NetworksLoaders/original-weights/OrigWeightsReader.h"
 #include "src/darknet-adaptor/adaptors/orig-includes.h"
 #include "src/log/log.h"
 
@@ -199,7 +199,7 @@ bool OrigDefaultLoader::load_train_networks(const DarknetContextPtr& dctx)
 
     view.benchmark_layers = odctx->benchmark_layers;
 
-    if (!weights.empty() && !OrigWeightsFile::load(*net, weights)) {
+    if (!weights.empty() && !OrigWeightsReader{}.load(*net, weights)) {
       throw NetworkError("Couldn't load the weights file: " + weights);
     }
 
@@ -267,7 +267,7 @@ bool OrigDefaultLoader::load_detect_network(const DarknetContextPtr& dctx)
   ANetworkAdaptorPtr net =
       parse_network_cfg_custom(dctx->get_Detect_cfg(), 1, 1);
 
-  if (!OrigWeightsFile::load(*net, weights)) {
+  if (!OrigWeightsReader{}.load(*net, weights)) {
     throw NetworkError("Couldn't load the weights file: " + weights);
   }
 
@@ -299,7 +299,7 @@ ANetworkAdaptorPtr OrigDefaultLoader::load_network(const std::string& cfg,
   if (!weights.empty()) {
     CLOGI(" Try to load weights: %s", weights.c_str());
 
-    if (!OrigWeightsFile::load(*net, weights)) {
+    if (!OrigWeightsReader{}.load(*net, weights)) {
       throw NetworkError("Couldn't load the weights file: " + weights);
     }
   }
@@ -323,7 +323,7 @@ ANetworkAdaptorPtr OrigDefaultLoader::load_network_custom(
   if (!weights.empty()) {
     CLOGI(" Try to load weights: %s", weights.c_str());
 
-    if (!OrigWeightsFile::load(*net, weights)) {
+    if (!OrigWeightsReader{}.load(*net, weights)) {
       throw NetworkError("Couldn't load the weights file: " + weights);
     }
   }

@@ -23,7 +23,8 @@
 #include "WeightsVariants.h"
 #include "src/darknet-adaptor/adaptors/NetworkError.h"
 #include "src/darknet-adaptor/adaptors/NetworksLoaders/OrigDefaultLoader/OrigDefaultLoader.h"
-#include "src/darknet-adaptor/adaptors/NetworksLoaders/OrigWeightsFile/OrigWeightsFile.h"
+#include "src/darknet-adaptor/adaptors/NetworksLoaders/original-weights/OrigWeightsReader.h"
+#include "src/darknet-adaptor/adaptors/NetworksLoaders/original-weights/OrigWeightsWriter.h"
 #include "src/darknet.h"
 #include "src/log/default-logger/DefaultLogger.h"
 #include "version.h"
@@ -33,7 +34,8 @@ using namespace weights_test;
 
 using darknet_adaptor::adaptors::NetworkError;
 using darknet_adaptor::loaders::OrigDefaultLoader;
-using darknet_adaptor::loaders::OrigWeightsFile;
+using darknet_adaptor::loaders::OrigWeightsReader;
+using darknet_adaptor::loaders::OrigWeightsWriter;
 
 namespace
 {
@@ -123,8 +125,8 @@ bool write_raw(const std::string& path, const WeightsHeader& header,
 }
 
 /**
- * @brief The in memory file the per layer routines of the OrigWeightsFile
- * write and read.
+ * @brief The in memory file the per layer routines of the OrigWeightsWriter
+ * write and the ones of the OrigWeightsReader read.
  */
 class TemporaryFile
 {
@@ -221,7 +223,7 @@ float lrelu(float value) { return value > 0.001f ? value : 0.001f; }
 class CTEST_OrigWeightsFile : public Test
 {
  public:
-  WeightsWorkspace workspace;
+  WeightsWorkspace workspace{CTEST_OrigWeightsFile_provider::GENERATED_DIR};
 
   /// @brief Writes the file of the pattern values the network loads.
   std::string write_for(const NetSpec& spec, const WeightsHeader& header,
@@ -852,8 +854,8 @@ TEST_F(CTEST_OrigWeightsFile, load_fails_on_a_missing_file)
   DarknetNetwork darknet{workspace.write_cfg(spec), ParseMode::Inference};
   const std::string missing = workspace.file("missing.weights");
 
-  EXPECT_FALSE(OrigWeightsFile::load(darknet.net(), missing));
-  EXPECT_FALSE(OrigWeightsFile::load(darknet.net(), missing, 1));
+  EXPECT_FALSE(OrigWeightsReader{}.load(darknet.net(), missing));
+  EXPECT_FALSE(OrigWeightsReader{}.load(darknet.net(), missing, 1));
 }
 
 TEST_F(CTEST_OrigWeightsFile, save_fails_on_an_unwritable_path)
@@ -863,8 +865,8 @@ TEST_F(CTEST_OrigWeightsFile, save_fails_on_an_unwritable_path)
   DarknetNetwork darknet{workspace.write_cfg(spec), ParseMode::Inference};
   const std::string unwritable = workspace.file("no/such/dir/x.weights");
 
-  EXPECT_FALSE(OrigWeightsFile::save(darknet.net(), unwritable));
-  EXPECT_FALSE(OrigWeightsFile::save(darknet.net(), unwritable, 1, true));
+  EXPECT_FALSE(OrigWeightsWriter{}.save(darknet.net(), unwritable));
+  EXPECT_FALSE(OrigWeightsWriter{}.save(darknet.net(), unwritable, 1, true));
 }
 
 TEST_F(CTEST_OrigWeightsFile, load_network_throws_on_a_missing_weights_file)
@@ -1140,7 +1142,7 @@ TEST_F(CTEST_OrigWeightsFile, transpose_matrix_transposes_the_row_major_matrix)
 
     const std::vector<float> source = values;
 
-    OrigWeightsFile::transpose_matrix(values.data(), rows, cols);
+    OrigWeightsReader::transpose_matrix(values.data(), rows, cols);
 
     for (int x = 0; x < rows; ++x) {
       for (int y = 0; y < cols; ++y) {
@@ -1176,7 +1178,7 @@ TEST_F(CTEST_OrigWeightsFile,
 
   ASSERT_TRUE(file.is_open());
 
-  OrigWeightsFile::save_convolutional_weights_binary(l, file.get());
+  OrigWeightsWriter::save_convolutional_weights_binary(l, file.get());
 
   // the biases, then the mean and 3 bytes of the signs per filter
   EXPECT_EQ(file.size(), 2 * 4 + 2 * (4 + 3));
@@ -1212,7 +1214,7 @@ TEST_F(CTEST_OrigWeightsFile,
 
   file.rewind();
 
-  OrigWeightsFile::load_convolutional_weights_binary(loaded, file.get());
+  OrigWeightsReader::load_convolutional_weights_binary(loaded, file.get());
 
   EXPECT_EQ(loaded.biases[0], 0.5f);
   EXPECT_EQ(loaded.biases[1], -0.25f);
@@ -1270,7 +1272,7 @@ TEST_F(CTEST_OrigWeightsFile,
     const TemporaryFile file;
     ASSERT_TRUE(file.is_open());
 
-    OrigWeightsFile::save_convolutional_weights(conv_layer, file.get());
+    OrigWeightsWriter::save_convolutional_weights(conv_layer, file.get());
 
     EXPECT_TRUE(same_bits(file.floats(), expected));
 
@@ -1278,7 +1280,7 @@ TEST_F(CTEST_OrigWeightsFile,
 
     const layer& target = second.net().layers[0];
 
-    OrigWeightsFile::load_convolutional_weights(target, file.get());
+    OrigWeightsReader::load_convolutional_weights(target, file.get());
 
     EXPECT_TRUE(
         same_bits(copy_of(target.biases, 3), copy_of(conv_layer.biases, 3)));
@@ -1301,7 +1303,8 @@ TEST_F(CTEST_OrigWeightsFile,
     const TemporaryFile ema_file;
     ASSERT_TRUE(ema_file.is_open());
 
-    OrigWeightsFile::save_convolutional_weights_ema(conv_layer, ema_file.get());
+    OrigWeightsWriter::save_convolutional_weights_ema(conv_layer,
+                                                      ema_file.get());
 
     EXPECT_TRUE(same_bits(ema_file.floats(), expected_ema));
   }
@@ -1317,7 +1320,7 @@ TEST_F(CTEST_OrigWeightsFile,
     const TemporaryFile file;
     ASSERT_TRUE(file.is_open());
 
-    OrigWeightsFile::save_batchnorm_weights(bn_layer, file.get());
+    OrigWeightsWriter::save_batchnorm_weights(bn_layer, file.get());
 
     EXPECT_TRUE(same_bits(file.floats(), expected));
 
@@ -1325,7 +1328,7 @@ TEST_F(CTEST_OrigWeightsFile,
 
     const layer& target = second.net().layers[1];
 
-    OrigWeightsFile::load_batchnorm_weights(target, file.get());
+    OrigWeightsReader::load_batchnorm_weights(target, file.get());
 
     std::vector<float> actual;
     append(actual, target.biases, 3);
@@ -1347,9 +1350,9 @@ TEST_F(CTEST_OrigWeightsFile,
     ASSERT_TRUE(file.is_open());
 
     if (index == 2) {
-      OrigWeightsFile::save_shortcut_weights(source, file.get());
+      OrigWeightsWriter::save_shortcut_weights(source, file.get());
     } else {
-      OrigWeightsFile::save_implicit_weights(source, file.get());
+      OrigWeightsWriter::save_implicit_weights(source, file.get());
     }
 
     EXPECT_TRUE(same_bits(file.floats(), expected));
@@ -1357,9 +1360,9 @@ TEST_F(CTEST_OrigWeightsFile,
     file.rewind();
 
     if (index == 2) {
-      OrigWeightsFile::load_shortcut_weights(target, file.get());
+      OrigWeightsReader::load_shortcut_weights(target, file.get());
     } else {
-      OrigWeightsFile::load_implicit_weights(target, file.get());
+      OrigWeightsReader::load_implicit_weights(target, file.get());
     }
 
     EXPECT_TRUE(same_bits(copy_of(target.weights, target.nweights), expected));
@@ -1381,7 +1384,7 @@ TEST_F(CTEST_OrigWeightsFile,
     const TemporaryFile file;
     ASSERT_TRUE(file.is_open());
 
-    OrigWeightsFile::save_connected_weights(connected, file.get());
+    OrigWeightsWriter::save_connected_weights(connected, file.get());
 
     EXPECT_TRUE(same_bits(file.floats(), expected));
 
@@ -1392,8 +1395,8 @@ TEST_F(CTEST_OrigWeightsFile,
 
       const layer& target = second.net().layers[4];
 
-      OrigWeightsFile::load_connected_weights(target, file.get(),
-                                              transpose != 0);
+      OrigWeightsReader::load_connected_weights(target, file.get(),
+                                                transpose != 0);
 
       std::vector<float> actual;
       append(actual, target.biases, outputs);

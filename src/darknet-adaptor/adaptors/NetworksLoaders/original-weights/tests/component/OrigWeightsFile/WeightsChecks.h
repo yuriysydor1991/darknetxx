@@ -11,50 +11,16 @@
 #include "WeightsFile.h"
 #include "WeightsNetSpec.h"
 #include "WeightsVariants.h"
+#include "WeightsWorkspace.h"
 
 namespace weights_test
 {
 
-/**
- * @brief The directory of the files of the current test, removed with them at
- * the test end.
- *
- * The DARKNETXX_WEIGHTS_TESTS_KEEP_DIR environment variable names the
- * directory to keep the generated cfg and weights files in instead, one
- * sub-directory per test.
- */
-class WeightsWorkspace
-{
- public:
-  WeightsWorkspace();
-  ~WeightsWorkspace();
+// the generated networks and weights files of the weights factory
+using namespace weights_factory;
 
-  WeightsWorkspace(const WeightsWorkspace&) = delete;
-  WeightsWorkspace& operator=(const WeightsWorkspace&) = delete;
-
-  /// @brief The path of the named file in the workspace.
-  std::string file(const std::string& name) const;
-
-  /// @brief Writes the cfg file of the network, returns the file path.
-  std::string write_cfg(const NetSpec& spec) const;
-
- private:
-  std::string mdir;
-  bool mkeep{false};
-};
-
-/// @brief The header save_weights() writes for the given seen.
-WeightsHeader saved_header(uint64_t seen);
-
-/// @brief The seen save_weights() writes for the network at the iteration:
-/// the iteration images count.
-uint64_t saved_seen(const NetSpec& spec, ParseMode mode, int iteration);
-
-/// @brief The iteration load_weights() sets for the loaded seen.
-int loaded_iteration(const NetSpec& spec, ParseMode mode, uint64_t seen);
-
-/// @brief The OrigWeightsFile save() and load() of the network, expected to
-/// succeed.
+/// @brief The OrigWeightsWriter save() and the OrigWeightsReader load() of
+/// the network, expected to succeed.
 void save(network& net, const std::string& path);
 void save_upto(network& net, const std::string& path, int cutoff, bool ema);
 void load(network& net, const std::string& path);

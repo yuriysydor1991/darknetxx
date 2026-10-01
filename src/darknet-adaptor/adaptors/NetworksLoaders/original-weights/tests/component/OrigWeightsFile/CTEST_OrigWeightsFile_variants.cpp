@@ -2,6 +2,7 @@
 
 #include <string>
 
+#include "CTEST_OrigWeightsFile_provider.h"
 #include "WeightsChecks.h"
 #include "WeightsVariants.h"
 
@@ -26,7 +27,7 @@ std::string variant_name(const TestParamInfo<WeightsVariant>& info)
 class CTEST_OrigWeightsFile_layers : public TestWithParam<WeightsVariant>
 {
  public:
-  WeightsWorkspace workspace;
+  WeightsWorkspace workspace{CTEST_OrigWeightsFile_provider::GENERATED_DIR};
 };
 
 TEST_P(CTEST_OrigWeightsFile_layers, saves_the_expected_layout)
@@ -73,7 +74,7 @@ INSTANTIATE_TEST_SUITE_P(Generated, CTEST_OrigWeightsFile_layers,
 class CTEST_OrigWeightsFile_resolutions : public TestWithParam<WeightsVariant>
 {
  public:
-  WeightsWorkspace workspace;
+  WeightsWorkspace workspace{CTEST_OrigWeightsFile_provider::GENERATED_DIR};
 };
 
 TEST_P(CTEST_OrigWeightsFile_resolutions, saves_the_expected_layout)
@@ -106,7 +107,7 @@ INSTANTIATE_TEST_SUITE_P(Generated, CTEST_OrigWeightsFile_resolutions,
 class CTEST_OrigWeightsFile_random : public TestWithParam<WeightsVariant>
 {
  public:
-  WeightsWorkspace workspace;
+  WeightsWorkspace workspace{CTEST_OrigWeightsFile_provider::GENERATED_DIR};
 };
 
 TEST_P(CTEST_OrigWeightsFile_random, saves_the_expected_layout)
@@ -154,7 +155,7 @@ INSTANTIATE_TEST_SUITE_P(
 class CTEST_OrigWeightsFile_big : public TestWithParam<WeightsVariant>
 {
  public:
-  WeightsWorkspace workspace;
+  WeightsWorkspace workspace{CTEST_OrigWeightsFile_provider::GENERATED_DIR};
 };
 
 TEST_P(CTEST_OrigWeightsFile_big, saves_the_expected_layout)

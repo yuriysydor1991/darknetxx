@@ -7,9 +7,9 @@
  * load_weights(), save_weights(), resize_network(), free_network() and the
  * like. Their implementations live here now, on top of the C++ adaptors: the
  * networks are made by the OrigDefaultLoader, their memory belongs to the
- * ANetworkAdaptor and ALayerAdaptor containers, the weights files are read and
- * written by the OrigWeightsFile. The C code never allocates nor frees the
- * network memory itself.
+ * ANetworkAdaptor and ALayerAdaptor containers, the weights files are read by
+ * the OrigWeightsReader and written by the OrigWeightsWriter. The C code never
+ * allocates nor frees the network memory itself.
  *
  * The networks these functions make for the C code are kept alive by the
  * NetworksRegistry until the free_network() of their view. The errors end the
@@ -25,7 +25,8 @@
 #include "src/darknet-adaptor/adaptors/NetworkError.h"
 #include "src/darknet-adaptor/adaptors/NetworksCApi/NetworksRegistry.h"
 #include "src/darknet-adaptor/adaptors/NetworksLoaders/OrigDefaultLoader/OrigDefaultLoader.h"
-#include "src/darknet-adaptor/adaptors/NetworksLoaders/OrigWeightsFile/OrigWeightsFile.h"
+#include "src/darknet-adaptor/adaptors/NetworksLoaders/original-weights/OrigWeightsReader.h"
+#include "src/darknet-adaptor/adaptors/NetworksLoaders/original-weights/OrigWeightsWriter.h"
 #include "src/darknet-adaptor/adaptors/orig-includes.h"
 
 namespace
@@ -34,7 +35,8 @@ namespace
 using darknet_adaptor::adaptors::ANetworkAdaptorPtr;
 using darknet_adaptor::adaptors::NetworksRegistry;
 using darknet_adaptor::loaders::OrigDefaultLoader;
-using darknet_adaptor::loaders::OrigWeightsFile;
+using darknet_adaptor::loaders::OrigWeightsReader;
+using darknet_adaptor::loaders::OrigWeightsWriter;
 
 std::string path_of(const char* path) { return path ? std::string{path} : ""; }
 
@@ -156,7 +158,7 @@ network* load_network(char* cfg, char* weights, int clear)
 
 void load_weights_upto(network* net, char* filename, int cutoff)
 {
-  if (!OrigWeightsFile::load(*net, path_of(filename), cutoff)) {
+  if (!OrigWeightsReader{}.load(*net, path_of(filename), cutoff)) {
     file_error(__FILE__, __LINE__, filename);
   }
 }
@@ -168,7 +170,8 @@ void load_weights(network* net, char* filename)
 
 void save_weights_upto(network net, char* filename, int cutoff, int save_ema)
 {
-  if (!OrigWeightsFile::save(net, path_of(filename), cutoff, save_ema != 0)) {
+  if (!OrigWeightsWriter{}.save(net, path_of(filename), cutoff,
+                                save_ema != 0)) {
     file_error(__FILE__, __LINE__, filename);
   }
 }

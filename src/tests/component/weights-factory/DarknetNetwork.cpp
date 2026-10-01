@@ -12,7 +12,7 @@
 
 #include "src/darknet-adaptor/adaptors/NetworksLoaders/OrigDefaultLoader/OrigDefaultLoader.h"
 
-namespace weights_test
+namespace weights_factory
 {
 
 namespace
@@ -338,4 +338,4 @@ float* DarknetNetwork::array(const Block& block)
   return ::testing::AssertionSuccess();
 }
 
-}  // namespace weights_test
+}  // namespace weights_factory

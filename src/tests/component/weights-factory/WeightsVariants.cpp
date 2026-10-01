@@ -6,6 +6,8 @@
 #include <random>
 #include <sstream>
 
+#include "version.h"
+
 namespace weights_factory
 {
 
@@ -805,6 +807,27 @@ bool WeightsVariant::train() const { return mode == ParseMode::Train; }
 void PrintTo(const WeightsVariant& variant, std::ostream* os)
 {
   *os << variant.name;
+}
+
+WeightsHeader saved_header(uint64_t seen)
+{
+  return WeightsHeader{MAJOR_VERSION, MINOR_VERSION, PATCH_VERSION, seen};
+}
+
+uint64_t saved_seen(const NetSpec& spec, ParseMode mode, int iteration)
+{
+  return static_cast<uint64_t>(iteration) *
+         static_cast<uint64_t>(spec.mini_batch(mode == ParseMode::Train)) *
+         static_cast<uint64_t>(spec.subdivisions);
+}
+
+int loaded_iteration(const NetSpec& spec, ParseMode mode, uint64_t seen)
+{
+  const uint64_t images =
+      static_cast<uint64_t>(spec.mini_batch(mode == ParseMode::Train)) *
+      static_cast<uint64_t>(spec.subdivisions);
+
+  return static_cast<int>(seen / images);
 }
 
 namespace variants

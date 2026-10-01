@@ -14,8 +14,8 @@ configure_file(
 add_executable(
   CTEST_OrigWeightsFile
   CTEST_OrigWeightsFile.cpp
+  CTEST_OrigWeightsFile_documents.cpp
   CTEST_OrigWeightsFile_variants.cpp
-  DarknetNetwork.cpp
   WeightsChecks.cpp
 )
 

@@ -1,5 +1,5 @@
-#ifndef DARKNETXX_PROJECT_CTEST_ORIG_WEIGHTS_FILE_DARKNET_NETWORK_H
-#define DARKNETXX_PROJECT_CTEST_ORIG_WEIGHTS_FILE_DARKNET_NETWORK_H
+#ifndef DARKNETXX_PROJECT_WEIGHTS_FACTORY_DARKNET_NETWORK_H
+#define DARKNETXX_PROJECT_WEIGHTS_FACTORY_DARKNET_NETWORK_H
 
 #include <gtest/gtest.h>
 
@@ -12,11 +12,8 @@
 #include "src/darknet.h"
 #include "src/network.h"
 
-namespace weights_test
+namespace weights_factory
 {
-
-// the generated networks and weights files of the weights factory
-using namespace weights_factory;
 
 /**
  * @brief Owns the network the OrigDefaultLoader builds of the cfg file and
@@ -76,6 +73,6 @@ class DarknetNetwork
   darknet_adaptor::adaptors::ANetworkAdaptorPtr mnet;
 };
 
-}  // namespace weights_test
+}  // namespace weights_factory
 
-#endif  // DARKNETXX_PROJECT_CTEST_ORIG_WEIGHTS_FILE_DARKNET_NETWORK_H
+#endif  // DARKNETXX_PROJECT_WEIGHTS_FACTORY_DARKNET_NETWORK_H

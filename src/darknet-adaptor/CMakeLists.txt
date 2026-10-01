@@ -77,7 +77,8 @@ target_sources(
     $<TARGET_OBJECTS:DarknetCXXANetworkAdaptorOBJ>
     $<TARGET_OBJECTS:DarknetCXXLayersOBJ>
     $<TARGET_OBJECTS:DarknetCXXNetworkLoaderOrigDefaultOBJ>
-    $<TARGET_OBJECTS:DarknetCXXOrigWeightsFileOBJ>
+    $<TARGET_OBJECTS:DarknetCXXWeightsModelOBJ>
+    $<TARGET_OBJECTS:DarknetCXXOrigWeightsOBJ>
     $<TARGET_OBJECTS:DarknetCXXNetworksCApiOBJ>
     $<TARGET_OBJECTS:DarknetCXXDarknetContextOBJ>
     $<TARGET_OBJECTS:DarknetCXXHelpersComponentOBJ>
