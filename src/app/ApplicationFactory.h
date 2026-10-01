@@ -6,6 +6,7 @@
 #include "src/app/ApplicationContext.h"
 #include "src/app/CommandLineParser.h"
 #include "src/app/IApplication.h"
+#include "src/app/converter/IFormatsConverter.h"
 #include "src/app/signals-handlers/ISignalsHandler.h"
 
 namespace app
@@ -50,11 +51,30 @@ class ApplicationFactory
   virtual std::shared_ptr<ISignalsHandler> create_default_signals_handler();
 
   /**
-   * @brief Creates default instance for the application implementation.
+   * @brief Creates default instance for the application implementation: the
+   * training and the detection one. The network weights files converter only
+   * binary has none, its factory creates the help printer instead.
    *
    * @return Returns created default application.
    */
   virtual std::shared_ptr<IApplication> create_default_application();
+
+  /**
+   * @brief Creates the network weights files formats converter the converter
+   * application runs.
+   *
+   * @return Returns created formats converter.
+   */
+  virtual std::shared_ptr<converter::IFormatsConverter>
+  create_formats_converter();
+
+  /**
+   * @brief Creates the application of the network weights file conversion
+   * the command line requests.
+   *
+   * @return Returns created converter application.
+   */
+  virtual std::shared_ptr<IApplication> create_formats_converter_application();
 
   /**
    * @brief Instantiates a default help message printer.

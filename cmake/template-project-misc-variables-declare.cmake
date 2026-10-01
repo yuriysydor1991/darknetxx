@@ -130,6 +130,34 @@ option(
   ON
 )
 
+# ---------------------------------------------------------------------------
+# The converter only binary.
+#
+# The project builds two application binaries out of one and the same code.
+# The main one trains and runs the networks; the second one, named after it,
+# carries the network weights files format conversion alone (the original
+# darknet weights and the dxxwjz1 ones, see the
+# src/darknet-adaptor/adaptors/NetworksLoaders directory). It is the very same
+# src/app component compiled with the DARKNETXX_CONVERTER_ONLY definition,
+# which leaves the app::Application class (and with it the training and the
+# detection the class starts) out. The conversion stays available through the
+# command line of the main binary as well, so the second one adds a deployment
+# option rather than a feature.
+#
+#   (nothing given)                        -> both binaries
+#   -DENABLE_DARKNETXX_CONVERTER=OFF       -> the main binary alone
+# ---------------------------------------------------------------------------
+option(
+  ENABLE_DARKNETXX_CONVERTER
+  "Build the network weights files converter only binary beside the main application one"
+  ON
+)
+
+set(
+  PROJECT_CONVERTER_BINARY_NAME "${PROJECT_BINARY_NAME}Converter"
+  CACHE STRING "The network weights files converter only binary name and target"
+)
+
 option(
   ENABLE_DOCKER_DARKNET_PREDICTOR
   "Set to ON to enable the predictor docker container runs"

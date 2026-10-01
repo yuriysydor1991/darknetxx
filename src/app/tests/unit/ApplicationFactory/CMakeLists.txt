@@ -13,6 +13,8 @@ target_include_directories(
   PRIVATE ${APP_MOCKS_ROOT}/Application
   PRIVATE ${APP_MOCKS_ROOT}/ApplicationHelpPrinter
   PRIVATE ${APP_MOCKS_ROOT}/ApplicationVersionPrinter
+  PRIVATE ${APP_MOCKS_ROOT}/ApplicationConverterComponent
+  PRIVATE ${APP_MOCKS_ROOT}/ApplicationFormatsConverter
   PRIVATE ${APP_MOCKS_ROOT}/CommandLineParser
   PRIVATE ${SIGNALS_HANDLERS_MOCKS_ROOT}/SignalsHandler
   PRIVATE ${APP_MOCKS_ROOT}/project-global-decls

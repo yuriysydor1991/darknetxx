@@ -30,6 +30,11 @@ install(
   RUNTIME DESTINATION bin
 )
 
+# The network weights files converter only binary beside the main one. It is
+# declared before the components below, since the app component hands its
+# sources to both binaries.
+include(${CMAKE_CURRENT_SOURCE_DIR}/darknetxxConverter-target.cmake)
+
 configure_file(
   project-global-decls.h.in
   ${CMAKE_BINARY_DIR}/project-global-decls.h

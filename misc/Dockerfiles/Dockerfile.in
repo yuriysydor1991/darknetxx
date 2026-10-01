@@ -11,7 +11,7 @@ RUN --mount=from=project,target=/src/${PROJECT_BINARY_NAME} \
  cd /src/${PROJECT_BINARY_NAME} && \
  mkdir -vp $BUILDDIR && \
  cmake -S . -B $BUILDDIR -DCMAKE_BUILD_TYPE=Release &&  \
- cmake --build $BUILDDIR -j$(nproc) --target ${PROJECT_BINARY_NAME} && \
+ cmake --build $BUILDDIR -j$(nproc) && \
  cmake --install $BUILDDIR --prefix /usr
 
 CMD ["${PROJECT_BINARY_NAME}"]

@@ -6,8 +6,9 @@
 #include <ostream>
 #include <string>
 
-#include "project-global-decls.h"
+#include "src/app/ApplicationBinaryName.h"
 #include "src/app/CMDParamNames.h"
+#include "src/app/converter/ConversionFormats.h"
 #include "src/log/log.h"
 
 namespace app
@@ -48,6 +49,37 @@ void print_option(std::ostream& out, const std::string& names,
   out << description << '\n';
 }
 
+/**
+ * @brief Print the network weights files conversion options and the formats
+ * they accept.
+ *
+ * @param out The output stream to print the options into.
+ */
+void print_conversion_options(std::ostream& out)
+{
+  out << "\nNetwork weights files conversion options (the four of them go\n"
+      << "together and convert the weights file with no training nor\n"
+      << "detection started):\n";
+  print_option(out, CMDParamNames::convert_fromw, "<FORMAT>",
+               "the network weights file format to read");
+  print_option(out, CMDParamNames::convert_srcw, "<FILE>",
+               "the network weights file to read");
+  print_option(out, CMDParamNames::convert_tow, "<FORMAT>",
+               "the network weights file format to write");
+  print_option(out, CMDParamNames::convert_dstw, "<FILE>",
+               "the network weights file to write (replaced)");
+  print_option(out, CMDParamNames::convert_cfgw, "<FILE>",
+               "the network cfg file of the weights: required to read the "
+               "weights FORMAT, validates the dxxwjz1 one");
+
+  out << "\n  Where FORMAT is one of:\n";
+
+  for (const std::string& name : converter::ConversionFormats::names()) {
+    print_option(out, "  " + name, "",
+                 converter::ConversionFormats::description(name));
+  }
+}
+
 }  // namespace
 
 int ApplicationHelpPrinter::run(std::shared_ptr<ApplicationContext> ctx)
@@ -65,7 +97,7 @@ int ApplicationHelpPrinter::run(std::shared_ptr<ApplicationContext> ctx)
   std::ostream& out = std::cout;
 
   out << "Usage:\n\n"
-      << '\t' << project_decls::PROJECT_NAME << " [OPTIONS]\n\n"
+      << '\t' << application_binary_name() << " [OPTIONS]\n\n"
       << "Introduce a new command line flag by registering it in both\n"
       << "the ApplicationHelpPrinter and the CommandLineParser classes.\n\n"
       << "Where OPTIONS may be next:\n\n";
@@ -79,6 +111,15 @@ int ApplicationHelpPrinter::run(std::shared_ptr<ApplicationContext> ctx)
                "configure date, then exit");
   print_option(out, CMDParamNames::LOGPATHW + " or " + CMDParamNames::LOGPATH,
                "<FILE>", "write the application log into the given file");
+
+  print_conversion_options(out);
+
+#ifdef DARKNETXX_CONVERTER_ONLY
+  // the converter only binary runs no training nor detection
+  out << std::endl;
+
+  return ctx->errors.empty() ? 0 : INVALID;
+#endif  // DARKNETXX_CONVERTER_ONLY
 
   out << "\nNetwork and model options:\n";
   print_option(out, CMDParamNames::train_cfgw, "<FILE>",

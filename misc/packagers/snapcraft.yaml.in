@@ -13,7 +13,7 @@ apps:
     command: usr/${PROJECT_BINARY_INSTALLATION_DIR}/${PROJECT_BINARY_NAME}
     plugs:
       - home
-
+${TEMPLATE_PROJECT_SNAP_CONVERTER_APP}
 parts:
   ${PROJECT_BINARY_NAME}:
     plugin: cmake
@@ -25,6 +25,8 @@ parts:
       - -DCMAKE_INSTALL_PREFIX=/usr
       # the package runs on other machines, which may lack the AVX2 and FMA
       - -DENABLE_SSE_AND_AVX_FLAGS=OFF
+      # the converter binary the apps above name (or not)
+      - -DENABLE_DARKNETXX_CONVERTER=${ENABLE_DARKNETXX_CONVERTER}
     build-packages:
       - libopencv-dev
       # the dxxwjz1 network weights files are the gzip compressed JSON

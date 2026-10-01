@@ -96,6 +96,46 @@ void check_gpus_list(const std::string& value)
   }
 }
 
+/**
+ * @brief Checks the network weights file conversion flags: the four of them
+ * go together, the network cfg one goes with them and neither of them goes
+ * with the training or the detection.
+ */
+bool check_conversion(const std::shared_ptr<ApplicationContext>& ctx)
+{
+  const bool requested = ctx->conversion_requested();
+  const bool complete = !ctx->convert_from.empty() &&
+                        !ctx->convert_src.empty() && !ctx->convert_to.empty() &&
+                        !ctx->convert_dst.empty();
+
+  std::string error;
+
+  if (requested && !complete) {
+    error = "A conversion requires all of the " + CMDParamNames::convert_fromw +
+            ", " + CMDParamNames::convert_srcw + ", " +
+            CMDParamNames::convert_tow + " and " + CMDParamNames::convert_dstw +
+            " parameters";
+  } else if (!requested && !ctx->convert_cfg.empty()) {
+    error = "The " + CMDParamNames::convert_cfgw +
+            " parameter goes with the conversion ones alone";
+  } else if (requested &&
+             (!ctx->train_cfg.empty() || !ctx->detect_cfg.empty())) {
+    error = "The conversion can't be combined with the " +
+            CMDParamNames::train_cfgw + " and the " +
+            CMDParamNames::detect_cfgw + " parameters";
+  }
+
+  if (error.empty()) {
+    return true;
+  }
+
+  ctx->print_help_and_exit = true;
+  ctx->push_error(error);
+  LOGE(error);
+
+  return false;
+}
+
 }  // namespace
 
 bool CommandLineParser::parse_args(std::shared_ptr<ApplicationContext> ctx)
@@ -138,7 +178,7 @@ bool CommandLineParser::parse_args(std::shared_ptr<ApplicationContext> ctx)
     return false;
   }
 
-  return true;
+  return check_conversion(ctx);
 }
 
 bool CommandLineParser::check_4_data(
@@ -344,6 +384,21 @@ bool CommandLineParser::parse_known_arg(std::shared_ptr<ApplicationContext> ctx,
     ctx->stop_less_avg_loss = to_double(nextParam);
     LOGD("Found stop during avg loss is reached or less: "
          << ctx->stop_less_avg_loss);
+  } else if (param == CMDParamNames::convert_fromw) {
+    ctx->convert_from = nextParam;
+    LOGD("Found the weights format to convert from: " << ctx->convert_from);
+  } else if (param == CMDParamNames::convert_srcw) {
+    ctx->convert_src = nextParam;
+    LOGD("Found the weights file to convert: " << ctx->convert_src);
+  } else if (param == CMDParamNames::convert_tow) {
+    ctx->convert_to = nextParam;
+    LOGD("Found the weights format to convert to: " << ctx->convert_to);
+  } else if (param == CMDParamNames::convert_dstw) {
+    ctx->convert_dst = nextParam;
+    LOGD("Found the weights file to convert into: " << ctx->convert_dst);
+  } else if (param == CMDParamNames::convert_cfgw) {
+    ctx->convert_cfg = nextParam;
+    LOGD("Found the network cfg file of the conversion: " << ctx->convert_cfg);
   } else {
     ctx->print_help_and_exit = true;
     ctx->push_error("Unknown parameter: " + param);
@@ -390,7 +445,12 @@ const std::set<std::string>& CommandLineParser::get_params_requiring_data()
       CMDParamNames::threadsw,
       CMDParamNames::netnthresizew,
       CMDParamNames::data_reload_nthw,
-      CMDParamNames::stop_less_avg_lossw};
+      CMDParamNames::stop_less_avg_lossw,
+      CMDParamNames::convert_fromw,
+      CMDParamNames::convert_srcw,
+      CMDParamNames::convert_tow,
+      CMDParamNames::convert_dstw,
+      CMDParamNames::convert_cfgw};
 
   return requireNext;
 }

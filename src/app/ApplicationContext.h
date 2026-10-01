@@ -155,6 +155,30 @@ struct ApplicationContext
   unsigned int nth_iteration_reload{0U};
   /// @brief stop training when this value reached or less
   double stop_less_avg_loss{0.0};
+
+  /// @brief The network weights file format to read, the name given after the
+  /// --convert-from command line flag (see the
+  /// app::converter::ConversionFormats).
+  std::string convert_from;
+  /// @brief The network weights file to read, given after the --convert-src
+  /// command line flag.
+  std::string convert_src;
+  /// @brief The network weights file format to write, the name given after the
+  /// --convert-to command line flag.
+  std::string convert_to;
+  /// @brief The network weights file to write, given after the --convert-dst
+  /// command line flag.
+  std::string convert_dst;
+  /// @brief The network cfg file of the converted weights, given after the
+  /// --convert-cfg command line flag.
+  std::string convert_cfg;
+
+  /**
+   * @brief Tells the network weights file conversion was requested on the
+   * command line, which is what makes the ApplicationFactory create the
+   * converter application instead of the training or the detection one.
+   */
+  bool conversion_requested() const;
 };
 
 using AppCtxPtr = std::shared_ptr<ApplicationContext>;

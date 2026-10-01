@@ -77,6 +77,13 @@ class CMDParamNames
   inline static const std::string netnthresizew{"--net-resize-nth"};
   inline static const std::string data_reload_nthw{"--data-reload-nth"};
   inline static const std::string stop_less_avg_lossw{"--stop-less-avg-loss"};
+
+  /// @brief the network weights files conversion
+  inline static const std::string convert_fromw{"--convert-from"};
+  inline static const std::string convert_srcw{"--convert-src"};
+  inline static const std::string convert_tow{"--convert-to"};
+  inline static const std::string convert_dstw{"--convert-dst"};
+  inline static const std::string convert_cfgw{"--convert-cfg"};
 };
 
 }  // namespace app

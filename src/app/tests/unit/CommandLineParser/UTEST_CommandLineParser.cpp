@@ -323,3 +323,103 @@ TEST_F(UTEST_CommandLineParser, train_and_detect_cfgs_are_exclusive)
 
   EXPECT_TRUE(appctx->print_help_and_exit);
 }
+
+TEST_F(UTEST_CommandLineParser, conversion_flags)
+{
+  set_args({"--convert-from", "weights", "--convert-src", "yolo.weights",
+            "--convert-to", "dxxwjz1", "--convert-dst", "yolo.dxxwjz1",
+            "--convert-cfg", "yolo.cfg"});
+
+  EXPECT_CALL(*appctx, push_error(_)).Times(0);
+
+  EXPECT_TRUE(parser->parse_args(appctx));
+
+  EXPECT_EQ(appctx->convert_from, "weights");
+  EXPECT_EQ(appctx->convert_src, "yolo.weights");
+  EXPECT_EQ(appctx->convert_to, "dxxwjz1");
+  EXPECT_EQ(appctx->convert_dst, "yolo.dxxwjz1");
+  EXPECT_EQ(appctx->convert_cfg, "yolo.cfg");
+  EXPECT_TRUE(appctx->conversion_requested());
+  EXPECT_FALSE(appctx->print_help_and_exit);
+}
+
+TEST_F(UTEST_CommandLineParser, conversion_without_the_cfg)
+{
+  // the dxxwjz1 files keep their structure, the formats are checked by the
+  // conversion itself
+  set_args({"--convert-to", "weights", "--convert-dst", "a.weights",
+            "--convert-from", "dxxwjz1", "--convert-src", "a.dxxwjz1"});
+
+  EXPECT_CALL(*appctx, push_error(_)).Times(0);
+
+  EXPECT_TRUE(parser->parse_args(appctx));
+
+  EXPECT_TRUE(appctx->conversion_requested());
+  EXPECT_TRUE(appctx->convert_cfg.empty());
+}
+
+TEST_F(UTEST_CommandLineParser, partial_conversion_flags_are_reported)
+{
+  const std::vector<std::vector<std::string>> partials{
+      {"--convert-from", "weights"},
+      {"--convert-from", "weights", "--convert-src", "a.weights",
+       "--convert-to", "dxxwjz1"},
+      {"--convert-dst", "a.dxxwjz1", "--convert-cfg", "a.cfg"}};
+
+  for (const std::vector<std::string>& partial : partials) {
+    appctx = create_context(argc, argv);
+
+    set_args(partial);
+
+    EXPECT_CALL(*appctx,
+                push_error(HasSubstr("A conversion requires all of the")))
+        .Times(1);
+
+    EXPECT_FALSE(parser->parse_args(appctx));
+    EXPECT_TRUE(appctx->print_help_and_exit);
+  }
+}
+
+TEST_F(UTEST_CommandLineParser, conversion_cfg_alone_is_reported)
+{
+  set_args({"--convert-cfg", "a.cfg"});
+
+  EXPECT_CALL(*appctx, push_error(HasSubstr("--convert-cfg"))).Times(1);
+
+  EXPECT_FALSE(parser->parse_args(appctx));
+  EXPECT_TRUE(appctx->print_help_and_exit);
+  EXPECT_FALSE(appctx->conversion_requested());
+}
+
+TEST_F(UTEST_CommandLineParser, conversion_excludes_the_training_and_detection)
+{
+  for (const std::string& mode :
+       {std::string{"--train-cfg"}, std::string{"--detect-cfg"}}) {
+    appctx = create_context(argc, argv);
+
+    set_args({mode, "net.cfg", "--convert-from", "weights", "--convert-src",
+              "a.weights", "--convert-to", "dxxwjz1", "--convert-dst",
+              "a.dxxwjz1"});
+
+    EXPECT_CALL(*appctx, push_error(HasSubstr("can't be combined"))).Times(1);
+
+    EXPECT_FALSE(parser->parse_args(appctx)) << mode;
+    EXPECT_TRUE(appctx->print_help_and_exit);
+  }
+}
+
+TEST_F(UTEST_CommandLineParser, conversion_flags_require_their_values)
+{
+  for (const std::string& flag :
+       {std::string{"--convert-from"}, std::string{"--convert-src"},
+        std::string{"--convert-to"}, std::string{"--convert-dst"},
+        std::string{"--convert-cfg"}}) {
+    appctx = create_context(argc, argv);
+
+    set_args({flag});
+
+    EXPECT_CALL(*appctx, push_error(HasSubstr("requires the data"))).Times(1);
+
+    EXPECT_FALSE(parser->parse_args(appctx)) << flag;
+  }
+}

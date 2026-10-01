@@ -11,4 +11,19 @@ target_sources(
   PRIVATE UserSignalsHandler.cpp
 )
 
+# the network weights files converter only binary handles the OS signals the
+# same way
+if(TARGET ${PROJECT_CONVERTER_BINARY_NAME})
+  target_sources(
+    ${PROJECT_CONVERTER_BINARY_NAME}
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/ContinueSignalsHandler.cpp
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/IgnoredSignalsHandler.cpp
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/PauseSignalsHandler.cpp
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/PosixSignalsHandler.cpp
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/ReloadSignalsHandler.cpp
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/StopSignalsHandler.cpp
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/UserSignalsHandler.cpp
+  )
+endif()
+
 add_subdirectory(tests)

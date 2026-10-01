@@ -96,3 +96,25 @@ TEST_F(UTEST_ApplicationContext, pushing_multiple_errors)
   EXPECT_FALSE(appCtx->print_help_and_exit);
   EXPECT_FALSE(appCtx->print_version_and_exit);
 }
+
+TEST_F(UTEST_ApplicationContext, conversion_requested_by_any_conversion_flag)
+{
+  EXPECT_FALSE(appCtx->conversion_requested());
+
+  // the network cfg alone requests nothing
+  appCtx->convert_cfg = "net.cfg";
+
+  EXPECT_FALSE(appCtx->conversion_requested());
+
+  for (std::string ApplicationContext::* field :
+       {&ApplicationContext::convert_from, &ApplicationContext::convert_src,
+        &ApplicationContext::convert_to, &ApplicationContext::convert_dst}) {
+    (*appCtx).*field = "given";
+
+    EXPECT_TRUE(appCtx->conversion_requested());
+
+    (*appCtx).*field = "";
+  }
+
+  EXPECT_FALSE(appCtx->conversion_requested());
+}

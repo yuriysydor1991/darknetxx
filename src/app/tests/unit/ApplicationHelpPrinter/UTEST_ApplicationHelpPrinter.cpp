@@ -1,6 +1,9 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include <string>
+#include <vector>
+
 #include "src/app/ApplicationHelpPrinter.h"
 
 using namespace app;
@@ -44,4 +47,27 @@ TEST_F(UTEST_ApplicationHelpPrinter, invalid_command_line_exit)
   appCtx->errors.emplace_back("Unknown parameter: --unknown");
 
   EXPECT_NE(app->run(appCtx), 0);
+}
+
+TEST_F(UTEST_ApplicationHelpPrinter, conversion_options_and_formats_are_listed)
+{
+  EXPECT_CALL(*appCtx, push_error(_)).Times(0);
+
+  testing::internal::CaptureStdout();
+
+  EXPECT_EQ(app->run(appCtx), 0);
+
+  const std::string printed = testing::internal::GetCapturedStdout();
+
+  EXPECT_NE(printed.find("darknetxx [OPTIONS]"), std::string::npos);
+
+  for (const std::string& flag : std::vector<std::string>{
+           "--convert-from", "--convert-src", "--convert-to", "--convert-dst",
+           "--convert-cfg", "weights", "dxxwjz1"}) {
+    EXPECT_NE(printed.find(flag), std::string::npos) << flag;
+  }
+
+  // the main binary lists the training and the detection as well
+  EXPECT_NE(printed.find("--train-cfg"), std::string::npos);
+  EXPECT_NE(printed.find("--detect-cfg"), std::string::npos);
 }

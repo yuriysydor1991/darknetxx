@@ -7,10 +7,15 @@
 #include "src/app/ApplicationFactory.h"
 #include "src/app/ApplicationHelpPrinter.h"
 #include "src/app/ApplicationVersionPrinter.h"
+#include "src/app/converter/ApplicationConverterComponent.h"
+#include "src/app/converter/ApplicationFormatsConverter.h"
 #include "src/app/signals-handlers/SignalsHandler.h"
 
 using namespace app;
 using namespace testing;
+
+using app::converter::ApplicationConverterComponent;
+using app::converter::ApplicationFormatsConverter;
 
 class UTEST_ApplicationFactory : public Test
 {
@@ -25,7 +30,19 @@ class UTEST_ApplicationFactory : public Test
     Application::onMockCreate = nullptr;
     ApplicationHelpPrinter::onMockCreate = nullptr;
     ApplicationVersionPrinter::onMockCreate = nullptr;
+    ApplicationConverterComponent::onMockCreate = nullptr;
+    ApplicationFormatsConverter::onMockCreate = nullptr;
     SignalsHandler::onMockCreate = nullptr;
+  }
+
+  /// @brief Makes the context request the network weights file conversion.
+  static void request_conversion(ApplicationContext& ctx)
+  {
+    ctx.convert_from = "weights";
+    ctx.convert_src = "a.weights";
+    ctx.convert_to = "dxxwjz1";
+    ctx.convert_dst = "a.dxxwjz1";
+    ctx.convert_cfg = "a.cfg";
   }
 
   /// @brief Expects the factory to create a single signals handler and to hand
@@ -328,4 +345,101 @@ TEST_F(UTEST_ApplicationFactory, factory_execute_default_app)
   Application::onMockCreate = onMockCreateAppEnsurer.AsStdFunction();
 
   EXPECT_EQ(ApplicationFactory::execute(customArgc, customArgv), 0);
+}
+
+TEST_F(UTEST_ApplicationFactory, create_formats_converter)
+{
+  std::shared_ptr<converter::IFormatsConverter> formatsConverter =
+      factory->create_formats_converter();
+
+  EXPECT_NE(formatsConverter, nullptr);
+  EXPECT_NE(
+      std::dynamic_pointer_cast<ApplicationFormatsConverter>(formatsConverter),
+      nullptr);
+}
+
+TEST_F(UTEST_ApplicationFactory, create_formats_converter_application)
+{
+  std::shared_ptr<IApplication> app =
+      factory->create_formats_converter_application();
+
+  ASSERT_NE(app, nullptr);
+
+  auto component =
+      std::dynamic_pointer_cast<ApplicationConverterComponent>(app);
+
+  ASSERT_NE(component, nullptr);
+  EXPECT_NE(std::dynamic_pointer_cast<ApplicationFormatsConverter>(
+                component->converter),
+            nullptr);
+}
+
+TEST_F(UTEST_ApplicationFactory, create_application_formats_converter)
+{
+  std::shared_ptr<ApplicationContext> ctx =
+      create_context(customArgc, customArgv);
+
+  request_conversion(*ctx);
+
+  std::shared_ptr<IApplication> app = factory->create_application(ctx);
+
+  EXPECT_NE(std::dynamic_pointer_cast<ApplicationConverterComponent>(app),
+            nullptr);
+}
+
+TEST_F(UTEST_ApplicationFactory,
+       help_and_version_take_precedence_over_conversion)
+{
+  std::shared_ptr<ApplicationContext> ctx =
+      create_context(customArgc, customArgv);
+
+  request_conversion(*ctx);
+  ctx->print_version_and_exit = true;
+
+  EXPECT_NE(std::dynamic_pointer_cast<ApplicationVersionPrinter>(
+                factory->create_application(ctx)),
+            nullptr);
+
+  ctx->print_help_and_exit = true;
+
+  EXPECT_NE(std::dynamic_pointer_cast<ApplicationHelpPrinter>(
+                factory->create_application(ctx)),
+            nullptr);
+}
+
+TEST_F(UTEST_ApplicationFactory, factory_run_formats_converter_app)
+{
+  MockFunction<void(CommandLineParser & instance)> onMockCreateParserEnsurer;
+  MockFunction<void(ApplicationConverterComponent & instance)>
+      onMockCreateAppEnsurer;
+  MockFunction<void(Application & instance)> onMockCreateDefaultEnsurer;
+
+  EXPECT_CALL(onMockCreateParserEnsurer, Call(_))
+      .Times(1)
+      .WillOnce(Invoke([&](CommandLineParser& instance) {
+        EXPECT_CALL(instance, parse_args(_))
+            .Times(1)
+            .WillOnce(Invoke([&](std::shared_ptr<ApplicationContext> ctx) {
+              request_conversion(*ctx);
+              return true;
+            }));
+      }));
+
+  EXPECT_CALL(onMockCreateAppEnsurer, Call(_))
+      .Times(1)
+      .WillOnce(Invoke([&](ApplicationConverterComponent& instance) {
+        EXPECT_CALL(instance, run(_)).Times(1).WillOnce(Return(0));
+      }));
+
+  // no training nor detection runs
+  EXPECT_CALL(onMockCreateDefaultEnsurer, Call(_)).Times(0);
+
+  expect_the_signals_handler_install();
+
+  CommandLineParser::onMockCreate = onMockCreateParserEnsurer.AsStdFunction();
+  ApplicationConverterComponent::onMockCreate =
+      onMockCreateAppEnsurer.AsStdFunction();
+  Application::onMockCreate = onMockCreateDefaultEnsurer.AsStdFunction();
+
+  EXPECT_EQ(factory->run(customArgc, customArgv), 0);
 }
