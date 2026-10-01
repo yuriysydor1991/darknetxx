@@ -12,7 +12,7 @@ package "app (application infrastructure)" {
   [ApplicationFactory] as factory
   [CommandLineParser] as parser
   [ApplicationContext] as ctx
-  [IApplication\n(+ Application,\nHelpPrinter,\nVersionPrinter)] as iapp
+  [IApplication\n(+ Application,\nHelpPrinter,\nVersionPrinter,\nConverterComponent)] as iapp
   [ISignalsHandler\n(+ SignalsHandler,\nStop/Pause/Continue/\nReload/User/Ignored)] as signals
 }
 
@@ -21,6 +21,7 @@ package "darknet-adaptor (Darknet bridge)" {
   [DarknetContext] as dctx
   [IDarknetAdaptor\n(+ ADetector,\nADetectorTrainer)] as adaptor
   [Network infrastructure\n(NetworksLoaders, Layers,\nALayer/ANetwork adaptors,\nNetworksCApi)] as netinfra
+  [Weights files\n(original, dxxwjz1,\nWeightsConverter)] as weights
   [Original Darknet\nC computation] as darknetc
 }
 
@@ -28,6 +29,7 @@ package "Supporting components" {
   [ompi::OMPController] as omp
   [log (DefaultLogger /\ncpplog4c)] as log
   [helpers::StringTools] as helpers
+  [zlibi::ZlibController] as zlib
 }
 
 main --> factory
@@ -47,6 +49,9 @@ adaptor --> netinfra : loads the networks
 netinfra --> dctx : hands the networks to
 adaptor --> darknetc : trains / detects
 darknetc --> netinfra : parses, resizes,\nreads and writes weights
+netinfra --> weights : reads and writes
+iapp --> weights : converts (the\nconversion flags)
+weights ..> zlib : compresses
 factory ..> log
 iapp ..> log
 dctrl ..> log

@@ -47,6 +47,7 @@
         1. [Компоненти виконання програми](/doc/sections/uk_UA/4-7-1-application-runtime-components.md)
         1. [Компоненти адаптера Darknet](/doc/sections/uk_UA/4-7-2-darknet-adaptor-components.md)
         1. [Допоміжні компоненти](/doc/sections/uk_UA/4-7-3-supporting-components.md)
+        1. [Файли ваг нейромереж](/doc/sections/uk_UA/4-7-4-network-weights-files.md)
     1. [Обробка сигналів операційної системи](/doc/sections/uk_UA/4-8-handling-the-OS-signals.md)
 1. [Побудова проекту](/doc/sections/uk_UA/5-project-build.md)
     1. [Побудова за допомогою IDE](/doc/sections/uk_UA/5-1-IDE-build.md)
@@ -86,12 +87,14 @@
     1. [Вмикання інтеграції libavif (AVIF)](/doc/sections/uk_UA/5-32-enabling-the-libavif-library.md)
     1. [Вмикання інтеграції libheif (HEIF/HEIC)](/doc/sections/uk_UA/5-33-enabling-the-libheif-library.md)
     1. [Швидкі скрипти побудови](/doc/sections/uk_UA/5-34-quick-build-scripts.md)
+    1. [Бінарний файл darknetxxConverter](/doc/sections/uk_UA/5-35-the-darknetxxConverter-binary.md)
 1. [Запуск головного виконуваного файлу](/doc/sections/uk_UA/6-run-the-executable.md)
     1. [Запуск через IDE](/doc/sections/uk_UA/6-1-IDE-run.md)
     1. Запуск з терміналу
         1. [Пошук згенерованого виконуваного бінарного файлу](/doc/sections/uk_UA/6-2-1-searching-for-the-generated-executable.md)
         1. [Запуск згенерованого виконуваного файлу](/doc/sections/uk_UA/6-2-2-starting-the-generated-executable.md)
         1. [Доступні параметри командного рядка](/doc/sections/uk_UA/6-2-3-available-command-line-parameters.md)
+        1. [Конвертування файлів ваг нейромереж](/doc/sections/uk_UA/6-2-4-converting-the-network-weights-files.md)
     1. Запуск тестів
         1. [Запуск тестів за допомогою ctest](/doc/sections/uk_UA/6-3-1-run-tests-by-the-ctest.md)
 1. [Встановлення](/doc/sections/uk_UA/7-installing.md)

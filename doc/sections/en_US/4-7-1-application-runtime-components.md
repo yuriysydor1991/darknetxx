@@ -31,6 +31,24 @@ class ApplicationVersionPrinter {
   +run(ctx) : int
 }
 
+class "converter::ApplicationConverterComponent" as ApplicationConverterComponent {
+  +run(ctx) : int
+}
+
+interface "converter::IFormatsConverter" as IFormatsConverter {
+  +convert(ctx) : bool
+}
+
+class "converter::ApplicationFormatsConverter" as ApplicationFormatsConverter {
+  +convert(ctx) : bool
+  #create_weights_converter() : WeightsConverterPtr
+}
+
+class "converter::ConversionFormats" as ConversionFormats {
+  +{static} parse(name, format) : bool
+  +{static} names() : vector<string>
+}
+
 class ApplicationFactory {
   +create_default_context(argc, argv) : ApplicationContext
   +create_default_arg_parser() : CommandLineParser
@@ -38,6 +56,8 @@ class ApplicationFactory {
   +create_application(ctx) : IApplication
   +create_help_printer() : IApplication
   +create_version_printer() : IApplication
+  +create_formats_converter() : IFormatsConverter
+  +create_formats_converter_application() : IApplication
   +run(argc, argv) : int
   +{static} execute(argc, argv) : int
 }
@@ -81,12 +101,17 @@ struct ApplicationContext {
   +stop / pause / reload : atomic_bool
   +first_user_request : atomic_bool
   +second_user_request : atomic_bool
+  +convert_from / convert_src / convert_to : string
+  +convert_dst / convert_cfg : string
   +push_error(desc)
+  +conversion_requested() : bool
 }
 
 IApplication <|.. Application
 IApplication <|.. ApplicationHelpPrinter
 IApplication <|.. ApplicationVersionPrinter
+IApplication <|.. ApplicationConverterComponent
+IFormatsConverter <|.. ApplicationFormatsConverter
 ISignalsHandler <|.. SignalsHandler
 
 ApplicationFactory ..> IApplication : creates
@@ -97,6 +122,9 @@ CommandLineParser ..> CMDParamNames : uses names
 CommandLineParser --> ApplicationContext : fills
 Application --> ApplicationContext : holds actx
 SignalsHandler --> ApplicationContext : raises the signals flags
+ApplicationConverterComponent --> IFormatsConverter : runs
+ApplicationFormatsConverter ..> ConversionFormats : resolves the formats
+ApplicationFormatsConverter ..> "darknet_adaptor::loaders::WeightsConverter" : converts by
 @enduml
 
 ## Purpose of each class
@@ -105,8 +133,11 @@ SignalsHandler --> ApplicationContext : raises the signals flags
 - **`Application`** ([`Application.h`](/src/app/Application.h)) - the default application implementation. It adjusts the OpenMP threads, traps the invalid computations of a `Debug` build and drives the Darknet adaptor to perform the requested train or detect action. It installs no OS signal handler of its own any more, since the `src/app/signals-handlers` subcomponent covers them for every application of the project.
 - **`ApplicationHelpPrinter`** ([`ApplicationHelpPrinter.h`](/src/app/ApplicationHelpPrinter.h)) - prints the help message that represents all the available command line parameters. See the [Available command line parameters](/doc/sections/en_US/6-2-3-available-command-line-parameters.md) section for the full list.
 - **`ApplicationVersionPrinter`** ([`ApplicationVersionPrinter.h`](/src/app/ApplicationVersionPrinter.h)) - prints the application version, build git commit and configure date taken from the generated `project-global-decls.h` file.
-- **`ApplicationFactory`** ([`ApplicationFactory.h`](/src/app/ApplicationFactory.h)) - the composition root. Its static `execute(argc, argv)` method (called from `main`) creates the context, runs the parser and instantiates the appropriate `IApplication` descendant in accordance with the parsed flags (help, version or the default application). It also creates the default `ISignalsHandler` implementation and hands the context over to its `install` method right before the application start, so the handled signals are released as soon as the `run` method returns.
-- **`CommandLineParser`** ([`CommandLineParser.h`](/src/app/CommandLineParser.h)) - parses the `argv` array into the `ApplicationContext` fields and validates that the parameters which require a value are given one. See [Available command line parameters](/doc/sections/en_US/6-2-3-available-command-line-parameters.md).
+- **`ApplicationFactory`** ([`ApplicationFactory.h`](/src/app/ApplicationFactory.h)) - the composition root. Its static `execute(argc, argv)` method (called from `main`) creates the context, runs the parser and instantiates the appropriate `IApplication` descendant in accordance with the parsed flags (help, version, the network weights files conversion or the default application). Compiled with the `DARKNETXX_CONVERTER_ONLY` definition (the `darknetxxConverter` binary) it has no default application: a command line which asks for no conversion gets the failed help message. It also creates the default `ISignalsHandler` implementation and hands the context over to its `install` method right before the application start, so the handled signals are released as soon as the `run` method returns.
+- **`CommandLineParser`** ([`CommandLineParser.h`](/src/app/CommandLineParser.h)) - parses the `argv` array into the `ApplicationContext` fields and validates that the parameters which require a value are given one and that the conversion flags go together. See [Available command line parameters](/doc/sections/en_US/6-2-3-available-command-line-parameters.md).
+- **`converter::ApplicationConverterComponent`** ([`ApplicationConverterComponent.h`](/src/app/converter/ApplicationConverterComponent.h)) - the application of the network weights files conversion flags: it runs the `IFormatsConverter` in place of the training or the detection and returns the `128 + signal number` status of a conversion a stop signal ended.
+- **`converter::IFormatsConverter`** ([`IFormatsConverter.h`](/src/app/converter/IFormatsConverter.h)) / **`converter::ApplicationFormatsConverter`** ([`ApplicationFormatsConverter.h`](/src/app/converter/ApplicationFormatsConverter.h)) - the converter of the command line of the context: it resolves the format names (the `converter::ConversionFormats` ones) and hands the files, the network cfg and the stop request of the application to the `darknet_adaptor::loaders::WeightsConverter` (see the [Network weights files](/doc/sections/en_US/4-7-4-network-weights-files.md) section).
+- **`ApplicationBinaryName.h`** ([`ApplicationBinaryName.h`](/src/app/ApplicationBinaryName.h)) - the name of the binary being run (the `darknetxx` or the `darknetxxConverter` one), which the help and the version printers print.
 - **`CMDParamNames`** ([`CMDParamNames.h`](/src/app/CMDParamNames.h)) - the single place that holds the command line flag string constants (for example `--help`, `--train-cfg`). Both the parser and the help printer reference these constants so the flag names cannot drift.
 - **`ISignalsHandler`** ([`ISignalsHandler.h`](/src/app/signals-handlers/ISignalsHandler.h)) - the interface of the `src/app/signals-handlers` subcomponent, implemented both by the `SignalsHandler` facade and by every single signals category handler, so the rest of the application depends on the interface alone.
 - **`SignalsHandler`** ([`SignalsHandler.h`](/src/app/signals-handlers/SignalsHandler.h)) - the facade which covers every OS signals category of the application with a single `install` call. The covered categories, the flags they raise and the way a new one is added are described by the [Handling the OS signals](/doc/sections/en_US/4-8-handling-the-OS-signals.md) section.

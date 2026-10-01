@@ -44,6 +44,7 @@ The very same sections are also available in Ukrainian under [doc/README.uk_UA.m
         1. [Application runtime components](/doc/sections/en_US/4-7-1-application-runtime-components.md)
         1. [Darknet adaptor components](/doc/sections/en_US/4-7-2-darknet-adaptor-components.md)
         1. [Supporting components](/doc/sections/en_US/4-7-3-supporting-components.md)
+        1. [Network weights files](/doc/sections/en_US/4-7-4-network-weights-files.md)
     1. [Handling the OS signals](/doc/sections/en_US/4-8-handling-the-OS-signals.md)
 1. [Project build](/doc/sections/en_US/5-project-build.md)
     1. [IDE build](/doc/sections/en_US/5-1-IDE-build.md)
@@ -83,12 +84,14 @@ The very same sections are also available in Ukrainian under [doc/README.uk_UA.m
     1. [Enabling the libavif library (AVIF)](/doc/sections/en_US/5-32-enabling-the-libavif-library.md)
     1. [Enabling the libheif library (HEIF/HEIC)](/doc/sections/en_US/5-33-enabling-the-libheif-library.md)
     1. [Quick build scripts](/doc/sections/en_US/5-34-quick-build-scripts.md)
+    1. [The darknetxxConverter binary](/doc/sections/en_US/5-35-the-darknetxxConverter-binary.md)
 1. [Run the executable](/doc/sections/en_US/6-run-the-executable.md)
     1. [IDE run](/doc/sections/en_US/6-1-IDE-run.md)
     1. Command line run
         1. [Searching for the generated executable](/doc/sections/en_US/6-2-1-searching-for-the-generated-executable.md)
         1. [Starting the generated executable](/doc/sections/en_US/6-2-2-starting-the-generated-executable.md)
         1. [Available command line parameters](/doc/sections/en_US/6-2-3-available-command-line-parameters.md)
+        1. [Converting the network weights files](/doc/sections/en_US/6-2-4-converting-the-network-weights-files.md)
     1. Tests run
         1. [Run tests by the ctest](/doc/sections/en_US/6-3-1-run-tests-by-the-ctest.md)
 1. [Installing](/doc/sections/en_US/7-installing.md)

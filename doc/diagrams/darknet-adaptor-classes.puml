@@ -56,10 +56,18 @@ class CfgSection {
   +unused()
 }
 
-class OrigWeightsFile {
-  +{static} load(net, filename, cutoff) : bool
-  +{static} save(net, filename, cutoff, save_ema) : bool
+interface IWeightsReader {
+  +load(net, filename, cutoff) : bool
+  +read(filename, net, document) : bool
 }
+
+interface IWeightsWriter {
+  +save(net, filename, cutoff, save_ema) : bool
+  +write(document, filename) : bool
+}
+
+class OrigWeightsReader
+class OrigWeightsWriter
 
 class ANetworkAdaptor {
   +get() : networkptr
@@ -107,6 +115,8 @@ IDarknetAdaptor <|.. ADetectorTrainer
 IDarknetAdaptor <|.. ALayerAdaptor
 IDarknetAdaptor <|.. ANetworkAdaptor
 INetworkLoader <|.. OrigDefaultLoader
+IWeightsReader <|.. OrigWeightsReader
+IWeightsWriter <|.. OrigWeightsWriter
 StructAdaptorHelper <|-- ALayerAdaptor
 StructAdaptorHelper <|-- ANetworkAdaptor
 
@@ -117,7 +127,7 @@ ADetector ..> INetworkLoader : loads the network
 ADetectorTrainer ..> INetworkLoader : loads the networks
 OrigDefaultLoader ..> CfgSection : reads the cfg
 OrigDefaultLoader ..> Layers : makes the layers
-OrigDefaultLoader ..> OrigWeightsFile : loads the weights
+OrigDefaultLoader ..> OrigWeightsReader : loads the weights
 OrigDefaultLoader --> ANetworkAdaptor : makes
 OrigDefaultLoader ..> DarknetContext : hands the networks to
 Layers --> ALayerAdaptor : makes and resizes
@@ -125,7 +135,8 @@ ANetworkAdaptor "1" *-- "*" ALayerAdaptor : binds to the layers array
 DarknetContext --> NetworksRegistry : registers the networks
 NetworksCApi ..> NetworksRegistry : finds the network of the view
 NetworksCApi ..> OrigDefaultLoader : parses
-NetworksCApi ..> OrigWeightsFile : reads and writes
+NetworksCApi ..> OrigWeightsReader : reads
+NetworksCApi ..> OrigWeightsWriter : writes
 DarknetContext --> "app::ApplicationContext" : built from
 
 @enduml

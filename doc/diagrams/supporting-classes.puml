@@ -29,7 +29,29 @@ package "helpers" {
   }
 }
 
+package "zlibi" {
+  class ZlibController {
+    +{static} create() : ZlibControllerPtr
+    +compress(buffer) / uncompress(buffer)
+    +compress_to_file(path, buffer) : bool
+    +uncompress_from_file(path) : buffer
+    +create_file_writer(path, level) : GzipOStream
+    +create_file_reader(path) : GzipIStream
+    +{static} is_gzip_file(path) : bool
+  }
+
+  class "GzipOStream / GzipIStream" as GzipStreams {
+    +open(path) : bool
+    +close() : bool
+    +failed() : bool
+  }
+
+  class GzipStreamBuf
+}
+
 OMPController --> "app::ApplicationContext" : reads threads
 OMPController ..> DefaultLogger : logs
+ZlibController ..> GzipStreams : opens
+GzipStreams *-- GzipStreamBuf
 
 @enduml

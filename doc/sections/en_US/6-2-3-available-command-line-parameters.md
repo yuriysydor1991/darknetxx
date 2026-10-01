@@ -29,6 +29,18 @@ The options are grouped below by their purpose. The options with a value placeho
 | `--gpus` | `<LIST>` | comma separated list of GPU indexes to use |
 | `--threads` | `<N>` | number of worker threads to use |
 
+## Network weights files conversion options
+
+The four first options go together and convert the network weights file with no training nor detection started, see the [Converting the network weights files](/doc/sections/en_US/6-2-4-converting-the-network-weights-files.md) section.
+
+| Option | Value | Description |
+| --- | --- | --- |
+| `--convert-from` | `<FORMAT>` | the network weights file format to read: `weights` or `dxxwjz1` |
+| `--convert-src` | `<FILE>` | the network weights file to read |
+| `--convert-to` | `<FORMAT>` | the network weights file format to write: `weights` or `dxxwjz1` |
+| `--convert-dst` | `<FILE>` | the network weights file to write (replaced) |
+| `--convert-cfg` | `<FILE>` | the network cfg file of the weights: required to read the `weights` format, validates the `dxxwjz1` one |
+
 ## Training options
 
 | Option | Value | Description |

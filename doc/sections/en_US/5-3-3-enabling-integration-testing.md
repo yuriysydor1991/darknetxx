@@ -55,3 +55,21 @@ for digit in 0 1 2 3 4 5 6 7 8 9; do
   src/tests/integration/digits-bash/ITEST_digits_bash.sh recognize "$(command -v darknetxx)" /tmp/itest-digits "${digit}"
 done
 ```
+
+#### The network weights files converter
+
+The second pair of the integration tests checks the `darknetxxConverter` binary (see [The darknetxxConverter binary](/doc/sections/en_US/5-35-the-darknetxxConverter-binary.md) section) and the conversion command line of the `darknetxx` one the way a user runs them:
+
+| Test | Performs |
+| --- | --- |
+| `*/ITEST_converter_<family>.converts_back_and_forth/*.noArgs` | the conversion of the weights files of every network variant the weights factory generates (every weights layer kind with the combinations of its options, the resolutions from the 2x2 pixels up to the DCI 4K ones, the random networks and the real world sized ones up to the YOLOv3) to the dxxwjz1 files and back: the file darknet saves and the file of every header version made for the load convert back into the same bytes, with the network cfg file and without it, the dxxwjz1 file converts into itself and loads the network the original file does |
+| `ITEST_converter.<case>.noArgs` | the reference weights files back and forth by both binaries, the gzip compressed JSON document the binary writes, the help and the version messages, the failed conversions, which exit with the non zero status and write nothing |
+| `ITEST_converter_bash.<case>` | the same checks of the reference weights files by the bash scripts of the [src/tests/integration/converter-bash](/src/tests/integration/converter-bash) directory alone, the stock `gzip` tool reading the dxxwjz1 file included |
+
+```
+# run from the project build directory
+
+ctest -R "ITEST_converter" --output-on-failure
+```
+
+The variants of the tens of millions of the floats (the 4K resolution networks and the real world sized ones) convert for minutes in the `Debug` build, since every float of the network goes through the JSON text, so the `Release` build is the one to run the whole variant families quickly.

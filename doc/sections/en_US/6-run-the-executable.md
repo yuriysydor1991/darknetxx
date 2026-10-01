@@ -5,5 +5,6 @@
     1. [Searching for the generated executable](/doc/sections/en_US/6-2-1-searching-for-the-generated-executable.md)
     1. [Starting the generated executable](/doc/sections/en_US/6-2-2-starting-the-generated-executable.md)
     1. [Available command line parameters](/doc/sections/en_US/6-2-3-available-command-line-parameters.md)
+    1. [Converting the network weights files](/doc/sections/en_US/6-2-4-converting-the-network-weights-files.md)
 1. Tests run
     1. [Run tests by the ctest](/doc/sections/en_US/6-3-1-run-tests-by-the-ctest.md)

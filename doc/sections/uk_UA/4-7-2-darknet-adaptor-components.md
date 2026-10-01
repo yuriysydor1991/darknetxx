@@ -63,10 +63,18 @@ class CfgSection {
   +unused()
 }
 
-class OrigWeightsFile {
-  +{static} load(net, filename, cutoff) : bool
-  +{static} save(net, filename, cutoff, save_ema) : bool
+interface IWeightsReader {
+  +load(net, filename, cutoff) : bool
+  +read(filename, net, document) : bool
 }
+
+interface IWeightsWriter {
+  +save(net, filename, cutoff, save_ema) : bool
+  +write(document, filename) : bool
+}
+
+class OrigWeightsReader
+class OrigWeightsWriter
 
 class ANetworkAdaptor {
   +get() : networkptr
@@ -114,6 +122,8 @@ IDarknetAdaptor <|.. ADetectorTrainer
 IDarknetAdaptor <|.. ALayerAdaptor
 IDarknetAdaptor <|.. ANetworkAdaptor
 INetworkLoader <|.. OrigDefaultLoader
+IWeightsReader <|.. OrigWeightsReader
+IWeightsWriter <|.. OrigWeightsWriter
 StructAdaptorHelper <|-- ALayerAdaptor
 StructAdaptorHelper <|-- ANetworkAdaptor
 
@@ -124,7 +134,7 @@ ADetector ..> INetworkLoader : loads the network
 ADetectorTrainer ..> INetworkLoader : loads the networks
 OrigDefaultLoader ..> CfgSection : reads the cfg
 OrigDefaultLoader ..> Layers : makes the layers
-OrigDefaultLoader ..> OrigWeightsFile : loads the weights
+OrigDefaultLoader ..> OrigWeightsReader : loads the weights
 OrigDefaultLoader --> ANetworkAdaptor : makes
 OrigDefaultLoader ..> DarknetContext : hands the networks to
 Layers --> ALayerAdaptor : makes and resizes
@@ -132,7 +142,8 @@ ANetworkAdaptor "1" *-- "*" ALayerAdaptor : binds to the layers array
 DarknetContext --> NetworksRegistry : registers the networks
 NetworksCApi ..> NetworksRegistry : finds the network of the view
 NetworksCApi ..> OrigDefaultLoader : parses
-NetworksCApi ..> OrigWeightsFile : reads and writes
+NetworksCApi ..> OrigWeightsReader : reads
+NetworksCApi ..> OrigWeightsWriter : writes
 DarknetContext --> "app::ApplicationContext" : built from
 @enduml
 
@@ -145,7 +156,7 @@ DarknetContext --> "app::ApplicationContext" : built from
 - **`INetworkLoader`** ([`INetworkLoader.h`](/src/darknet-adaptor/adaptors/NetworksLoaders/INetworkLoader.h)) - інтерфейс завантажувачів нейромереж: метод `load(dctx)` створює нейромережі, потрібні для роботи контексту, і передає їх контексту.
 - **`OrigDefaultLoader`** ([`OrigDefaultLoader.h`](/src/darknet-adaptor/adaptors/NetworksLoaders/OrigDefaultLoader/OrigDefaultLoader.h)) - перенесений на C++ оригінальний аналізатор файлів cfg нейромереж (функції `parse_network_cfg()`, `load_network()` та інші з оригінального `parser.c`). Він створює нейромережі для навчання (по одній на GPU), нейромережу для обчислення mAP, яка обчислює шарами першої нейромережі для навчання, і нейромережу для розпізнавання одного зображення з нормалізацією батчів, об'єднаною з її вагами. Помилки аналізу, які в оригіналі завершували процес, кидають виняток `NetworkError`, який метод `load` записує у журнал.
 - **`CfgSection`** ([`CfgSection.h`](/src/darknet-adaptor/adaptors/NetworksLoaders/OrigDefaultLoader/CfgSection.h)) - одна секція `[section]` файлу cfg з її параметрами `key=value`, перенесені на C++ оригінальні функції `read_cfg()` і `option_find*()`.
-- **`OrigWeightsFile`** ([`OrigWeightsFile.h`](/src/darknet-adaptor/adaptors/NetworksLoaders/OrigWeightsFile/OrigWeightsFile.h)) - читання і запис файлів ваг, перенесені на C++ оригінальні функції `load_weights_upto()`, `save_weights_upto()` і процедури окремих шарів, байт у байт сумісні з оригінальними файлами.
+- **`OrigWeightsReader`** ([`OrigWeightsReader.h`](/src/darknet-adaptor/adaptors/NetworksLoaders/original-weights/OrigWeightsReader.h)) / **`OrigWeightsWriter`** ([`OrigWeightsWriter.h`](/src/darknet-adaptor/adaptors/NetworksLoaders/original-weights/OrigWeightsWriter.h)) - читання і запис оригінальних файлів ваг, перенесені на C++ оригінальні функції `load_weights_upto()`, `save_weights_upto()` і процедури окремих шарів, байт у байт сумісні з оригінальними файлами. Вони реалізують інтерфейси `IWeightsReader` і `IWeightsWriter`, які так само реалізують класи читання і запису файлів dxxwjz1; формати файлів ваг, їхні валідатори і конвертер між ними описано у секції [Файли ваг нейромереж](/doc/sections/uk_UA/4-7-4-network-weights-files.md).
 - **`ANetworkAdaptor`** ([`ANetworkAdaptor.h`](/src/darknet-adaptor/adaptors/ANetworkAdaptor/ANetworkAdaptor.h)) - власник пам'яті нейромережі: масиву шарів, робочого буфера, лічильників, спільних для всіх копій структури нейромережі тощо. Він реалізує процедури нейромережі, які виділяють пам'ять: `resize` (оригінальна `resize_network()`), `set_batch`, `fuse_conv_batchnorm`, `calculate_binary_weights` і `copy_weights_net`.
 - **`ALayerAdaptor`** ([`ALayerAdaptor.h`](/src/darknet-adaptor/adaptors/ALayerAdaptor/ALayerAdaptor.h)) - власник пам'яті шару: кожен буфер є контейнером `std::vector` адаптера, на який вказує поле структури шару (`NULL` для порожнього контейнера). Буфери, які Darknet використовує спільно (вихід попереднього шару для шару `[dropout]`, ваги шару, що ділить їх з іншим шаром тощо), позичаються сетерами `borrow_*`. Нейромережа прив'язує структуру шару до її комірки у масиві шарів, тож код Darknet і адаптер працюють з однією структурою.
 - **Класи шарів** ([`src/darknet-adaptor/adaptors/Layers`](/src/darknet-adaptor/adaptors/Layers)) - процедури `make` і `resize` кожного виду шарів (`ConvolutionalLayer`, `YoloLayer` та інші), перенесені на C++ оригінальні функції `make_*_layer()` і `resize_*_layer()`.

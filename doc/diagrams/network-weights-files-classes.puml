@@ -1,0 +1,137 @@
+@startuml network-weights-files-classes
+title darknet_adaptor::loaders namespace - the network weights files class structure
+
+skinparam shadowing false
+hide empty members
+
+interface IWeightsReader {
+  +load(net, filename, cutoff) : bool
+  +load(net, filename) : bool
+  +read(filename, net, document) : bool
+}
+
+interface IWeightsWriter {
+  +save(net, filename, cutoff, save_ema) : bool
+  +save(net, filename) : bool
+  +write(document, filename) : bool
+}
+
+package "weights-model" {
+  class WeightsSchema {
+    +{static} name(kind / sub / type) : string
+    +{static} parse(name, kind / sub / type) : bool
+    +{static} sublayers(type) : subs
+    +{static} arrays(type) : kinds
+    +{static} rank(type, sub, kind) : int
+  }
+
+  class WeightsLayout {
+    +{static} of(net, options) : WeightsLayoutEntries
+    +{static} floats(layout) : uint64
+    +{static} transpose_matrix(a, rows, cols)
+  }
+
+  class WeightsDocument {
+    +header : WeightsHeader
+    +layers : WeightsLayer[]
+    +trailing : bytes
+    +normalize()
+    +file_size() : uint64
+  }
+
+  class WeightsDocumentValidator {
+    +{static} validate(document) : WeightsReport
+    +{static} validate(document, net) : WeightsReport
+  }
+
+  class WeightsReport {
+    +errors() / warnings()
+    +ok() : bool
+    +log(subject)
+  }
+}
+
+package "original-weights" {
+  class OrigWeightsReader
+  class OrigWeightsWriter
+  class OrigWeightsValidator {
+    +{static} inspect(filename, net, inspection) : bool
+    +{static} validate(filename, net) : WeightsReport
+    +{static} validate(document, net) : WeightsReport
+  }
+}
+
+package "dxxwjz1::v1" {
+  class Dxxwjz1Reader {
+    +{static} apply(document, net, cutoff) : int
+  }
+  class Dxxwjz1Writer {
+    +Dxxwjz1Writer(level)
+  }
+  class Dxxwjz1Validator {
+    +{static} validate(filename, net) : WeightsReport
+  }
+  class Dxxwjz1Parser {
+    +{static} parse(json, document, report) : bool
+    +{static} parse_file(filename, document, report) : bool
+  }
+  class Dxxwjz1JsonEmitter {
+    +begin(header)
+    +layer(index, type, arrays)
+    +end(trailing)
+  }
+  class Dxxwjz1FloatCodec {
+    +{static} encode(value) : string
+    +{static} decode_number(text, value) : bool
+    +{static} decode_bits(text, value) : bool
+  }
+  class Dxxwjz1Base64
+  class Dxxwjz1Format <<constants>>
+}
+
+package "weights-converter" {
+  class WeightsConverter {
+    +convert(conversion) : bool
+    +{static} parse_format(name, format) : bool
+    #create_reader(format) : IWeightsReaderPtr
+    #create_writer(format) : IWeightsWriterPtr
+    #create_network(cfg) : ANetworkAdaptorPtr
+  }
+}
+
+package "zlibi" {
+  class ZlibController
+  class "GzipOStream / GzipIStream" as GzipStreams
+}
+
+IWeightsReader <|.. OrigWeightsReader
+IWeightsReader <|.. Dxxwjz1Reader
+IWeightsWriter <|.. OrigWeightsWriter
+IWeightsWriter <|.. Dxxwjz1Writer
+
+OrigWeightsReader ..> OrigWeightsValidator : splits the file by
+OrigWeightsReader ..> WeightsLayout
+OrigWeightsValidator ..> WeightsLayout : the saved and the loaded arrays
+OrigWeightsWriter ..> WeightsDocumentValidator
+
+Dxxwjz1Reader ..> Dxxwjz1Validator
+Dxxwjz1Validator ..> Dxxwjz1Parser
+Dxxwjz1Validator ..> WeightsDocumentValidator
+Dxxwjz1Parser ..> Dxxwjz1FloatCodec
+Dxxwjz1Parser ..> Dxxwjz1Base64
+Dxxwjz1Parser ..> GzipStreams : reads through
+Dxxwjz1Writer ..> Dxxwjz1JsonEmitter
+Dxxwjz1Writer ..> ZlibController : writes through
+Dxxwjz1JsonEmitter ..> Dxxwjz1FloatCodec
+Dxxwjz1Reader ..> WeightsLayout : applies by
+
+WeightsDocumentValidator ..> WeightsLayout
+WeightsDocumentValidator ..> WeightsSchema
+WeightsLayout ..> WeightsSchema
+WeightsDocument ..> WeightsSchema : the file order
+
+WeightsConverter ..> IWeightsReader : reads the source document
+WeightsConverter ..> IWeightsWriter : writes the destination
+WeightsConverter ..> "OrigDefaultLoader" : parses the network cfg
+"app::converter::ApplicationFormatsConverter" ..> WeightsConverter : converts the command line
+@enduml
