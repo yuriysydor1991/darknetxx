@@ -327,8 +327,8 @@ TEST_F(UTEST_CommandLineParser, train_and_detect_cfgs_are_exclusive)
 TEST_F(UTEST_CommandLineParser, conversion_flags)
 {
   set_args({"--convert-from", "weights", "--convert-src", "yolo.weights",
-            "--convert-to", "dxxwjz1", "--convert-dst", "yolo.dxxwjz1",
-            "--convert-cfg", "yolo.cfg"});
+            "--convert-to", "dxxwjz2", "--convert-dst", "yolo.dxxwjz2",
+            "--convert-cfg", "yolo.cfg", "--convert-names", "coco.names"});
 
   EXPECT_CALL(*appctx, push_error(_)).Times(0);
 
@@ -336,9 +336,10 @@ TEST_F(UTEST_CommandLineParser, conversion_flags)
 
   EXPECT_EQ(appctx->convert_from, "weights");
   EXPECT_EQ(appctx->convert_src, "yolo.weights");
-  EXPECT_EQ(appctx->convert_to, "dxxwjz1");
-  EXPECT_EQ(appctx->convert_dst, "yolo.dxxwjz1");
+  EXPECT_EQ(appctx->convert_to, "dxxwjz2");
+  EXPECT_EQ(appctx->convert_dst, "yolo.dxxwjz2");
   EXPECT_EQ(appctx->convert_cfg, "yolo.cfg");
+  EXPECT_EQ(appctx->convert_names, "coco.names");
   EXPECT_TRUE(appctx->conversion_requested());
   EXPECT_FALSE(appctx->print_help_and_exit);
 }
@@ -364,7 +365,10 @@ TEST_F(UTEST_CommandLineParser, partial_conversion_flags_are_reported)
       {"--convert-from", "weights"},
       {"--convert-from", "weights", "--convert-src", "a.weights",
        "--convert-to", "dxxwjz1"},
-      {"--convert-dst", "a.dxxwjz1", "--convert-cfg", "a.cfg"}};
+      {"--convert-dst", "a.dxxwjz1", "--convert-cfg", "a.cfg"},
+      {"--convert-to", "dxxwjz2", "--convert-dst", "a.dxxwjz2"},
+      {"--convert-src", "a.weights", "--convert-to", "dxxwjz2", "--convert-dst",
+       "a.dxxwjz2", "--convert-cfg", "a.cfg"}};
 
   for (const std::vector<std::string>& partial : partials) {
     appctx = create_context(argc, argv);
@@ -380,6 +384,47 @@ TEST_F(UTEST_CommandLineParser, partial_conversion_flags_are_reported)
   }
 }
 
+TEST_F(UTEST_CommandLineParser,
+       conversion_of_no_source_makes_the_network_to_train)
+{
+  set_args({"--convert-to", "dxxwjz2", "--convert-dst", "net.dxxwjz2",
+            "--convert-cfg", "net.cfg"});
+
+  EXPECT_CALL(*appctx, push_error(_)).Times(0);
+
+  EXPECT_TRUE(parser->parse_args(appctx));
+  EXPECT_TRUE(appctx->conversion_requested());
+}
+
+TEST_F(UTEST_CommandLineParser, draw_chart_of_the_weights_file)
+{
+  set_args({"--weights", "net.dxxwjz2", "--draw-chart", "chart.png"});
+
+  EXPECT_CALL(*appctx, push_error(_)).Times(0);
+
+  EXPECT_TRUE(parser->parse_args(appctx));
+  EXPECT_EQ(appctx->draw_chart, "chart.png");
+  EXPECT_TRUE(appctx->chart_requested());
+
+  const std::vector<std::vector<std::string>> wrongs{
+      {"--draw-chart", "chart.png"},
+      {"--weights", "net.dxxwjz2", "--draw-chart", "chart.png", "--train-cfg",
+       "net.cfg"},
+      {"--weights", "net.dxxwjz2", "--draw-chart", "chart.png", "--convert-to",
+       "dxxwjz2", "--convert-dst", "a.dxxwjz2", "--convert-cfg", "a.cfg"}};
+
+  for (const std::vector<std::string>& wrong : wrongs) {
+    appctx = create_context(argc, argv);
+
+    set_args(wrong);
+
+    EXPECT_CALL(*appctx, push_error(HasSubstr("--draw-chart"))).Times(1);
+
+    EXPECT_FALSE(parser->parse_args(appctx));
+    EXPECT_TRUE(appctx->print_help_and_exit);
+  }
+}
+
 TEST_F(UTEST_CommandLineParser, conversion_cfg_alone_is_reported)
 {
   set_args({"--convert-cfg", "a.cfg"});
@@ -389,6 +434,29 @@ TEST_F(UTEST_CommandLineParser, conversion_cfg_alone_is_reported)
   EXPECT_FALSE(parser->parse_args(appctx));
   EXPECT_TRUE(appctx->print_help_and_exit);
   EXPECT_FALSE(appctx->conversion_requested());
+}
+
+TEST_F(UTEST_CommandLineParser, conversion_names_alone_is_reported)
+{
+  set_args({"--convert-names", "a.names"});
+
+  EXPECT_CALL(*appctx, push_error(HasSubstr("--convert-names"))).Times(1);
+
+  EXPECT_FALSE(parser->parse_args(appctx));
+  EXPECT_TRUE(appctx->print_help_and_exit);
+}
+
+TEST_F(UTEST_CommandLineParser, save_format)
+{
+  EXPECT_EQ(appctx->save_format, "dxxwjz2");
+
+  set_args({"--train-cfg", "net.cfg", "--save-format", "weights"});
+
+  EXPECT_CALL(*appctx, push_error(_)).Times(0);
+
+  EXPECT_TRUE(parser->parse_args(appctx));
+
+  EXPECT_EQ(appctx->save_format, "weights");
 }
 
 TEST_F(UTEST_CommandLineParser, conversion_excludes_the_training_and_detection)
@@ -413,7 +481,8 @@ TEST_F(UTEST_CommandLineParser, conversion_flags_require_their_values)
   for (const std::string& flag :
        {std::string{"--convert-from"}, std::string{"--convert-src"},
         std::string{"--convert-to"}, std::string{"--convert-dst"},
-        std::string{"--convert-cfg"}}) {
+        std::string{"--convert-cfg"}, std::string{"--convert-names"},
+        std::string{"--save-format"}, std::string{"--draw-chart"}}) {
     appctx = create_context(argc, argv);
 
     set_args({flag});

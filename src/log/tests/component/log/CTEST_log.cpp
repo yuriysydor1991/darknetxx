@@ -13,8 +13,8 @@
 #undef MAX_LOG_LEVEL
 #define MAX_LOG_LEVEL 5U
 
+#include "src/lib/facade/public/severity-macro-consts.h"
 #include "src/log/log.h"
-#include "src/log/severity-macro-consts.h"
 
 using namespace testing;
 

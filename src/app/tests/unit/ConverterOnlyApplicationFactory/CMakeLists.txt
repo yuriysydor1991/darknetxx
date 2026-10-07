@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 3.13)
 add_executable(
   UTEST_ConverterOnlyApplicationFactory
   UTEST_ConverterOnlyApplicationFactory.cpp
-  ${CMAKE_SOURCE_DIR}/src/app/ApplicationFactory.cpp
+  ${PROJECT_SOURCE_DIR}/src/app/ApplicationFactory.cpp
   ${APP_MOCKS_ROOT}/ApplicationContext/src/app/ApplicationContext.cpp
 )
 
@@ -15,18 +15,20 @@ target_compile_definitions(
   PRIVATE DARKNETXX_CONVERTER_ONLY
 )
 
+# before the public library headers, which the facade mock replaces
 target_include_directories(
   UTEST_ConverterOnlyApplicationFactory
-  PRIVATE ${APP_MOCKS_ROOT}/ApplicationContext
-  PRIVATE ${APP_MOCKS_ROOT}/ApplicationHelpPrinter
-  PRIVATE ${APP_MOCKS_ROOT}/ApplicationVersionPrinter
-  PRIVATE ${APP_MOCKS_ROOT}/ApplicationConverterComponent
-  PRIVATE ${APP_MOCKS_ROOT}/ApplicationFormatsConverter
-  PRIVATE ${APP_MOCKS_ROOT}/CommandLineParser
-  PRIVATE ${SIGNALS_HANDLERS_MOCKS_ROOT}/SignalsHandler
-  PRIVATE ${APP_MOCKS_ROOT}/project-global-decls
-  PRIVATE ${APP_MOCKS_ROOT}/log
-  PRIVATE ${CMAKE_SOURCE_DIR}
+  BEFORE PRIVATE
+    ${APP_MOCKS_ROOT}/ApplicationContext
+    ${APP_MOCKS_ROOT}/Application
+    ${APP_MOCKS_ROOT}/ApplicationHelpPrinter
+    ${APP_MOCKS_ROOT}/ApplicationVersionPrinter
+    ${APP_MOCKS_ROOT}/LibraryFacade
+    ${APP_MOCKS_ROOT}/CommandLineParser
+    ${SIGNALS_HANDLERS_MOCKS_ROOT}/SignalsHandler
+    ${GENERAL_MOCKS_ROOT}/project-global-decls
+    ${GENERAL_MOCKS_ROOT}/log
+    ${PROJECT_SOURCE_DIR}
 )
 
 target_link_libraries(

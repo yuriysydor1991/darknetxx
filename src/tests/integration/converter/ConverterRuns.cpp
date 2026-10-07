@@ -2,10 +2,12 @@
 
 #include <sys/wait.h>
 
+#include <algorithm>
 #include <cstdlib>
 #include <fstream>
 #include <iterator>
 #include <limits>
+#include <random>
 #include <string>
 #include <tuple>
 #include <vector>
@@ -13,9 +15,10 @@
 #include "ITEST_converter_provider.h"
 #include "NetworkChecks.h"
 #include "WeightsFile.h"
-#include "src/darknet-adaptor/adaptors/NetworksLoaders/dxxwjz1/v1/Dxxwjz1Reader.h"
-#include "src/darknet-adaptor/adaptors/NetworksLoaders/original-weights/OrigWeightsReader.h"
-#include "src/darknet-adaptor/adaptors/NetworksLoaders/original-weights/OrigWeightsWriter.h"
+#include "src/lib/darknet-adaptor/adaptors/NetworksLoaders/dxxwjz1/v1/Dxxwjz1Reader.h"
+#include "src/lib/darknet-adaptor/adaptors/NetworksLoaders/dxxwjz2/v2/Dxxwjz2Reader.h"
+#include "src/lib/darknet-adaptor/adaptors/NetworksLoaders/original-weights/OrigWeightsReader.h"
+#include "src/lib/darknet-adaptor/adaptors/NetworksLoaders/original-weights/OrigWeightsWriter.h"
 
 namespace converter_test
 {
@@ -23,6 +26,7 @@ namespace converter_test
 using darknet_adaptor::loaders::OrigWeightsReader;
 using darknet_adaptor::loaders::OrigWeightsWriter;
 using darknet_adaptor::loaders::dxxwjz1::v1::Dxxwjz1Reader;
+using darknet_adaptor::loaders::dxxwjz2::v2::Dxxwjz2Reader;
 
 namespace
 {
@@ -278,6 +282,109 @@ void check_variant(const WeightsVariant& variant,
 
     same_arrays(from_weights, from_dxxwjz1, memory);
   }
+}
+
+bool write_random_weights_file(const std::string& path,
+                               const WeightsHeader& header,
+                               const uint64_t floats, const uint64_t seed)
+{
+  std::ofstream file{path, std::ios::binary};
+  const int32_t version[3] = {header.major, header.minor, header.revision};
+  const uint64_t seen64 = header.seen;
+  const auto seen32 = static_cast<uint32_t>(header.seen);
+
+  file.write(reinterpret_cast<const char*>(version), sizeof(version));
+
+  if (header.seen64()) {
+    file.write(reinterpret_cast<const char*>(&seen64), sizeof(seen64));
+  } else {
+    file.write(reinterpret_cast<const char*>(&seen32), sizeof(seen32));
+  }
+
+  std::mt19937 random{static_cast<std::mt19937::result_type>(seed)};
+
+  for (uint64_t index = 0U; index < floats; ++index) {
+    const auto bits = static_cast<uint32_t>(random());
+
+    file.write(reinterpret_cast<const char*>(&bits), sizeof(bits));
+  }
+
+  return static_cast<bool>(file);
+}
+
+void check_random_round_trips(const WeightsVariant& variant,
+                              const WeightsWorkspace& workspace)
+{
+  const std::string cfg = workspace.write_cfg(variant.spec);
+  const Layout memory = variant.spec.layout();
+  const std::string weights = workspace.file(variant.name + ".weights");
+  const std::string log = workspace.file("converter.log");
+  const std::string converter = ITEST_converter_provider::CONVERTER;
+
+  WeightsHeader header = variant.header;
+  header.seen = header.stored_seen();
+
+  ASSERT_TRUE(write_random_weights_file(weights, header, count_floats(memory),
+                                        variant.seed));
+
+  const auto convert = [&](const std::string& from, const std::string& src,
+                           const std::string& to, const std::string& dst,
+                           const std::string& with_cfg) {
+    const RunResult result =
+        run(converter, conversion_args(from, src, to, dst, with_cfg), log);
+
+    EXPECT_EQ(result.status, 0) << "the conversion into " << dst << ":\n"
+                                << tail_of(result);
+  };
+
+  const std::string dxxwjz2 = weights + ".dxxwjz2";
+  const std::string dxxwjz1 = weights + ".dxxwjz1";
+  const std::string through = weights + ".through.dxxwjz2";
+  const std::string again = weights + ".again.dxxwjz2";
+  const std::string back = weights + ".back.weights";
+  const std::string around = weights + ".around.weights";
+
+  // the dxxwjz2 file keeps the network, the conversions of it need no cfg
+  convert("weights", weights, "dxxwjz2", dxxwjz2, cfg);
+  convert("dxxwjz2", dxxwjz2, "weights", back, "");
+  convert("dxxwjz2", dxxwjz2, "dxxwjz2", again, "");
+  convert("dxxwjz2", dxxwjz2, "dxxwjz1", dxxwjz1, "");
+  convert("dxxwjz1", dxxwjz1, "dxxwjz2", through, cfg);
+  convert("dxxwjz2", through, "weights", around, cfg);
+
+  if (::testing::Test::HasFailure()) {
+    return;
+  }
+
+  EXPECT_TRUE(is_gzip(dxxwjz2));
+  EXPECT_TRUE(files_equal(weights, back));
+  EXPECT_TRUE(files_equal(dxxwjz2, again));
+  EXPECT_TRUE(files_equal(weights, around));
+
+  // the dxxwjz2 file loads the network the weights file does, unless the
+  // original loader reads the arrays of the file in place of the arrays it
+  // skips
+  LayoutOptions reading;
+  reading.loading = true;
+  reading.transposed = header.transposed();
+
+  if (!loads_every_array(memory, variant.spec.layout(reading))) {
+    return;
+  }
+
+  const Pattern before{~variant.seed};
+  DarknetNetwork from_weights{cfg, variant.mode};
+  DarknetNetwork from_dxxwjz2{cfg, variant.mode};
+
+  ASSERT_TRUE(from_weights.fill(memory, before));
+  ASSERT_TRUE(from_dxxwjz2.fill(memory, before));
+
+  ASSERT_TRUE(OrigWeightsReader{}.load(from_weights.net(), weights));
+  ASSERT_TRUE(Dxxwjz2Reader{}.load(from_dxxwjz2.net(), dxxwjz2));
+
+  EXPECT_EQ(*from_dxxwjz2.net().seen, *from_weights.net().seen);
+
+  same_arrays(from_weights, from_dxxwjz2, memory);
 }
 
 }  // namespace converter_test

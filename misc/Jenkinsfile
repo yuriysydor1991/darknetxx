@@ -109,6 +109,12 @@ pipeline {
         stage('UTEST_CommandLineParser') {
           steps { sh 'cd $BUILDDIR && ctest -R "UTEST_CommandLineParser\\." --output-on-failure --output-junit $BDJUNITOUT/UTEST_CommandLineParser.junit.xml' }
         }
+        stage('UTEST_ConverterOnlyApplicationFactory') {
+          steps { sh 'cd $BUILDDIR && ctest -R "UTEST_ConverterOnlyApplicationFactory\\." --output-on-failure --output-junit $BDJUNITOUT/UTEST_ConverterOnlyApplicationFactory.junit.xml' }
+        }
+        stage('UTEST_ApplicationContext2LibraryContext') {
+          steps { sh 'cd $BUILDDIR && ctest -R "UTEST_ApplicationContext2LibraryContext\\." --output-on-failure --output-junit $BDJUNITOUT/UTEST_ApplicationContext2LibraryContext.junit.xml' }
+        }
       }
       post { always { junit "$BUILDDIR/$BDJUNITOUT/*.xml" } }
     }
@@ -186,6 +192,75 @@ pipeline {
         stage('CTEST_NetworksCApi') {
           steps { sh 'cd $BUILDDIR && ctest -R "CTEST_NetworksCApi[._]" --output-on-failure --output-junit $BDJUNITOUT/CTEST_NetworksCApi.junit.xml' }
         }
+        // The network weights files formats and their conversion, each with
+        // the <suite>_<variant> ones of the generated networks.
+        stage('CTEST_WeightsModel') {
+          steps { sh 'cd $BUILDDIR && ctest -R "CTEST_WeightsModel[._]" --output-on-failure --output-junit $BDJUNITOUT/CTEST_WeightsModel.junit.xml' }
+        }
+        stage('CTEST_Dxxwjz1') {
+          steps { sh 'cd $BUILDDIR && ctest -R "CTEST_Dxxwjz1[._]" --output-on-failure --output-junit $BDJUNITOUT/CTEST_Dxxwjz1.junit.xml' }
+        }
+        stage('CTEST_WeightsConverter') {
+          steps { sh 'cd $BUILDDIR && ctest -R "CTEST_WeightsConverter[._]" --output-on-failure --output-junit $BDJUNITOUT/CTEST_WeightsConverter.junit.xml' }
+        }
+        stage('UTEST_ZlibController') {
+          steps { sh 'cd $BUILDDIR && ctest -R "UTEST_ZlibController\\." --output-on-failure --output-junit $BDJUNITOUT/UTEST_ZlibController.junit.xml' }
+        }
+        stage('CTEST_ZlibController') {
+          steps { sh 'cd $BUILDDIR && ctest -R "CTEST_ZlibController\\." --output-on-failure --output-junit $BDJUNITOUT/CTEST_ZlibController.junit.xml' }
+        }
+      }
+      post { always { junit "$BUILDDIR/$BDJUNITOUT/*.xml" } }
+    }
+
+    // The tests of the darknetxx library (see the src/lib directory) and of
+    // its facade the executables use.
+    stage('Library tests') {
+      parallel {
+        stage('UTEST_LibraryContext') {
+          steps { sh 'cd $BUILDDIR && ctest -R "UTEST_LibraryContext\\." --output-on-failure --output-junit $BDJUNITOUT/UTEST_LibraryContext.junit.xml' }
+        }
+        stage('UTEST_TrainingProgress') {
+          steps { sh 'cd $BUILDDIR && ctest -R "UTEST_TrainingProgress\\." --output-on-failure --output-junit $BDJUNITOUT/UTEST_TrainingProgress.junit.xml' }
+        }
+        stage('UTEST_ConversionFormats') {
+          steps { sh 'cd $BUILDDIR && ctest -R "UTEST_ConversionFormats\\." --output-on-failure --output-junit $BDJUNITOUT/UTEST_ConversionFormats.junit.xml' }
+        }
+        stage('UTEST_LibFactory') {
+          steps { sh 'cd $BUILDDIR && ctest -R "UTEST_LibFactory\\." --output-on-failure --output-junit $BDJUNITOUT/UTEST_LibFactory.junit.xml' }
+        }
+        stage('UTEST_LibMain') {
+          steps { sh 'cd $BUILDDIR && ctest -R "UTEST_LibMain\\." --output-on-failure --output-junit $BDJUNITOUT/UTEST_LibMain.junit.xml' }
+        }
+        stage('UTEST_WeightsConversionLib') {
+          steps { sh 'cd $BUILDDIR && ctest -R "UTEST_WeightsConversionLib\\." --output-on-failure --output-junit $BDJUNITOUT/UTEST_WeightsConversionLib.junit.xml' }
+        }
+        stage('CTEST_Yolo4Folder') {
+          steps { sh 'cd $BUILDDIR && ctest -R "CTEST_Yolo4Folder\\." --output-on-failure --output-junit $BDJUNITOUT/CTEST_Yolo4Folder.junit.xml' }
+        }
+        stage('CTEST_BackgroundTrainer') {
+          steps { sh 'cd $BUILDDIR && ctest -R "CTEST_BackgroundTrainer\\." --output-on-failure --output-junit $BDJUNITOUT/CTEST_BackgroundTrainer.junit.xml' }
+        }
+      }
+      post { always { junit "$BUILDDIR/$BDJUNITOUT/*.xml" } }
+    }
+
+    // The tests of the darknetxx-gui binary. The CTEST_GtkmmWindow ones skip
+    // themselves without a display to show the window on.
+    stage('GUI tests') {
+      parallel {
+        stage('UTEST_GuiApplication') {
+          steps { sh 'cd $BUILDDIR && ctest -R "UTEST_GuiApplication\\." --output-on-failure --output-junit $BDJUNITOUT/UTEST_GuiApplication.junit.xml' }
+        }
+        stage('UTEST_GuiApplicationFactory') {
+          steps { sh 'cd $BUILDDIR && ctest -R "UTEST_GuiApplicationFactory\\." --output-on-failure --output-junit $BDJUNITOUT/UTEST_GuiApplicationFactory.junit.xml' }
+        }
+        stage('CTEST_GtkmmWindow') {
+          steps { sh 'cd $BUILDDIR && ctest -R "CTEST_GtkmmWindow\\." --output-on-failure --output-junit $BDJUNITOUT/CTEST_GtkmmWindow.junit.xml' }
+        }
+        stage('ITEST_gui_bash') {
+          steps { sh 'cd $BUILDDIR && ctest -R "ITEST_gui_bash\\." --output-on-failure --output-junit $BDJUNITOUT/ITEST_gui_bash.junit.xml' }
+        }
       }
       post { always { junit "$BUILDDIR/$BDJUNITOUT/*.xml" } }
     }
@@ -206,6 +281,14 @@ pipeline {
     stage('Integration tests (bash)') {
       steps { sh 'cd $BUILDDIR && ctest -R "ITEST_digits_bash\\." --output-on-failure --output-junit $BDJUNITOUT/ITEST_digits_bash.junit.xml' }
       post { always { junit "$BUILDDIR/$BDJUNITOUT/ITEST_digits_bash.junit.xml" } }
+    }
+
+    // The darknetxxConverter executable converts the weights files of the
+    // generated networks back and forth, driven by the gtest ITEST_converter
+    // ones and by the scripts of the ITEST_converter_bash ones.
+    stage('Integration tests (converter)') {
+      steps { sh 'cd $BUILDDIR && ctest -R "ITEST_converter[._]" --output-on-failure --output-junit $BDJUNITOUT/ITEST_converter.junit.xml' }
+      post { always { junit "$BUILDDIR/$BDJUNITOUT/ITEST_converter.junit.xml" } }
     }
 
     stage('Debug configure (clang-tidy)') {
@@ -333,12 +416,12 @@ pipeline {
     stage('Repo check: every enabler is registered') {
       steps {
         sh '''
-          included="$( { cat cmake/template-project-feature-enabler.cmake cmake/template-project-feature-enabler-post.cmake; find cmake/enablers -name "*.cmake" -exec cat {} +; } | grep "include(" | sed "s/.*include(//; s/).*//" | tr -d " " | sort -u )"
+          included="$( { cat cmake/darknetxx-feature-enabler.cmake cmake/darknetxx-feature-enabler-post.cmake; find cmake/enablers -name "*.cmake" -exec cat {} +; } | grep "include(" | sed "s/.*include(//; s/).*//" | tr -d " " | sort -u )"
           status=0
           for f in $(find cmake/enablers -name "*.cmake" | sort); do
             mod="$(basename "$f" .cmake)"
             if ! echo "$included" | grep -qx "$mod"; then
-              echo "FAIL: enabler $mod ($f) is not registered in the template-project-feature-enabler files"
+              echo "FAIL: enabler $mod ($f) is not registered in the darknetxx-feature-enabler files"
               status=1
             fi
           done

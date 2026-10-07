@@ -3,19 +3,15 @@
 
 #include <memory>
 
+#include "LibraryFacade.h"
 #include "src/app/Application.h"
 #include "src/app/ApplicationFactory.h"
 #include "src/app/ApplicationHelpPrinter.h"
 #include "src/app/ApplicationVersionPrinter.h"
-#include "src/app/converter/ApplicationConverterComponent.h"
-#include "src/app/converter/ApplicationFormatsConverter.h"
 #include "src/app/signals-handlers/SignalsHandler.h"
 
 using namespace app;
 using namespace testing;
-
-using app::converter::ApplicationConverterComponent;
-using app::converter::ApplicationFormatsConverter;
 
 class UTEST_ApplicationFactory : public Test
 {
@@ -30,8 +26,7 @@ class UTEST_ApplicationFactory : public Test
     Application::onMockCreate = nullptr;
     ApplicationHelpPrinter::onMockCreate = nullptr;
     ApplicationVersionPrinter::onMockCreate = nullptr;
-    ApplicationConverterComponent::onMockCreate = nullptr;
-    ApplicationFormatsConverter::onMockCreate = nullptr;
+    darknetxx011::LibraryFacade::reset();
     SignalsHandler::onMockCreate = nullptr;
   }
 
@@ -347,33 +342,6 @@ TEST_F(UTEST_ApplicationFactory, factory_execute_default_app)
   EXPECT_EQ(ApplicationFactory::execute(customArgc, customArgv), 0);
 }
 
-TEST_F(UTEST_ApplicationFactory, create_formats_converter)
-{
-  std::shared_ptr<converter::IFormatsConverter> formatsConverter =
-      factory->create_formats_converter();
-
-  EXPECT_NE(formatsConverter, nullptr);
-  EXPECT_NE(
-      std::dynamic_pointer_cast<ApplicationFormatsConverter>(formatsConverter),
-      nullptr);
-}
-
-TEST_F(UTEST_ApplicationFactory, create_formats_converter_application)
-{
-  std::shared_ptr<IApplication> app =
-      factory->create_formats_converter_application();
-
-  ASSERT_NE(app, nullptr);
-
-  auto component =
-      std::dynamic_pointer_cast<ApplicationConverterComponent>(app);
-
-  ASSERT_NE(component, nullptr);
-  EXPECT_NE(std::dynamic_pointer_cast<ApplicationFormatsConverter>(
-                component->converter),
-            nullptr);
-}
-
 TEST_F(UTEST_ApplicationFactory, create_application_formats_converter)
 {
   std::shared_ptr<ApplicationContext> ctx =
@@ -383,8 +351,8 @@ TEST_F(UTEST_ApplicationFactory, create_application_formats_converter)
 
   std::shared_ptr<IApplication> app = factory->create_application(ctx);
 
-  EXPECT_NE(std::dynamic_pointer_cast<ApplicationConverterComponent>(app),
-            nullptr);
+  // the conversion is the library work of the default application
+  EXPECT_NE(std::dynamic_pointer_cast<Application>(app), nullptr);
 }
 
 TEST_F(UTEST_ApplicationFactory,
@@ -410,9 +378,7 @@ TEST_F(UTEST_ApplicationFactory,
 TEST_F(UTEST_ApplicationFactory, factory_run_formats_converter_app)
 {
   MockFunction<void(CommandLineParser & instance)> onMockCreateParserEnsurer;
-  MockFunction<void(ApplicationConverterComponent & instance)>
-      onMockCreateAppEnsurer;
-  MockFunction<void(Application & instance)> onMockCreateDefaultEnsurer;
+  MockFunction<void(Application & instance)> onMockCreateAppEnsurer;
 
   EXPECT_CALL(onMockCreateParserEnsurer, Call(_))
       .Times(1)
@@ -427,19 +393,25 @@ TEST_F(UTEST_ApplicationFactory, factory_run_formats_converter_app)
 
   EXPECT_CALL(onMockCreateAppEnsurer, Call(_))
       .Times(1)
-      .WillOnce(Invoke([&](ApplicationConverterComponent& instance) {
+      .WillOnce(Invoke([&](Application& instance) {
         EXPECT_CALL(instance, run(_)).Times(1).WillOnce(Return(0));
       }));
-
-  // no training nor detection runs
-  EXPECT_CALL(onMockCreateDefaultEnsurer, Call(_)).Times(0);
 
   expect_the_signals_handler_install();
 
   CommandLineParser::onMockCreate = onMockCreateParserEnsurer.AsStdFunction();
-  ApplicationConverterComponent::onMockCreate =
-      onMockCreateAppEnsurer.AsStdFunction();
-  Application::onMockCreate = onMockCreateDefaultEnsurer.AsStdFunction();
+  Application::onMockCreate = onMockCreateAppEnsurer.AsStdFunction();
 
   EXPECT_EQ(factory->run(customArgc, customArgv), 0);
+}
+
+TEST_F(UTEST_ApplicationFactory, the_library_logs_into_the_application_logger)
+{
+  MockFunction<void(const logger::ILoggerPtr&)> initLogger;
+
+  EXPECT_CALL(initLogger, Call(_)).Times(1);
+
+  darknetxx011::LibraryFacade::on_init_logger = initLogger.AsStdFunction();
+
+  factory->run(customArgc, customArgv);
 }

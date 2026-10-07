@@ -3,17 +3,19 @@ cmake_minimum_required(VERSION 3.13)
 add_executable(
   UTEST_ApplicationHelpPrinter  
   UTEST_ApplicationHelpPrinter.cpp
-  ${CMAKE_SOURCE_DIR}/src/app/ApplicationHelpPrinter.cpp
-  ${CMAKE_SOURCE_DIR}/src/app/converter/ConversionFormats.cpp
+  ${PROJECT_SOURCE_DIR}/src/app/ApplicationHelpPrinter.cpp
   ${APP_MOCKS_ROOT}/ApplicationContext/src/app/ApplicationContext.cpp
 )
 
+# before the public library headers, which the facade mock replaces
 target_include_directories(
   UTEST_ApplicationHelpPrinter
-  PRIVATE ${APP_MOCKS_ROOT}/ApplicationContext
-  PRIVATE ${APP_MOCKS_ROOT}/project-global-decls
-  PRIVATE ${APP_MOCKS_ROOT}/log
-  PRIVATE ${CMAKE_SOURCE_DIR}
+  BEFORE PRIVATE
+    ${APP_MOCKS_ROOT}/ApplicationContext
+    ${APP_MOCKS_ROOT}/LibraryFacade
+    ${GENERAL_MOCKS_ROOT}/project-global-decls
+    ${GENERAL_MOCKS_ROOT}/log
+    ${PROJECT_SOURCE_DIR}
 )
 
 target_link_libraries(

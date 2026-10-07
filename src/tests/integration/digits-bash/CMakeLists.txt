@@ -6,6 +6,12 @@ cmake_minimum_required(VERSION 3.13)
 # scratch, then the ITEST_digits_bash tests run the darknetxx detection on every
 # glyph of their digit and expect it to be recognized.
 
+if(NOT TARGET ${DARKNETXX_BINARY_NAME})
+  message(STATUS
+    "The ITEST_digits_bash tests are skipped, the binary they drive is not being built")
+  return()
+endif()
+
 find_program(BASH_EXEC bash REQUIRED)
 
 set(ITEST_DIGITS_BASH_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/ITEST_digits_bash.sh")
@@ -13,9 +19,9 @@ set(ITEST_DIGITS_BASH_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/ITEST_digits_bash.sh")
 add_test(
   NAME ITEST_digits_bash_training
   COMMAND ${BASH_EXEC} ${ITEST_DIGITS_BASH_SCRIPT} train
-    $<TARGET_FILE:${PROJECT_BINARY_NAME}>
+    $<TARGET_FILE:${DARKNETXX_BINARY_NAME}>
     ${CMAKE_CURRENT_BINARY_DIR}
-    ${CMAKE_SOURCE_DIR}/misc/data/labels
+    ${PROJECT_SOURCE_DIR}/misc/data/labels
 )
 
 # The training takes under a minute for the Debug build and a couple of
@@ -35,7 +41,7 @@ foreach(digit RANGE 9)
   add_test(
     NAME ITEST_digits_bash.recognizes_digit_${digit}
     COMMAND ${BASH_EXEC} ${ITEST_DIGITS_BASH_SCRIPT} recognize
-      $<TARGET_FILE:${PROJECT_BINARY_NAME}>
+      $<TARGET_FILE:${DARKNETXX_BINARY_NAME}>
       ${CMAKE_CURRENT_BINARY_DIR}
       ${digit}
   )
@@ -56,6 +62,6 @@ if (ENABLE_SANITIZERS_THREADS)
   set_tests_properties(
     ITEST_digits_bash_training ${recognition_tests}
     PROPERTIES
-      ENVIRONMENT "TSAN_OPTIONS=suppressions=${CMAKE_SOURCE_DIR}/misc/.tsan-suppress"
+      ENVIRONMENT "TSAN_OPTIONS=suppressions=${PROJECT_SOURCE_DIR}/misc/.tsan-suppress"
   )
 endif()

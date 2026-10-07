@@ -9,9 +9,9 @@
 
 #include "ConverterRuns.h"
 #include "ITEST_converter_provider.h"
-#include "src/darknet-adaptor/adaptors/NetworksLoaders/dxxwjz1/v1/Dxxwjz1Reader.h"
-#include "src/darknet-adaptor/adaptors/NetworksLoaders/original-weights/OrigWeightsReader.h"
-#include "src/darknet-adaptor/adaptors/NetworksLoaders/original-weights/OrigWeightsWriter.h"
+#include "src/lib/darknet-adaptor/adaptors/NetworksLoaders/dxxwjz1/v1/Dxxwjz1Reader.h"
+#include "src/lib/darknet-adaptor/adaptors/NetworksLoaders/original-weights/OrigWeightsReader.h"
+#include "src/lib/darknet-adaptor/adaptors/NetworksLoaders/original-weights/OrigWeightsWriter.h"
 #include "src/log/default-logger/DefaultLogger.h"
 
 using namespace testing;
@@ -155,6 +155,37 @@ TEST_F(ITEST_converter, dxxwjz1_file_is_the_gzip_compressed_json_document)
             std::string::npos);
 }
 
+TEST_F(ITEST_converter, dxxwjz2_file_keeps_the_network_description)
+{
+  const std::string dxxwjz2 = workspace.file("1.dxxwjz2");
+  const std::string back = workspace.file("1.weights");
+
+  std::vector<std::string> args =
+      conversion_args("weights", reference("1.weights"), "dxxwjz2", dxxwjz2,
+                      reference("1.cfg"));
+
+  args.insert(args.end(), {"--convert-names", reference("1.names")});
+
+  ASSERT_EQ(converter(args).status, 0);
+  ASSERT_TRUE(is_gzip(dxxwjz2));
+
+  const std::string text = gunzipped(dxxwjz2);
+
+  EXPECT_EQ(text.rfind("{\n  \"format\": \"dxxwjz2\",\n  \"version\": 2,", 0U),
+            0U)
+      << text.substr(0U, 200U);
+  EXPECT_NE(text.find("\"network\": {\"cfg\": \"[net]"), std::string::npos)
+      << text.substr(0U, 400U);
+  EXPECT_NE(text.find("{\"index\": 10, \"name\": "), std::string::npos);
+  EXPECT_NE(text.find("\"training\": {\"seconds\": 0,"), std::string::npos);
+
+  // the network kept, the conversion back needs no cfg
+  ASSERT_EQ(converter(conversion_args("dxxwjz2", dxxwjz2, "weights", back, ""))
+                .status,
+            0);
+  EXPECT_TRUE(files_equal(reference("1.weights"), back));
+}
+
 TEST_F(ITEST_converter, help_lists_the_conversion_alone)
 {
   const RunResult result = converter({"--help"});
@@ -174,8 +205,9 @@ TEST_F(ITEST_converter, help_lists_the_conversion_alone)
   for (const std::string& part :
        {std::string{"--convert-from"}, std::string{"--convert-src"},
         std::string{"--convert-to"}, std::string{"--convert-dst"},
-        std::string{"--convert-cfg"}, std::string{"weights"},
-        std::string{"dxxwjz1"}}) {
+        std::string{"--convert-cfg"}, std::string{"--convert-names"},
+        std::string{"weights"}, std::string{"dxxwjz1"},
+        std::string{"dxxwjz2"}}) {
     EXPECT_NE(output.find(part), std::string::npos) << part;
   }
 
@@ -258,6 +290,13 @@ TEST_F(ITEST_converter, failed_conversions_write_nothing)
       // the files of the other formats
       conversion_args("dxxwjz1", weights, "weights", dst, ""),
       conversion_args("weights", dxxwjz1, "dxxwjz1", dst, cfg),
+      conversion_args("dxxwjz2", dxxwjz1, "weights", dst, ""),
+      // the dxxwjz2 file of no network description
+      conversion_args("dxxwjz1", dxxwjz1, "dxxwjz2", dst, ""),
+      // the missing class names file
+      {"--convert-from", "weights", "--convert-src", weights, "--convert-to",
+       "dxxwjz2", "--convert-dst", dst, "--convert-cfg", cfg, "--convert-names",
+       workspace.file("missing.names")},
       // the part of the conversion flags
       {"--convert-from", "weights", "--convert-src", weights, "--convert-to",
        "dxxwjz1"},

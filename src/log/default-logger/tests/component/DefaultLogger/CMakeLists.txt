@@ -3,7 +3,8 @@ cmake_minimum_required(VERSION 3.13)
 add_executable(
   CTEST_DefaultLogger  
   CTEST_DefaultLogger.cpp
-  ${CMAKE_SOURCE_DIR}/src/log/default-logger/DefaultLogger.cpp
+  ${PROJECT_SOURCE_DIR}/src/log/default-logger/DefaultLogger.cpp
+  ${PROJECT_SOURCE_DIR}/src/log/default-logger/real-default-logger/RealDefaultLogger.cpp
 )
 
 target_compile_definitions(
@@ -14,8 +15,8 @@ target_compile_definitions(
 target_include_directories(
   CTEST_DefaultLogger
   PRIVATE 
-    ${CMAKE_SOURCE_DIR}
-    ${CMAKE_BINARY_DIR}
+    ${PROJECT_SOURCE_DIR}
+    ${PROJECT_BINARY_DIR}
 )
 
 target_link_libraries(

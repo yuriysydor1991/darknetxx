@@ -1,4 +1,4 @@
-FROM ubuntu:22.04
+FROM ubuntu:24.04
 
 RUN apt update
 RUN apt -y upgrade
@@ -15,6 +15,8 @@ ENV LANG en_US.utf8
 RUN apt install -y libstdc++6 build-essential git cmake g++
 # the dxxwjz1 network weights files are the gzip compressed JSON documents
 RUN apt install -y zlib1g-dev nlohmann-json3-dev
+# the GTK 4 toolkit of the darknetxx-gui
+RUN apt install -y libgtkmm-4.0-dev
 # RUN apt install -y libopencv-dev
 # RUN apt install -y libopencv-imgcodecs-dev
 # RUN apt install -y libopencv-shape-dev
@@ -73,8 +75,8 @@ ENV DOCKER_BUILD_DATE=$CACHEBUST
 
 WORKDIR $srcD
 
-ARG BUILDDIR=$srcD/${PROJECT_BINARY_NAME}-build
-ARG prjD=$srcD/${PROJECT_BINARY_NAME}
+ARG BUILDDIR=$srcD/${DARKNETXX_BINARY_NAME}-build
+ARG prjD=$srcD/${DARKNETXX_BINARY_NAME}
 
 RUN --mount=from=project,target=$prjD \ 
  cd $prjD && \

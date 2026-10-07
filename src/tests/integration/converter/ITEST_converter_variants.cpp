@@ -93,3 +93,40 @@ TEST_P(ITEST_converter_big, converts_back_and_forth)
 
 INSTANTIATE_TEST_SUITE_P(Generated, ITEST_converter_big,
                          ValuesIn(variants::big()), variant_name);
+
+/**
+ * @brief The random weights files of every weights layer kind, which convert
+ * through the dxxwjz2 files and back.
+ */
+class ITEST_converter_dxxwjz2_layers : public TestWithParam<WeightsVariant>
+{
+ public:
+  WeightsWorkspace workspace{ITEST_converter_provider::GENERATED_DIR};
+};
+
+TEST_P(ITEST_converter_dxxwjz2_layers, converts_back_and_forth)
+{
+  check_random_round_trips(GetParam(), workspace);
+}
+
+INSTANTIATE_TEST_SUITE_P(Generated, ITEST_converter_dxxwjz2_layers,
+                         ValuesIn(variants::layers()), variant_name);
+
+/**
+ * @brief The random weights files of the random networks, which convert
+ * through the dxxwjz2 files and back.
+ */
+class ITEST_converter_dxxwjz2_random : public TestWithParam<WeightsVariant>
+{
+ public:
+  WeightsWorkspace workspace{ITEST_converter_provider::GENERATED_DIR};
+};
+
+TEST_P(ITEST_converter_dxxwjz2_random, converts_back_and_forth)
+{
+  check_random_round_trips(GetParam(), workspace);
+}
+
+INSTANTIATE_TEST_SUITE_P(Generated, ITEST_converter_dxxwjz2_random,
+                         ValuesIn(variants::random(20261002U, 32U)),
+                         variant_name);

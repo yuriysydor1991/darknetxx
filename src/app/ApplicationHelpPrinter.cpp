@@ -6,9 +6,9 @@
 #include <ostream>
 #include <string>
 
+#include "LibraryFacade.h"
 #include "src/app/ApplicationBinaryName.h"
 #include "src/app/CMDParamNames.h"
-#include "src/app/converter/ConversionFormats.h"
 #include "src/log/log.h"
 
 namespace app
@@ -59,7 +59,8 @@ void print_conversion_options(std::ostream& out)
 {
   out << "\nNetwork weights files conversion options (the four of them go\n"
       << "together and convert the weights file with no training nor\n"
-      << "detection started):\n";
+      << "detection started, the --convert-to dxxwjz2, --convert-dst and\n"
+      << "--convert-cfg ones alone make the network to train of no weights):\n";
   print_option(out, CMDParamNames::convert_fromw, "<FORMAT>",
                "the network weights file format to read");
   print_option(out, CMDParamNames::convert_srcw, "<FILE>",
@@ -70,13 +71,16 @@ void print_conversion_options(std::ostream& out)
                "the network weights file to write (replaced)");
   print_option(out, CMDParamNames::convert_cfgw, "<FILE>",
                "the network cfg file of the weights: required to read the "
-               "weights FORMAT, validates the dxxwjz1 one");
+               "weights FORMAT, validates the rest, the dxxwjz2 one keeps it");
+  print_option(out, CMDParamNames::convert_namesw, "<FILE>",
+               "the class names file the dxxwjz2 FORMAT keeps (overrides the "
+               "cfg [net] names= key)");
 
   out << "\n  Where FORMAT is one of:\n";
 
-  for (const std::string& name : converter::ConversionFormats::names()) {
-    print_option(out, "  " + name, "",
-                 converter::ConversionFormats::description(name));
+  for (const auto& [name, description] :
+       darknetxx011::LibraryFacade::conversion_formats()) {
+    print_option(out, "  " + name, "", description);
   }
 }
 
@@ -123,13 +127,15 @@ int ApplicationHelpPrinter::run(std::shared_ptr<ApplicationContext> ctx)
 
   out << "\nNetwork and model options:\n";
   print_option(out, CMDParamNames::train_cfgw, "<FILE>",
-               "training network configuration (*.cfg) file");
+               "training network configuration (*.cfg or *.dxxwjz2) file");
   print_option(out, CMDParamNames::detect_cfgw, "<FILE>",
-               "detection network configuration (*.cfg) file");
+               "detection network configuration (*.cfg or *.dxxwjz2) file");
   print_option(out, CMDParamNames::namesw, "<FILE>",
-               "class names file (overrides the cfg [net] names= key)");
+               "class names file (overrides the dxxwjz2 classes and the cfg "
+               "[net] names= key)");
   print_option(out, CMDParamNames::latest_weightsw, "<FILE>",
-               "network weights file to load");
+               "network weights file to load of any FORMAT; the dxxwjz2 one "
+               "alone is detected with, or trained of no weights");
   print_option(out, CMDParamNames::detect_imagew, "<FILE>",
                "image file to run the detection on");
   print_option(out, CMDParamNames::gpusw, "<LIST>",
@@ -155,8 +161,15 @@ int ApplicationHelpPrinter::run(std::shared_ptr<ApplicationContext> ctx)
   print_option(out, CMDParamNames::stop_less_avg_lossw, "<VALUE>",
                "stop the training once the average loss reaches "
                "the given value or less");
+  print_option(out, CMDParamNames::save_formatw, "<FORMAT>",
+               "the weights FORMAT the training saves (default dxxwjz2)");
   print_option(out, CMDParamNames::chartw, "<FILE>",
-               "path to save the training chart into");
+               "chart image the training chart continues (every training "
+               "start saves the new chart_<base>_<date>--<time>.png, the "
+               "record of the dxxwjz2 weights redraws it instead)");
+  print_option(out, CMDParamNames::draw_chartw, "<FILE>",
+               "draw the training chart of the dxxwjz2 --weights file into "
+               "the PNG file, nothing else");
   print_option(out, CMDParamNames::save_charts_every_iterw, "",
                "save the training chart on every iteration, not every 100");
   print_option(out, CMDParamNames::dont_save_charts_every_iterw, "",

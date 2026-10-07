@@ -16,6 +16,17 @@ class ITEST_digits_provider
 
   // the working directories of the detection runs
   inline static constexpr const char* const DETECTIONS_DIR = "@ITEST_DIGITS_DETECTIONS_DIR@";
+
+  // the working directory of the training, it's chart included
+  inline static constexpr const char* const TRAINING_DIR = "@ITEST_DIGITS_TRAINING_DIR@";
+
+  // the root of the working directories of the further trainings
+  inline static constexpr const char* const RESUMED_DIR = "@ITEST_DIGITS_RESUMED_DIR@";
+
+  inline static constexpr const char* const NAMES = "@ITEST_DIGITS_NAMES@";
+
+  // the list of the training images, which the mAP calculation validates too
+  inline static constexpr const char* const TRAIN_LIST = "@ITEST_DIGITS_TRAIN_LIST@";
 };
 
 #endif  // DARKNETXX_PROJECT_ITEST_DIGITS_DATA_PROVIDER_CLASS_H

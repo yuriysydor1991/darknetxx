@@ -13,6 +13,9 @@ PACKAGES=(
     g++
     git
     googletest
+    # the GTK 4 toolkit of the darknetxx-gui (-DENABLE_DARKNETXX_GUI=OFF
+    # builds without it)
+    libgtkmm-4.0-dev
     libgmock-dev
     libgtest-dev
     # the OpenCV is the mandatory dependency of the Darknet code

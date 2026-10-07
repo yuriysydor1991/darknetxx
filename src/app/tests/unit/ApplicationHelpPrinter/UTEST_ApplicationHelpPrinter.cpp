@@ -63,11 +63,13 @@ TEST_F(UTEST_ApplicationHelpPrinter, conversion_options_and_formats_are_listed)
 
   for (const std::string& flag : std::vector<std::string>{
            "--convert-from", "--convert-src", "--convert-to", "--convert-dst",
-           "--convert-cfg", "weights", "dxxwjz1"}) {
+           "--convert-cfg", "--convert-names", "weights", "dxxwjz1",
+           "dxxwjz2"}) {
     EXPECT_NE(printed.find(flag), std::string::npos) << flag;
   }
 
   // the main binary lists the training and the detection as well
   EXPECT_NE(printed.find("--train-cfg"), std::string::npos);
   EXPECT_NE(printed.find("--detect-cfg"), std::string::npos);
+  EXPECT_NE(printed.find("--save-format"), std::string::npos);
 }

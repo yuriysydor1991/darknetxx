@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <object class="GtkWindow" id="main_window">
+    <property name="default-width">900</property>
+    <property name="default-height">900</property>
+    <child>
+      <object class="GtkBox">
+        <property name="orientation">vertical</property>
+        <property name="spacing">8</property>
+        <property name="margin-start">12</property>
+        <property name="margin-end">12</property>
+        <property name="margin-top">12</property>
+        <property name="margin-bottom">12</property>
+        <child>
+          <object class="GtkBox">
+            <property name="spacing">6</property>
+            <child>
+              <object class="GtkLabel">
+                <property name="label">YOLO4 folder:</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkEntry" id="folder_entry">
+                <property name="hexpand">true</property>
+                <property name="placeholder-text">The folder of the cfg, data and backup subfolders, Enter opens it</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton" id="folder_button">
+                <property name="label">_Choose…</property>
+                <property name="use-underline">true</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLabel" id="status_label">
+            <property name="xalign">0</property>
+            <property name="wrap">true</property>
+            <property name="label">Choose the YOLO4 folder to train</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox" id="training_box">
+            <property name="orientation">vertical</property>
+            <property name="spacing">8</property>
+            <property name="visible">false</property>
+            <child>
+              <object class="GtkProgressBar" id="progress_bar">
+                <property name="show-text">true</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkBox">
+                <property name="spacing">12</property>
+                <child>
+                  <object class="GtkLabel" id="loss_label">
+                    <property name="xalign">0</property>
+                    <property name="label">Loss</property>
+                    <attributes>
+                      <attribute name="weight" value="bold"/>
+                      <attribute name="scale" value="2.5"/>
+                    </attributes>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="details_label">
+                    <property name="xalign">0</property>
+                    <property name="hexpand">true</property>
+                    <property name="wrap">true</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkButton" id="train_button">
+                    <property name="label">_Stop</property>
+                    <property name="use-underline">true</property>
+                    <property name="valign">center</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkPicture" id="chart_picture">
+                <property name="hexpand">true</property>
+                <property name="vexpand">true</property>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>

@@ -1,5 +1,5 @@
-#ifndef YOUR_CPP_APP_TEMPLATE_PROJECT_APPLICATIONCONTEXT2LIBRARYCONTEXT_CLASS_H
-#define YOUR_CPP_APP_TEMPLATE_PROJECT_APPLICATIONCONTEXT2LIBRARYCONTEXT_CLASS_H
+#ifndef DARKNETXX_PROJECT_APPLICATIONCONTEXT2LIBRARYCONTEXT_CLASS_H
+#define DARKNETXX_PROJECT_APPLICATIONCONTEXT2LIBRARYCONTEXT_CLASS_H
 
 #include <gmock/gmock.h>
 
@@ -12,41 +12,30 @@
 namespace converters
 {
 
-class ApplicationContext2LibraryContextSynthParent
-{
- public:
-  using LibraryContext = templatelib0::LibraryContext;
-  using ApplicationContext = app::ApplicationContext;
-
-  virtual ~ApplicationContext2LibraryContextSynthParent() = default;
-  ApplicationContext2LibraryContextSynthParent() = default;
-
-  virtual bool convert(std::shared_ptr<ApplicationContext> appctx,
-                       std::shared_ptr<LibraryContext> libctx) = 0;
-};
-
 class ApplicationContext2LibraryContext
 {
  public:
-  using LibraryContext = templatelib0::LibraryContext;
-  using ApplicationContext = app::ApplicationContext;
+  using LibraryContextPtr = darknetxx011::LibraryContextPtr;
 
   virtual ~ApplicationContext2LibraryContext() = default;
   ApplicationContext2LibraryContext()
   {
+    ON_CALL(*this, convert).WillByDefault(testing::Return(true));
+
     if (onMockCreate) {
       onMockCreate(*this);
     }
   }
 
-  inline static std::function<void(ApplicationContext2LibraryContext& instance)>
+  inline static std::function<void(ApplicationContext2LibraryContext&)>
       onMockCreate;
 
-  MOCK_METHOD(bool, convert,
-              (std::shared_ptr<ApplicationContext> appctx,
-               std::shared_ptr<LibraryContext> libctx));
+  MOCK_METHOD(bool, convert, (app::AppCtxPtr appctx, LibraryContextPtr libctx));
 };
+
+using ApplicationContext2LibraryContextPtr =
+    std::shared_ptr<ApplicationContext2LibraryContext>;
 
 }  // namespace converters
 
-#endif  // YOUR_CPP_APP_TEMPLATE_PROJECT_APPLICATIONCONTEXT2LIBRARYCONTEXT_CLASS_H
+#endif  // DARKNETXX_PROJECT_APPLICATIONCONTEXT2LIBRARYCONTEXT_CLASS_H

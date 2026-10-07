@@ -63,8 +63,8 @@ ENV DOCKER_BUILD_DATE=$CACHEBUST
 
 WORKDIR $srcD
 
-ARG BUILDDIR=$srcD/${PROJECT_BINARY_NAME}-build
-ARG prjD=$srcD/${PROJECT_BINARY_NAME}
+ARG BUILDDIR=$srcD/${DARKNETXX_BINARY_NAME}-build
+ARG prjD=$srcD/${DARKNETXX_BINARY_NAME}
 
 RUN --mount=from=project,target=$prjD \ 
  cd $prjD && \
@@ -72,6 +72,7 @@ RUN --mount=from=project,target=$prjD \
  cmake -S $prjD -B $BUILDDIR -DCMAKE_INSTALL_PREFIX=$installPrefix -DCMAKE_BUILD_TYPE=Release \
   -DRESOURCES_ROOT_PATH=${RESOURCES_ROOT_PATH} \
   -DENABLE_DOCKER_DARKNETXX_PREDICTOR=ON -DMAX_LOG_LEVEL=6 \
+  -DENABLE_DARKNETXX_GUI=OFF \
   -DENABLE_SANITIZERS_THREADS=OFF -DENABLE_SANITIZERS=OFF && \
  cmake --build $BUILDDIR -j$(nproc) --verbose && \
  cmake --install $BUILDDIR --prefix $installPrefix

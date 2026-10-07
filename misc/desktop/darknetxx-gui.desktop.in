@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=@DARKNETXX_GUI_BINARY_NAME@
+GenericName=Neural network training
+Comment=Trains the network of a YOLO4 folder
+Exec=@DARKNETXX_GUI_BINARY_NAME@
+Icon=@DARKNETXX_APPLICATION_ID@
+Terminal=false
+Categories=Science;ArtificialIntelligence;
+StartupNotify=true
+StartupWMClass=@DARKNETXX_APPLICATION_ID@

@@ -6,26 +6,21 @@
 #include <iostream>
 #include <memory>
 
+#include "LibraryFacade.h"
+#include "src/app/Application.h"
 #include "src/app/ApplicationContext.h"
 #include "src/app/ApplicationHelpPrinter.h"
 #include "src/app/ApplicationVersionPrinter.h"
 #include "src/app/CMDParamNames.h"
 #include "src/app/CommandLineParser.h"
 #include "src/app/IApplication.h"
-#include "src/app/converter/ApplicationConverterComponent.h"
-#include "src/app/converter/ApplicationFormatsConverter.h"
-#include "src/app/converter/IFormatsConverter.h"
 #include "src/app/signals-handlers/ISignalsHandler.h"
 #include "src/app/signals-handlers/SignalsHandler.h"
 #include "src/log/log.h"
 
-#ifndef DARKNETXX_CONVERTER_ONLY
-// The training and the detection application, and with it the whole darknet
-// computation it starts. The network weights files converter only binary is
-// compiled without it, which is the single place in this project where the
-// two binaries part ways.
-#include "src/app/Application.h"
-#endif  // DARKNETXX_CONVERTER_ONLY
+#ifdef DARKNETXX_GUI
+#include "src/app/GuiApplication.h"
+#endif  // DARKNETXX_GUI
 
 namespace app
 {
@@ -85,27 +80,21 @@ std::shared_ptr<ApplicationContext> ApplicationFactory::create_context(
 
 std::shared_ptr<IApplication> ApplicationFactory::create_default_application()
 {
-#ifdef DARKNETXX_CONVERTER_ONLY
+#if defined(DARKNETXX_CONVERTER_ONLY)
   // There is no default application in a converter only binary: what it can
   // do is named by the conversion command line flags, so the help message
   // which lists them is what an empty command line deserves.
   return create_help_printer();
+#elif defined(DARKNETXX_GUI)
+  return std::make_shared<GuiApplication>();
 #else
+  return create_library_application();
+#endif
+}
+
+std::shared_ptr<IApplication> ApplicationFactory::create_library_application()
+{
   return std::make_shared<Application>();
-#endif  // DARKNETXX_CONVERTER_ONLY
-}
-
-std::shared_ptr<converter::IFormatsConverter>
-ApplicationFactory::create_formats_converter()
-{
-  return std::make_shared<converter::ApplicationFormatsConverter>();
-}
-
-std::shared_ptr<IApplication>
-ApplicationFactory::create_formats_converter_application()
-{
-  return std::make_shared<converter::ApplicationConverterComponent>(
-      create_formats_converter());
 }
 
 std::shared_ptr<IApplication> ApplicationFactory::create_help_printer()
@@ -139,9 +128,17 @@ std::shared_ptr<IApplication> ApplicationFactory::create_application(
   }
 
   if (ctx->conversion_requested()) {
-    LOGT("Creating the formats converter application");
-    return create_formats_converter_application();
+    LOGT("Creating the conversion application");
+    return create_library_application();
   }
+
+#ifndef DARKNETXX_CONVERTER_ONLY
+  // the chart drawn of the weights file alone, no window of the GUI one
+  if (ctx->chart_requested()) {
+    LOGT("Creating the training chart application");
+    return create_library_application();
+  }
+#endif  // DARKNETXX_CONVERTER_ONLY
 
 #ifdef DARKNETXX_CONVERTER_ONLY
   // the help printer reports the failure of the command line, which asks for
@@ -165,6 +162,9 @@ int ApplicationFactory::run(int& gargc, char**& gargv)
   } else {
     LOG_INIT_PATH(custom_log);
   }
+
+  // the library logs into the very same logger
+  darknetxx011::LibraryFacade::init_logger(LOG_REAL_LOGGER());
 
   std::shared_ptr<ApplicationContext> ctx = create_context(gargc, gargv);
 

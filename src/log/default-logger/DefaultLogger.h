@@ -2,12 +2,11 @@
 #define YOUR_CPP_APP_TEMPLATE_PROJECT_DEFAULT_LOGGER_IMPLEMENTATION_CLASS_H
 
 #include <atomic>
-#include <fstream>
-#include <mutex>
 #include <string>
 
-#include "project-global-decls.h"
-#include "src/log/severity-macro-consts.h"
+#include "src/lib/facade/public/ILogger.h"
+#include "src/lib/facade/public/severity-macro-consts.h"
+#include "src/log/default-logger/real-default-logger/RealDefaultLogger.h"
 
 /**
  * @brief The default logger quick implementation encapsulation namespace.
@@ -16,113 +15,50 @@ namespace default_logger
 {
 
 /**
- * @brief The default logger class implementation. Replace it with log4cpp or
- * similar if necessary.
+ * @brief The static proxy the logging macros call, which forwards to the
+ * logger::ILogger it holds: the own RealDefaultLogger or the adopted one, the
+ * logger of the library user, for example.
  */
 class DefaultLogger
 {
  public:
-  inline static constexpr const unsigned short LVL_ERROR = MACRO_LVL_ERROR;
-  inline static constexpr const unsigned short LVL_WARNING = MACRO_LVL_WARNING;
-  inline static constexpr const unsigned short LVL_INFO = MACRO_LVL_INFO;
-  inline static constexpr const unsigned short LVL_DEBUG = MACRO_LVL_DEBUG;
-  inline static constexpr const unsigned short LVL_TRACE = MACRO_LVL_TRACE;
+  using RealLoggerPtr = logger::ILoggerPtr;
+
+  inline static constexpr const unsigned short LVL_ERROR =
+      logger::ILogger::LVL_ERROR;
+  inline static constexpr const unsigned short LVL_WARNING =
+      logger::ILogger::LVL_WARNING;
+  inline static constexpr const unsigned short LVL_INFO =
+      logger::ILogger::LVL_INFO;
+  inline static constexpr const unsigned short LVL_DEBUG =
+      logger::ILogger::LVL_DEBUG;
+  inline static constexpr const unsigned short LVL_TRACE =
+      logger::ILogger::LVL_TRACE;
 
   inline static constexpr const char* const defaultLogDateFormat =
-      "%Y-%m-%d %H:%M:%S";
+      RealDefaultLogger::defaultLogDateFormat;
 
-  inline static const std::string default_log_name =
-      project_decls::PROJECT_NAME + "-" + project_decls::PROJECT_BUILD_VERSION +
-      ".log";
+  inline static const std::string& default_log_name =
+      RealDefaultLogger::default_log_name;
 
   virtual ~DefaultLogger() = default;
   DefaultLogger() = default;
 
-  /**
-   * @brief Perform a logging message.
-   *
-   * @param loglvl The level of the log message. The lower the value - more
-   * urgent the message.
-   * @param msg The actual message for the log file or just stdout stream.
-   */
   static void log(const unsigned short& loglvl, const std::string& msg);
-
-  /**
-   * @brief Perform a logging message.
-   *
-   * @param loglvl The level of the log message. The lower the value - more
-   * urgent the message.
-   * @param filePath The file path of the source of the log message. Usually
-   * it's the __FILE__ macro value.
-   * @param fileLine The file line of the source of the log message. Usually
-   * it's the __LINE__ macro value.
-   * @param msg The actual message for the log file or just stdout stream.
-   */
   static void log(const unsigned short& loglvl, const char* const filePath,
                   const int& fileLine, const std::string& msg);
 
-  /**
-   * @brief Tells if the messages of the given level reach the log at all, so
-   * the callers may skip preparing the dropped ones.
-   *
-   * @param loglvl The level of the log message to check.
-   *
-   * @return Returns true if the messages of the level are logged.
-   */
+  /// @brief Tells the messages of the level are logged, so the dropped ones
+  /// are not prepared at all.
   static bool enabled(const unsigned short& loglvl);
 
-  /**
-   * @brief Sets the new logfile file path.
-   *
-   * @param filepath The filepath where the log messages will be appended. If
-   * empty string - nothing will be performed.
-   *
-   * @return Returns false if the file can't be opened, in which case the
-   * messages go to the console only (a read only working directory is not a
-   * reason to fail the whole application).
-   */
-  static bool logfile(const std::string& filepath);
-
-  /**
-   * @brief Sets if the default logger should print each log message into the
-   * stdout.
-   *
-   * @param toPrintValue New printing boolean value. If the true boolean value
-   * given - all the log messages will be duplicated into the stdout.
-   */
+  static void logfile(const std::string& filepath);
   static void print(const bool toPrintValue);
-
-  /**
-   * @brief Sets the maximum level of log message storage or printing. Above
-   * given level all the log messages will be discarded.
-   *
-   * @param nlvl The new maximum level of log messages. Defaults to
-   * DefaultLogger::LVL_INFO
-   */
   static void level(const unsigned short& nlvl);
-
-  /**
-   * @brief Searches for the string representation of the given log level.
-   *
-   * @param glvl The numerical log level for it's representation to search.
-   *
-   * @return Returns non-empty string representation of the given lvl.
-   */
   static const std::string& lvl_repr(const unsigned short& glvl);
 
-  /**
-   * @brief Init the default logger class.
-   *
-   * @param filepath The file path where all the generated by the implemented
-   * application messages will be stored in the filesystem. If non empty
-   * filepath given and fail to open the file by path - a warning is printed and
-   * the messages go to the console only.
-   * @param nlvl The new maximum log messages level. See the
-   * DefaultLogger::level method.
-   * @param toPrintValue Defines if default logger should print messages to the
-   * stdout stream. See the DefaultLogger::print for more details.
-   */
-  static void init(const std::string& filepath = get_default_full_log_path(),
+  static void init(const std::string& filepath =
+                       RealDefaultLogger::get_default_full_log_path(),
                    const unsigned short& nlvl = MAX_LOG_LEVEL,
                    const bool toPrintValue = true);
 
@@ -137,30 +73,21 @@ class DefaultLogger
 #endif
       ;
 
+  static RealLoggerPtr real_logger();
+
+  /// @brief Adopts the logger for every following message, nothing for none.
+  static void real_logger(const RealLoggerPtr& newRealLogger);
+
+  static bool real_logger_adopted();
+
  private:
-  /**
-   * @brief Method to define current log message timestamp.
-   * Not a thread safe.
-   *
-   * @param oss The stringstream which will accept the current time
-   * stamp for the log message.
-   */
-  static void insert_current_timestamp(std::ostringstream& oss);
+  /// @brief Never destroyed, since a thread may log during the exit() of
+  /// another one.
+  static RealLoggerPtr& real_logger_holder();
 
-  static std::string get_full_log_path(const std::string& logname);
-  static std::string get_default_full_log_path();
-
-  /**
-   * @brief The log file stream and the mutex guarding it. Both are created on
-   * the first use and never destroyed: an exit() call of any thread runs the
-   * static destructors while other threads may still be logging, so a static
-   * stream would be freed under their writes.
-   */
-  static std::fstream& alogfile();
-  static std::mutex& alogfile_m();
-
-  inline static std::atomic_bool toPrintMsgs{true};
+  /// @brief The level of the own logger, the adopted one filters by it's own.
   inline static std::atomic<unsigned short> lvl{MAX_LOG_LEVEL};
+  inline static std::atomic_bool adopted{false};
 };
 
 }  // namespace default_logger

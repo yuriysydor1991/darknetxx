@@ -237,7 +237,7 @@ NAMES="${TRAINING_DIR}/digits.names"
 TRAIN_LIST="${TRAINING_DIR}/train.txt"
 BACKUP_DIR="${TRAINING_DIR}/backup"
 # the training names the final weights after the cfg file
-WEIGHTS="${BACKUP_DIR}/digits_final.weights"
+WEIGHTS="${BACKUP_DIR}/digits_final.dxxwjz2"
 # the working directories of the detection runs
 DETECTIONS_DIR="${TEST_DIR}/detections"
 

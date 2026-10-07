@@ -8,6 +8,8 @@ ApplicationContext::ApplicationContext(int& gargc, char**& gargv)
 {
 }
 
+bool ApplicationContext::chart_requested() const { return !draw_chart.empty(); }
+
 bool ApplicationContext::conversion_requested() const
 {
   return !convert_from.empty() || !convert_src.empty() || !convert_to.empty() ||

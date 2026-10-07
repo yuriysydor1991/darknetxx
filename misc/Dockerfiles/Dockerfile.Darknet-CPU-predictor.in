@@ -86,8 +86,8 @@ RUN cmake --install $darknetBD --prefix $installPrefix
 
 WORKDIR $srcD
 
-ARG BUILDDIR=$srcD/${PROJECT_BINARY_NAME}-build
-ARG prjD=$srcD/${PROJECT_BINARY_NAME}
+ARG BUILDDIR=$srcD/${DARKNETXX_BINARY_NAME}-build
+ARG prjD=$srcD/${DARKNETXX_BINARY_NAME}
 
 RUN --mount=from=project,target=$prjD \ 
  cd $prjD && \

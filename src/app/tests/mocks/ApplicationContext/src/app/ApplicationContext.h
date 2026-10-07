@@ -82,13 +82,17 @@ struct ApplicationContext
   unsigned int net_nth_resize{10};
   unsigned int nth_iteration_reload{0U};
   double stop_less_avg_loss{0.0};
+  std::string save_format{"dxxwjz2"};
+  std::string draw_chart;
   std::string convert_from;
   std::string convert_src;
   std::string convert_to;
   std::string convert_dst;
   std::string convert_cfg;
+  std::string convert_names;
 
   bool conversion_requested() const;
+  bool chart_requested() const;
 };
 
 using AppCtxPtr = std::shared_ptr<ApplicationContext>;

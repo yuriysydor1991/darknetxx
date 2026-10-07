@@ -3,7 +3,15 @@ cmake_minimum_required(VERSION 3.13)
 # The integration test of the whole darknetxx executable. The
 # ITEST_digits_training test trains a tiny network from scratch to detect the
 # digit glyphs of the misc/data/labels images, then the ITEST_digits tests run
-# the darknetxx detection on every glyph and expect its digit to be recognized.
+# the darknetxx detection on every glyph and expect its digit to be recognized,
+# check the dxxwjz2 file of the training, resume the training and train the
+# network of the dxxwjz2 file of no weights.
+
+if(NOT TARGET ${DARKNETXX_BINARY_NAME})
+  message(STATUS
+    "The ITEST_digits tests are skipped, the binary they drive is not being built")
+  return()
+endif()
 
 set(ITEST_DIGITS_GLYPH_SIZES 8)
 set(ITEST_DIGITS_DATA_DIR "${CMAKE_CURRENT_BINARY_DIR}/data")
@@ -12,8 +20,11 @@ set(ITEST_DIGITS_TRAIN_LIST "${CMAKE_CURRENT_BINARY_DIR}/train.txt")
 set(ITEST_DIGITS_TRAINING_DIR "${CMAKE_CURRENT_BINARY_DIR}/training")
 set(ITEST_DIGITS_BACKUP_DIR "${ITEST_DIGITS_TRAINING_DIR}/backup")
 set(ITEST_DIGITS_CFG "${CMAKE_CURRENT_BINARY_DIR}/digits.cfg")
-# the training names the final weights after the cfg file
-set(ITEST_DIGITS_WEIGHTS "${ITEST_DIGITS_BACKUP_DIR}/digits_final.weights")
+# the training names the final weights after the cfg file, the dxxwjz2 file
+# keeps the network and the training beside them
+set(ITEST_DIGITS_WEIGHTS "${ITEST_DIGITS_BACKUP_DIR}/digits_final.dxxwjz2")
+# the working directories of the trainings the tests resume and start
+set(ITEST_DIGITS_RESUMED_DIR "${CMAKE_CURRENT_BINARY_DIR}/resumed")
 set(ITEST_DIGITS_DETECTIONS_DIR "${CMAKE_CURRENT_BINARY_DIR}/detections")
 
 # The training data set: every size of every digit glyph, labeled with a single
@@ -31,7 +42,7 @@ foreach(digit RANGE 9)
     set(image "${ITEST_DIGITS_DATA_DIR}/digit_${digit}_${size}")
 
     configure_file(
-      ${CMAKE_SOURCE_DIR}/misc/data/labels/${glyph_code}_${size}.png
+      ${PROJECT_SOURCE_DIR}/misc/data/labels/${glyph_code}_${size}.png
       ${image}.png
       COPYONLY
     )
@@ -49,7 +60,7 @@ configure_file(digits.cfg.in ${ITEST_DIGITS_CFG} @ONLY)
 add_test(
   NAME ITEST_digits_training
   COMMAND ${CMAKE_COMMAND}
-    -D DARKNETXX=$<TARGET_FILE:${PROJECT_BINARY_NAME}>
+    -D DARKNETXX=$<TARGET_FILE:${DARKNETXX_BINARY_NAME}>
     -D CFG=${ITEST_DIGITS_CFG}
     -D WORK_DIR=${ITEST_DIGITS_TRAINING_DIR}
     -D BACKUP_DIR=${ITEST_DIGITS_BACKUP_DIR}
@@ -80,11 +91,11 @@ add_executable(
 )
 
 # the tests run the darknetxx executable, so it is built along with them
-add_dependencies(ITEST_digits ${PROJECT_BINARY_NAME})
+add_dependencies(ITEST_digits ${DARKNETXX_BINARY_NAME})
 
 target_compile_definitions(
   ITEST_digits
-  PRIVATE ITEST_DIGITS_DARKNETXX=\"$<TARGET_FILE:${PROJECT_BINARY_NAME}>\"
+  PRIVATE ITEST_DIGITS_DARKNETXX=\"$<TARGET_FILE:${DARKNETXX_BINARY_NAME}>\"
 )
 
 target_include_directories(
@@ -92,8 +103,11 @@ target_include_directories(
   PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
 )
 
+# the dxxwjz2 files of the trainings are the gzip compressed JSON documents
 target_link_libraries(
   ITEST_digits
+  nlohmann_json::nlohmann_json
+  ZLIB::ZLIB
   GTest::gtest_main
 )
 
@@ -118,6 +132,6 @@ if (ENABLE_SANITIZERS_THREADS)
   set_tests_properties(
     ITEST_digits_training ${noArgsTests}
     PROPERTIES
-      ENVIRONMENT "TSAN_OPTIONS=suppressions=${CMAKE_SOURCE_DIR}/misc/.tsan-suppress"
+      ENVIRONMENT "TSAN_OPTIONS=suppressions=${PROJECT_SOURCE_DIR}/misc/.tsan-suppress"
   )
 endif()

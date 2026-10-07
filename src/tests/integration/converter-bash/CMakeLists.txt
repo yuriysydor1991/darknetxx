@@ -10,7 +10,7 @@ cmake_minimum_required(VERSION 3.13)
 # the produced binaries themselves - no test framework, no mock and no library
 # of this project is involved - so a case fails whenever the shipped converter
 # would fail in the hands of a user.
-if(NOT TARGET ${PROJECT_CONVERTER_BINARY_NAME})
+if(NOT TARGET ${DARKNETXX_CONVERTER_BINARY_NAME})
   message(STATUS
     "The ITEST_converter_bash tests are skipped, the binary they drive is not "
     "being built")
@@ -22,12 +22,13 @@ find_program(BASH_EXEC bash REQUIRED)
 set(ITESTS_WORK_DIR "${CMAKE_CURRENT_BINARY_DIR}/itests-data")
 set(
   ITESTS_REFERENCE_DIR
-  "${CMAKE_SOURCE_DIR}/src/darknet-adaptor/adaptors/NetworksLoaders/OrigDefaultLoader/tests/component/OrigDefaultLoader/data"
+  "${PROJECT_SOURCE_DIR}/src/lib/darknet-adaptor/adaptors/NetworksLoaders/OrigDefaultLoader/tests/component/OrigDefaultLoader/data"
 )
 
 set(
   ITEST_CASES
   converts-the-reference-weights-back-and-forth
+  converts-through-the-dxxwjz2-file
   writes-the-gzip-compressed-json-document
   converts-with-the-main-binary-too
   reports-a-failing-conversion
@@ -46,8 +47,8 @@ foreach(ITEST_CASE IN LISTS ITEST_CASES)
     COMMAND
       ${BASH_EXEC}
       "${CMAKE_CURRENT_SOURCE_DIR}/${ITEST_CASE}.sh"
-      "$<TARGET_FILE:${PROJECT_CONVERTER_BINARY_NAME}>"
-      "$<TARGET_FILE:${PROJECT_BINARY_NAME}>"
+      "$<TARGET_FILE:${DARKNETXX_CONVERTER_BINARY_NAME}>"
+      "$<TARGET_FILE:${DARKNETXX_BINARY_NAME}>"
       "${ITESTS_REFERENCE_DIR}"
       "${ITESTS_WORK_DIR}/${ITEST_CASE}"
   )

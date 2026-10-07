@@ -8,8 +8,8 @@
 
 #include "WeightsFile.h"
 #include "WeightsNetSpec.h"
-#include "src/darknet-adaptor/adaptors/ANetworkAdaptor/ANetworkAdaptor.h"
 #include "src/darknet.h"
+#include "src/lib/darknet-adaptor/adaptors/ANetworkAdaptor/ANetworkAdaptor.h"
 #include "src/network.h"
 
 namespace weights_factory

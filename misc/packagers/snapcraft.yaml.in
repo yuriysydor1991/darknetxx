@@ -1,23 +1,24 @@
-name: ${PROJECT_BINARY_NAME_lower}
+name: ${DARKNETXX_BINARY_NAME_lower}
 base: core24
-version: '${CMAKE_PROJECT_VERSION}'
-summary: ${CMAKE_PROJECT_DESCRIPTION}
+version: '${PROJECT_VERSION}'
+summary: ${PROJECT_DESCRIPTION}
 description: |
-  ${CMAKE_PROJECT_DESCRIPTION}
+  ${PROJECT_DESCRIPTION}
 
-grade: ${TEMPLATE_PROJECT_SNAP_GRADE}
-confinement: ${TEMPLATE_PROJECT_SNAP_CONFINEMENT}
+grade: ${DARKNETXX_SNAP_GRADE}
+confinement: ${DARKNETXX_SNAP_CONFINEMENT}
 
 apps:
-  ${PROJECT_BINARY_NAME}:
-    command: usr/${PROJECT_BINARY_INSTALLATION_DIR}/${PROJECT_BINARY_NAME}
+  ${DARKNETXX_BINARY_NAME}:
+    command: usr/${DARKNETXX_BINARY_INSTALLATION_DIR}/${DARKNETXX_BINARY_NAME}
     plugs:
       - home
-${TEMPLATE_PROJECT_SNAP_CONVERTER_APP}
+${DARKNETXX_SNAP_CONVERTER_APP}
+${DARKNETXX_SNAP_GUI_APP}
 parts:
-  ${PROJECT_BINARY_NAME}:
+  ${DARKNETXX_BINARY_NAME}:
     plugin: cmake
-    source: '${CMAKE_SOURCE_DIR}'
+    source: '${PROJECT_SOURCE_DIR}'
     cmake-generator: '${CMAKE_GENERATOR}'
     cmake-parameters:
       - -DCMAKE_BUILD_TYPE=Release
@@ -27,12 +28,15 @@ parts:
       - -DENABLE_SSE_AND_AVX_FLAGS=OFF
       # the converter binary the apps above name (or not)
       - -DENABLE_DARKNETXX_CONVERTER=${ENABLE_DARKNETXX_CONVERTER}
+      # the GUI binary the apps above name (or not)
+      - -DENABLE_DARKNETXX_GUI=${ENABLE_DARKNETXX_GUI}
     build-packages:
       - libopencv-dev
       # the dxxwjz1 network weights files are the gzip compressed JSON
       # documents
       - zlib1g-dev
       - nlohmann-json3-dev
+${DARKNETXX_SNAP_GUI_BUILD_PACKAGE}
     # the runtime libraries the project links with: the OpenMP, the zlib and
     # the OpenCV modules
     stage-packages:
@@ -43,3 +47,4 @@ parts:
       - libopencv-imgcodecs406t64
       - libopencv-highgui406t64
       - libopencv-videoio406t64
+${DARKNETXX_SNAP_GUI_STAGE_PACKAGE}

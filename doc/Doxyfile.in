@@ -38,13 +38,13 @@ PROJECT_NAME           = "${PROJECT_NAME}"
 # could be handy for archiving the generated documentation or if some version
 # control system is used.
 
-PROJECT_NUMBER         = ${CMAKE_PROJECT_VERSION}
+PROJECT_NUMBER         = ${PROJECT_VERSION}
 
 # Using the PROJECT_BRIEF tag one can provide an optional one line description
 # for a project that appears at the top of each page and should give viewer a
 # quick idea about the purpose of the project. Keep the description short.
 
-PROJECT_BRIEF          = ${CMAKE_PROJECT_DESCRIPTION}
+PROJECT_BRIEF          = ${PROJECT_DESCRIPTION}
 
 # With the PROJECT_LOGO tag one can specify a logo or an icon that is included
 # in the documentation. The maximum height of the logo should not exceed 55
@@ -1361,7 +1361,7 @@ DOCSET_FEEDNAME        = "Doxygen generated docs"
 # The default value is: org.doxygen.Project.
 # This tag requires that the tag GENERATE_DOCSET is set to YES.
 
-DOCSET_BUNDLE_ID       = org.doxygen.${PROJECT_BINARY_NAME}
+DOCSET_BUNDLE_ID       = org.doxygen.${DARKNETXX_BINARY_NAME}
 
 # The DOCSET_PUBLISHER_ID tag specifies a string that should uniquely identify
 # the documentation publisher. This should be a reverse domain-name style
@@ -1461,7 +1461,7 @@ QCH_FILE               =
 # The default value is: org.doxygen.Project.
 # This tag requires that the tag GENERATE_QHP is set to YES.
 
-QHP_NAMESPACE          = org.doxygen.${PROJECT_BINARY_NAME}
+QHP_NAMESPACE          = org.doxygen.${DARKNETXX_BINARY_NAME}
 
 # The QHP_VIRTUAL_FOLDER tag specifies the namespace to use when generating Qt
 # Help Project output. For more information please see Qt Help Project / Virtual
@@ -1520,7 +1520,7 @@ GENERATE_ECLIPSEHELP   = NO
 # The default value is: org.doxygen.Project.
 # This tag requires that the tag GENERATE_ECLIPSEHELP is set to YES.
 
-ECLIPSE_DOC_ID         = org.doxygen.${PROJECT_BINARY_NAME}
+ECLIPSE_DOC_ID         = org.doxygen.${DARKNETXX_BINARY_NAME}
 
 # If you want full control over the layout of the generated HTML pages it might
 # be necessary to disable the index and replace it with your own. The
@@ -2559,7 +2559,7 @@ PLANTUML_CFG_FILE      =
 # When using plantuml, the specified paths are searched for files specified by
 # the !include statement in a plantuml block.
 
-PLANTUML_INCLUDE_PATH  = ${CMAKE_SOURCE_DIR}/doc/diagrams
+PLANTUML_INCLUDE_PATH  = ${PROJECT_SOURCE_DIR}/doc/diagrams
 
 # The DOT_GRAPH_MAX_NODES tag can be used to set the maximum number of nodes
 # that will be shown in the graph. If the number of nodes in a graph becomes

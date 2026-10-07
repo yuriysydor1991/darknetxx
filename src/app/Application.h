@@ -3,8 +3,10 @@
 
 #include <memory>
 
+#include "LibraryContext.h"
 #include "src/app/ApplicationContext.h"
 #include "src/app/IApplication.h"
+#include "src/converters/ApplicationContext2LibraryContext.h"
 
 namespace app
 {
@@ -23,6 +25,9 @@ namespace app
 class Application : public IApplication
 {
  public:
+  using LibraryContextPtr = darknetxx011::LibraryContextPtr;
+  using CtxConverterPtr = converters::ApplicationContext2LibraryContextPtr;
+
   virtual ~Application() = default;
   Application(const Application&) = delete;
   Application(Application&&) = delete;
@@ -40,7 +45,24 @@ class Application : public IApplication
   virtual int run(AppCtxPtr ctx) override;
 
  protected:
-  virtual bool deal_omp(AppCtxPtr);
+  /**
+   * @brief The work of the prepared application: the library work the
+   * context names, the training, the detection or the network weights file
+   * conversion.
+   *
+   * @return Returns the status of the run method.
+   */
+  virtual int perform(AppCtxPtr ctx);
+
+  /// @brief Draws the training chart of the weights file into the PNG one
+  /// (see the ApplicationContext::draw_chart), no library work.
+  virtual int draw_chart(AppCtxPtr ctx);
+
+  /// @brief The library context of the application one, stopped by it's stop
+  /// flag.
+  virtual LibraryContextPtr create_and_convert_libctx(AppCtxPtr ctx);
+
+  virtual CtxConverterPtr create_ctx_converter();
 
   /**
    * @brief Provides the exit status of the work the stop request of the

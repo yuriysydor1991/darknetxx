@@ -66,6 +66,20 @@ void check_back_and_forth(const std::string& executable,
 void check_variant(const WeightsVariant& variant,
                    const WeightsWorkspace& workspace);
 
+/// @brief Writes the weights file of the header and the floats of the random
+/// bits: the NaNs of every payload, the infinities and the denormals too.
+bool write_random_weights_file(const std::string& path,
+                               const WeightsHeader& header, uint64_t floats,
+                               uint64_t seed);
+
+/**
+ * @brief The random weights file of the variant network converts with the
+ * converter binary through the dxxwjz2 and the dxxwjz1 files and back into
+ * the same bytes, the dxxwjz2 file loads the network the weights file does.
+ */
+void check_random_round_trips(const WeightsVariant& variant,
+                              const WeightsWorkspace& workspace);
+
 }  // namespace converter_test
 
 #endif  // DARKNETXX_PROJECT_ITEST_CONVERTER_RUNS_H

@@ -3,17 +3,15 @@
 
 #include <memory>
 
+#include "LibraryFacade.h"
+#include "src/app/Application.h"
 #include "src/app/ApplicationFactory.h"
 #include "src/app/ApplicationHelpPrinter.h"
 #include "src/app/ApplicationVersionPrinter.h"
-#include "src/app/converter/ApplicationConverterComponent.h"
-#include "src/app/converter/ApplicationFormatsConverter.h"
 #include "src/app/signals-handlers/SignalsHandler.h"
 
 using namespace app;
 using namespace testing;
-
-using app::converter::ApplicationConverterComponent;
 
 class UTEST_ConverterOnlyApplicationFactory : public Test
 {
@@ -27,7 +25,7 @@ class UTEST_ConverterOnlyApplicationFactory : public Test
   {
     CommandLineParser::onMockCreate = nullptr;
     ApplicationHelpPrinter::onMockCreate = nullptr;
-    ApplicationConverterComponent::onMockCreate = nullptr;
+    Application::onMockCreate = nullptr;
     SignalsHandler::onMockCreate = nullptr;
   }
 
@@ -73,7 +71,21 @@ TEST_F(UTEST_ConverterOnlyApplicationFactory,
 
   EXPECT_CALL(*ctx, push_error(_)).Times(0);
 
-  EXPECT_NE(std::dynamic_pointer_cast<ApplicationConverterComponent>(
+  EXPECT_NE(
+      std::dynamic_pointer_cast<Application>(factory->create_application(ctx)),
+      nullptr);
+}
+
+TEST_F(UTEST_ConverterOnlyApplicationFactory, chart_is_no_work_of_the_converter)
+{
+  auto ctx = std::make_shared<ApplicationContext>(customArgc, customArgv);
+
+  ctx->latest_weights = "net.dxxwjz2";
+  ctx->draw_chart = "chart.png";
+
+  EXPECT_CALL(*ctx, push_error(_)).Times(1);
+
+  EXPECT_NE(std::dynamic_pointer_cast<ApplicationHelpPrinter>(
                 factory->create_application(ctx)),
             nullptr);
 }
@@ -98,8 +110,7 @@ TEST_F(UTEST_ConverterOnlyApplicationFactory, help_and_version_are_printed)
 TEST_F(UTEST_ConverterOnlyApplicationFactory, run_of_the_conversion)
 {
   MockFunction<void(CommandLineParser & instance)> onMockCreateParserEnsurer;
-  MockFunction<void(ApplicationConverterComponent & instance)>
-      onMockCreateAppEnsurer;
+  MockFunction<void(Application & instance)> onMockCreateAppEnsurer;
   MockFunction<void(SignalsHandler & instance)> onMockCreateSignalsEnsurer;
 
   EXPECT_CALL(onMockCreateParserEnsurer, Call(_))
@@ -119,7 +130,7 @@ TEST_F(UTEST_ConverterOnlyApplicationFactory, run_of_the_conversion)
 
   EXPECT_CALL(onMockCreateAppEnsurer, Call(_))
       .Times(1)
-      .WillOnce(Invoke([&](ApplicationConverterComponent& instance) {
+      .WillOnce(Invoke([&](Application& instance) {
         EXPECT_CALL(instance, run(_)).Times(1).WillOnce(Return(0));
       }));
 
@@ -130,8 +141,7 @@ TEST_F(UTEST_ConverterOnlyApplicationFactory, run_of_the_conversion)
       }));
 
   CommandLineParser::onMockCreate = onMockCreateParserEnsurer.AsStdFunction();
-  ApplicationConverterComponent::onMockCreate =
-      onMockCreateAppEnsurer.AsStdFunction();
+  Application::onMockCreate = onMockCreateAppEnsurer.AsStdFunction();
   SignalsHandler::onMockCreate = onMockCreateSignalsEnsurer.AsStdFunction();
 
   EXPECT_EQ(factory->run(customArgc, customArgv), 0);

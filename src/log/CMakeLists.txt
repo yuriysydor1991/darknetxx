@@ -18,13 +18,8 @@ add_library(
 target_include_directories(
   DarknetXXLog4CInterfaceObj 
   PRIVATE
-    ${CMAKE_SOURCE_DIR}
-    ${CMAKE_BINARY_DIR}
-)
-
-target_link_libraries(
-  ${PROJECT_BINARY_NAME}
-  DarknetXXLog4CInterfaceObj
+    ${PROJECT_SOURCE_DIR}
+    ${PROJECT_BINARY_DIR}
 )
 
 add_subdirectory(default-logger)

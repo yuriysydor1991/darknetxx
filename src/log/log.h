@@ -3,8 +3,8 @@
 
 #include <sstream>
 
+#include "src/lib/facade/public/severity-macro-consts.h"
 #include "src/log/default-logger/DefaultLogger.h"
-#include "src/log/severity-macro-consts.h"
 
 #ifndef LOG_INIT
 /**
@@ -22,6 +22,36 @@
 #ifndef LOG_INIT_DEFAULTS
 #define LOG_INIT_DEFAULTS() default_logger::DefaultLogger::init();
 #endif  // LOG_INIT_DEFAULTS
+
+#ifndef LOG_REAL_LOGGER
+/**
+ * @brief The logger::ILoggerPtr behind the logging macros, the one to hand
+ * over to a library, so the whole binary logs into it.
+ */
+#define LOG_REAL_LOGGER() default_logger::DefaultLogger::real_logger()
+#endif  // LOG_REAL_LOGGER
+
+#ifndef LOG_INIT_REAL_LOGGER
+/**
+ * @brief Adopts the given logger::ILoggerPtr behind the logging macros, the
+ * one of the library user, for example.
+ */
+#define LOG_INIT_REAL_LOGGER(realLogger) \
+  default_logger::DefaultLogger::real_logger(realLogger);
+#endif  // LOG_INIT_REAL_LOGGER
+
+#ifndef LOG_INIT_DEFAULTS_IF_OWN
+/**
+ * @brief The LOG_INIT_DEFAULTS of a library, which keeps the settings of an
+ * adopted logger untouched.
+ */
+#define LOG_INIT_DEFAULTS_IF_OWN()                               \
+  {                                                              \
+    if (!default_logger::DefaultLogger::real_logger_adopted()) { \
+      LOG_INIT_DEFAULTS();                                       \
+    }                                                            \
+  }
+#endif  // LOG_INIT_DEFAULTS_IF_OWN
 
 #ifndef LOG_BODY
 /**

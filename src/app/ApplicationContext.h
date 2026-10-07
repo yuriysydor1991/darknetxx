@@ -155,10 +155,16 @@ struct ApplicationContext
   unsigned int nth_iteration_reload{0U};
   /// @brief stop training when this value reached or less
   double stop_less_avg_loss{0.0};
+  /// @brief The network weights file format the training saves, the name
+  /// given after the --save-format command line flag.
+  std::string save_format{"dxxwjz2"};
+  /// @brief The PNG file the training chart of the dxxwjz2 --weights file is
+  /// drawn into, given after the --draw-chart command line flag.
+  std::string draw_chart;
 
   /// @brief The network weights file format to read, the name given after the
   /// --convert-from command line flag (see the
-  /// app::converter::ConversionFormats).
+  /// darknetxx011::LibraryFacade::conversion_formats).
   std::string convert_from;
   /// @brief The network weights file to read, given after the --convert-src
   /// command line flag.
@@ -172,6 +178,9 @@ struct ApplicationContext
   /// @brief The network cfg file of the converted weights, given after the
   /// --convert-cfg command line flag.
   std::string convert_cfg;
+  /// @brief The class names file of the converted weights, given after the
+  /// --convert-names command line flag.
+  std::string convert_names;
 
   /**
    * @brief Tells the network weights file conversion was requested on the
@@ -179,6 +188,10 @@ struct ApplicationContext
    * converter application instead of the training or the detection one.
    */
   bool conversion_requested() const;
+
+  /// @brief Tells the training chart of the weights file was requested on
+  /// the command line, which no training or detection goes with.
+  bool chart_requested() const;
 };
 
 using AppCtxPtr = std::shared_ptr<ApplicationContext>;

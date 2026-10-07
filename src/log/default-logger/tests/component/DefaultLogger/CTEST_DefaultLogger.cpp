@@ -233,7 +233,7 @@ TEST_F(CTEST_DefaultLogger, prepare_buff_formats_a_long_message)
 
 TEST_F(CTEST_DefaultLogger, unopenable_log_file_is_not_fatal)
 {
-  EXPECT_FALSE(DefaultLogger::logfile("/nonexistent-dir/for-sure/log.log"));
+  DefaultLogger::logfile("/nonexistent-dir/for-sure/log.log");
 
   // the console only logging keeps working
   default_log_init();
