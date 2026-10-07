@@ -11,8 +11,20 @@ interface IApplication {
 
 class Application {
   +run(ctx) : int
-  #deal_omp(ctx) : bool
+  #perform(ctx) : int
+  #create_and_convert_libctx(ctx) : LibraryContextPtr
+  #create_ctx_converter() : CtxConverterPtr
+  #{static} stopped_status(ctx) : int
   #{static} init_computation_traps()
+}
+
+class GuiApplication {
+  #perform(ctx) : int
+  #create_gui_initer() : IGUIIniter
+}
+
+class "converters::ApplicationContext2LibraryContext" as ApplicationContext2LibraryContext {
+  +convert(appctx, libctx) : bool
 }
 
 class ApplicationHelpPrinter {
@@ -23,33 +35,15 @@ class ApplicationVersionPrinter {
   +run(ctx) : int
 }
 
-class "converter::ApplicationConverterComponent" as ApplicationConverterComponent {
-  +run(ctx) : int
-}
-
-interface "converter::IFormatsConverter" as IFormatsConverter {
-  +convert(ctx) : bool
-}
-
-class "converter::ApplicationFormatsConverter" as ApplicationFormatsConverter {
-  +convert(ctx) : bool
-  #create_weights_converter() : WeightsConverterPtr
-}
-
-class "converter::ConversionFormats" as ConversionFormats {
-  +{static} parse(name, format) : bool
-  +{static} names() : vector<string>
-}
-
 class ApplicationFactory {
   +create_default_context(argc, argv) : ApplicationContext
   +create_default_arg_parser() : CommandLineParser
   +create_default_signals_handler() : ISignalsHandler
   +create_application(ctx) : IApplication
+  +create_default_application() : IApplication
+  +create_library_application() : IApplication
   +create_help_printer() : IApplication
   +create_version_printer() : IApplication
-  +create_formats_converter() : IFormatsConverter
-  +create_formats_converter_application() : IApplication
   +run(argc, argv) : int
   +{static} execute(argc, argv) : int
 }
@@ -102,8 +96,7 @@ struct ApplicationContext {
 IApplication <|.. Application
 IApplication <|.. ApplicationHelpPrinter
 IApplication <|.. ApplicationVersionPrinter
-IApplication <|.. ApplicationConverterComponent
-IFormatsConverter <|.. ApplicationFormatsConverter
+Application <|-- GuiApplication
 ISignalsHandler <|.. SignalsHandler
 
 ApplicationFactory ..> IApplication : creates
@@ -114,8 +107,10 @@ CommandLineParser ..> CMDParamNames : uses names
 CommandLineParser --> ApplicationContext : fills
 Application --> ApplicationContext : holds actx
 SignalsHandler --> ApplicationContext : raises the signals flags
-ApplicationConverterComponent --> IFormatsConverter : runs
-ApplicationFormatsConverter ..> ConversionFormats : resolves the formats
-ApplicationFormatsConverter ..> "darknet_adaptor::loaders::WeightsConverter" : converts by
+Application ..> ApplicationContext2LibraryContext : converts actx by
+ApplicationContext2LibraryContext ..> "darknetxx011::LibraryContext" : fills
+Application ..> "darknetxx011::LibraryFacade" : performs the work it creates
+GuiApplication ..> "gui::IGUIIniter" : shows the window of
+ApplicationFactory ..> "darknetxx011::LibraryFacade" : hands the logger over
 
 @enduml

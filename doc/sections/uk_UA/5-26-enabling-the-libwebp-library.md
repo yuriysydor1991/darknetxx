@@ -8,4 +8,4 @@
 cmake -S . -B build -DENABLE_LIBWEBP=ON
 ```
 
-Дивись модуль `cmake/enablers/images/template-project-libwebp-enabler.cmake` щодо цілей (`WebP::webp` для системної версії, `webp`/`webpdecoder` для побудови через FetchContent), які слід прилінкувати до твоїх цільових об'єктів.
+Дивись модуль `cmake/enablers/images/darknetxx-libwebp-enabler.cmake` щодо цілей (`WebP::webp` для системної версії, `webp`/`webpdecoder` для побудови через FetchContent), які слід прилінкувати до твоїх цільових об'єктів.

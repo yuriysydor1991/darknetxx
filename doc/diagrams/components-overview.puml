@@ -12,8 +12,23 @@ package "app (application infrastructure)" {
   [ApplicationFactory] as factory
   [CommandLineParser] as parser
   [ApplicationContext] as ctx
-  [IApplication\n(+ Application,\nHelpPrinter,\nVersionPrinter,\nConverterComponent)] as iapp
+  [IApplication\n(+ Application,\nGuiApplication,\nHelpPrinter,\nVersionPrinter)] as iapp
   [ISignalsHandler\n(+ SignalsHandler,\nStop/Pause/Continue/\nReload/User/Ignored)] as signals
+}
+
+package "converters" {
+  [ApplicationContext2LibraryContext] as conv
+}
+
+package "gui (darknetxx-gui)" {
+  [GtkmmIniter /\nMainWindow] as gui
+}
+
+package "lib (darknetxx library)" {
+  [LibraryFacade] as facade
+  [LibraryContext] as lctx
+  [ILib\n(+ LibMain,\nWeightsConversionLib)] as ilib
+  [ITrainer\n(+ BackgroundTrainer,\nYolo4Folder)] as trainer
 }
 
 package "darknet-adaptor (Darknet bridge)" {
@@ -21,7 +36,7 @@ package "darknet-adaptor (Darknet bridge)" {
   [DarknetContext] as dctx
   [IDarknetAdaptor\n(+ ADetector,\nADetectorTrainer)] as adaptor
   [Network infrastructure\n(NetworksLoaders, Layers,\nALayer/ANetwork adaptors,\nNetworksCApi)] as netinfra
-  [Weights files\n(original, dxxwjz1,\nWeightsConverter)] as weights
+  [Weights files\n(original, dxxwjz1, dxxwjz2,\nWeightsConverter)] as weights
   [Original Darknet\nC computation] as darknetc
 }
 
@@ -39,10 +54,19 @@ factory --> iapp : creates by ctx
 factory --> signals : creates and installs
 signals --> ctx : raises the OS signals flags
 parser --> ctx : fills
-iapp --> dctrl : default app drives
-iapp --> omp : adjust threads
+iapp --> conv : converts ctx
+conv --> lctx : fills
+iapp --> facade : creates the work
+iapp --> gui : the GUI app shows
+gui --> trainer : trains a YOLO4 folder
+facade --> ilib : creates
+facade --> trainer : creates
+trainer --> ilib : runs in it's thread
+ilib --> omp : adjust threads
+ilib --> dctrl : trains / detects
+ilib --> weights : converts
 dctrl --> dctx
-dctx --> ctx : watches the stop flag
+dctx --> lctx : watches the stop request,\nreports the iterations
 dctrl --> adaptor : selects worker
 adaptor --> dctx : reads/writes
 adaptor --> netinfra : loads the networks
@@ -50,10 +74,9 @@ netinfra --> dctx : hands the networks to
 adaptor --> darknetc : trains / detects
 darknetc --> netinfra : parses, resizes,\nreads and writes weights
 netinfra --> weights : reads and writes
-iapp --> weights : converts (the\nconversion flags)
 weights ..> zlib : compresses
 factory ..> log
-iapp ..> log
+ilib ..> log
 dctrl ..> log
 parser ..> helpers
 

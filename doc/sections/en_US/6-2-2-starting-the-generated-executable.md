@@ -7,4 +7,4 @@ If executable compiles and is present in the build directory start it in the ter
 ./src/darknetxx
 ```
 
-Once again, the `darknetxx` is the **default** name of the project. Replace it with our own custom one if it was changed in the project's root `CMakeLists.txt` file (the `PROJECT_NAME` and/or `PROJECT_BINARY_NAME` variable).
+Once again, the `darknetxx` is the **default** name of the project. Replace it with our own custom one if it was changed in the project's root `CMakeLists.txt` file (the `PROJECT_NAME` and/or `DARKNETXX_BINARY_NAME` variable).

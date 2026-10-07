@@ -6,4 +6,4 @@ In order to enable the project's `snap` package target designed to generate the 
 cmake -S . -B build -DENABLE_SNAP=ON
 ```
 
-Visit the [cmake/enablers/packagers/template-project-snap-enabler.cmake](/cmake/enablers/packagers/template-project-snap-enabler.cmake) file to examine the details.
+Visit the [cmake/enablers/packagers/darknetxx-snap-enabler.cmake](/cmake/enablers/packagers/darknetxx-snap-enabler.cmake) file to examine the details.

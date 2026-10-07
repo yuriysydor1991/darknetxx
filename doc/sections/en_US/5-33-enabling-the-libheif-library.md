@@ -8,4 +8,4 @@ In order to enable the [libheif](https://github.com/strukturag/libheif) library 
 cmake -S . -B build -DENABLE_LIBHEIF=ON
 ```
 
-A codec is required to actually decode HEIF/HEIC (e.g. libde265). See the `cmake/enablers/images/template-project-libheif-enabler.cmake` module for the target (`heif`) to link to your targets of interest.
+A codec is required to actually decode HEIF/HEIC (e.g. libde265). See the `cmake/enablers/images/darknetxx-libheif-enabler.cmake` module for the target (`heif`) to link to your targets of interest.

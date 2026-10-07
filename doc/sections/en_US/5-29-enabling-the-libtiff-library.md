@@ -8,4 +8,4 @@ In order to enable the [libtiff](http://www.libtiff.org/) library (the TIFF imag
 cmake -S . -B build -DENABLE_LIBTIFF=ON
 ```
 
-See the `cmake/enablers/images/template-project-libtiff-enabler.cmake` module for the targets (`TIFF::TIFF` for a system install, `tiff` for the FetchContent build) to link to your targets of interest.
+See the `cmake/enablers/images/darknetxx-libtiff-enabler.cmake` module for the targets (`TIFF::TIFF` for a system install, `tiff` for the FetchContent build) to link to your targets of interest.

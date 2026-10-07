@@ -8,4 +8,4 @@ In order to enable the [OpenJPEG](https://www.openjpeg.org/) library (the JPEG 2
 cmake -S . -B build -DENABLE_OPENJPEG=ON
 ```
 
-See the `cmake/enablers/images/template-project-openjpeg-enabler.cmake` module for the target (`openjp2`) to link to your targets of interest.
+See the `cmake/enablers/images/darknetxx-openjpeg-enabler.cmake` module for the target (`openjp2`) to link to your targets of interest.

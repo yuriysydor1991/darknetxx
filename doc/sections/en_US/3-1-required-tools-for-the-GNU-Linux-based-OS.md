@@ -6,6 +6,12 @@ In order to build minimum template project install the GCC C++ compiler with CMa
 sudo apt install -y git g++ cmake libopencv-dev zlib1g-dev nlohmann-json3-dev
 ```
 
+The [darknetxx-gui binary](/doc/sections/en_US/5-36-the-darknetxx-gui-binary.md) requires the GTKmm 4 development files as well (Debian, Ubuntu 24.04 or newer), unless built without it by the `-DENABLE_DARKNETXX_GUI=OFF` or without any executable by the `-DENABLE_DARKNETXX_EXECUTABLES=OFF` (see the [Using the darknetxx library](/doc/sections/en_US/5-37-using-the-darknetxx-library.md) section):
+
+```
+sudo apt install -y libgtkmm-4.0-dev
+```
+
 The [scripts/packages](/scripts/packages) directory holds the scripts which install the minimal set of packages required to build and run the project locally, the GTest framework of the tests included:
 
 | Script | Installs the packages of |

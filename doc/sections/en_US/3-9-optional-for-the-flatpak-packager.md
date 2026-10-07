@@ -6,12 +6,11 @@ In order to generate the project flatpak package install the `flatpak-builder` c
 sudo apt install -y flatpak flatpak-builder
 ```
 
-You'll also need the one of it's target SDK which may be installed by a command that may look like this:
+You'll also need the GNOME runtime and SDK the package is built with, the ones of the GTK 4 the [darknetxx-gui binary](/doc/sections/en_US/5-36-the-darknetxx-gui-binary.md) shows it's window with:
 
 ```
-flatpak install runtime/org.freedesktop.Sdk/x86_64/20.08
+flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+flatpak install --user flathub org.gnome.Platform//51 org.gnome.Sdk//51
 ```
-
-Replace the `runtime/org.freedesktop.Sdk/x86_64/20.08` with your preferred SDK. Consult the flatpak documentation on how to list all available options.
 
 Look for the details at the [Enabling the flatpak package generation support](/doc/sections/en_US/5-11-enabling-the-flatpak-package-generation-support.md).

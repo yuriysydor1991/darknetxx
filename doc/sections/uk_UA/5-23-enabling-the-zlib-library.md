@@ -8,4 +8,4 @@
 cmake -S . -B build -DENABLE_ZLIB=ON
 ```
 
-Дивись модуль `cmake/enablers/compression/template-project-zlib-enabler.cmake` щодо цілі `ZLIB::ZLIB`, яку слід прилінкувати до твоїх цільових об'єктів: це ціль системної бібліотеки або псевдонім статичної бібліотеки, побудованої через FetchContent.
+Дивись модуль `cmake/enablers/compression/darknetxx-zlib-enabler.cmake` щодо цілі `ZLIB::ZLIB`, яку слід прилінкувати до твоїх цільових об'єктів: це ціль системної бібліотеки або псевдонім статичної бібліотеки, побудованої через FetchContent.

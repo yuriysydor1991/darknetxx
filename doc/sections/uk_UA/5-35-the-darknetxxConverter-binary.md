@@ -2,7 +2,7 @@
 
 Окрім програми `darknetxx`, проект будує другий бінарний файл,
 `darknetxxConverter`, який конвертує файли ваг нейромереж між оригінальним
-форматом ваг darknet і форматом dxxwjz1 і більше нічого не робить. Це те саме
+форматом ваг darknet, форматами dxxwjz1 і dxxwjz2 і більше нічого не робить. Це те саме
 конвертування, яке головний бінарний файл пропонує через власний
 [командний рядок](/doc/sections/uk_UA/6-2-4-converting-the-network-weights-files.md),
 з тими самими прапорцями, форматами і поведінкою, бо й код, що за ними стоїть,
@@ -24,9 +24,17 @@
 ./src/darknetxxConverter \
   --convert-from weights \
   --convert-src ./yolov3.weights \
-  --convert-to dxxwjz1 \
-  --convert-dst ./yolov3.dxxwjz1 \
-  --convert-cfg ./yolov3.cfg
+  --convert-to dxxwjz2 \
+  --convert-dst ./yolov3.dxxwjz2 \
+  --convert-cfg ./yolov3.cfg \
+  --convert-names ./coco.names
+
+# нейромережа, яку треба навчити, з файлу cfg: файл dxxwjz2 без ваг
+./src/darknetxxConverter \
+  --convert-to dxxwjz2 \
+  --convert-dst ./to_train.dxxwjz2 \
+  --convert-cfg ./yolov3.cfg \
+  --convert-names ./coco.names
 ```
 
 Параметри `--help` і `--version` працюють так само, як і в головному бінарному
@@ -45,7 +53,7 @@
 | Опція CMake | За замовчуванням | Дія |
 | --- | --- | --- |
 | `ENABLE_DARKNETXX_CONVERTER` | `ON` | Будує бінарний файл `darknetxxConverter`. Щоб побудувати лише головну програму, встанови значення `OFF`. |
-| `PROJECT_CONVERTER_BINARY_NAME` | `<project binary name>Converter` | Назва другого бінарного файлу і його цілі CMake. |
+| `DARKNETXX_CONVERTER_BINARY_NAME` | `<project binary name>Converter` | Назва другого бінарного файлу і його цілі CMake. |
 
 ```
 # в середині кореневої директорії проекту
@@ -53,7 +61,8 @@
 cmake -B build -S . -DENABLE_DARKNETXX_CONVERTER=OFF
 ```
 
-Файли dxxwjz1 є стисненими gzip документами JSON, тож обидва бінарні файли
+Файли dxxwjz1 і dxxwjz2 є стисненими gzip документами JSON, тож обидва
+бінарні файли
 потребують бібліотек [zlib](/doc/sections/uk_UA/5-23-enabling-the-zlib-library.md)
 і [nlohmann JSON](/doc/sections/uk_UA/5-18-enabling-the-nlohmann-json-library.md):
 системних або тих, які завантажуються під час конфігурації.
@@ -62,28 +71,23 @@ cmake -B build -S . -DENABLE_DARKNETXX_CONVERTER=OFF
 
 Другий бінарний файл не дублює жодного коду. Обидва бінарні файли мають
 спільну точку входу `src/main.cpp`, компонент `src/app` передає свої вихідні
-файли їм обом (див. [src/app/CMakeLists.txt](/src/app/CMakeLists.txt)), а
-інфраструктура нейромереж, за допомогою якої конвертування читає і записує
-файли (нейромережі з файлів cfg, оригінальні файли ваг і файли dxxwjz1), - це
-бібліотека `DarknetXXNetworksCore`, та сама, з якою лінкуються компонентні
-тести.
+файли їм обом (див. [src/app/CMakeLists.txt](/src/app/CMakeLists.txt)) і обидва
+лінкуються з бібліотекою darknetxx (див. секцію
+[Бібліотека darknetxx](/doc/sections/uk_UA/4-7-5-the-darknetxx-library.md)),
+за допомогою `darknetxx011::LibraryFacade` якої `app::Application` виконує
+конвертування так само, як навчання і розпізнавання головного бінарного файлу.
 
-Відрізняється рівно одна одиниця трансляції: `src/app/Application.cpp`, клас,
-який запускає навчання і розпізнавання (а разом з ним `DarknetController` і
-контролер OpenMP, потрібні лише цьому класу). Її отримує лише головна ціль,
-тоді як [src/darknetxxConverter-target.cmake](/src/darknetxxConverter-target.cmake)
-натомість компілює свою ціль з визначенням препроцесора
-`DARKNETXX_CONVERTER_ONLY`. Саме це визначення повідомляє спільним для обох
-бінарних файлів вихідним файлам про відсутній клас: `ApplicationFactory` не
-підключає і не створює його, а довідкове повідомлення і повідомлення про версію
-називають запущений бінарний файл (див.
-[src/app/ApplicationBinaryName.h](/src/app/ApplicationBinaryName.h)). Більше
-ніщо у проекті не розгалужується за цим визначенням.
+[src/darknetxxConverter-target.cmake](/src/darknetxxConverter-target.cmake)
+компілює ціль конвертера з визначенням препроцесора `DARKNETXX_CONVERTER_ONLY`,
+яке повідомляє `ApplicationFactory`, що типової програми немає, довідковому
+повідомленню - перелічувати лише параметри конвертування, а довідковому
+повідомленню і повідомленню про версію - назву запущеного бінарного файлу
+(див. [src/app/ApplicationBinaryName.h](/src/app/ApplicationBinaryName.h)).
+Більше ніщо у проекті не розгалужується за цим визначенням.
 
 Саме конвертування виконує `WeightsConverter` інфраструктури нейромереж (див.
-секцію [Файли ваг нейромереж](/doc/sections/uk_UA/4-7-4-network-weights-files.md)):
-`app::converter::ApplicationConverterComponent` запускає
-`app::converter::ApplicationFormatsConverter`, який передає конвертеру
-командний рядок контексту. Бінарний файл покривають інтеграційні тести
+секцію [Файли ваг нейромереж](/doc/sections/uk_UA/4-7-4-network-weights-files.md)),
+якому `darknetxx_impl::WeightsConversionLib` бібліотеки передає параметри
+командного рядка контексту і запит зупинки програми. Бінарний файл покривають інтеграційні тести
 `ITEST_converter` і `ITEST_converter_bash` (див. секцію
 [Вмикання інтеграційних тестів](/doc/sections/uk_UA/5-3-3-enabling-integration-testing.md)).

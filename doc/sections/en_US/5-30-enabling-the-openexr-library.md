@@ -8,4 +8,4 @@ In order to enable the [OpenEXR](https://openexr.com/) library (the EXR high dyn
 cmake -S . -B build -DENABLE_OPENEXR=ON
 ```
 
-The FetchContent build additionally pulls the Imath dependency automatically. See the `cmake/enablers/images/template-project-openexr-enabler.cmake` module for the target (`OpenEXR::OpenEXR`) to link to your targets of interest.
+The FetchContent build additionally pulls the Imath dependency automatically. See the `cmake/enablers/images/darknetxx-openexr-enabler.cmake` module for the target (`OpenEXR::OpenEXR`) to link to your targets of interest.

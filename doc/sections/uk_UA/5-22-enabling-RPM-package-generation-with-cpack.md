@@ -26,17 +26,17 @@ cpack
 
 Згенерований пакунок повинен з'явитись всередині кореня директорії побудови проекту. Наприклад, якщо ім'я проекту не змінювалось і його версія `0.12.0`, тоді назва пакунку може виглядати наступним чином: `darknetxx-0.12.0-1.x86_64.rpm`.
 
-Для того щоб переглянути або змінити параметри створення `.rpm`-пакунків необхідно відвідати файл [cmake/enablers/packagers/template-project-rpm-enabler.cmake](/cmake/enablers/packagers/template-project-rpm-enabler.cmake).
+Для того щоб переглянути або змінити параметри створення `.rpm`-пакунків необхідно відвідати файл [cmake/enablers/packagers/darknetxx-rpm-enabler.cmake](/cmake/enablers/packagers/darknetxx-rpm-enabler.cmake).
 
 Інтеграція використовує виключно `cmake` і `cpack` - жодних сторонніх програм CMake-модуль проекту не залучає. Вбудований у CPack генератор `RPM` сам збирає бінарний пакунок усередині, так само як генератор `DEB` збирає `.deb`-файли.
 
 Опціонально можна перевизначити наступні кеш-змінні для налаштування метаданих згенерованого пакунку:
 
-- `TEMPLATE_PROJECT_RPM_LICENSE` - SPDX-подібний тег ліцензії (за замовчуванням: `BSD-2-Clause`). Поширені значення: `BSD-2-Clause`, `BSD-3-Clause`, `GPLv3`, `MIT`, `Apache-2.0`.
-- `TEMPLATE_PROJECT_RPM_GROUP` - група пакунку (за замовчуванням: `Applications/System`). Інші типові значення: `Development/Libraries`, `Development/Tools`, `Applications/Internet`.
-- `TEMPLATE_PROJECT_RPM_RELEASE` - номер релізу пакунку (за замовчуванням: `1`). Збільшуйте його під час повторних збирань тієї ж самої вихідної версії.
-- `TEMPLATE_PROJECT_RPM_PACKAGE_ARCHITECTURE` - тег архітектури (за замовчуванням: `x86_64`). Інші типові значення: `aarch64`, `armv7hl`, `noarch`.
+- `DARKNETXX_RPM_LICENSE` - SPDX-подібний тег ліцензії (за замовчуванням: `BSD-2-Clause`). Поширені значення: `BSD-2-Clause`, `BSD-3-Clause`, `GPLv3`, `MIT`, `Apache-2.0`.
+- `DARKNETXX_RPM_GROUP` - група пакунку (за замовчуванням: `Applications/System`). Інші типові значення: `Development/Libraries`, `Development/Tools`, `Applications/Internet`.
+- `DARKNETXX_RPM_RELEASE` - номер релізу пакунку (за замовчуванням: `1`). Збільшуйте його під час повторних збирань тієї ж самої вихідної версії.
+- `DARKNETXX_RPM_PACKAGE_ARCHITECTURE` - тег архітектури (за замовчуванням: `x86_64`). Інші типові значення: `aarch64`, `armv7hl`, `noarch`.
 
-Окрім цього, поле `URL` пакунку береться з `HOMEPAGE_URL`, оголошеного у верхньорівневому `CMakeLists.txt`, контактна адреса супровідника - з `PROJECT_MAINTAINER_EMAIL`, видавця - з `PROJECT_MAINTAINER`, а коротке резюме та опис - з `DESCRIPTION` проекту. Жодних додаткових оголошень у CMake-файлах проекту вносити не потрібно - достатньо просто увімкнути опцію.
+Окрім цього, поле `URL` пакунку береться з `HOMEPAGE_URL`, оголошеного у верхньорівневому `CMakeLists.txt`, контактна адреса супровідника - з `DARKNETXX_MAINTAINER_EMAIL`, видавця - з `DARKNETXX_MAINTAINER`, а коротке резюме та опис - з `DESCRIPTION` проекту. Жодних додаткових оголошень у CMake-файлах проекту вносити не потрібно - достатньо просто увімкнути опцію.
 
 > **Зауваження щодо запуску.** Подібно до генератора `DEB`, який делегує роботу `dpkg-deb`, генератор `RPM` у CPack покладається на інструмент `rpmbuild(8)` зі складу системи `rpm`. Тому пакування очікувано виконується на RPM-сумісному дистрибутиві (Fedora, RHEL, openSUSE тощо) або на будь-якому хості, де встановлено пакет `rpm` (на Debian/Ubuntu: `sudo apt install rpm`). Сам CMake-модуль є платформо-незалежним - він лише налаштовує CPack і не викликає жодних сторонніх програм безпосередньо.

@@ -8,4 +8,4 @@ The [zlib](https://www.zlib.net/) compression library (deflate, gzip, zip) compr
 cmake -S . -B build -DENABLE_ZLIB=ON
 ```
 
-See the `cmake/enablers/compression/template-project-zlib-enabler.cmake` module for the `ZLIB::ZLIB` target to link to your targets of interest: the system library one, or the alias of the static library of the FetchContent build.
+See the `cmake/enablers/compression/darknetxx-zlib-enabler.cmake` module for the `ZLIB::ZLIB` target to link to your targets of interest: the system library one, or the alias of the static library of the FetchContent build.

@@ -8,4 +8,4 @@ In order to enable the [libwebp](https://developers.google.com/speed/webp) libra
 cmake -S . -B build -DENABLE_LIBWEBP=ON
 ```
 
-See the `cmake/enablers/images/template-project-libwebp-enabler.cmake` module for the targets (`WebP::webp` for a system install, `webp`/`webpdecoder` for the FetchContent build) to link to your targets of interest.
+See the `cmake/enablers/images/darknetxx-libwebp-enabler.cmake` module for the targets (`WebP::webp` for a system install, `webp`/`webpdecoder` for the FetchContent build) to link to your targets of interest.

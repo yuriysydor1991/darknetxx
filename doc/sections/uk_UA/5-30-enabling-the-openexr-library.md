@@ -8,4 +8,4 @@
 cmake -S . -B build -DENABLE_OPENEXR=ON
 ```
 
-Побудова через FetchContent додатково автоматично завантажує залежність Imath. Дивись модуль `cmake/enablers/images/template-project-openexr-enabler.cmake` щодо цілі (`OpenEXR::OpenEXR`), яку слід прилінкувати до твоїх цільових об'єктів.
+Побудова через FetchContent додатково автоматично завантажує залежність Imath. Дивись модуль `cmake/enablers/images/darknetxx-openexr-enabler.cmake` щодо цілі (`OpenEXR::OpenEXR`), яку слід прилінкувати до твоїх цільових об'єктів.

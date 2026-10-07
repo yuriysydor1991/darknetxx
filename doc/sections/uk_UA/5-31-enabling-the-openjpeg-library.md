@@ -8,4 +8,4 @@
 cmake -S . -B build -DENABLE_OPENJPEG=ON
 ```
 
-Дивись модуль `cmake/enablers/images/template-project-openjpeg-enabler.cmake` щодо цілі (`openjp2`), яку слід прилінкувати до твоїх цільових об'єктів.
+Дивись модуль `cmake/enablers/images/darknetxx-openjpeg-enabler.cmake` щодо цілі (`openjp2`), яку слід прилінкувати до твоїх цільових об'єктів.

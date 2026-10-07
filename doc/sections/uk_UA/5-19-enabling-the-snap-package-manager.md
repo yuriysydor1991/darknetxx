@@ -6,4 +6,4 @@
 cmake -S . -B build -DENABLE_SNAP=ON
 ```
 
-Детальніше у файлі [cmake/enablers/packagers/template-project-snap-enabler.cmake](/cmake/enablers/packagers/template-project-snap-enabler.cmake) про ціль `snap`.
+Детальніше у файлі [cmake/enablers/packagers/darknetxx-snap-enabler.cmake](/cmake/enablers/packagers/darknetxx-snap-enabler.cmake) про ціль `snap`.

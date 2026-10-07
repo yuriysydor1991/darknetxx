@@ -8,4 +8,4 @@
 cmake -S . -B build -DENABLE_LIBPNG=ON
 ```
 
-libpng залежить від zlib, отож залиш `ENABLE_ZLIB=ON` (або наявну системну zlib) щоб залежність вирішилась. Дивись модуль `cmake/enablers/images/template-project-libpng-enabler.cmake` щодо цілей (`PNG::PNG` для системної версії, `png_static`/`png` для побудови через FetchContent), які слід прилінкувати до твоїх цільових об'єктів.
+libpng залежить від zlib, отож залиш `ENABLE_ZLIB=ON` (або наявну системну zlib) щоб залежність вирішилась. Дивись модуль `cmake/enablers/images/darknetxx-libpng-enabler.cmake` щодо цілей (`PNG::PNG` для системної версії, `png_static`/`png` для побудови через FetchContent), які слід прилінкувати до твоїх цільових об'єктів.

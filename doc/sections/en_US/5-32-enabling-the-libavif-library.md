@@ -8,4 +8,4 @@ In order to enable the [libavif](https://github.com/AOMediaCodec/libavif) librar
 cmake -S . -B build -DENABLE_LIBAVIF=ON
 ```
 
-A codec is required to actually encode/decode AVIF; for the FetchContent build enable one (e.g. `-DAVIF_CODEC_AOM=ON` or `-DAVIF_CODEC_DAV1D=ON`). See the `cmake/enablers/images/template-project-libavif-enabler.cmake` module for the target (`avif`) to link to your targets of interest.
+A codec is required to actually encode/decode AVIF; for the FetchContent build enable one (e.g. `-DAVIF_CODEC_AOM=ON` or `-DAVIF_CODEC_DAV1D=ON`). See the `cmake/enablers/images/darknetxx-libavif-enabler.cmake` module for the target (`avif`) to link to your targets of interest.

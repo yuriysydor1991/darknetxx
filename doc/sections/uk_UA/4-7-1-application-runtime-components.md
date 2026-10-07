@@ -20,8 +20,20 @@ interface IApplication {
 
 class Application {
   +run(ctx) : int
-  #deal_omp(ctx) : bool
+  #perform(ctx) : int
+  #create_and_convert_libctx(ctx) : LibraryContextPtr
+  #create_ctx_converter() : CtxConverterPtr
+  #{static} stopped_status(ctx) : int
   #{static} init_computation_traps()
+}
+
+class GuiApplication {
+  #perform(ctx) : int
+  #create_gui_initer() : IGUIIniter
+}
+
+class "converters::ApplicationContext2LibraryContext" as ApplicationContext2LibraryContext {
+  +convert(appctx, libctx) : bool
 }
 
 class ApplicationHelpPrinter {
@@ -32,33 +44,15 @@ class ApplicationVersionPrinter {
   +run(ctx) : int
 }
 
-class "converter::ApplicationConverterComponent" as ApplicationConverterComponent {
-  +run(ctx) : int
-}
-
-interface "converter::IFormatsConverter" as IFormatsConverter {
-  +convert(ctx) : bool
-}
-
-class "converter::ApplicationFormatsConverter" as ApplicationFormatsConverter {
-  +convert(ctx) : bool
-  #create_weights_converter() : WeightsConverterPtr
-}
-
-class "converter::ConversionFormats" as ConversionFormats {
-  +{static} parse(name, format) : bool
-  +{static} names() : vector<string>
-}
-
 class ApplicationFactory {
   +create_default_context(argc, argv) : ApplicationContext
   +create_default_arg_parser() : CommandLineParser
   +create_default_signals_handler() : ISignalsHandler
   +create_application(ctx) : IApplication
+  +create_default_application() : IApplication
+  +create_library_application() : IApplication
   +create_help_printer() : IApplication
   +create_version_printer() : IApplication
-  +create_formats_converter() : IFormatsConverter
-  +create_formats_converter_application() : IApplication
   +run(argc, argv) : int
   +{static} execute(argc, argv) : int
 }
@@ -111,8 +105,7 @@ struct ApplicationContext {
 IApplication <|.. Application
 IApplication <|.. ApplicationHelpPrinter
 IApplication <|.. ApplicationVersionPrinter
-IApplication <|.. ApplicationConverterComponent
-IFormatsConverter <|.. ApplicationFormatsConverter
+Application <|-- GuiApplication
 ISignalsHandler <|.. SignalsHandler
 
 ApplicationFactory ..> IApplication : creates
@@ -123,22 +116,24 @@ CommandLineParser ..> CMDParamNames : uses names
 CommandLineParser --> ApplicationContext : fills
 Application --> ApplicationContext : holds actx
 SignalsHandler --> ApplicationContext : raises the signals flags
-ApplicationConverterComponent --> IFormatsConverter : runs
-ApplicationFormatsConverter ..> ConversionFormats : resolves the formats
-ApplicationFormatsConverter ..> "darknet_adaptor::loaders::WeightsConverter" : converts by
+Application ..> ApplicationContext2LibraryContext : converts actx by
+ApplicationContext2LibraryContext ..> "darknetxx011::LibraryContext" : fills
+Application ..> "darknetxx011::LibraryFacade" : performs the work it creates
+GuiApplication ..> "gui::IGUIIniter" : shows the window of
+ApplicationFactory ..> "darknetxx011::LibraryFacade" : hands the logger over
 @enduml
 
 ## Призначення кожного класу
 
 - **`IApplication`** ([`IApplication.h`](/src/app/IApplication.h)) - абстрактний інтерфейс, реалізований кожною запускною програмою. Він оголошує єдиний метод `run(ctx)` і спільний статус помилки `INVALID`. Нові високорівневі поведінки програми додаються реалізацією цього інтерфейсу, а не розгалуженням всередині наявного класу.
-- **`Application`** ([`Application.h`](/src/app/Application.h)) - типова реалізація програми. Вона налаштовує потоки OpenMP, перехоплює хибні обчислення збірки `Debug` і керує адаптером Darknet для виконання запитаної дії навчання чи розпізнавання. Власного обробника сигналів операційної системи вона більше не встановлює, оскільки їх охоплює підкомпонент `src/app/signals-handlers` для кожної програми проекту.
+- **`Application`** ([`Application.h`](/src/app/Application.h)) - типова реалізація програми. Вона перехоплює хибні обчислення збірки `Debug`, перетворює контекст на `darknetxx011::LibraryContext` бібліотеки darknetxx і виконує роботу, яку з нього створює `darknetxx011::LibraryFacade`: навчання, розпізнавання чи конвертування файлів ваг нейромереж (див. секцію [Бібліотека darknetxx](/doc/sections/uk_UA/4-7-5-the-darknetxx-library.md)). Виконання, яке перервав сигнал зупинки, повертає статус `128 + номер сигналу`. Власного обробника сигналів операційної системи вона не встановлює, оскільки їх охоплює підкомпонент `src/app/signals-handlers` для кожної програми проекту.
+- **`GuiApplication`** ([`GuiApplication.h`](/src/app/GuiApplication.h)) - типова програма бінарного файлу `darknetxx-gui`, яка замість роботи командного рядка показує вікно навчання компонента `src/gui` (див. секцію [Бінарний файл darknetxx-gui](/doc/sections/uk_UA/5-36-the-darknetxx-gui-binary.md)).
+- **`converters::ApplicationContext2LibraryContext`** ([`ApplicationContext2LibraryContext.h`](/src/converters/ApplicationContext2LibraryContext.h)) - копіює параметри darknet і конвертування `ApplicationContext` до `darknetxx011::LibraryContext` і пов'язує прапорець `stop` контексту, який підіймають обробники сигналів, із запитом зупинки бібліотеки.
 - **`ApplicationHelpPrinter`** ([`ApplicationHelpPrinter.h`](/src/app/ApplicationHelpPrinter.h)) - друкує довідкове повідомлення, яке представляє усі доступні параметри командного рядка. Дивись секцію [Доступні параметри командного рядка](/doc/sections/uk_UA/6-2-3-available-command-line-parameters.md) для повного переліку.
 - **`ApplicationVersionPrinter`** ([`ApplicationVersionPrinter.h`](/src/app/ApplicationVersionPrinter.h)) - друкує версію програми, git коміт побудови і дату конфігурації, взяті зі згенерованого файлу `project-global-decls.h`.
-- **`ApplicationFactory`** ([`ApplicationFactory.h`](/src/app/ApplicationFactory.h)) - корінь композиції. Його статичний метод `execute(argc, argv)` (викликаний з `main`) створює контекст, запускає розпізнавач і створює відповідного нащадка `IApplication` згідно з розпізнаними прапорцями (довідка, версія, конвертування файлів ваг нейромереж чи типова програма). Скомпільований з визначенням `DARKNETXX_CONVERTER_ONLY` (бінарний файл `darknetxxConverter`), він не має типової програми: на командний рядок, який не запитує конвертування, друкується довідкове повідомлення зі статусом помилки. Він також створює типову реалізацію інтерфейсу `ISignalsHandler` і передає контекст до її методу `install` безпосередньо перед запуском програми, тож оброблювані сигнали звільняються одразу після завершення методу `run`.
+- **`ApplicationFactory`** ([`ApplicationFactory.h`](/src/app/ApplicationFactory.h)) - корінь композиції. Його статичний метод `execute(argc, argv)` (викликаний з `main`) створює контекст, запускає розпізнавач і створює відповідного нащадка `IApplication` згідно з розпізнаними прапорцями (довідка, версія, конвертування файлів ваг нейромереж чи типова програма) і передає журнал програми бібліотеці darknetxx. Скомпільований з визначенням `DARKNETXX_CONVERTER_ONLY` (бінарний файл `darknetxxConverter`), він не має типової програми: на командний рядок, який не запитує конвертування, друкується довідкове повідомлення зі статусом помилки. Він також створює типову реалізацію інтерфейсу `ISignalsHandler` і передає контекст до її методу `install` безпосередньо перед запуском програми, тож оброблювані сигнали звільняються одразу після завершення методу `run`.
 - **`CommandLineParser`** ([`CommandLineParser.h`](/src/app/CommandLineParser.h)) - розбирає масив `argv` у поля `ApplicationContext` і перевіряє, що параметри, які потребують значення, його отримали, а прапорці конвертування вказано разом. Дивись [Доступні параметри командного рядка](/doc/sections/uk_UA/6-2-3-available-command-line-parameters.md).
-- **`converter::ApplicationConverterComponent`** ([`ApplicationConverterComponent.h`](/src/app/converter/ApplicationConverterComponent.h)) - програма, яку обирають прапорці конвертування файлів ваг нейромереж: замість навчання чи розпізнавання вона запускає `IFormatsConverter` і повертає статус `128 + номер сигналу`, якщо конвертування перервав сигнал зупинки.
-- **`converter::IFormatsConverter`** ([`IFormatsConverter.h`](/src/app/converter/IFormatsConverter.h)) / **`converter::ApplicationFormatsConverter`** ([`ApplicationFormatsConverter.h`](/src/app/converter/ApplicationFormatsConverter.h)) - конвертер командного рядка контексту: він визначає формати за їхніми назвами (назвами `converter::ConversionFormats`) і передає файли, файл cfg нейромережі і запит зупинки програми до `darknet_adaptor::loaders::WeightsConverter` (див. секцію [Файли ваг нейромереж](/doc/sections/uk_UA/4-7-4-network-weights-files.md)).
-- **`ApplicationBinaryName.h`** ([`ApplicationBinaryName.h`](/src/app/ApplicationBinaryName.h)) - назва запущеного бінарного файлу (`darknetxx` або `darknetxxConverter`), яку друкують друкувальники довідки і версії.
+- **`ApplicationBinaryName.h`** ([`ApplicationBinaryName.h`](/src/app/ApplicationBinaryName.h)) - назва запущеного бінарного файлу (`darknetxx`, `darknetxxConverter` або `darknetxx-gui`), яку друкують друкувальники довідки і версії.
 - **`CMDParamNames`** ([`CMDParamNames.h`](/src/app/CMDParamNames.h)) - єдине місце, що зберігає рядкові константи прапорців командного рядка (наприклад `--help`, `--train-cfg`). І розпізнавач, і друкувальник довідки використовують ці константи, тому назви прапорців не можуть розійтись.
 - **`ISignalsHandler`** ([`ISignalsHandler.h`](/src/app/signals-handlers/ISignalsHandler.h)) - інтерфейс підкомпонента `src/app/signals-handlers`, реалізований як фасадом `SignalsHandler`, так і кожним окремим обробником категорії сигналів, тож решта програми залежить лише від інтерфейсу.
 - **`SignalsHandler`** ([`SignalsHandler.h`](/src/app/signals-handlers/SignalsHandler.h)) - фасад, який охоплює кожну категорію сигналів операційної системи одним викликом `install`. Оброблювані категорії, прапорці, які вони підіймають, і спосіб додавання нової описано у секції [Обробка сигналів операційної системи](/doc/sections/uk_UA/4-8-handling-the-OS-signals.md).

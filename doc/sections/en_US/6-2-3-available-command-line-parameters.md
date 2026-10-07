@@ -21,39 +21,42 @@ The options are grouped below by their purpose. The options with a value placeho
 
 | Option | Value | Description |
 | --- | --- | --- |
-| `--train-cfg` | `<FILE>` | training network configuration (`*.cfg`) file |
-| `--detect-cfg` | `<FILE>` | detection network configuration (`*.cfg`) file |
-| `--names` | `<FILE>` | class names file (overrides the cfg `[net]` `names=` key) |
-| `--weights` | `<FILE>` | network weights file to load |
+| `--train-cfg` | `<FILE>` | training network configuration (`*.cfg` or `*.dxxwjz2`) file |
+| `--detect-cfg` | `<FILE>` | detection network configuration (`*.cfg` or `*.dxxwjz2`) file |
+| `--names` | `<FILE>` | class names file (overrides the classes of the dxxwjz2 files and the cfg `[net]` `names=` key) |
+| `--weights` | `<FILE>` | network weights file to load, of any format (see the [Network weights files](/doc/sections/en_US/4-7-4-network-weights-files.md) section); the `*.dxxwjz2` file alone is the network the detection runs with, or the network to train for the file of no weights |
 | `--image` | `<FILE>` | image file to run the detection on |
 | `--gpus` | `<LIST>` | comma separated list of GPU indexes to use |
 | `--threads` | `<N>` | number of worker threads to use |
 
 ## Network weights files conversion options
 
-The four first options go together and convert the network weights file with no training nor detection started, see the [Converting the network weights files](/doc/sections/en_US/6-2-4-converting-the-network-weights-files.md) section.
+The four first options go together and convert the network weights file with no training nor detection started, while the `--convert-to dxxwjz2`, the `--convert-dst` and the `--convert-cfg` ones alone make the network to train of the cfg file (the dxxwjz2 file of no weights), see the [Converting the network weights files](/doc/sections/en_US/6-2-4-converting-the-network-weights-files.md) section.
 
 | Option | Value | Description |
 | --- | --- | --- |
-| `--convert-from` | `<FORMAT>` | the network weights file format to read: `weights` or `dxxwjz1` |
+| `--convert-from` | `<FORMAT>` | the network weights file format to read: `weights`, `dxxwjz1` or `dxxwjz2` |
 | `--convert-src` | `<FILE>` | the network weights file to read |
-| `--convert-to` | `<FORMAT>` | the network weights file format to write: `weights` or `dxxwjz1` |
+| `--convert-to` | `<FORMAT>` | the network weights file format to write: `weights`, `dxxwjz1` or `dxxwjz2` |
 | `--convert-dst` | `<FILE>` | the network weights file to write (replaced) |
-| `--convert-cfg` | `<FILE>` | the network cfg file of the weights: required to read the `weights` format, validates the `dxxwjz1` one |
+| `--convert-cfg` | `<FILE>` | the network cfg file of the weights: required to read the `weights` format, validates the rest, the `dxxwjz2` one keeps it |
+| `--convert-names` | `<FILE>` | the class names file the `dxxwjz2` format keeps (overrides the cfg `[net]` `names=` key) |
 
 ## Training options
 
 | Option | Value | Description |
 | --- | --- | --- |
 | `--clear` | | clear (reset) the training iteration counters |
-| `--map` | | calculate mAP during the training |
+| `--map` | | calculate mAP during the training (the class names of the dxxwjz2 weights need no names file), the mAPs go into the training record of the dxxwjz2 files |
 | `--mAP-epochs` | `<N>` | calculate mAP every given number of epochs (default 4) |
 | `--dont-resize-network` | | do not resize the network during the training |
 | `--net-resize-nth` | `<N>` | resize the network every Nth training iteration (default 10) |
 | `--data-reload-nth` | `<N>` | load a new training batch every Nth iteration only, reusing it in between (takes precedence over the flag below) |
 | `--dont-reload-data-every-iteration` | | keep training on the loaded batch instead of loading a new one every iteration (a network resize still reloads it) |
 | `--stop-less-avg-loss` | `<VALUE>` | stop the training once the average loss reaches the given value or less |
-| `--chart-path` | `<FILE>` | path to save the training chart into |
+| `--save-format` | `<FORMAT>` | the network weights file format the training saves: `weights`, `dxxwjz1` or `dxxwjz2` (the default) |
+| `--chart-path` | `<FILE>` | the chart image the training chart continues for the weights of no training record (the training record of the dxxwjz2 weights redraws the whole chart instead); the chart of every training start is saved as the new `chart_<base>_<YYYY-MM-DD--HH-MM-SS>.png` file of the start date and time |
+| `--draw-chart` | `<FILE>` | draw the training chart of the record of the dxxwjz2 `--weights` file into the PNG file, with no training nor detection |
 | `--save-charts-every-iter` | | save the training chart on every iteration, not every 100 |
 | `--dont-save-charts-every-iter` | | save the training chart every 100 iterations (the default) |
 | `--draw-precision` | | draw the mAP curve on every iteration once it's calculated, not only on the calculations |
@@ -112,10 +115,17 @@ The original Darknet took the class names, the training and validation image lis
 | `valid=` | the `train=` value | list of the validation images for the mAP calculation (`--map`) |
 | `backup=` | `backup` | directory to save the trained weights into |
 
-The relative paths are resolved against the current working directory. The `--names` command line parameter takes precedence over the `names=` key, so a stock configuration file may be used for the detection as is, for example:
+The relative paths are resolved against the current working directory. The `--names` command line parameter takes precedence over the classes of the dxxwjz2 weights files and over the `names=` key, so a stock configuration file may be used for the detection as is, for example:
 
 ```
 darknetxx --detect-cfg yolov4.cfg --weights yolov4.weights --names coco.names --image dog.jpg
+```
+
+The dxxwjz2 file keeps the network cfg and the class names beside the weights, so it's detected with alone, and the dxxwjz2 file of no weights is trained alone:
+
+```
+darknetxx --weights yolov4_final.dxxwjz2 --image dog.jpg
+darknetxx --weights network-to-train.dxxwjz2
 ```
 
 To introduce a new command line parameter of your own examine the [Application runtime components](/doc/sections/en_US/4-7-1-application-runtime-components.md) section.

@@ -8,4 +8,4 @@
 cmake -S . -B build -DENABLE_LIBHEIF=ON
 ```
 
-Для власне декодування HEIF/HEIC потрібен кодек (наприклад libde265). Дивись модуль `cmake/enablers/images/template-project-libheif-enabler.cmake` щодо цілі (`heif`), яку слід прилінкувати до твоїх цільових об'єктів.
+Для власне декодування HEIF/HEIC потрібен кодек (наприклад libde265). Дивись модуль `cmake/enablers/images/darknetxx-libheif-enabler.cmake` щодо цілі (`heif`), яку слід прилінкувати до твоїх цільових об'єктів.

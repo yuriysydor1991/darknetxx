@@ -26,4 +26,4 @@ cpack
 
 The package file should be generated inside the project build root directory. For example, if project name was't change and it's version is 0.8.0 so the package name may look like `darknetxx-0.8.0-Linux.deb`.
 
-In order to examine details of the `deb` package configuration visit the `cmake/template-project-deb-enabler.cmake` file.
+In order to examine details of the `deb` package configuration visit the `cmake/darknetxx-deb-enabler.cmake` file.

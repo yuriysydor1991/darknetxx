@@ -8,4 +8,4 @@
 cmake -S . -B build -DENABLE_LIBTIFF=ON
 ```
 
-Дивись модуль `cmake/enablers/images/template-project-libtiff-enabler.cmake` щодо цілей (`TIFF::TIFF` для системної версії, `tiff` для побудови через FetchContent), які слід прилінкувати до твоїх цільових об'єктів.
+Дивись модуль `cmake/enablers/images/darknetxx-libtiff-enabler.cmake` щодо цілей (`TIFF::TIFF` для системної версії, `tiff` для побудови через FetchContent), які слід прилінкувати до твоїх цільових об'єктів.

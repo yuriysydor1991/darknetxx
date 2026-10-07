@@ -8,4 +8,4 @@
 cmake -S . -B build -DENABLE_LUNASVG=ON
 ```
 
-Дивись модуль `cmake/enablers/images/template-project-lunasvg-enabler.cmake` щодо цілей (`lunasvg::lunasvg` для системної версії, `lunasvg` для побудови через FetchContent), які слід прилінкувати до твоїх цільових об'єктів.
+Дивись модуль `cmake/enablers/images/darknetxx-lunasvg-enabler.cmake` щодо цілей (`lunasvg::lunasvg` для системної версії, `lunasvg` для побудови через FetchContent), які слід прилінкувати до твоїх цільових об'єктів.

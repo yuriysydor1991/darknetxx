@@ -8,4 +8,4 @@ In order to enable the [lunasvg](https://github.com/sammycage/lunasvg) library (
 cmake -S . -B build -DENABLE_LUNASVG=ON
 ```
 
-See the `cmake/enablers/images/template-project-lunasvg-enabler.cmake` module for the targets (`lunasvg::lunasvg` for a system install, `lunasvg` for the FetchContent build) to link to your targets of interest.
+See the `cmake/enablers/images/darknetxx-lunasvg-enabler.cmake` module for the targets (`lunasvg::lunasvg` for a system install, `lunasvg` for the FetchContent build) to link to your targets of interest.

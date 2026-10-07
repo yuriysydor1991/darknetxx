@@ -45,6 +45,7 @@ The very same sections are also available in Ukrainian under [doc/README.uk_UA.m
         1. [Darknet adaptor components](/doc/sections/en_US/4-7-2-darknet-adaptor-components.md)
         1. [Supporting components](/doc/sections/en_US/4-7-3-supporting-components.md)
         1. [Network weights files](/doc/sections/en_US/4-7-4-network-weights-files.md)
+        1. [The darknetxx library](/doc/sections/en_US/4-7-5-the-darknetxx-library.md)
     1. [Handling the OS signals](/doc/sections/en_US/4-8-handling-the-OS-signals.md)
 1. [Project build](/doc/sections/en_US/5-project-build.md)
     1. [IDE build](/doc/sections/en_US/5-1-IDE-build.md)
@@ -85,6 +86,8 @@ The very same sections are also available in Ukrainian under [doc/README.uk_UA.m
     1. [Enabling the libheif library (HEIF/HEIC)](/doc/sections/en_US/5-33-enabling-the-libheif-library.md)
     1. [Quick build scripts](/doc/sections/en_US/5-34-quick-build-scripts.md)
     1. [The darknetxxConverter binary](/doc/sections/en_US/5-35-the-darknetxxConverter-binary.md)
+    1. [The darknetxx-gui binary](/doc/sections/en_US/5-36-the-darknetxx-gui-binary.md)
+    1. [Using the darknetxx library](/doc/sections/en_US/5-37-using-the-darknetxx-library.md)
 1. [Run the executable](/doc/sections/en_US/6-run-the-executable.md)
     1. [IDE run](/doc/sections/en_US/6-1-IDE-run.md)
     1. Command line run

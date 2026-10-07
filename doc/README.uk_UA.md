@@ -48,6 +48,7 @@
         1. [Компоненти адаптера Darknet](/doc/sections/uk_UA/4-7-2-darknet-adaptor-components.md)
         1. [Допоміжні компоненти](/doc/sections/uk_UA/4-7-3-supporting-components.md)
         1. [Файли ваг нейромереж](/doc/sections/uk_UA/4-7-4-network-weights-files.md)
+        1. [Бібліотека darknetxx](/doc/sections/uk_UA/4-7-5-the-darknetxx-library.md)
     1. [Обробка сигналів операційної системи](/doc/sections/uk_UA/4-8-handling-the-OS-signals.md)
 1. [Побудова проекту](/doc/sections/uk_UA/5-project-build.md)
     1. [Побудова за допомогою IDE](/doc/sections/uk_UA/5-1-IDE-build.md)
@@ -88,6 +89,8 @@
     1. [Вмикання інтеграції libheif (HEIF/HEIC)](/doc/sections/uk_UA/5-33-enabling-the-libheif-library.md)
     1. [Швидкі скрипти побудови](/doc/sections/uk_UA/5-34-quick-build-scripts.md)
     1. [Бінарний файл darknetxxConverter](/doc/sections/uk_UA/5-35-the-darknetxxConverter-binary.md)
+    1. [Бінарний файл darknetxx-gui](/doc/sections/uk_UA/5-36-the-darknetxx-gui-binary.md)
+    1. [Використання бібліотеки darknetxx](/doc/sections/uk_UA/5-37-using-the-darknetxx-library.md)
 1. [Запуск головного виконуваного файлу](/doc/sections/uk_UA/6-run-the-executable.md)
     1. [Запуск через IDE](/doc/sections/uk_UA/6-1-IDE-run.md)
     1. Запуск з терміналу

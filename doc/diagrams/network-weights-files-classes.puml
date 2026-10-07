@@ -7,13 +7,24 @@ hide empty members
 interface IWeightsReader {
   +load(net, filename, cutoff) : bool
   +load(net, filename) : bool
+  +load(net, filename, cutoff, rest) : bool
   +read(filename, net, document) : bool
+  +peek(filename, rest, weights) : bool
 }
 
 interface IWeightsWriter {
   +save(net, filename, cutoff, save_ema) : bool
   +save(net, filename) : bool
+  +save(net, filename, cutoff, save_ema, rest) : bool
   +write(document, filename) : bool
+}
+
+interface IWeightsFileFormat {
+  +name() / extension() / description() : string
+  +keeps_structure() : bool
+  +keeps_network() : bool
+  +create_reader() : IWeightsReaderPtr
+  +create_writer() : IWeightsWriterPtr
 }
 
 package "weights-model" {
@@ -35,8 +46,30 @@ package "weights-model" {
     +header : WeightsHeader
     +layers : WeightsLayer[]
     +trailing : bytes
+    +network : NetworkDescription
+    +training : TrainingRecord
     +normalize()
     +file_size() : uint64
+  }
+
+  class NetworkDescription {
+    +cfg() : string
+    +classes() : string[]
+    +empty() : bool
+  }
+
+  class TrainingRecord {
+    +seconds() : double
+    +record(iteration, loss, avg_loss)
+    +record_map(iteration, map)
+    +iterations() / losses() / avg_losses()
+    +map_iterations() / maps()
+    +truncate_after(iteration)
+  }
+
+  class NetworkFiles {
+    +{static} read_text(path, text) : bool
+    +{static} read_classes(path, classes) : bool
   }
 
   class WeightsDocumentValidator {
@@ -54,6 +87,7 @@ package "weights-model" {
 package "original-weights" {
   class OrigWeightsReader
   class OrigWeightsWriter
+  class OrigWeightsFileFormat
   class OrigWeightsValidator {
     +{static} inspect(filename, net, inspection) : bool
     +{static} validate(filename, net) : WeightsReport
@@ -67,36 +101,100 @@ package "dxxwjz1::v1" {
   }
   class Dxxwjz1Writer {
     +Dxxwjz1Writer(level)
+    #create_emitter(out, rest) : emitter
+    #check(rest, filename) : bool
   }
+  class Dxxwjz1FileFormat
   class Dxxwjz1Validator {
     +{static} validate(filename, net) : WeightsReport
   }
   class Dxxwjz1Parser {
     +{static} parse(json, document, report) : bool
     +{static} parse_file(filename, document, report) : bool
+    +{static} parse_file(filename, factory, document, report) : bool
+  }
+  class Dxxwjz1SaxHandler {
+    +complete(parsed) : bool
+    #format_name() / format_version()
+    #required_keys() : string[]
+    #extension(name) : delegate
+    #extension_end(name) : bool
   }
   class Dxxwjz1JsonEmitter {
     +begin(header)
     +layer(index, type, arrays)
     +end(trailing)
+    #sections()
   }
   class Dxxwjz1FloatCodec {
     +{static} encode(value) : string
     +{static} decode_number(text, value) : bool
     +{static} decode_bits(text, value) : bool
   }
+  class Dxxwjz1JsonString {
+    +{static} quote(text) : string
+  }
   class Dxxwjz1Base64
   class Dxxwjz1Format <<constants>>
 }
 
+package "dxxwjz2::v2" {
+  class Dxxwjz2Reader
+  class Dxxwjz2Writer
+  class Dxxwjz2FileFormat
+  class Dxxwjz2Validator {
+    +{static} validate(filename, net) : WeightsReport
+    +{static} validate(document, net) : WeightsReport
+  }
+  class Dxxwjz2Parser {
+    +{static} parse_file(filename, document, report) : bool
+    +{static} peek(filename, rest, weights, report) : bool
+  }
+  class Dxxwjz2SaxHandler
+  class Dxxwjz2SubtreeBuilder
+  class Dxxwjz2MetadataReader {
+    +network(value, description) : bool
+    +training(value, record) : bool
+  }
+  class Dxxwjz2JsonEmitter
+  class Dxxwjz2Format <<constants>>
+}
+
+package "weights-formats" {
+  class WeightsFileFormats {
+    +{static} all() : formats
+    +{static} named(name) : IWeightsFileFormatPtr
+    +{static} of_file(path) : IWeightsFileFormatPtr
+  }
+  class NetworkSource {
+    +{static} describes(path) : bool
+    +{static} read(path, description) : bool
+    +{static} base_of(path, iteration) : string
+  }
+}
+
 package "weights-converter" {
+  class WeightsConversion {
+    +from / to : IWeightsFileFormatPtr
+    +src / dst / cfg / names : string
+    +stopped() : bool
+  }
   class WeightsConverter {
     +convert(conversion) : bool
-    +{static} parse_format(name, format) : bool
-    #create_reader(format) : IWeightsReaderPtr
-    #create_writer(format) : IWeightsWriterPtr
     #create_network(cfg) : ANetworkAdaptorPtr
   }
+}
+
+class TrainingJournal {
+  +record(iteration, loss, avg_loss)
+  +record_map(iteration, map)
+  +save(net, stem, ema) : bool
+  +rest() : WeightsDocument
+}
+
+class TrainingChart {
+  +{static} render(rest, png) : bool
+  +{static} render_file(weights, png) : bool
 }
 
 package "zlibi" {
@@ -108,6 +206,14 @@ IWeightsReader <|.. OrigWeightsReader
 IWeightsReader <|.. Dxxwjz1Reader
 IWeightsWriter <|.. OrigWeightsWriter
 IWeightsWriter <|.. Dxxwjz1Writer
+IWeightsFileFormat <|.. OrigWeightsFileFormat
+IWeightsFileFormat <|.. Dxxwjz1FileFormat
+IWeightsFileFormat <|.. Dxxwjz2FileFormat
+
+Dxxwjz1Reader <|-- Dxxwjz2Reader
+Dxxwjz1Writer <|-- Dxxwjz2Writer
+Dxxwjz1SaxHandler <|-- Dxxwjz2SaxHandler
+Dxxwjz1JsonEmitter <|-- Dxxwjz2JsonEmitter
 
 OrigWeightsReader ..> OrigWeightsValidator : splits the file by
 OrigWeightsReader ..> WeightsLayout
@@ -117,21 +223,43 @@ OrigWeightsWriter ..> WeightsDocumentValidator
 Dxxwjz1Reader ..> Dxxwjz1Validator
 Dxxwjz1Validator ..> Dxxwjz1Parser
 Dxxwjz1Validator ..> WeightsDocumentValidator
-Dxxwjz1Parser ..> Dxxwjz1FloatCodec
-Dxxwjz1Parser ..> Dxxwjz1Base64
+Dxxwjz1Parser ..> Dxxwjz1SaxHandler
 Dxxwjz1Parser ..> GzipStreams : reads through
+Dxxwjz1SaxHandler ..> Dxxwjz1FloatCodec
+Dxxwjz1SaxHandler ..> Dxxwjz1Base64
 Dxxwjz1Writer ..> Dxxwjz1JsonEmitter
 Dxxwjz1Writer ..> ZlibController : writes through
 Dxxwjz1JsonEmitter ..> Dxxwjz1FloatCodec
+Dxxwjz1JsonEmitter ..> Dxxwjz1JsonString
 Dxxwjz1Reader ..> WeightsLayout : applies by
+
+Dxxwjz2Reader ..> Dxxwjz2Validator
+Dxxwjz2Validator ..> Dxxwjz2Parser
+Dxxwjz2Parser ..> Dxxwjz1Parser : parses by
+Dxxwjz2Parser ..> Dxxwjz2SaxHandler
+Dxxwjz2SaxHandler ..> Dxxwjz2SubtreeBuilder : the network and the training trees
+Dxxwjz2SaxHandler ..> Dxxwjz2MetadataReader
+Dxxwjz2Writer ..> Dxxwjz2JsonEmitter
 
 WeightsDocumentValidator ..> WeightsLayout
 WeightsDocumentValidator ..> WeightsSchema
 WeightsLayout ..> WeightsSchema
 WeightsDocument ..> WeightsSchema : the file order
+WeightsDocument *-- NetworkDescription
+WeightsDocument *-- TrainingRecord
 
-WeightsConverter ..> IWeightsReader : reads the source document
-WeightsConverter ..> IWeightsWriter : writes the destination
+WeightsFileFormats o-- IWeightsFileFormat
+NetworkSource ..> WeightsFileFormats : peeks the dxxwjz2 files by
+NetworkSource ..> NetworkFiles : reads the cfg files by
+
+WeightsConverter ..> WeightsConversion
+WeightsConverter ..> IWeightsFileFormat : reads the source, writes the destination by
+WeightsConverter ..> NetworkSource : the cfg the destination keeps
 WeightsConverter ..> "OrigDefaultLoader" : parses the network cfg
-"app::converter::ApplicationFormatsConverter" ..> WeightsConverter : converts the command line
+TrainingJournal ..> IWeightsFileFormat : saves the training weights by
+TrainingChart ..> TrainingRecord : draws the chart of
+TrainingChart ..> WeightsFileFormats : peeks the dxxwjz2 files by
+"OrigDefaultLoader" ..> NetworkSource : parses the network of
+"OrigDefaultLoader" ..> TrainingJournal : starts the journal of the training
+"darknetxx_impl::WeightsConversionLib" ..> WeightsConverter : converts the library context
 @enduml

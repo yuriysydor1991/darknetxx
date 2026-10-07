@@ -1,0 +1,80 @@
+@startuml library-classes
+title darknetxx library - the facade and the implementation class structure
+
+skinparam shadowing false
+hide empty members
+
+package "darknetxx011 (the installed facade/public headers)" {
+  class LibraryFacade {
+    +{static} create_library_context() : LibraryContextPtr
+    +{static} create_library(ctx) : ILibPtr
+    +{static} create_trainer(ctx) : ITrainerPtr
+    +{static} conversion_formats() : FormatsDescriptions
+    +{static} training_chart(weights) : PNG bytes
+    +{static} init_logger(logger)
+  }
+
+  class LibraryContext {
+    +train_cfg / detect_cfg / latest_weights : string
+    +threads, thresh, ... (the command line ones)
+    +convert_from / convert_src / convert_to : string
+    +convert_dst / convert_cfg : string
+    +training_listener : ITrainingListenerPtr
+    +conversion_requested() : bool
+    +request_stop() / withdraw_stop()
+    +stop_requested() : bool
+    +stop_with(flag)
+  }
+
+  interface ILib {
+    +libcall(ctx) : bool
+  }
+
+  interface ITrainer {
+    +train(folder) : bool
+    +stop()
+    +running() : bool
+  }
+
+  interface ITrainingListener {
+    +on_iteration(progress)
+    +on_finished(succeeded)
+  }
+
+  class TrainingProgress {
+    +done_fraction() : double
+    +iterations_text() / loss_text() / details_text() : string
+  }
+
+  class Yolo4Folder {
+    +valid() : bool
+    +latest_weights() : string
+    +chart() : string
+    +enter(ctx) : bool
+  }
+
+  interface "logger::ILogger" as ILogger
+}
+
+package "darknetxx_impl (not installed)" {
+  class LibFactory
+  class LibMain
+  class WeightsConversionLib
+  class BackgroundTrainer
+}
+
+ILib <|.. LibMain
+ILib <|.. WeightsConversionLib
+ITrainer <|.. BackgroundTrainer
+LibraryFacade ..> LibFactory : creates by
+LibFactory ..> LibMain : training and detection
+LibFactory ..> WeightsConversionLib : conversion
+LibFactory ..> BackgroundTrainer : trainer
+BackgroundTrainer --> LibMain : runs in it's thread
+LibMain ..> "darknet_adaptor::DarknetController" : performs by
+WeightsConversionLib ..> "darknet_adaptor::loaders::WeightsConverter" : converts by
+LibraryContext --> ITrainingListener : reports to
+ITrainingListener ..> TrainingProgress
+BackgroundTrainer ..> Yolo4Folder : trains
+LibraryFacade ..> ILogger : adopts
+@enduml
