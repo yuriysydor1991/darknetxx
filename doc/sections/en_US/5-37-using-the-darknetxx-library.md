@@ -10,7 +10,7 @@ made available by the FetchContent or installed and found by the
 
 | CMake option | Default | Effect |
 | --- | --- | --- |
-| `ENABLE_DARKNETXX_EXECUTABLES` | `ON` for the top level project, `OFF` for the project of another one | Builds and installs the `darknetxx`, the `darknetxxConverter` and the `darknetxx-gui` executables. `OFF` builds and installs the library alone. |
+| `ENABLE_DARKNETXX_EXECUTABLES` | `ON` for the top level project, `OFF` for the project of another one | Builds and installs the `darknetxx`, the `darknetxxConverter`, the `darknetxx-train-gui` and the `darknetxx-recognition-gui` executables. `OFF` builds and installs the library alone. |
 | `DARKNETXX_LIB_INSTALL_DEV_FILES` | `ON` | Installs the public headers, the CMake package files and the `libdarknetxx-0.11.so` namelink beside the library. `OFF` installs the library runtime alone. |
 | `DARKNETXX_LIBRARY_NAME` | `darknetxx-<major>.<minor>` | The name of the library, of it's target, of the headers directory and of the CMake package. |
 
@@ -96,10 +96,12 @@ int main()
 
 The `train_cfg` context of the very same `create_library` call trains the
 network and the `detect_cfg` one detects, while the
-`LibraryFacade::create_trainer` trains a YOLO4 folder in the background and
-reports the iterations to the `training_listener` of the context, and the
+`LibraryFacade::create_trainer` trains the training project the
+`LibraryFacade::open_training_project` opens of a path (a YOLO4 folder, a
+dxxwjz2p or a dxxwjz3p project file) in the background and reports the iterations to the
+`training_listener` of the context, and the
 `LibraryFacade::training_chart` gives the PNG image of the training chart of a
-dxxwjz2 weights file (the empty one for a file of no training record). A program
+dxxwjz2 or dxxwjz3 weights file (the empty one for a file of no training record). A program
 of an own logger hands it over by the `LibraryFacade::init_logger` before any
 other call, the library logs into the `darknetxx-0.11.0.log` file of the
 working directory and the console otherwise.

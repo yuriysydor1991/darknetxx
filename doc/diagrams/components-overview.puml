@@ -12,7 +12,7 @@ package "app (application infrastructure)" {
   [ApplicationFactory] as factory
   [CommandLineParser] as parser
   [ApplicationContext] as ctx
-  [IApplication\n(+ Application,\nGuiApplication,\nHelpPrinter,\nVersionPrinter)] as iapp
+  [IApplication\n(+ Application,\nTrain/Recognition\nGuiApplication,\nHelpPrinter,\nVersionPrinter)] as iapp
   [ISignalsHandler\n(+ SignalsHandler,\nStop/Pause/Continue/\nReload/User/Ignored)] as signals
 }
 
@@ -20,15 +20,16 @@ package "converters" {
   [ApplicationContext2LibraryContext] as conv
 }
 
-package "gui (darknetxx-gui)" {
-  [GtkmmIniter /\nMainWindow] as gui
+package "gui (darknetxx-train-gui,\ndarknetxx-recognition-gui)" {
+  [Train/Recognition\nGtkmmIniter and windows] as gui
 }
 
 package "lib (darknetxx library)" {
   [LibraryFacade] as facade
   [LibraryContext] as lctx
   [ILib\n(+ LibMain,\nWeightsConversionLib)] as ilib
-  [ITrainer\n(+ BackgroundTrainer,\nYolo4Folder)] as trainer
+  [ITrainer\n(+ BackgroundTrainer,\nATrainingProject)] as trainer
+  [IRecognizer\n(+ NetworkRecognizer,\nObjectsDetection,\nImageClassification)] as recognizer
 }
 
 package "darknet-adaptor (Darknet bridge)" {
@@ -36,7 +37,7 @@ package "darknet-adaptor (Darknet bridge)" {
   [DarknetContext] as dctx
   [IDarknetAdaptor\n(+ ADetector,\nADetectorTrainer)] as adaptor
   [Network infrastructure\n(NetworksLoaders, Layers,\nALayer/ANetwork adaptors,\nNetworksCApi)] as netinfra
-  [Weights files\n(original, dxxwjz1, dxxwjz2,\nWeightsConverter)] as weights
+  [Weights files\n(original, dxxwjz1, dxxwjz2,\ndxxwjz2p, dxxwjz3, dxxwjz3p,\nYOLO4 folder, WeightsConverter)] as weights
   [Original Darknet\nC computation] as darknetc
 }
 
@@ -58,9 +59,12 @@ iapp --> conv : converts ctx
 conv --> lctx : fills
 iapp --> facade : creates the work
 iapp --> gui : the GUI app shows
-gui --> trainer : trains a YOLO4 folder
+gui --> trainer : trains a YOLO4 folder or a dxxwjz2p/dxxwjz3p project
+gui --> recognizer : recognizes the images
 facade --> ilib : creates
 facade --> trainer : creates
+facade --> recognizer : creates
+recognizer --> netinfra : loads the network,\nrecognizes by
 trainer --> ilib : runs in it's thread
 ilib --> omp : adjust threads
 ilib --> dctrl : trains / detects

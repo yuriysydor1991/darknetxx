@@ -9,7 +9,10 @@ package "darknetxx011 (the installed facade/public headers)" {
     +{static} create_library_context() : LibraryContextPtr
     +{static} create_library(ctx) : ILibPtr
     +{static} create_trainer(ctx) : ITrainerPtr
+    +{static} open_training_project(path) : ATrainingProjectPtr
+    +{static} create_recognizer() : IRecognizerPtr
     +{static} conversion_formats() : FormatsDescriptions
+    +{static} weights_extensions() : string list
     +{static} training_chart(weights) : PNG bytes
     +{static} init_logger(logger)
   }
@@ -31,7 +34,7 @@ package "darknetxx011 (the installed facade/public headers)" {
   }
 
   interface ITrainer {
-    +train(folder) : bool
+    +train(project) : bool
     +stop()
     +running() : bool
   }
@@ -46,11 +49,36 @@ package "darknetxx011 (the installed facade/public headers)" {
     +iterations_text() / loss_text() / details_text() : string
   }
 
-  class Yolo4Folder {
+  abstract class ATrainingProject {
     +valid() : bool
-    +latest_weights() : string
+    +path() : path
+    +cfg() / latest_weights() : string
     +chart() : string
     +enter(ctx) : bool
+    #{abstract} names() : string
+  }
+
+  class Yolo4Folder
+
+  interface IRecognizer {
+    +recognize(ctx) : Recognition
+  }
+
+  class Recognition {
+    +error : string
+    +objects : RecognizedObject list
+    +png : PNG bytes
+    +seconds : double
+    +succeeded() : bool
+    +summary_text() : string
+  }
+
+  class RecognizedObject {
+    +name : string
+    +probability : float
+    +x, y, width, height : int
+    +boxed() : bool
+    +text() : string
   }
 
   interface "logger::ILogger" as ILogger
@@ -61,20 +89,38 @@ package "darknetxx_impl (not installed)" {
   class LibMain
   class WeightsConversionLib
   class BackgroundTrainer
+  class DxxwjzProject
+  class NetworkRecognizer
+  interface IRecognitionMethod
+  class ObjectsDetection
+  class ImageClassification
+  class RecognitionPainter
 }
 
 ILib <|.. LibMain
 ILib <|.. WeightsConversionLib
 ITrainer <|.. BackgroundTrainer
+IRecognizer <|.. NetworkRecognizer
+IRecognitionMethod <|.. ObjectsDetection
+IRecognitionMethod <|.. ImageClassification
 LibraryFacade ..> LibFactory : creates by
 LibFactory ..> LibMain : training and detection
 LibFactory ..> WeightsConversionLib : conversion
 LibFactory ..> BackgroundTrainer : trainer
+LibFactory ..> NetworkRecognizer : recognizer
+NetworkRecognizer --> IRecognitionMethod : the one of the network layers
+NetworkRecognizer ..> RecognitionPainter : boxes the objects by
+NetworkRecognizer ..> "darknet_adaptor::loaders::OrigDefaultLoader" : loads by
+NetworkRecognizer ..> Recognition : gives
+Recognition --> RecognizedObject
 BackgroundTrainer --> LibMain : runs in it's thread
 LibMain ..> "darknet_adaptor::DarknetController" : performs by
 WeightsConversionLib ..> "darknet_adaptor::loaders::WeightsConverter" : converts by
 LibraryContext --> ITrainingListener : reports to
 ITrainingListener ..> TrainingProgress
-BackgroundTrainer ..> Yolo4Folder : trains
+ATrainingProject <|-- Yolo4Folder
+ATrainingProject <|-- DxxwjzProject
+LibraryFacade ..> ATrainingProject : opens of the folder or the project file
+BackgroundTrainer ..> ATrainingProject : trains
 LibraryFacade ..> ILogger : adopts
 @enduml

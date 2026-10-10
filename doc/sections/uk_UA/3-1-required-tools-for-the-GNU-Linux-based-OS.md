@@ -6,7 +6,7 @@
 sudo apt install -y git g++ cmake libopencv-dev zlib1g-dev nlohmann-json3-dev
 ```
 
-[Бінарний файл darknetxx-gui](/doc/sections/uk_UA/5-36-the-darknetxx-gui-binary.md) потребує також файлів розробки GTKmm 4 (Debian, Ubuntu 24.04 чи новіші), якщо його не вимкнено параметром `-DENABLE_DARKNETXX_GUI=OFF` чи не вимкнено усі виконувані файли параметром `-DENABLE_DARKNETXX_EXECUTABLES=OFF` (див. секцію [Використання бібліотеки darknetxx](/doc/sections/uk_UA/5-37-using-the-darknetxx-library.md)):
+[Бінарні файли GUI](/doc/sections/uk_UA/5-36-the-GUI-binaries.md) потребують також файлів розробки GTKmm 4 (Debian, Ubuntu 24.04 чи новіші), якщо їх не вимкнено параметром `-DENABLE_DARKNETXX_GUI=OFF` чи не вимкнено усі виконувані файли параметром `-DENABLE_DARKNETXX_EXECUTABLES=OFF` (див. секцію [Використання бібліотеки darknetxx](/doc/sections/uk_UA/5-37-using-the-darknetxx-library.md)):
 
 ```
 sudo apt install -y libgtkmm-4.0-dev

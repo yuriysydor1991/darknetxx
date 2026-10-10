@@ -1,28 +1,37 @@
 # Network weights files
 
-The `darknetxx` reads and writes the weights of the networks in three formats:
+The `darknetxx` reads and writes the weights of the networks in six formats:
 
 - the **original darknet weights file** (`*.weights`), the binary file the original Darknet reads and writes;
 - the **dxxwjz1 file** (`*.dxxwjz1`, the **d**arknet**xx** **w**eights **j**son **z**ipped file of the first version), the gzip compressed JSON document of the same weights, readable by any JSON tool and by a human;
-- the **dxxwjz2 file** (`*.dxxwjz2`, the file of the second version), the dxxwjz1 document of everything the network is detected and trained with beside its weights: the text of the network cfg file, the names of the classes with their indexes, the loss of every training iteration in the order of the training and the time the training took.
+- the **dxxwjz2 file** (`*.dxxwjz2`, the file of the second version), the dxxwjz1 document of everything the network is detected and trained with beside its weights: the text of the network cfg file, the names of the classes with their indexes, the loss of every training iteration in the order of the training and the time the training took;
+- the **dxxwjz2p file** (`*.dxxwjz2p`, the dxxwjz2 **p**roject file), the dxxwjz2 document of the YOLO4 training project: the network, the weights and the training record beside the YOLO4 annotations of the images, everything the training needs but the images themselves (see the [The dxxwjz2p project file format](#the-dxxwjz2p-project-file-format) section);
+- the **dxxwjz3 file** (`*.dxxwjz3`, the file of the third version), the dxxwjz2 document of nothing but the JSON data: the network cfg is the JSON structure of the options of its sections, the `net` object of the `[net]` ones, instead of the text of the cfg file (see the [The dxxwjz3 file format of the third version](#the-dxxwjz3-file-format-of-the-third-version) section);
+- the **dxxwjz3p file** (`*.dxxwjz3p`, the dxxwjz3 **p**roject file), the dxxwjz2p project of the dxxwjz3 document, the whole training project of the JSON data alone (see the [The dxxwjz3p project file format](#the-dxxwjz3p-project-file-format) section).
 
-The training and the detection of the `darknetxx` read the weights files of every format (the `--weights` command line parameter, the format of a file is told by its name extension), the training saves its weights into the dxxwjz2 files by default (see the [Training with the formats](#training-with-the-formats) section below) and the dxxwjz2 file alone is the network the detection runs with.
+The **YOLO4 training folder**, the one the ImagesAnnotator exports, converts into the dxxwjz2p project and back: it's the `yolo4` format of the conversion alone (see the [The YOLO4 training folder](#the-yolo4-training-folder) section).
 
-The weights of the formats convert into each other with no loss: the original weights file converted to the dxxwjz1 or the dxxwjz2 one and back is the same file byte to byte (see the [Converting the network weights files](/doc/sections/en_US/6-2-4-converting-the-network-weights-files.md) section and the [The darknetxxConverter binary](/doc/sections/en_US/5-35-the-darknetxxConverter-binary.md) one), while the network description and the training record are kept by the dxxwjz2 files alone.
+The training and the detection of the `darknetxx` read the weights files of every format (the `--weights` command line parameter, the format of a file is told by its name extension), the training saves its weights into the dxxwjz3 files by default (see the [Training with the formats](#training-with-the-formats) section below) and the dxxwjz2, the dxxwjz2p, the dxxwjz3 and the dxxwjz3p files alone are the networks the detection runs with.
+
+The weights of the formats convert into each other with no loss: the original weights file converted to the dxxwjz1, the dxxwjz2 or the dxxwjz3 one and back is the same file byte to byte (see the [Converting the network weights files](/doc/sections/en_US/6-2-4-converting-the-network-weights-files.md) section and the [The darknetxxConverter binary](/doc/sections/en_US/5-35-the-darknetxxConverter-binary.md) one), while the network description and the training record are kept by the dxxwjz2 and the dxxwjz3 files and their projects alone, the annotations of the images by the dxxwjz2p and the dxxwjz3p projects.
 
 The components of the files live in the `darknet_adaptor::loaders` namespace under the [`src/lib/darknet-adaptor/adaptors/NetworksLoaders`](/src/lib/darknet-adaptor/adaptors/NetworksLoaders) directory:
 
 | Directory | Holds |
 | --- | --- |
 | [`NetworksLoaders`](/src/lib/darknet-adaptor/adaptors/NetworksLoaders) | the `IWeightsReader`, the `IWeightsWriter` and the `IWeightsFileFormat` interfaces every format implements |
-| [`weights-model`](/src/lib/darknet-adaptor/adaptors/NetworksLoaders/weights-model) | the format neutral model of the weights: the arrays of every layer kind and their order (`WeightsSchema`), the arrays of a network in that order (`WeightsLayout`), the content of a file (`WeightsDocument` with the `NetworkDescription` and the `TrainingRecord`), the reads of the cfg and the class names files (`NetworkFiles`) and the validation (`WeightsDocumentValidator`, `WeightsReport`) |
+| [`weights-model`](/src/lib/darknet-adaptor/adaptors/NetworksLoaders/weights-model) | the format neutral model of the weights: the arrays of every layer kind and their order (`WeightsSchema`), the arrays of a network in that order (`WeightsLayout`), the content of a file (`WeightsDocument` with the `NetworkDescription`, the `TrainingRecord` and the `Yolo4Annotations` of the `Yolo4Image` and the `Yolo4Box`), the reads of the cfg and the class names files (`NetworkFiles`) and the validation (`WeightsDocumentValidator`, `WeightsReport`) |
 | [`original-weights`](/src/lib/darknet-adaptor/adaptors/NetworksLoaders/original-weights) | the original weights file: the `OrigWeightsReader`, the `OrigWeightsWriter`, the `OrigWeightsValidator` and the `OrigWeightsFileFormat` |
 | [`dxxwjz1/v1`](/src/lib/darknet-adaptor/adaptors/NetworksLoaders/dxxwjz1/v1) | the dxxwjz1 file of the first version: the `Dxxwjz1Reader`, the `Dxxwjz1Writer`, the `Dxxwjz1Validator` and the `Dxxwjz1FileFormat` with the support classes of theirs (the `dxxwjz1::v1` namespace) |
 | [`dxxwjz2/v2`](/src/lib/darknet-adaptor/adaptors/NetworksLoaders/dxxwjz2/v2) | the dxxwjz2 file of the second version: the `Dxxwjz2Reader`, the `Dxxwjz2Writer`, the `Dxxwjz2Validator` and the `Dxxwjz2FileFormat` with the support classes of theirs (the `dxxwjz2::v2` namespace), which extend the dxxwjz1 ones |
-| [`weights-formats`](/src/lib/darknet-adaptor/adaptors/NetworksLoaders/weights-formats) | the formats of their names and file name extensions (`WeightsFileFormats`) and the files networks are made of: the cfg and the dxxwjz2 ones (`NetworkSource`) |
+| [`dxxwjz2p/v1`](/src/lib/darknet-adaptor/adaptors/NetworksLoaders/dxxwjz2p/v1) | the dxxwjz2p project file of the first version: the `Dxxwjz2pReader`, the `Dxxwjz2pWriter`, the `Dxxwjz2pValidator` and the `Dxxwjz2pFileFormat` with the support classes of theirs (the `dxxwjz2p::v1` namespace), which extend the dxxwjz2 ones |
+| [`dxxwjz3/v3`](/src/lib/darknet-adaptor/adaptors/NetworksLoaders/dxxwjz3/v3) | the dxxwjz3 file of the third version: the `Dxxwjz3Reader`, the `Dxxwjz3Writer`, the `Dxxwjz3Validator` and the `Dxxwjz3FileFormat` with the support classes of theirs (the `dxxwjz3::v3` namespace), which extend the dxxwjz2 ones |
+| [`dxxwjz3p/v1`](/src/lib/darknet-adaptor/adaptors/NetworksLoaders/dxxwjz3p/v1) | the dxxwjz3p project file of the first version: the `Dxxwjz3pReader`, the `Dxxwjz3pWriter`, the `Dxxwjz3pValidator` and the `Dxxwjz3pFileFormat` with the support classes of theirs (the `dxxwjz3p::v1` namespace), which extend the dxxwjz2p ones of the dxxwjz3 members |
+| [`yolo4-folder`](/src/lib/darknet-adaptor/adaptors/NetworksLoaders/yolo4-folder) | the YOLO4 training folder of the conversion: the `Yolo4FolderReader`, the `Yolo4FolderWriter` and the `Yolo4FolderFormat` with the `Yolo4FolderLayout` of the files of the folder (the `yolo4` namespace) |
+| [`weights-formats`](/src/lib/darknet-adaptor/adaptors/NetworksLoaders/weights-formats) | the formats of their names and file name extensions and the ones of the conversion (`WeightsFileFormats`) and the files networks are made of: the cfg, the dxxwjz2, the dxxwjz2p, the dxxwjz3 and the dxxwjz3p ones (`NetworkSource`) |
 | [`weights-converter`](/src/lib/darknet-adaptor/adaptors/NetworksLoaders/weights-converter) | the `WeightsConverter` of the files between the formats and the `WeightsConversion` it performs |
 
-The journal of the training, the `TrainingJournal` of the [`TrainingJournal`](/src/lib/darknet-adaptor/adaptors/TrainingJournal) directory, keeps the network description and the training record the weights files of the training keep, the `TrainingChart` of the [`TrainingChart`](/src/lib/darknet-adaptor/adaptors/TrainingChart) directory draws the chart of the record (see the [Training with the formats](#training-with-the-formats) section).
+The journal of the training, the `TrainingJournal` of the [`TrainingJournal`](/src/lib/darknet-adaptor/adaptors/TrainingJournal) directory, keeps the network description and the training record the weights files of the training keep, the `TrainingChart` of the [`TrainingChart`](/src/lib/darknet-adaptor/adaptors/TrainingChart) directory draws the chart of the record (see the [Training with the formats](#training-with-the-formats) section), the `TrainingDataRegistry` of the [`TrainingData`](/src/lib/darknet-adaptor/adaptors/TrainingData) directory hands the image lists and the labels of the dxxwjz2p and the dxxwjz3p projects over to the darknet C training code (see the [Training the dxxwjz2p project](#training-the-dxxwjz2p-project) section).
 
 The standalone source of the diagram below is
 [`doc/diagrams/network-weights-files-classes.puml`](/doc/diagrams/network-weights-files-classes.puml).
@@ -74,6 +83,7 @@ package "weights-model" {
     +trailing : bytes
     +network : NetworkDescription
     +training : TrainingRecord
+    +annotations : Yolo4Annotations
     +normalize()
     +file_size() : uint64
   }
@@ -91,6 +101,19 @@ package "weights-model" {
     +iterations() / losses() / avg_losses()
     +map_iterations() / maps()
     +truncate_after(iteration)
+  }
+
+  class Yolo4Annotations {
+    +images : Yolo4Image[]
+    +training_paths() / validation_paths() : string[]
+  }
+
+  class Yolo4Image {
+    +path : string
+    +width / height : int
+    +boxes : Yolo4Box[]
+    +validation : bool
+    +{static} label_of(path) : string
   }
 
   class NetworkFiles {
@@ -151,6 +174,7 @@ package "dxxwjz1::v1" {
     +layer(index, type, arrays)
     +end(trailing)
     #sections()
+    #trailing(bytes) : string
   }
   class Dxxwjz1FloatCodec {
     +{static} encode(value) : string
@@ -176,26 +200,111 @@ package "dxxwjz2::v2" {
     +{static} parse_file(filename, document, report) : bool
     +{static} peek(filename, rest, weights, report) : bool
   }
-  class Dxxwjz2SaxHandler
+  class Dxxwjz2SaxHandler {
+    #metadata() : Dxxwjz2MetadataReader
+    #trailing() : delegate
+  }
   class Dxxwjz2SubtreeBuilder
   class Dxxwjz2MetadataReader {
     +network(value, description) : bool
     +training(value, record) : bool
   }
-  class Dxxwjz2JsonEmitter
+  class Dxxwjz2JsonEmitter {
+    #cfg(network) : string
+  }
   class Dxxwjz2Format <<constants>>
+}
+
+package "dxxwjz2p::v1" {
+  class Dxxwjz2pReader
+  class Dxxwjz2pWriter
+  class Dxxwjz2pFileFormat
+  class Dxxwjz2pValidator {
+    +{static} validate(filename, net) : WeightsReport
+  }
+  class Dxxwjz2pParser {
+    +{static} parse_file(filename, document, report) : bool
+    +{static} peek(filename, rest, weights, report) : bool
+    +{static} directory_of(filename) : path
+  }
+  class Dxxwjz2pSaxHandler
+  class Dxxwjz2pAnnotationsReader {
+    +annotations(value, classes, annotations) : bool
+  }
+  class Dxxwjz2pJsonEmitter
+  class Dxxwjz2pFormat <<constants>>
+}
+
+package "dxxwjz3::v3" {
+  class Dxxwjz3Reader
+  class Dxxwjz3Writer {
+    +{static} keeps_cfg(network, filename) : bool
+  }
+  class Dxxwjz3FileFormat
+  class Dxxwjz3Validator {
+    +{static} validate(filename, net) : WeightsReport
+  }
+  class Dxxwjz3Parser {
+    +{static} parse_file(filename, document, report) : bool
+    +{static} peek(filename, rest, weights, report) : bool
+  }
+  class Dxxwjz3SaxHandler
+  class Dxxwjz3MetadataReader {
+    +network(value, description) : bool
+  }
+  class Dxxwjz3JsonEmitter
+  class Dxxwjz3CfgJson {
+    +{static} members(cfg) : string
+  }
+  class Dxxwjz3ValueCodec {
+    +{static} json_of(value) : string
+    +{static} text_of(value, text) : bool
+  }
+  class Dxxwjz3Bytes {
+    +{static} json_of(bytes) : string
+  }
+  class Dxxwjz3Format <<constants>>
+}
+
+package "dxxwjz3p::v1" {
+  class Dxxwjz3pReader
+  class Dxxwjz3pWriter
+  class Dxxwjz3pFileFormat
+  class Dxxwjz3pValidator {
+    +{static} validate(filename, net) : WeightsReport
+  }
+  class Dxxwjz3pParser {
+    +{static} parse_file(filename, document, report) : bool
+    +{static} peek(filename, rest, weights, report) : bool
+  }
+  class Dxxwjz3pSaxHandler
+  class Dxxwjz3pJsonEmitter
+  class Dxxwjz3pFormat <<constants>>
+}
+
+package "yolo4" {
+  class Yolo4FolderFormat
+  class Yolo4FolderReader
+  class Yolo4FolderWriter
+  class Yolo4FolderLayout {
+    +{static} cfg(root) : string
+    +{static} names(root) : string
+    +{static} latest_weights(root, cfg) : string
+  }
 }
 
 package "weights-formats" {
   class WeightsFileFormats {
     +{static} all() : formats
-    +{static} named(name) : IWeightsFileFormatPtr
+    +{static} convertible() : formats
+    +{static} named(name, formats) : IWeightsFileFormatPtr
     +{static} of_file(path) : IWeightsFileFormatPtr
   }
   class NetworkSource {
     +{static} describes(path) : bool
-    +{static} read(path, description) : bool
+    +{static} read(path, description / rest) : bool
     +{static} base_of(path, iteration) : string
+    +{static} option_of(path, key, def) : string
   }
 }
 
@@ -218,6 +327,13 @@ class TrainingJournal {
   +rest() : WeightsDocument
 }
 
+class TrainingDataRegistry {
+  +{static} publish(annotations)
+  +{static} withdraw()
+  +{static} paths(name, found) : bool
+  +{static} boxes(labelpath, found) : bool
+}
+
 class TrainingChart {
   +{static} render(rest, png) : bool
   +{static} render_file(weights, png) : bool
@@ -235,11 +351,31 @@ IWeightsWriter <|.. Dxxwjz1Writer
 IWeightsFileFormat <|.. OrigWeightsFileFormat
 IWeightsFileFormat <|.. Dxxwjz1FileFormat
 IWeightsFileFormat <|.. Dxxwjz2FileFormat
+IWeightsFileFormat <|.. Dxxwjz2pFileFormat
+IWeightsFileFormat <|.. Dxxwjz3FileFormat
+IWeightsFileFormat <|.. Dxxwjz3pFileFormat
+IWeightsFileFormat <|.. Yolo4FolderFormat
+IWeightsReader <|.. Yolo4FolderReader
+IWeightsWriter <|.. Yolo4FolderWriter
 
 Dxxwjz1Reader <|-- Dxxwjz2Reader
 Dxxwjz1Writer <|-- Dxxwjz2Writer
 Dxxwjz1SaxHandler <|-- Dxxwjz2SaxHandler
 Dxxwjz1JsonEmitter <|-- Dxxwjz2JsonEmitter
+Dxxwjz2Reader <|-- Dxxwjz2pReader
+Dxxwjz2Writer <|-- Dxxwjz2pWriter
+Dxxwjz2SaxHandler <|-- Dxxwjz2pSaxHandler
+Dxxwjz2JsonEmitter <|-- Dxxwjz2pJsonEmitter
+Dxxwjz2MetadataReader <|-- Dxxwjz2pAnnotationsReader
+Dxxwjz2Reader <|-- Dxxwjz3Reader
+Dxxwjz2Writer <|-- Dxxwjz3Writer
+Dxxwjz2SaxHandler <|-- Dxxwjz3SaxHandler
+Dxxwjz2JsonEmitter <|-- Dxxwjz3JsonEmitter
+Dxxwjz2MetadataReader <|-- Dxxwjz3MetadataReader
+Dxxwjz2pReader <|-- Dxxwjz3pReader
+Dxxwjz2pWriter <|-- Dxxwjz3pWriter
+Dxxwjz2pSaxHandler <|-- Dxxwjz3pSaxHandler
+Dxxwjz2pJsonEmitter <|-- Dxxwjz3pJsonEmitter
 
 OrigWeightsReader ..> OrigWeightsValidator : splits the file by
 OrigWeightsReader ..> WeightsLayout
@@ -267,15 +403,52 @@ Dxxwjz2SaxHandler ..> Dxxwjz2SubtreeBuilder : the network and the training trees
 Dxxwjz2SaxHandler ..> Dxxwjz2MetadataReader
 Dxxwjz2Writer ..> Dxxwjz2JsonEmitter
 
+Dxxwjz2pReader ..> Dxxwjz2pValidator
+Dxxwjz2pValidator ..> Dxxwjz2pParser
+Dxxwjz2pValidator ..> Dxxwjz2Validator : validates the rest by
+Dxxwjz2pParser ..> Dxxwjz2Parser : peeks by
+Dxxwjz2pParser ..> Dxxwjz2pSaxHandler
+Dxxwjz2pSaxHandler ..> Dxxwjz2pAnnotationsReader : the annotations tree
+Dxxwjz2pWriter ..> Dxxwjz2pJsonEmitter
+
+Dxxwjz3Reader ..> Dxxwjz3Validator
+Dxxwjz3Validator ..> Dxxwjz3Parser
+Dxxwjz3Validator ..> Dxxwjz2Validator : validates the rest by
+Dxxwjz3Parser ..> Dxxwjz3SaxHandler
+Dxxwjz3SaxHandler ..> Dxxwjz3MetadataReader : the network tree
+Dxxwjz3SaxHandler ..> Dxxwjz3Bytes : the trailing bytes
+Dxxwjz3MetadataReader ..> Dxxwjz3ValueCodec : the option values
+Dxxwjz3Writer ..> Dxxwjz3JsonEmitter
+Dxxwjz3JsonEmitter ..> Dxxwjz3CfgJson : the network cfg
+Dxxwjz3JsonEmitter ..> Dxxwjz3Bytes : the trailing bytes
+Dxxwjz3CfgJson ..> Dxxwjz3ValueCodec : the option values
+Dxxwjz3CfgJson ..> "CfgSection" : reads the cfg text by
+
+Dxxwjz3pReader ..> Dxxwjz3pValidator
+Dxxwjz3pValidator ..> Dxxwjz3pParser
+Dxxwjz3pParser ..> Dxxwjz3pSaxHandler
+Dxxwjz3pSaxHandler ..> Dxxwjz3MetadataReader : the network tree
+Dxxwjz3pSaxHandler ..> Dxxwjz3Bytes : the trailing bytes
+Dxxwjz3pWriter ..> Dxxwjz3pJsonEmitter
+Dxxwjz3pWriter ..> Dxxwjz3Writer : checks the cfg by
+Dxxwjz3pJsonEmitter ..> Dxxwjz3CfgJson : the network cfg
+
+Yolo4FolderReader ..> Yolo4FolderLayout
+Yolo4FolderWriter ..> Yolo4FolderLayout
+Yolo4FolderReader ..> WeightsFileFormats : reads the latest weights by
+Yolo4FolderWriter ..> Dxxwjz2Writer : writes the latest weights by
+
 WeightsDocumentValidator ..> WeightsLayout
 WeightsDocumentValidator ..> WeightsSchema
 WeightsLayout ..> WeightsSchema
 WeightsDocument ..> WeightsSchema : the file order
 WeightsDocument *-- NetworkDescription
 WeightsDocument *-- TrainingRecord
+WeightsDocument *-- Yolo4Annotations
+Yolo4Annotations *-- Yolo4Image
 
 WeightsFileFormats o-- IWeightsFileFormat
-NetworkSource ..> WeightsFileFormats : peeks the dxxwjz2 files by
+NetworkSource ..> WeightsFileFormats : peeks the dxxwjz2 and the dxxwjz3 files and their projects by
 NetworkSource ..> NetworkFiles : reads the cfg files by
 
 WeightsConverter ..> WeightsConversion
@@ -287,6 +460,9 @@ TrainingChart ..> TrainingRecord : draws the chart of
 TrainingChart ..> WeightsFileFormats : peeks the dxxwjz2 files by
 "OrigDefaultLoader" ..> NetworkSource : parses the network of
 "OrigDefaultLoader" ..> TrainingJournal : starts the journal of the training
+"OrigDefaultLoader" ..> TrainingDataRegistry : the lists of the project training
+TrainingDataRegistry ..> Yolo4Annotations : the lists and the labels of
+TrainingJournal ..> WeightsFileFormats : updates the dxxwjz2p and the dxxwjz3p projects by
 "darknetxx_impl::WeightsConversionLib" ..> WeightsConverter : converts the library context
 @enduml
 
@@ -294,9 +470,9 @@ TrainingChart ..> WeightsFileFormats : peeks the dxxwjz2 files by
 
 Every format implements the three interfaces:
 
-- **`IWeightsReader`** ([`IWeightsReader.h`](/src/lib/darknet-adaptor/adaptors/NetworksLoaders/IWeightsReader.h)) - the `load(net, filename, cutoff)` method loads the weights of the layers before the cutoff into the network arrays (the `load_weights_upto()` of the original Darknet), the `load(net, filename, cutoff, rest)` one keeps the rest of the file as well: the document without the arrays, of the network description and the training record of the formats which keep them. The `read(filename, net, document)` method reads the whole file into the format neutral `WeightsDocument`, the `peek(filename, rest, weights)` one reads the rest of the file up to its first weights array and tells the file holds weights (the dxxwjz2 files alone, the rest of the formats keep no network description to peek).
+- **`IWeightsReader`** ([`IWeightsReader.h`](/src/lib/darknet-adaptor/adaptors/NetworksLoaders/IWeightsReader.h)) - the `load(net, filename, cutoff)` method loads the weights of the layers before the cutoff into the network arrays (the `load_weights_upto()` of the original Darknet), the `load(net, filename, cutoff, rest)` one keeps the rest of the file as well: the document without the arrays, of the network description and the training record of the formats which keep them. The `read(filename, net, document)` method reads the whole file into the format neutral `WeightsDocument`, the `peek(filename, rest, weights)` one reads the rest of the file up to its first weights array and tells the file holds weights (the dxxwjz2 and the dxxwjz3 files and their projects alone, the rest of the formats keep no network description to peek).
 - **`IWeightsWriter`** ([`IWeightsWriter.h`](/src/lib/darknet-adaptor/adaptors/NetworksLoaders/IWeightsWriter.h)) - the `save(net, filename, cutoff, save_ema)` method saves the weights of the layers before the cutoff (the `save_weights_upto()` of the original Darknet: the current version, the seen of the current iteration, the EMA arrays of the convolutional layers for the `save_ema`), the `save(net, filename, cutoff, save_ema, rest)` one saves the network description and the training record of the rest beside them, which the formats of the weights alone leave out. The `write(document, filename)` method writes the document.
-- **`IWeightsFileFormat`** ([`IWeightsFileFormat.h`](/src/lib/darknet-adaptor/adaptors/NetworksLoaders/IWeightsFileFormat.h)) - the format itself: its name (the one of the command line), its file name extension and description, whether its files keep the structure of the network (the layers and the names of the arrays, so they're read without the network) and the network description, the reader and the writer of its files. The `WeightsFileFormats` of the [`weights-formats`](/src/lib/darknet-adaptor/adaptors/NetworksLoaders/weights-formats) directory finds the formats of their names and of the file name extensions (any extension but the `.dxxwjz1` and the `.dxxwjz2` ones is the original weights file), the `NetworkSource` reads the network description of the file a network is made of: the text of the cfg file or the description the dxxwjz2 file keeps.
+- **`IWeightsFileFormat`** ([`IWeightsFileFormat.h`](/src/lib/darknet-adaptor/adaptors/NetworksLoaders/IWeightsFileFormat.h)) - the format itself: its name (the one of the command line), its file name extension and description, whether its files keep the structure of the network (the layers and the names of the arrays, so they're read without the network) and the network description, the reader and the writer of its files. The `WeightsFileFormats` of the [`weights-formats`](/src/lib/darknet-adaptor/adaptors/NetworksLoaders/weights-formats) directory finds the formats of their names and of the file name extensions (any extension but the `.dxxwjz1`, the `.dxxwjz2`, the `.dxxwjz2p`, the `.dxxwjz3` and the `.dxxwjz3p` ones is the original weights file) and the formats of the conversion: every one and the YOLO4 folder (its `convertible()`), the `NetworkSource` reads the network description of the file a network is made of: the text of the cfg file or the description the dxxwjz2 and the dxxwjz3 files and their projects keep, and the keys of the `[net]` section of it.
 
 The readers and the writers of the formats load and save the same arrays of the network the same way, so any file of a network loads the same network. The `read()` and the `write()` of the documents are what converts the files between the formats.
 
@@ -388,8 +564,8 @@ The support classes of the [`dxxwjz1/v1`](/src/lib/darknet-adaptor/adaptors/Netw
 - **`Dxxwjz1FloatCodec`** - the JSON text of the floats described above (the C++17 `std::to_chars()` and `std::from_chars()`, independent of the locale).
 - **`Dxxwjz1Base64`** - the base64 text of the trailing bytes.
 - **`Dxxwjz1JsonString`** - the JSON string text of any text: the bytes which aren't UTF-8 are replaced with the U+FFFD characters.
-- **`Dxxwjz1JsonEmitter`** - writes the JSON text of the document into a stream a layer at a time, a layer on a line and an array on a line, straight from the network arrays or the document ones. The emitters of the later versions write their members by its `sections()`.
-- **`Dxxwjz1SaxHandler`** - builds the document of the events of the [nlohmann json](https://github.com/nlohmann/json) SAX parser a value at a time, so no JSON tree of the millions of the floats is made, and checks the structure of the document on the way: the JSON syntax, the format and the version, the types of the values, the names of the layer types, of the sub-layers and of the arrays, the repeated keys. The handlers of the later versions tell their own format name, version and required keys and take the values of their own document keys (see the dxxwjz2 format below).
+- **`Dxxwjz1JsonEmitter`** - writes the JSON text of the document into a stream a layer at a time, a layer on a line and an array on a line, straight from the network arrays or the document ones. The emitters of the later versions write their members by its `sections()` and their trailing bytes by its `trailing()`.
+- **`Dxxwjz1SaxHandler`** - builds the document of the events of the [nlohmann json](https://github.com/nlohmann/json) SAX parser a value at a time, so no JSON tree of the millions of the floats is made, and checks the structure of the document on the way: the JSON syntax, the format and the version, the types of the values, the names of the layer types, of the sub-layers and of the arrays, the repeated keys. The handlers of the later versions tell their own format name, version and required keys and take the values of their own document keys, the trailing one of the dxxwjz3 version included (see the dxxwjz2 and the dxxwjz3 formats below).
 - **`Dxxwjz1Parser`** - reads the JSON text into the document by the handler. The parse runs in the "C" numeric locale of its thread, so a document reads the same whatever locale the application runs in (the comma and the multibyte decimal points included), while the locale of the application and of its other threads is kept.
 - **`Dxxwjz1Reader`**, **`Dxxwjz1Writer`** - the reader and the writer (see above). The writer compresses the text into the file as it's written, with the fastest zlib compression level unless another one is given to its constructor: the zlib default level takes about 6 times the time for about 12% smaller files, the best one about 30 times the time for about 14% smaller ones, while the readers take the file of any level.
 - **`Dxxwjz1Validator`** - the validator of the files (see below).
@@ -442,19 +618,203 @@ So the cfg file of the network is recovered of the file with any JSON tool (`gzi
 The readers check the members of the network and of the training the way the dxxwjz1 ones are checked (the types of the values, the indexes of the classes, the sizes of the columns, the repeated keys), skip their unknown keys with a warning and warn of the class names of a count other than the `classes=` of the network. The classes of the dxxwjz2 version are built on the dxxwjz1 ones, the [`dxxwjz2/v2`](/src/lib/darknet-adaptor/adaptors/NetworksLoaders/dxxwjz2/v2) directory keeps what they add:
 
 - **`Dxxwjz2Format`** - the constants of the format: the name, the version, the file name extension and the JSON keys it adds.
-- **`Dxxwjz2JsonEmitter`** - the `Dxxwjz1JsonEmitter` of the network and the training members, which it writes between the generator and the header (its `sections()`): a class on a line and a column of the losses on a line.
-- **`Dxxwjz2SaxHandler`** - the `Dxxwjz1SaxHandler` of the dxxwjz2 format name, version and required keys, which hands the values of the network and the training keys over to the `Dxxwjz2SubtreeBuilder` (the JSON trees of them, small beside the weights, the floats of the exact values of their texts) and the `Dxxwjz2MetadataReader` (the `NetworkDescription` and the `TrainingRecord` of the trees). Its peek stops at the first weight once the network is read, so the network description of the file is read without its weights.
+- **`Dxxwjz2JsonEmitter`** - the `Dxxwjz1JsonEmitter` of the network and the training members, which it writes between the generator and the header (its `sections()`): a class on a line and a column of the losses on a line, the cfg member of the network by its `cfg()`, the loss columns by its `losses()`.
+- **`Dxxwjz2SaxHandler`** - the `Dxxwjz1SaxHandler` of the dxxwjz2 format name, version and required keys, which hands the values of the network and the training keys over to the `Dxxwjz2SubtreeBuilder` (the JSON trees of them, small beside the weights, the floats of the exact values of their texts) and the `Dxxwjz2MetadataReader` (the `NetworkDescription` and the `TrainingRecord` of the trees). Its peek stops at the first weight once the network is read, so the network description of the file is read without its weights. The handlers of the later versions read the network tree by the metadata reader of their `metadata()` and the trailing bytes by the handler of their `trailing()`.
 - **`Dxxwjz2Parser`** - the parse of the files and of the texts by the `Dxxwjz1Parser` with the dxxwjz2 handler, the peek of the files.
 - **`Dxxwjz2Reader`**, **`Dxxwjz2Writer`** - the `Dxxwjz1Reader` and the `Dxxwjz1Writer` of the dxxwjz2 validation and emitter: the network description and the training record go into the rest of the load and come of the rest of the save and of the document written. The writer refuses the rest of no cfg text, since the file keeps the network description.
 - **`Dxxwjz2Validator`** - the validator of the files: the `Dxxwjz1Validator` checks, the cfg text, the class names of the network.
 - **`Dxxwjz2FileFormat`** - the `IWeightsFileFormat` of the dxxwjz2 files.
+
+## The dxxwjz2p project file format
+
+The dxxwjz2p file is the dxxwjz2 document (see above) of the YOLO4 training project: the network description, the weights and the training record beside the YOLO4 annotations of the images, everything the training needs but the images themselves. So the project is the single dxxwjz2p file of the absolute image paths or the dxxwjz2p file of the image paths relative to it beside the folders of the images, of any names. The annotations member is the project document of the [ImagesAnnotator](https://github.com/yuriysydor1991/ImagesAnnotator) (of its 0.12.0 structure) with the validation flag of the images:
+
+```
+{
+  "format": "dxxwjz2p",
+  "version": 1,
+  "generator": "darknetxx 0.11.0",
+  "network": {"cfg": "[net]\nbatch=64\nwidth=416\n...", "classes": [
+    {"index": 0, "name": "cat"},
+    {"index": 1, "name": "dog"}
+  ]},
+  "training": {"seconds": 3725, "iteration": [1,2,3], ...},
+  "annotations": {"ImagesAnnotator": {"version": "0.12.0"}, "annotations": [
+    {"db": {"path": "/srv/shots"}, "annotations": [
+      {"rel_path": "park.jpg", "width": 640, "height": 480, "annotations": [{"name": "dog", "rect": {"x": 200, "y": 130, "width": 48, "height": 52}}]}
+    ]},
+    {"db": {"path": "images"}, "annotations": [
+      {"rel_path": "street.png", "width": 320, "height": 200, "validation": true, "annotations": []}
+    ]}
+  ]},
+  "header": {"major": 0, "minor": 2, "revision": 5, "seen": 192},
+  "layers": [...]
+}
+```
+
+The keys of the document beside the dxxwjz2 ones:
+
+| Key | Value | Required |
+| --- | --- | --- |
+| `format` | the `"dxxwjz2p"` string | yes |
+| `version` | the `1` integer, the readers refuse the other versions | yes |
+| `annotations` | the annotations of the images: the `ImagesAnnotator` object of the `version` of the structure and the `annotations` array of the folders of the images | yes |
+
+The keys of the annotations:
+
+| Object | Key | Value | Required |
+| --- | --- | --- | --- |
+| the folder | `db` | the object of the `path` of the folder: relative to the folder of the dxxwjz2p file or absolute | yes |
+| | `annotations` | the image objects of the folder | yes |
+| the image | `rel_path` | the path of the image relative to the folder, not empty | yes |
+| | `width`, `height` | the size of the image in the pixels, the integers from zero, the `0` (unknown) by default; the image of the boxes requires both of them | no |
+| | `validation` | the `true` of the image of the mAP calculation alone (the darknet `valid=` list), the `false` of the training one by default (the `train=` list) | no |
+| | `annotations` | the box objects of the image, the empty array of the image of no object | yes |
+| | `scale_factor` | the zoom of the ImagesAnnotator, skipped | no |
+| the box | `name` | the class name of the box, one of the `network` classes | yes |
+| | `rect` | the `x` and the `y` of the top left corner and the `width` and the `height` of the box in the pixels of the image, the JSON numbers | yes |
+| | `scale_factor` | skipped | no |
+
+The memory keeps the boxes the YOLO4 way (the class index and the center and the size of the box, the fractions of the size of the image), the rects of the file are the pixels of them: the shortest decimal text of the float of the pixels, so the integer rects of the ImagesAnnotator read and write back the same. The writers group the images by the folders of their paths, an image on a line: the folders below the one of the file are written relative to it, the rest are the absolute ones, so the folder of the project and of its images moves as a whole. No validation image makes the training images the ones of the mAP calculation, the darknet way.
+
+The file is the dxxwjz2 one for everything else: the detection and the recognition run the network of the dxxwjz2p file alone, the converter makes the dxxwjz2 weights file of it of no annotations (see the [conversion](#the-conversion)), the dxxwjz2p file of no weights is the network to train. The readers check the annotations the way the dxxwjz2 members are checked: the types of the values, the required keys, the class names of the network (the annotations read before the network wait for it), the size of the images of the boxes and the image paths of the length of the darknet label paths; the unknown keys are skipped with a warning. The peek reads the annotations as well, the ones after the weights included (the writers write them before the header).
+
+The classes of the dxxwjz2p version are built on the dxxwjz2 ones, the [`dxxwjz2p/v1`](/src/lib/darknet-adaptor/adaptors/NetworksLoaders/dxxwjz2p/v1) directory keeps what they add:
+
+- **`Dxxwjz2pFormat`** - the constants of the format: the name, the version, the file name extension, the version of the ImagesAnnotator structure and the JSON keys it adds.
+- **`Dxxwjz2pJsonEmitter`** - the `Dxxwjz2JsonEmitter` of the annotations member, which it writes after the network and the training ones: a folder of the images of a db path, an image on a line.
+- **`Dxxwjz2pAnnotationsReader`** - the `Dxxwjz2MetadataReader` of the `Yolo4Annotations` of the annotations tree.
+- **`Dxxwjz2pSaxHandler`** - the `Dxxwjz2SaxHandler` of the dxxwjz2p format name, version and required keys, which reads the annotations tree once the class names of the network are read. Its peek stops at the first weight once both the network and the annotations are read.
+- **`Dxxwjz2pParser`** - the parse and the peek of the files by the dxxwjz2p handler of the folder of the file.
+- **`Dxxwjz2pReader`**, **`Dxxwjz2pWriter`** - the `Dxxwjz2Reader` and the `Dxxwjz2Writer` of the annotations, which go into the rest of the load and come of the rest of the save and of the document written. The writer refuses the boxes the file can't keep: the ones of the classes of no name, of the images of no size, of no finite values.
+- **`Dxxwjz2pValidator`** - the validator of the files: the `Dxxwjz2Validator` checks of the dxxwjz2p document.
+- **`Dxxwjz2pFileFormat`** - the `IWeightsFileFormat` of the dxxwjz2p files.
+
+## The dxxwjz3 file format of the third version
+
+The dxxwjz3 file is the dxxwjz2 document (see above) of nothing but the JSON data: the network member keeps the JSON structure of the network cfg instead of the text of the cfg file, and the trailing bytes are the JSON array of their values instead of the base64 text, so any JSON tool reads and edits every option of the network (`gzip -dc net.dxxwjz3 | jq .network.net.batch`). The document of the network of the two classes:
+
+```
+{
+  "format": "dxxwjz3",
+  "version": 3,
+  "generator": "darknetxx 0.11.0",
+  "network": {"net": {"batch": 64, "subdivisions": 16, "width": 416, "height": 416, "channels": 3, "hue": 0.1, "learning_rate": 0.0013, "max_batches": 6000, "policy": "steps", "steps": [4800,5400], "scales": [0.1,0.1]}, "layers": [
+    {"type": "convolutional", "options": {"batch_normalize": 1, "filters": 32, "size": 3, "stride": 1, "pad": 1, "activation": "mish"}},
+    {"type": "maxpool", "options": {"size": 2, "stride": 2}},
+    {"type": "route", "options": {"layers": [-1,-3]}},
+    {"type": "yolo", "options": {"mask": [0,1,2], "anchors": [12,16,19,36,40,28], "classes": 2, "num": 3, "jitter": 0.3}}
+  ], "classes": [
+    {"index": 0, "name": "cat"},
+    {"index": 1, "name": "dog"}
+  ]},
+  "training": {"seconds": 3725,
+    "loss": [812.5,790.25,701],
+    "avg_loss": [812.5,810.275,799.3475],
+    "map_iteration": [3],
+    "map": [0.0125]
+  },
+  "header": {"major": 0, "minor": 2, "revision": 5, "seen": 192},
+  "layers": [
+    {"index": 0, "type": "convolutional", "arrays": {...}},
+    ...
+  ],
+  "trailing": [0,1]
+}
+```
+
+The keys of the document beside the dxxwjz2 ones (the header and the layers of the weights are the dxxwjz2 ones):
+
+| Key | Value | Required |
+| --- | --- | --- |
+| `format` | the `"dxxwjz3"` string | yes |
+| `version` | the `3` integer, the readers refuse the other versions | yes |
+| `network` | the network description: the `net` object of the options of the `[net]` section of the cfg (the `[network]` one), the `layers` array of the layer sections in the order of the cfg, both required, and the `classes` array of the dxxwjz2 one | yes |
+| `training` | the dxxwjz2 training record of no `iteration` column: the losses of an index are the ones of the iteration of the index + 1, so the `loss` of the 1000th iteration is the `loss[999]` (the NaN losses of the iterations of no record) | no |
+| `trailing` | the bytes the original weights file keeps after the arrays: the array of the integers from 0 to 255 | no |
+
+A layer of the network is the object of the `type` string, the name of the cfg section without the brackets as the cfg names it (the `conv` of the `[conv]` section, while the layers of the weights keep the names of the darknet layer types), and of the `options` object of the options of the section, none for the section of no options. The options are the `key=value` lines of the section in their order, the values are the JSON values of the darknet ones:
+
+| The cfg option | The JSON value |
+| --- | --- |
+| `batch=64`, `layers=-1` | the integer: `64`, `-1` (of the 64 bits range) |
+| `hue=.1`, `decay=0.0005`, `exposure=1.50` | the fraction of the shortest fixed notation decimal of it's float (the darknet keeps the floats of the options): `0.1`, `0.0005`, `1.5` |
+| `activation=leaky`, `train=data/train.txt` | the string: `"leaky"`, `"data/train.txt"` |
+| `mask=0,1,2`, `scales=.1,.1` | the array of the comma separated values: `[0,1,2]`, `[0.1,0.1]` |
+| `random` (the line of no `=`) | the `null`, the NULL value of the darknet, which takes the default of the option |
+
+The number is the one of the text the darknet reads the same way: the `atoi()` and the `atof()` of the text and of the number are the same, so the `1e-3` stays the `"1e-3"` string (the `atoi()` of it is 1, the one of the `0.001` is 0), the `0x10` and the `nan` the strings too. The readers take the JSON numbers of any notation (the `"learning_rate": 1e-3` of a hand edit is the `0.001`) and any value the writers write, while the empty values, the strings of the white space (the darknet drops it of the cfg lines), the booleans, the objects and the arrays of anything but the numbers and the strings are the errors, so are the option keys of the white space, of the `=` and of the leading `#`, `;` or `[` and the section names of the white space or the brackets.
+
+The readers turn the network member into the cfg text of the network: the `[net]` section of the `net` options, a section of each layer, a `key=value` line of each option (the key alone of the `null`), the sections separated by an empty line. So the rest of the darknetxx works with the cfg text of the dxxwjz3 file the way it does with the one of the dxxwjz2 file, and the cfg file is recovered of the file by the converter (the dxxwjz3 file converted into the dxxwjz2 one keeps it's cfg text). The JSON keeps no comments and no white space of the cfg file, nor the repeated keys of a section, the darknet reads the first one of: the cfg text converted into the dxxwjz3 file and back is the same network of the normalized cfg text, which converts into the same dxxwjz3 file again. The writers refuse the cfg text the JSON can't keep: the one of no `[net]` section first, of an option before it, of a section header of no closing bracket (the cfg the darknet refuses too).
+
+The dxxwjz3 file is the dxxwjz2 one for everything else: the training and the detection read it, the training saves it (by default, the `--save-format dxxwjz3`), the converter converts it into the other formats and back of the weights of the same bytes, the file of no weights is the network to train. The classes of the dxxwjz3 version are built on the dxxwjz2 ones, the [`dxxwjz3/v3`](/src/lib/darknet-adaptor/adaptors/NetworksLoaders/dxxwjz3/v3) directory keeps what they add:
+
+- **`Dxxwjz3Format`** - the constants of the format: the name, the version, the file name extension and the JSON keys it adds.
+- **`Dxxwjz3ValueCodec`** - the JSON values of the cfg options of the table above both ways: the JSON text of the option text, the cfg text of the JSON value.
+- **`Dxxwjz3CfgJson`** - the JSON text of the `net` and the `layers` members of the cfg text, which it reads the darknet way (the `CfgSection::read_cfg()` of the `OrigDefaultLoader`), a layer on a line.
+- **`Dxxwjz3Bytes`** - the JSON array of the trailing bytes: the text of the bytes, the bytes of the SAX events of the array a value at a time (no JSON tree of the megabytes of the bytes of the original weights file of another network is made).
+- **`Dxxwjz3Losses`** - the loss columns of the losses of an iteration at the index of the iteration - 1, the NaN ones of the iterations of none.
+- **`Dxxwjz3JsonEmitter`** - the `Dxxwjz2JsonEmitter` of the JSON of the network cfg (it's `cfg()`), of the trailing bytes (it's `trailing()`) and of the loss columns of the `Dxxwjz3Losses` (it's `losses()`).
+- **`Dxxwjz3MetadataReader`** - the `Dxxwjz2MetadataReader` of the cfg text of the network tree, which it checks the way the rest of the members are checked, and of the training tree of no iteration column.
+- **`Dxxwjz3SaxHandler`** - the `Dxxwjz2SaxHandler` of the dxxwjz3 format name and version, which reads the network tree by the `Dxxwjz3MetadataReader` (it's `metadata()`) and the trailing bytes by the `Dxxwjz3Bytes` (it's `trailing()`).
+- **`Dxxwjz3Parser`**, **`Dxxwjz3Reader`**, **`Dxxwjz3Writer`**, **`Dxxwjz3Validator`**, **`Dxxwjz3FileFormat`** - the dxxwjz2 ones of the dxxwjz3 handler and emitter; the writer refuses the cfg text the JSON can't keep.
+
+## The dxxwjz3p project file format
+
+The dxxwjz3p file is the dxxwjz2p project (see above) of the dxxwjz3 document, so the whole training project is the JSON data alone: the network member and the trailing bytes are the dxxwjz3 ones, the annotations member is the dxxwjz2p one.
+
+```
+{
+  "format": "dxxwjz3p",
+  "version": 1,
+  "generator": "darknetxx 0.11.0",
+  "network": {"net": {"batch": 64, "width": 416, ...}, "layers": [...], "classes": [
+    {"index": 0, "name": "cat"},
+    {"index": 1, "name": "dog"}
+  ]},
+  "training": {"seconds": 3725, "loss": [812.5,790.25,701], ...},
+  "annotations": {"ImagesAnnotator": {"version": "0.12.0"}, "annotations": [
+    {"db": {"path": "images"}, "annotations": [
+      {"rel_path": "park.jpg", "width": 640, "height": 480, "annotations": [{"name": "dog", "rect": {"x": 200, "y": 130, "width": 48, "height": 52}}]}
+    ]}
+  ]},
+  "header": {"major": 0, "minor": 2, "revision": 5, "seen": 192},
+  "layers": [...]
+}
+```
+
+| Key | Value | Required |
+| --- | --- | --- |
+| `format` | the `"dxxwjz3p"` string | yes |
+| `version` | the `1` integer, the readers refuse the other versions | yes |
+| `network`, `training`, `trailing` | the dxxwjz3 ones | yes, no, no |
+| `annotations` | the dxxwjz2p one | yes |
+
+The file is the dxxwjz2p one for everything else: the `--train-cfg project.dxxwjz3p` training trains the images of it's annotations and updates the project, the training GUI opens it, the detection runs it's network, the converter converts it into the dxxwjz2p project and back of the same weights and annotations and into the dxxwjz3 weights file of no annotations. The classes of the [`dxxwjz3p/v1`](/src/lib/darknet-adaptor/adaptors/NetworksLoaders/dxxwjz3p/v1) directory are the dxxwjz2p ones of the dxxwjz3 network member and trailing bytes (the `Dxxwjz3CfgJson`, the `Dxxwjz3MetadataReader` and the `Dxxwjz3Bytes` of the dxxwjz3 version): the `Dxxwjz3pFormat`, the `Dxxwjz3pJsonEmitter`, the `Dxxwjz3pSaxHandler`, the `Dxxwjz3pParser`, the `Dxxwjz3pReader`, the `Dxxwjz3pWriter` (which refuses the cfg text the dxxwjz3 JSON can't keep as well), the `Dxxwjz3pValidator` and the `Dxxwjz3pFileFormat`.
+
+## The YOLO4 training folder
+
+The YOLO4 training folder, the one the ImagesAnnotator exports, is the `yolo4` format of the conversion alone: of no file name extension, so neither the training nor the detection takes a folder for a weights file. The `Yolo4FolderReader` of the [`yolo4-folder`](/src/lib/darknet-adaptor/adaptors/NetworksLoaders/yolo4-folder) directory reads the folder into the document of the dxxwjz2p project the way the training reads it, the `Yolo4FolderWriter` writes the document into a new folder, the `Yolo4FolderLayout` knows the files of the folder:
+
+| Files | The reader | The writer |
+| --- | --- | --- |
+| `cfg/*.cfg` | the network: the first `.cfg` file by the name | `cfg/<name>.cfg` of the name of the folder up to its first dot: the cfg text of the train=, the valid=, the names= and the backup= keys of the `[net]` section of the files of the folder |
+| `data/obj.names` | the class names over the ones of the weights, the ones of the `names=` file of the cfg for neither | the class names of the network |
+| `data/obj.data` | not read, the training reads none | the one of the original darknet |
+| the `train=` and the `valid=` lists of the cfg (the `data/train.txt` and the train list by default) | the images of the training and of the mAP calculation, relative to the folder or absolute | the `data/train.txt` and the `data/val.txt` of the validation images, the train list is the valid one for none |
+| the images | the size of the images: of the header of the stb_image formats, of the OpenCV for the rest | the copies in the `data/obj/` folder of the names of their own: the `_<n>` suffix of the same stem, the case blind file systems included |
+| the labels (the darknet `replace_image_to_label()` of the image paths) | the boxes, none of the image of no label file | the `data/obj/<stem>.txt` |
+| the backup folder of the `backup=` key of the cfg | the latest weights the training resumes from, of the network of the folder cfg for the original weights file | the `backup/<name>_last.dxxwjz3` of the weights of the document and of it's training record |
+
+The folder converted into the dxxwjz2p file and back is of the same lists, labels, class names and weights. The converter writes no folder into a folder of the files (the destination folder of the converter replaces the empty one alone), so no folder of the user is deleted.
 
 ## The format neutral model
 
 - **`WeightsSchema`** ([`WeightsSchema.h`](/src/lib/darknet-adaptor/adaptors/NetworksLoaders/weights-model/WeightsSchema.h)) - the arrays and the sub-layers of every layer type, their order and their names (the table above).
 - **`WeightsLayout`** ([`WeightsLayout.h`](/src/lib/darknet-adaptor/adaptors/NetworksLoaders/weights-model/WeightsLayout.h)) - the arrays of a network in the order of the files: the arrays the saves write (the EMA ones of the EMA save) and the ones the loads read with their transpositions, up to a layer.
 - **`WeightsDocument`** ([`WeightsDocument.h`](/src/lib/darknet-adaptor/adaptors/NetworksLoaders/weights-model/WeightsDocument.h)) - the content of a weights file: the header, the layers with their arrays and the bytes after the arrays. The arrays in their order are the payload of the original weights file, so the document of the file keeps every byte of it: the truncated arrays, the part of a float the truncated file ends in and the extra bytes included.
-- **`NetworkDescription`** ([`NetworkDescription.h`](/src/lib/darknet-adaptor/adaptors/NetworksLoaders/weights-model/NetworkDescription.h)) and **`TrainingRecord`** ([`TrainingRecord.h`](/src/lib/darknet-adaptor/adaptors/NetworksLoaders/weights-model/TrainingRecord.h)) - the network and the training of the document the dxxwjz2 files keep: the cfg text and the class names, the seconds, the losses of the iterations and the mAPs of the mAP calculations.
+- **`NetworkDescription`** ([`NetworkDescription.h`](/src/lib/darknet-adaptor/adaptors/NetworksLoaders/weights-model/NetworkDescription.h)) and **`TrainingRecord`** ([`TrainingRecord.h`](/src/lib/darknet-adaptor/adaptors/NetworksLoaders/weights-model/TrainingRecord.h)) - the network and the training of the document the dxxwjz2 and the dxxwjz3 files keep: the cfg text and the class names, the seconds, the losses of the iterations and the mAPs of the mAP calculations.
+- **`Yolo4Annotations`** ([`Yolo4Annotations.h`](/src/lib/darknet-adaptor/adaptors/NetworksLoaders/weights-model/Yolo4Annotations.h)), **`Yolo4Image`** ([`Yolo4Image.h`](/src/lib/darknet-adaptor/adaptors/NetworksLoaders/weights-model/Yolo4Image.h)) and **`Yolo4Box`** ([`Yolo4Box.h`](/src/lib/darknet-adaptor/adaptors/NetworksLoaders/weights-model/Yolo4Box.h)) - the annotations of the document the dxxwjz2p and the dxxwjz3p files keep: the images of their absolute paths, sizes, boxes and sets, the boxes of the YOLO4 label files (the class index, the center and the size, the fractions of the size of the image) and the darknet label path of an image (the `Yolo4Image::label_of()`).
 - **`NetworkFiles`** ([`NetworkFiles.h`](/src/lib/darknet-adaptor/adaptors/NetworksLoaders/weights-model/NetworkFiles.h)) - reads the text of the cfg file and the names of the darknet class names file (a name on a line, the CR LF line ends included).
 - **`WeightsDocumentValidator`** ([`WeightsDocumentValidator.h`](/src/lib/darknet-adaptor/adaptors/NetworksLoaders/weights-model/WeightsDocumentValidator.h)) - validates a document alone and against a network, with the findings in the `WeightsReport`.
 
@@ -465,21 +825,26 @@ The validators report the errors, which keep a file from being loaded or convert
 | `OrigWeightsValidator` | the file unable to be read, shorter than the header or gzip compressed; for the document written as the original weights file of the network: the array missing in the middle, the shorter array followed by others, the array of no network layer | the truncated file, the part of a float at the end, the extra bytes, the file made for the load of the `dontload` and the `dontloadscales` layers |
 | `Dxxwjz1Validator` | the file unable to be read, the corrupted or the truncated gzip data, the JSON syntax errors, the other format or version, the wrong structure, the documents the `WeightsDocumentValidator` rejects | the plain JSON file, the unknown keys, the ones of the `WeightsDocumentValidator` |
 | `Dxxwjz2Validator` | the ones of the `Dxxwjz1Validator`, the document of no cfg text, the wrong network or training members | the ones of the `Dxxwjz1Validator` (but the network arrays of the file of no weights), the class names of the count other than the classes of the network |
+| `Dxxwjz2pValidator` | the ones of the `Dxxwjz2Validator`, the wrong annotations, the boxes of the classes of no name and of the images of no size | the ones of the `Dxxwjz2Validator`, the unknown keys of the annotations |
+| `Dxxwjz3Validator` | the ones of the `Dxxwjz2Validator` of the dxxwjz3 document, the wrong network cfg (the `net` and the `layers` members, the option keys and values) and trailing bytes | the ones of the `Dxxwjz2Validator`, the unknown keys of the network and of it's layers |
+| `Dxxwjz3pValidator` | the ones of the `Dxxwjz3Validator` and of the `Dxxwjz2pValidator` | the ones of the `Dxxwjz3Validator` and of the `Dxxwjz2pValidator` |
 | `WeightsDocumentValidator` | the 32 bits seen of the seen beyond the 32 bits, the repeated layers, the arrays the layers of their types have none; for the network: the layers beyond its layers or of the other types, the arrays it has none, the arrays longer than its ones | the arrays shorter than the network ones, the network arrays the document has none |
 
 ## The conversion
 
 The **`WeightsConverter`** ([`WeightsConverter.h`](/src/lib/darknet-adaptor/adaptors/NetworksLoaders/weights-converter/WeightsConverter.h)) performs the **`WeightsConversion`** ([`WeightsConversion.h`](/src/lib/darknet-adaptor/adaptors/NetworksLoaders/weights-converter/WeightsConversion.h)) of a file of one format into another one (or into the same one): the network of the cfg file is parsed (the original weights file requires it, the rest is validated against it when it's given), the source is validated and read into the document, the document is written into the temporary file of the destination directory, which replaces the destination once complete. A failed conversion leaves the destination as it was and no temporary file behind, and the stop request of the application (a Ctrl+C) stops the conversion between its steps.
 
-The original weights file is split into the arrays the `save_weights()` writes of the network, unless the file is of the size of the arrays the `load_weights()` reads. The original weights file converted to the dxxwjz1 or the dxxwjz2 one and back is the same file byte to byte, whatever it holds: the header of any version, the truncated arrays, the extra bytes. The file converted into the original weights one with the cfg file is checked by the `OrigWeightsValidator` to hold the arrays of the network one after another (see above), while without the cfg file there is no network to check the document against, so its arrays are written as they are.
+The original weights file is split into the arrays the `save_weights()` writes of the network, unless the file is of the size of the arrays the `load_weights()` reads. The original weights file converted to the dxxwjz1, the dxxwjz2 or the dxxwjz3 one and back is the same file byte to byte, whatever it holds: the header of any version, the truncated arrays, the extra bytes. The file converted into the original weights one with the cfg file is checked by the `OrigWeightsValidator` to hold the arrays of the network one after another (see above), while without the cfg file there is no network to check the document against, so its arrays are written as they are.
 
-The dxxwjz2 destination keeps the network description: the cfg text of the cfg file of the conversion (a cfg or a dxxwjz2 file) over the one of the dxxwjz2 source, which one of them is required, and the class names of the class names file of the conversion over the classes of the source, over the `names=` file of the network cfg. The training record of the dxxwjz2 source goes on into the dxxwjz2 destination, while the formats of the weights alone keep neither of them.
+The dxxwjz2 and the dxxwjz3 destinations keep the network description: the cfg text of the cfg file of the conversion (a cfg, a dxxwjz2 or a dxxwjz3 file) over the one of the source, which one of them is required, and the class names of the class names file of the conversion over the classes of the source, over the `names=` file of the network cfg. The training record of the source goes on into the dxxwjz2 and the dxxwjz3 destinations, while the formats of the weights alone keep neither of them.
 
-The conversion of no source file makes the network to train of the cfg file: the dxxwjz2 file of the network description alone (the cfg text and the class names, the way above), of no layers. Such file converted into the formats of the weights alone would keep nothing but a header, so that conversion fails, while the weights files of the networks of no weights arrays convert back and forth as the rest.
+The dxxwjz2p and the dxxwjz3p destinations keep the annotations of the dxxwjz2p, the dxxwjz3p or the YOLO4 folder source, of none of the rest: the project converted into the dxxwjz2 or the dxxwjz3 file is the weights file of the project of no annotations, the one of the inference. The YOLO4 folder source is the network, the latest weights and the annotations of the folder, the YOLO4 folder destination is the new folder of the copies of the images of the document (see the [The YOLO4 training folder](#the-yolo4-training-folder) section).
+
+The conversion of no source file makes the network to train of the cfg file: the dxxwjz2 or the dxxwjz3 file of the network description alone (the cfg text and the class names, the way above), of no layers. Such file converted into the formats of the weights alone would keep nothing but a header, so that conversion fails, while the weights files of the networks of no weights arrays convert back and forth as the rest.
 
 ## Training with the formats
 
-The training saves its weights into the dxxwjz2 files by default (the `--save-format` command line parameter names the format of them, the `LibraryContext::save_format` of the library): the `<base>_<iteration>`, the `<base>_last`, the `<base>_final`, the `<base>_best` and the `<base>_ema` files of the backup directory, with the extension of the format. The C training code saves them by the `weights_saver` of its context, which the `DarknetContext` points to the **`TrainingJournal`** ([`TrainingJournal.h`](/src/lib/darknet-adaptor/adaptors/TrainingJournal/TrainingJournal.h)) of the training:
+The training saves its weights into the dxxwjz3 files by default (the `--save-format` command line parameter names the format of them, the `LibraryContext::save_format` of the library): the `<base>_<iteration>_<avg loss>` (the numbered ones, of the average loss of their iteration, e.g. the `net_1200_0.734521`), the `<base>_last`, the `<base>_final`, the `<base>_best` and the `<base>_ema` files of the backup directory, with the extension of the format. The C training code saves them by the `weights_saver` of its context, which the `DarknetContext` points to the **`TrainingJournal`** ([`TrainingJournal.h`](/src/lib/darknet-adaptor/adaptors/TrainingJournal/TrainingJournal.h)) of the training:
 
 - the journal starts with the network description of the training: the text of the network cfg file of the training (or of the dxxwjz2 one) and the class names of the `--names` file, of the dxxwjz2 weights file, of the dxxwjz2 network file or of the `names=` file of the cfg, the first of them given;
 - it resumes the training record of the dxxwjz2 weights file the training starts from up to the iteration of the weights (the record of the iterations after it is dropped, the `--clear` drops the whole record with the iterations), the seconds of it's clock start at the seconds of the record;
@@ -489,7 +854,7 @@ So the file of a training resumed of a dxxwjz2 one keeps the losses and the mAPs
 
 The mAP calculation of the training (the `--map`) takes the class names the same way, so the class names of the dxxwjz2 file need no names file; the names of a count other than the classes of the network fail the training.
 
-The detection and the training read the weights files of every format, the format told by the file name extension, and the file of the network is a cfg file or a dxxwjz2 one:
+The detection and the training read the weights files of every format, the format told by the file name extension, and the file of the network is a cfg file or a dxxwjz2 one (the dxxwjz3 files and the dxxwjz3p projects are read the way the dxxwjz2 and the dxxwjz2p ones are):
 
 | Command line | The network | The weights |
 | --- | --- | --- |
@@ -498,8 +863,16 @@ The detection and the training read the weights files of every format, the forma
 | `--detect-cfg net.cfg --weights w` | of the `net.cfg` | of the `w` file of any format, the dxxwjz2 one of no weights refused |
 | `--detect-cfg net.dxxwjz2` | of the cfg the file keeps | of the file |
 | `--weights net.dxxwjz2` alone | of the cfg the file keeps | the detection of the weights of the file, the training of the network of the file of no weights |
+| `--train-cfg project.dxxwjz2p` | of the cfg the file keeps | of the file, the training of the images of the annotations of the file, which updates it (see below) |
+| `--detect-cfg project.dxxwjz2p`, `--weights project.dxxwjz2p` alone | of the cfg the file keeps | the ones of the dxxwjz2 file |
 
-The backups of a training are named after the file of it's network: the `<base>` of the `net.cfg` and of the `net.dxxwjz2` files is the `net`, and the one of the backup files of a training (the `net_last`, the `net_final`, the `net_best`, the `net_ema` and the `net_<iteration>` dxxwjz2 files of the iteration of their weights) is the `net` too, so the training resumed of the backup file alone goes on with the same files.
+The backups of a training are named after the file of it's network: the `<base>` of the `net.cfg` and of the `net.dxxwjz2` files is the `net`, and the one of the backup files of a training (the `net_last`, the `net_final`, the `net_best`, the `net_ema` and the `net_<iteration>_<avg loss>` dxxwjz2 files of the iteration of their weights, the `net_<iteration>` ones of the earlier versions too) is the `net` too, so the training resumed of the backup file alone goes on with the same files.
+
+## Training the dxxwjz2p project
+
+The dxxwjz3p project trains the same way, of the dxxwjz3p file of it's latest weights. The training of the dxxwjz2p file (the `--train-cfg project.dxxwjz2p` command line, the dxxwjz2p project the training GUI opens) trains the network of the file, resumed from it's weights, on the images of it's annotations: the image lists and the labels of the training are the ones of the annotations, over the `train=` and the `valid=` lists of the cfg and the label files beside the images. The `OrigDefaultLoader` names them the lists of the training networks and the `DarknetContext` of the training publishes them in the `TrainingDataRegistry` of the [`TrainingData`](/src/lib/darknet-adaptor/adaptors/TrainingData) directory, which it withdraws at the end of the training. The darknet C code reads them by the `get_paths()` of the `dxxwjz2p:train` and the `dxxwjz2p:valid` list names and the `read_boxes()` of the label paths of the images, which ask the registry before the files (the `get_training_data_paths()`, the `has_training_data_paths()` and the `read_training_data_boxes()` C functions of the `TrainingDataCApi`). So the images stay where they are, the project keeps no copies of them and no list or label file is written.
+
+Every save of the training updates the project as well: the dxxwjz2p file of the latest weights, of the training record and of the annotations is written into the `<project>.saving` file beside the project, which replaces the project once complete. So the training of the project resumes from it's latest weights, while the backup folder of the `backup=` key of it's cfg beside the project keeps the backups of the save format, and the charts are drawn beside the project.
 
 ## Using the formats
 

@@ -2,7 +2,9 @@
 
 Beside the `darknetxx` application the project builds a second binary,
 `darknetxxConverter`, which converts the network weights files between the
-original darknet weights format, the dxxwjz1 and the dxxwjz2 ones and does
+original darknet weights format, the dxxwjz1, the dxxwjz2, the dxxwjz2p, the
+dxxwjz3 and the dxxwjz3p ones, the YOLO4 training folders into the dxxwjz2p and
+the dxxwjz3p projects and back, and does
 nothing else. It
 is the very same conversion the main binary offers through its own [command
 line](/doc/sections/en_US/6-2-4-converting-the-network-weights-files.md) -
@@ -36,6 +38,13 @@ section describes it in full:
   --convert-dst ./to_train.dxxwjz2 \
   --convert-cfg ./yolov3.cfg \
   --convert-names ./coco.names
+
+# the YOLO4 folder to the dxxwjz2p project of it's images
+./src/darknetxxConverter \
+  --convert-from yolo4 \
+  --convert-src ./cars \
+  --convert-to dxxwjz2p \
+  --convert-dst ./cars.dxxwjz2p
 ```
 
 `--help` and `--version` work as they do for the main binary and name this
@@ -61,8 +70,8 @@ the install step.
 cmake -B build -S . -DENABLE_DARKNETXX_CONVERTER=OFF
 ```
 
-The dxxwjz1 and the dxxwjz2 files are the gzip compressed JSON documents, so
-both binaries
+The dxxwjz1, the dxxwjz2, the dxxwjz2p, the dxxwjz3 and the dxxwjz3p files are
+the gzip compressed JSON documents, so both binaries
 require the [zlib](/doc/sections/en_US/5-23-enabling-the-zlib-library.md) and
 the [nlohmann JSON](/doc/sections/en_US/5-18-enabling-the-nlohmann-json-library.md)
 libraries, the system ones or the ones the configure fetches.

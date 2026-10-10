@@ -48,6 +48,7 @@ package "weights-model" {
     +trailing : bytes
     +network : NetworkDescription
     +training : TrainingRecord
+    +annotations : Yolo4Annotations
     +normalize()
     +file_size() : uint64
   }
@@ -65,6 +66,19 @@ package "weights-model" {
     +iterations() / losses() / avg_losses()
     +map_iterations() / maps()
     +truncate_after(iteration)
+  }
+
+  class Yolo4Annotations {
+    +images : Yolo4Image[]
+    +training_paths() / validation_paths() : string[]
+  }
+
+  class Yolo4Image {
+    +path : string
+    +width / height : int
+    +boxes : Yolo4Box[]
+    +validation : bool
+    +{static} label_of(path) : string
   }
 
   class NetworkFiles {
@@ -125,6 +139,7 @@ package "dxxwjz1::v1" {
     +layer(index, type, arrays)
     +end(trailing)
     #sections()
+    #trailing(bytes) : string
   }
   class Dxxwjz1FloatCodec {
     +{static} encode(value) : string
@@ -150,26 +165,111 @@ package "dxxwjz2::v2" {
     +{static} parse_file(filename, document, report) : bool
     +{static} peek(filename, rest, weights, report) : bool
   }
-  class Dxxwjz2SaxHandler
+  class Dxxwjz2SaxHandler {
+    #metadata() : Dxxwjz2MetadataReader
+    #trailing() : delegate
+  }
   class Dxxwjz2SubtreeBuilder
   class Dxxwjz2MetadataReader {
     +network(value, description) : bool
     +training(value, record) : bool
   }
-  class Dxxwjz2JsonEmitter
+  class Dxxwjz2JsonEmitter {
+    #cfg(network) : string
+  }
   class Dxxwjz2Format <<constants>>
+}
+
+package "dxxwjz2p::v1" {
+  class Dxxwjz2pReader
+  class Dxxwjz2pWriter
+  class Dxxwjz2pFileFormat
+  class Dxxwjz2pValidator {
+    +{static} validate(filename, net) : WeightsReport
+  }
+  class Dxxwjz2pParser {
+    +{static} parse_file(filename, document, report) : bool
+    +{static} peek(filename, rest, weights, report) : bool
+    +{static} directory_of(filename) : path
+  }
+  class Dxxwjz2pSaxHandler
+  class Dxxwjz2pAnnotationsReader {
+    +annotations(value, classes, annotations) : bool
+  }
+  class Dxxwjz2pJsonEmitter
+  class Dxxwjz2pFormat <<constants>>
+}
+
+package "dxxwjz3::v3" {
+  class Dxxwjz3Reader
+  class Dxxwjz3Writer {
+    +{static} keeps_cfg(network, filename) : bool
+  }
+  class Dxxwjz3FileFormat
+  class Dxxwjz3Validator {
+    +{static} validate(filename, net) : WeightsReport
+  }
+  class Dxxwjz3Parser {
+    +{static} parse_file(filename, document, report) : bool
+    +{static} peek(filename, rest, weights, report) : bool
+  }
+  class Dxxwjz3SaxHandler
+  class Dxxwjz3MetadataReader {
+    +network(value, description) : bool
+  }
+  class Dxxwjz3JsonEmitter
+  class Dxxwjz3CfgJson {
+    +{static} members(cfg) : string
+  }
+  class Dxxwjz3ValueCodec {
+    +{static} json_of(value) : string
+    +{static} text_of(value, text) : bool
+  }
+  class Dxxwjz3Bytes {
+    +{static} json_of(bytes) : string
+  }
+  class Dxxwjz3Format <<constants>>
+}
+
+package "dxxwjz3p::v1" {
+  class Dxxwjz3pReader
+  class Dxxwjz3pWriter
+  class Dxxwjz3pFileFormat
+  class Dxxwjz3pValidator {
+    +{static} validate(filename, net) : WeightsReport
+  }
+  class Dxxwjz3pParser {
+    +{static} parse_file(filename, document, report) : bool
+    +{static} peek(filename, rest, weights, report) : bool
+  }
+  class Dxxwjz3pSaxHandler
+  class Dxxwjz3pJsonEmitter
+  class Dxxwjz3pFormat <<constants>>
+}
+
+package "yolo4" {
+  class Yolo4FolderFormat
+  class Yolo4FolderReader
+  class Yolo4FolderWriter
+  class Yolo4FolderLayout {
+    +{static} cfg(root) : string
+    +{static} names(root) : string
+    +{static} latest_weights(root, cfg) : string
+  }
 }
 
 package "weights-formats" {
   class WeightsFileFormats {
     +{static} all() : formats
-    +{static} named(name) : IWeightsFileFormatPtr
+    +{static} convertible() : formats
+    +{static} named(name, formats) : IWeightsFileFormatPtr
     +{static} of_file(path) : IWeightsFileFormatPtr
   }
   class NetworkSource {
     +{static} describes(path) : bool
-    +{static} read(path, description) : bool
+    +{static} read(path, description / rest) : bool
     +{static} base_of(path, iteration) : string
+    +{static} option_of(path, key, def) : string
   }
 }
 
@@ -192,6 +292,13 @@ class TrainingJournal {
   +rest() : WeightsDocument
 }
 
+class TrainingDataRegistry {
+  +{static} publish(annotations)
+  +{static} withdraw()
+  +{static} paths(name, found) : bool
+  +{static} boxes(labelpath, found) : bool
+}
+
 class TrainingChart {
   +{static} render(rest, png) : bool
   +{static} render_file(weights, png) : bool
@@ -209,11 +316,31 @@ IWeightsWriter <|.. Dxxwjz1Writer
 IWeightsFileFormat <|.. OrigWeightsFileFormat
 IWeightsFileFormat <|.. Dxxwjz1FileFormat
 IWeightsFileFormat <|.. Dxxwjz2FileFormat
+IWeightsFileFormat <|.. Dxxwjz2pFileFormat
+IWeightsFileFormat <|.. Dxxwjz3FileFormat
+IWeightsFileFormat <|.. Dxxwjz3pFileFormat
+IWeightsFileFormat <|.. Yolo4FolderFormat
+IWeightsReader <|.. Yolo4FolderReader
+IWeightsWriter <|.. Yolo4FolderWriter
 
 Dxxwjz1Reader <|-- Dxxwjz2Reader
 Dxxwjz1Writer <|-- Dxxwjz2Writer
 Dxxwjz1SaxHandler <|-- Dxxwjz2SaxHandler
 Dxxwjz1JsonEmitter <|-- Dxxwjz2JsonEmitter
+Dxxwjz2Reader <|-- Dxxwjz2pReader
+Dxxwjz2Writer <|-- Dxxwjz2pWriter
+Dxxwjz2SaxHandler <|-- Dxxwjz2pSaxHandler
+Dxxwjz2JsonEmitter <|-- Dxxwjz2pJsonEmitter
+Dxxwjz2MetadataReader <|-- Dxxwjz2pAnnotationsReader
+Dxxwjz2Reader <|-- Dxxwjz3Reader
+Dxxwjz2Writer <|-- Dxxwjz3Writer
+Dxxwjz2SaxHandler <|-- Dxxwjz3SaxHandler
+Dxxwjz2JsonEmitter <|-- Dxxwjz3JsonEmitter
+Dxxwjz2MetadataReader <|-- Dxxwjz3MetadataReader
+Dxxwjz2pReader <|-- Dxxwjz3pReader
+Dxxwjz2pWriter <|-- Dxxwjz3pWriter
+Dxxwjz2pSaxHandler <|-- Dxxwjz3pSaxHandler
+Dxxwjz2pJsonEmitter <|-- Dxxwjz3pJsonEmitter
 
 OrigWeightsReader ..> OrigWeightsValidator : splits the file by
 OrigWeightsReader ..> WeightsLayout
@@ -241,15 +368,52 @@ Dxxwjz2SaxHandler ..> Dxxwjz2SubtreeBuilder : the network and the training trees
 Dxxwjz2SaxHandler ..> Dxxwjz2MetadataReader
 Dxxwjz2Writer ..> Dxxwjz2JsonEmitter
 
+Dxxwjz2pReader ..> Dxxwjz2pValidator
+Dxxwjz2pValidator ..> Dxxwjz2pParser
+Dxxwjz2pValidator ..> Dxxwjz2Validator : validates the rest by
+Dxxwjz2pParser ..> Dxxwjz2Parser : peeks by
+Dxxwjz2pParser ..> Dxxwjz2pSaxHandler
+Dxxwjz2pSaxHandler ..> Dxxwjz2pAnnotationsReader : the annotations tree
+Dxxwjz2pWriter ..> Dxxwjz2pJsonEmitter
+
+Dxxwjz3Reader ..> Dxxwjz3Validator
+Dxxwjz3Validator ..> Dxxwjz3Parser
+Dxxwjz3Validator ..> Dxxwjz2Validator : validates the rest by
+Dxxwjz3Parser ..> Dxxwjz3SaxHandler
+Dxxwjz3SaxHandler ..> Dxxwjz3MetadataReader : the network tree
+Dxxwjz3SaxHandler ..> Dxxwjz3Bytes : the trailing bytes
+Dxxwjz3MetadataReader ..> Dxxwjz3ValueCodec : the option values
+Dxxwjz3Writer ..> Dxxwjz3JsonEmitter
+Dxxwjz3JsonEmitter ..> Dxxwjz3CfgJson : the network cfg
+Dxxwjz3JsonEmitter ..> Dxxwjz3Bytes : the trailing bytes
+Dxxwjz3CfgJson ..> Dxxwjz3ValueCodec : the option values
+Dxxwjz3CfgJson ..> "CfgSection" : reads the cfg text by
+
+Dxxwjz3pReader ..> Dxxwjz3pValidator
+Dxxwjz3pValidator ..> Dxxwjz3pParser
+Dxxwjz3pParser ..> Dxxwjz3pSaxHandler
+Dxxwjz3pSaxHandler ..> Dxxwjz3MetadataReader : the network tree
+Dxxwjz3pSaxHandler ..> Dxxwjz3Bytes : the trailing bytes
+Dxxwjz3pWriter ..> Dxxwjz3pJsonEmitter
+Dxxwjz3pWriter ..> Dxxwjz3Writer : checks the cfg by
+Dxxwjz3pJsonEmitter ..> Dxxwjz3CfgJson : the network cfg
+
+Yolo4FolderReader ..> Yolo4FolderLayout
+Yolo4FolderWriter ..> Yolo4FolderLayout
+Yolo4FolderReader ..> WeightsFileFormats : reads the latest weights by
+Yolo4FolderWriter ..> Dxxwjz2Writer : writes the latest weights by
+
 WeightsDocumentValidator ..> WeightsLayout
 WeightsDocumentValidator ..> WeightsSchema
 WeightsLayout ..> WeightsSchema
 WeightsDocument ..> WeightsSchema : the file order
 WeightsDocument *-- NetworkDescription
 WeightsDocument *-- TrainingRecord
+WeightsDocument *-- Yolo4Annotations
+Yolo4Annotations *-- Yolo4Image
 
 WeightsFileFormats o-- IWeightsFileFormat
-NetworkSource ..> WeightsFileFormats : peeks the dxxwjz2 files by
+NetworkSource ..> WeightsFileFormats : peeks the dxxwjz2 and the dxxwjz3 files and their projects by
 NetworkSource ..> NetworkFiles : reads the cfg files by
 
 WeightsConverter ..> WeightsConversion
@@ -261,5 +425,8 @@ TrainingChart ..> TrainingRecord : draws the chart of
 TrainingChart ..> WeightsFileFormats : peeks the dxxwjz2 files by
 "OrigDefaultLoader" ..> NetworkSource : parses the network of
 "OrigDefaultLoader" ..> TrainingJournal : starts the journal of the training
+"OrigDefaultLoader" ..> TrainingDataRegistry : the lists of the project training
+TrainingDataRegistry ..> Yolo4Annotations : the lists and the labels of
+TrainingJournal ..> WeightsFileFormats : updates the dxxwjz2p and the dxxwjz3p projects by
 "darknetxx_impl::WeightsConversionLib" ..> WeightsConverter : converts the library context
 @enduml

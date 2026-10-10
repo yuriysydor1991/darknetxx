@@ -2,7 +2,9 @@
 
 Окрім програми `darknetxx`, проект будує другий бінарний файл,
 `darknetxxConverter`, який конвертує файли ваг нейромереж між оригінальним
-форматом ваг darknet, форматами dxxwjz1 і dxxwjz2 і більше нічого не робить. Це те саме
+форматом ваг darknet, форматами dxxwjz1, dxxwjz2, dxxwjz2p, dxxwjz3 і dxxwjz3p,
+а також теки навчання YOLO4 у проекти dxxwjz2p і dxxwjz3p і назад, і більше
+нічого не робить. Це те саме
 конвертування, яке головний бінарний файл пропонує через власний
 [командний рядок](/doc/sections/uk_UA/6-2-4-converting-the-network-weights-files.md),
 з тими самими прапорцями, форматами і поведінкою, бо й код, що за ними стоїть,
@@ -35,6 +37,13 @@
   --convert-dst ./to_train.dxxwjz2 \
   --convert-cfg ./yolov3.cfg \
   --convert-names ./coco.names
+
+# тека YOLO4 у проект dxxwjz2p з її зображеннями
+./src/darknetxxConverter \
+  --convert-from yolo4 \
+  --convert-src ./cars \
+  --convert-to dxxwjz2p \
+  --convert-dst ./cars.dxxwjz2p
 ```
 
 Параметри `--help` і `--version` працюють так само, як і в головному бінарному
@@ -61,8 +70,9 @@
 cmake -B build -S . -DENABLE_DARKNETXX_CONVERTER=OFF
 ```
 
-Файли dxxwjz1 і dxxwjz2 є стисненими gzip документами JSON, тож обидва
-бінарні файли
+Файли dxxwjz1, dxxwjz2, dxxwjz2p, dxxwjz3 і dxxwjz3p є стисненими gzip
+документами JSON, тож
+обидва бінарні файли
 потребують бібліотек [zlib](/doc/sections/uk_UA/5-23-enabling-the-zlib-library.md)
 і [nlohmann JSON](/doc/sections/uk_UA/5-18-enabling-the-nlohmann-json-library.md):
 системних або тих, які завантажуються під час конфігурації.

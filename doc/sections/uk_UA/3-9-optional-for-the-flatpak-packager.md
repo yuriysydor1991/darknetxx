@@ -6,7 +6,7 @@
 sudo apt install -y flatpak flatpak-builder
 ```
 
-Також знадобляться середовище і SDK GNOME, з якими будується пакет, - ті, що містять GTK 4, з яким [бінарний файл darknetxx-gui](/doc/sections/uk_UA/5-36-the-darknetxx-gui-binary.md) показує своє вікно:
+Також знадобляться середовище і SDK GNOME, з якими будується пакет, - ті, що містять GTK 4, з яким [бінарні файли GUI](/doc/sections/uk_UA/5-36-the-GUI-binaries.md) показують свої вікна:
 
 ```
 flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo

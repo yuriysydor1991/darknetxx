@@ -11,7 +11,7 @@ The application is organized into a few cooperating layers:
 1. [Application runtime components](/doc/sections/en_US/4-7-1-application-runtime-components.md) - the infrastructure that parses the command line, builds the run context and selects the application to execute, which uses the darknetxx library (the `app` namespace).
 1. [Darknet adaptor components](/doc/sections/en_US/4-7-2-darknet-adaptor-components.md) - the bridge that drives the original Darknet code to train or to detect (the `darknet_adaptor` namespace).
 1. [Supporting components](/doc/sections/en_US/4-7-3-supporting-components.md) - the OpenMP controller, the logging subsystem, the zlib compression controller and the helper utilities.
-1. [Network weights files](/doc/sections/en_US/4-7-4-network-weights-files.md) - the original darknet weights files, the dxxwjz1 ones (the gzip compressed JSON documents of the weights) and the dxxwjz2 ones (the network description and the training record beside the weights), their readers, writers and validators and the converter between them (the `darknet_adaptor::loaders` namespace).
+1. [Network weights files](/doc/sections/en_US/4-7-4-network-weights-files.md) - the original darknet weights files, the dxxwjz1 ones (the gzip compressed JSON documents of the weights), the dxxwjz2 ones (the network description and the training record beside the weights) and the dxxwjz3 ones (the same of nothing but the JSON data, the network cfg included) with their projects, their readers, writers and validators and the converter between them (the `darknet_adaptor::loaders` namespace).
 1. [The darknetxx library](/doc/sections/en_US/4-7-5-the-darknetxx-library.md) - the shared library the three layers above are built into, it's installable facade (the `darknetxx011` namespace) and it's implementation (the `darknetxx_impl` namespace).
 
 The OS signals the whole application reacts on are covered by the `src/app/signals-handlers` subcomponent of the `app` layer, described by the [Handling the OS signals](/doc/sections/en_US/4-8-handling-the-OS-signals.md) section.
@@ -34,9 +34,11 @@ controller and the logging subsystem support the whole flow. The second binary
 of the project, the `darknetxxConverter`, is built of the same components and
 performs the conversions alone (see
 [The darknetxxConverter binary](/doc/sections/en_US/5-35-the-darknetxxConverter-binary.md)),
-while the third one, the `darknetxx-gui`, adds the `src/gui` component, which
-trains in it's GTK 4 window by the background trainer of the library (see
-[The darknetxx-gui binary](/doc/sections/en_US/5-36-the-darknetxx-gui-binary.md)).
+while the GUI ones, the `darknetxx-train-gui` and the
+`darknetxx-recognition-gui`, add the `src/gui` component, which trains in the
+GTK 4 window of the one by the background trainer of the library and
+recognizes the images in the window of the other by the recognizer of the
+library (see [The GUI binaries](/doc/sections/en_US/5-36-the-GUI-binaries.md)).
 
 The standalone source of the diagram below is
 [`doc/diagrams/components-overview.puml`](/doc/diagrams/components-overview.puml).
@@ -53,7 +55,7 @@ package "app (application infrastructure)" {
   [ApplicationFactory] as factory
   [CommandLineParser] as parser
   [ApplicationContext] as ctx
-  [IApplication\n(+ Application,\nGuiApplication,\nHelpPrinter,\nVersionPrinter)] as iapp
+  [IApplication\n(+ Application,\nTrain/Recognition\nGuiApplication,\nHelpPrinter,\nVersionPrinter)] as iapp
   [ISignalsHandler\n(+ SignalsHandler,\nStop/Pause/Continue/\nReload/User/Ignored)] as signals
 }
 
@@ -61,15 +63,16 @@ package "converters" {
   [ApplicationContext2LibraryContext] as conv
 }
 
-package "gui (darknetxx-gui)" {
-  [GtkmmIniter /\nMainWindow] as gui
+package "gui (darknetxx-train-gui,\ndarknetxx-recognition-gui)" {
+  [Train/Recognition\nGtkmmIniter and windows] as gui
 }
 
 package "lib (darknetxx library)" {
   [LibraryFacade] as facade
   [LibraryContext] as lctx
   [ILib\n(+ LibMain,\nWeightsConversionLib)] as ilib
-  [ITrainer\n(+ BackgroundTrainer,\nYolo4Folder)] as trainer
+  [ITrainer\n(+ BackgroundTrainer,\nATrainingProject)] as trainer
+  [IRecognizer\n(+ NetworkRecognizer,\nObjectsDetection,\nImageClassification)] as recognizer
 }
 
 package "darknet-adaptor (Darknet bridge)" {
@@ -77,7 +80,7 @@ package "darknet-adaptor (Darknet bridge)" {
   [DarknetContext] as dctx
   [IDarknetAdaptor\n(+ ADetector,\nADetectorTrainer)] as adaptor
   [Network infrastructure\n(NetworksLoaders, Layers,\nALayer/ANetwork adaptors,\nNetworksCApi)] as netinfra
-  [Weights files\n(original, dxxwjz1, dxxwjz2,\nWeightsConverter)] as weights
+  [Weights files\n(original, dxxwjz1, dxxwjz2,\ndxxwjz2p, dxxwjz3, dxxwjz3p,\nYOLO4 folder, WeightsConverter)] as weights
   [Original Darknet\nC computation] as darknetc
 }
 
@@ -99,9 +102,12 @@ iapp --> conv : converts ctx
 conv --> lctx : fills
 iapp --> facade : creates the work
 iapp --> gui : the GUI app shows
-gui --> trainer : trains a YOLO4 folder
+gui --> trainer : trains a YOLO4 folder or a dxxwjz2p/dxxwjz3p project
+gui --> recognizer : recognizes the images
 facade --> ilib : creates
 facade --> trainer : creates
+facade --> recognizer : creates
+recognizer --> netinfra : loads the network,\nrecognizes by
 trainer --> ilib : runs in it's thread
 ilib --> omp : adjust threads
 ilib --> dctrl : trains / detects

@@ -6,7 +6,7 @@ In order to generate the project flatpak package install the `flatpak-builder` c
 sudo apt install -y flatpak flatpak-builder
 ```
 
-You'll also need the GNOME runtime and SDK the package is built with, the ones of the GTK 4 the [darknetxx-gui binary](/doc/sections/en_US/5-36-the-darknetxx-gui-binary.md) shows it's window with:
+You'll also need the GNOME runtime and SDK the package is built with, the ones of the GTK 4 the [GUI binaries](/doc/sections/en_US/5-36-the-GUI-binaries.md) show their windows with:
 
 ```
 flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo

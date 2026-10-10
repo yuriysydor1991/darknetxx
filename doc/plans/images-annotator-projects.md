@@ -1,6 +1,6 @@
 # ImagesAnnotator project files as a training source
 
-**Status:** analysis for a future implementation. Nothing of it is implemented yet.
+**Status:** superseded on 2026-10-10 by the dxxwjz2p project file (see the [The dxxwjz2p project file format](/doc/sections/en_US/4-7-4-network-weights-files.md#the-dxxwjz2p-project-file-format) section). The project file keeps the network and the annotations of the ImagesAnnotator project structure together, and the training reads them through a native dataset seam like the one of route 2 below (the `get_paths()` and the `read_boxes()` hooks of the `TrainingDataRegistry`), with no DataDrivers dependency. The ImagesAnnotator project file itself isn't read: its annotations are the dxxwjz2p `annotations` member. The analysis below is kept for the record.
 
 **Analyzed on 2026-10-05**, against:
 

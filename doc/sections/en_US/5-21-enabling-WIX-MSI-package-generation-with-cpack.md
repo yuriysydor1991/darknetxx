@@ -36,7 +36,9 @@ The following cache variables may optionally be overridden in order to tune the 
 - `DARKNETXX_WIX_PROGRAM_MENU_FOLDER` - Windows Start Menu folder name where the installer creates shortcuts (default: project name).
 - `DARKNETXX_WIX_CULTURES` - Semicolon-separated list of UI cultures used by the installer (default: `en-US`, e.g. `en-US;uk-UA`).
 - `DARKNETXX_WIX_LICENSE_RTF` - Optional absolute path to a RTF or TXT license file shown by the installer.
-- `DARKNETXX_WIX_PRODUCT_ICON` - Optional absolute path to a `.ico` file used as the MSI product icon.
+- `DARKNETXX_WIX_PRODUCT_ICON` - Absolute path to a `.ico` file used as the MSI product icon (default: the Darknet logo `darknet.ico` of the Darknet sources, empty for none).
+
+The GUI binaries of the `ENABLE_DARKNETXX_GUI` option are the desktop apps of the installer: it creates their Start Menu and desktop shortcuts (the `CPACK_PACKAGE_EXECUTABLES` and the `CPACK_CREATE_DESKTOP_LINKS` of CPack), which show the Darknet logo the binaries embed (see the [GUI binaries](/doc/sections/en_US/5-36-the-GUI-binaries.md) section).
 
 In addition to those, the package vendor is taken from `DARKNETXX_MAINTAINER`, the maintainer contact from `DARKNETXX_MAINTAINER_EMAIL`, and the description from the project `DESCRIPTION`. The install root under `Program Files` is the `PROJECT_NAME`. There is no need to declare anything new in the project's CMake files in order to start producing installers - just turn the option on.
 

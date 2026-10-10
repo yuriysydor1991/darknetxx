@@ -1,11 +1,16 @@
 ### Converting the network weights files
 
 Beside the training and the detection the executable carries a converter of
-the network weights files between the three formats of the project: the
+the network weights files between the six formats of the project: the
 original darknet weights file (`*.weights`), the dxxwjz1 file (`*.dxxwjz1`,
-the gzip compressed JSON document of the weights) and the dxxwjz2 one
+the gzip compressed JSON document of the weights), the dxxwjz2 one
 (`*.dxxwjz2`, the dxxwjz1 document of the network cfg, the class names and the
-training record beside the weights, see the
+training record beside the weights), the dxxwjz2p project (`*.dxxwjz2p`,
+the dxxwjz2 document of the YOLO4 annotations of the images too), the dxxwjz3
+one (`*.dxxwjz3`, the dxxwjz2 document of nothing but the JSON data, the
+network cfg of the JSON options of it's sections) and the dxxwjz3p project
+(`*.dxxwjz3p`, the dxxwjz2p project of the dxxwjz3 document), and of the YOLO4
+training folders into the dxxwjz2p and the dxxwjz3p projects and back (see the
 [Network weights files](/doc/sections/en_US/4-7-4-network-weights-files.md)
 section). It is asked for by the four command line flags, and it starts no
 training nor detection: the application tells what it is converting through the
@@ -44,6 +49,27 @@ log messages alone, so it fits a script and a build pipeline.
   --convert-dst ./yolov3.dxxwjz2 \
   --convert-cfg ./yolov3.cfg \
   --convert-names ./coco.names
+
+# the YOLO4 folder to the dxxwjz2p project beside the folder of the images
+./src/darknetxx \
+  --convert-from yolo4 \
+  --convert-src ./cars \
+  --convert-to dxxwjz2p \
+  --convert-dst ./cars.dxxwjz2p
+
+# the weights file of the inference of the project, of no annotations
+./src/darknetxx \
+  --convert-from dxxwjz2p \
+  --convert-src ./cars.dxxwjz2p \
+  --convert-to dxxwjz2 \
+  --convert-dst ./cars.dxxwjz2
+
+# the project to the new YOLO4 folder of the copies of the images
+./src/darknetxx \
+  --convert-from dxxwjz2p \
+  --convert-src ./cars.dxxwjz2p \
+  --convert-to yolo4 \
+  --convert-dst ./cars-yolo4
 ```
 
 The project also builds a second binary, `darknetxxConverter`, which carries
@@ -54,9 +80,9 @@ binary](/doc/sections/en_US/5-35-the-darknetxxConverter-binary.md).
 | Option | Value | Description |
 | --- | --- | --- |
 | `--convert-from` | `<FORMAT>` | the network weights file format to read |
-| `--convert-src` | `<FILE>` | the network weights file to read |
+| `--convert-src` | `<FILE>` | the network weights file to read, the folder of the `yolo4` format |
 | `--convert-to` | `<FORMAT>` | the network weights file format to write |
-| `--convert-dst` | `<FILE>` | the network weights file to write, replaced if it exists |
+| `--convert-dst` | `<FILE>` | the network weights file to write, replaced if it exists; the new folder of the `yolo4` format |
 | `--convert-cfg` | `<FILE>` | the network cfg file of the weights (or the dxxwjz2 file of the network) |
 | `--convert-names` | `<FILE>` | the class names file of the network the dxxwjz2 file keeps |
 
@@ -74,6 +100,10 @@ A `FORMAT` is one of the names below:
 | `weights` | the original darknet weights file |
 | `dxxwjz1` | the darknetxx weights JSON zipped file of the first version |
 | `dxxwjz2` | the darknetxx weights JSON zipped file of the second version |
+| `dxxwjz2p` | the darknetxx weights JSON zipped project file, the dxxwjz2 one of the YOLO4 annotations of the images |
+| `dxxwjz3` | the darknetxx weights JSON zipped file of the third version, the dxxwjz2 one of nothing but the JSON data: the network cfg of the JSON options of it's sections |
+| `dxxwjz3p` | the darknetxx weights JSON zipped project file of the third version, the dxxwjz2p one of the dxxwjz3 document |
+| `yolo4` | the YOLO4 training folder (the conversion alone): the `cfg/*.cfg` network, the `data/obj.names` classes, the image lists and labels and the latest `backup/` weights |
 
 The original weights file keeps no structure of its own - it is the float
 arrays of the layers one after another - so reading it requires the network
@@ -93,6 +123,28 @@ the dxxwjz2 source - the losses, the mAPs and the time of it's training - goes
 on into the dxxwjz2 destination, while the original weights and the dxxwjz1
 files keep the weights alone: the dxxwjz2 file converted to them and back keeps
 the same weights, the training record is lost.
+
+The dxxwjz3 and the dxxwjz3p files convert the way the dxxwjz2 and the
+dxxwjz2p ones do: they keep the same network description, the cfg one of the
+JSON of it's sections, which the conversion into the dxxwjz2 file turns back
+into the cfg text (of no comments, see the
+[The dxxwjz3 file format of the third version](/doc/sections/en_US/4-7-4-network-weights-files.md#the-dxxwjz3-file-format-of-the-third-version)
+section).
+
+The dxxwjz2p project keeps the annotations of the images beside the dxxwjz2
+content, which the destination of the dxxwjz2p format takes of the dxxwjz2p or
+the `yolo4` source: the dxxwjz2p project converted into the dxxwjz2 file is the
+weights file of the inference of it, of no annotations. The YOLO4 folder
+source is read the way the training reads it: the first `cfg/*.cfg` network,
+the `data/obj.names` classes, the images of the `train=` and the `valid=` lists
+of the cfg with their sizes and the boxes of their label files, the latest
+weights of the backup folder (of the network of the folder cfg for the
+original weights file). The YOLO4 folder destination is the new folder of the
+`cfg/<name>.cfg` network (of the name of the folder up to its first dot), the
+`data/obj.names`, `data/obj.data`, `data/train.txt` and `data/val.txt` files,
+the copies of the images in the `data/obj/` folder with their labels and the
+`backup/<name>_last.dxxwjz3` weights; the existing folder of files is no
+destination, the conversion into it fails and keeps it.
 
 The conversion of no source makes the network to train: the dxxwjz2 file of
 the network description of the `--convert-cfg` file and of the class names

@@ -36,7 +36,9 @@ cpack -C Release
 - `DARKNETXX_WIX_PROGRAM_MENU_FOLDER` - назва теки у меню Пуск Windows, у якій інсталятор створює ярлики (за замовчуванням: назва проекту).
 - `DARKNETXX_WIX_CULTURES` - перелік UI-локалей інсталятора, розділених крапкою з комою (за замовчуванням: `en-US`, наприклад `en-US;uk-UA`).
 - `DARKNETXX_WIX_LICENSE_RTF` - опціональний абсолютний шлях до файлу RTF або TXT з ліцензією, який буде показано інсталятором.
-- `DARKNETXX_WIX_PRODUCT_ICON` - опціональний абсолютний шлях до файлу `.ico`, який використовується як піктограма продукту у MSI.
+- `DARKNETXX_WIX_PRODUCT_ICON` - абсолютний шлях до файлу `.ico`, який використовується як піктограма продукту у MSI (за замовчуванням: логотип Darknet `darknet.ico` з вихідних кодів Darknet, порожнє значення - без піктограми).
+
+Бінарні файли GUI опції `ENABLE_DARKNETXX_GUI` є програмами робочого столу інсталятора: він створює їхні ярлики у меню Пуск і на робочому столі (`CPACK_PACKAGE_EXECUTABLES` і `CPACK_CREATE_DESKTOP_LINKS` CPack), які показують логотип Darknet, вбудований у бінарні файли (див. секцію [Бінарні файли GUI](/doc/sections/uk_UA/5-36-the-GUI-binaries.md)).
 
 Окрім цього, видавця пакету (`vendor`) береться з `DARKNETXX_MAINTAINER`, контактну адресу - з `DARKNETXX_MAINTAINER_EMAIL`, опис - з `DESCRIPTION` проекту. Корінь встановлення під `Program Files` - це `PROJECT_NAME`. Жодних додаткових оголошень у CMake-файлах проекту вносити не потрібно - достатньо просто увімкнути опцію.
 

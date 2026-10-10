@@ -10,7 +10,7 @@
 
 | Параметр CMake | За замовчуванням | Дія |
 | --- | --- | --- |
-| `ENABLE_DARKNETXX_EXECUTABLES` | `ON` для проекту верхнього рівня, `OFF` для проекту іншого | Будує і встановлює виконувані файли `darknetxx`, `darknetxxConverter` і `darknetxx-gui`. `OFF` будує і встановлює лише бібліотеку. |
+| `ENABLE_DARKNETXX_EXECUTABLES` | `ON` для проекту верхнього рівня, `OFF` для проекту іншого | Будує і встановлює виконувані файли `darknetxx`, `darknetxxConverter`, `darknetxx-train-gui` і `darknetxx-recognition-gui`. `OFF` будує і встановлює лише бібліотеку. |
 | `DARKNETXX_LIB_INSTALL_DEV_FILES` | `ON` | Встановлює публічні заголовки, файли пакету CMake і посилання `libdarknetxx-0.11.so` разом з бібліотекою. `OFF` встановлює лише бібліотеку виконання. |
 | `DARKNETXX_LIBRARY_NAME` | `darknetxx-<основна>.<додаткова>` | Назва бібліотеки, її цілі, директорії заголовків і пакету CMake. |
 
@@ -96,9 +96,11 @@ int main()
 
 Контекст з `train_cfg` того самого виклику `create_library` навчає
 нейромережу, а з `detect_cfg` - розпізнає, тоді як
-`LibraryFacade::create_trainer` навчає теку YOLO4 у фоні і повідомляє про
-ітерації `training_listener` контексту, а `LibraryFacade::training_chart`
-повертає зображення PNG графіка навчання файлу ваг dxxwjz2 (порожнє для файлу
+`LibraryFacade::create_trainer` навчає у фоні проект навчання, який
+`LibraryFacade::open_training_project` відкриває за шляхом (теку YOLO4 чи файл
+проекту dxxwjz2p або dxxwjz3p), і повідомляє про ітерації `training_listener` контексту, а
+`LibraryFacade::training_chart`
+повертає зображення PNG графіка навчання файлу ваг dxxwjz2 чи dxxwjz3 (порожнє для файлу
 без запису навчання). Програма з власним журналом передає
 його функцією `LibraryFacade::init_logger` перед будь-яким іншим викликом,
 інакше бібліотека веде журнал у файл `darknetxx-0.11.0.log` робочої

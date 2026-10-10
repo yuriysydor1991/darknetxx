@@ -18,8 +18,16 @@ class Application {
   #{static} init_computation_traps()
 }
 
-class GuiApplication {
+abstract class GuiApplication {
   #perform(ctx) : int
+  #{abstract} create_gui_initer() : IGUIIniter
+}
+
+class TrainGuiApplication {
+  #create_gui_initer() : IGUIIniter
+}
+
+class RecognitionGuiApplication {
   #create_gui_initer() : IGUIIniter
 }
 
@@ -97,6 +105,8 @@ IApplication <|.. Application
 IApplication <|.. ApplicationHelpPrinter
 IApplication <|.. ApplicationVersionPrinter
 Application <|-- GuiApplication
+GuiApplication <|-- TrainGuiApplication
+GuiApplication <|-- RecognitionGuiApplication
 ISignalsHandler <|.. SignalsHandler
 
 ApplicationFactory ..> IApplication : creates
