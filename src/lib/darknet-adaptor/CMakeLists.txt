@@ -12,10 +12,17 @@ find_package(
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
+# The backtrace() of the Darknet error log, a part of the glibc and the
+# libexecinfo library of the FreeBSD.
+find_package(Backtrace REQUIRED)
+
 message(STATUS "OpenCV includes: ${OpenCV_INCLUDE_DIRS}")
 message(STATUS "OpenCV libs: ${OpenCV_LIBS}")
 
-set(OPENCV_DECL "OPENCV=1")
+# The USE_CMAKE_LIBS leaves out the MSVC #pragma comment(lib) of the Darknet
+# code, which the Clang keeps in the objects for the lld to look the
+# opencv_world*.lib up, while the CMake links the OpenCV itself.
+set(OPENCV_DECL "OPENCV=1" "USE_CMAKE_LIBS=1")
 add_compile_definitions(${OPENCV_DECL})
 
 set(
@@ -121,5 +128,6 @@ target_link_libraries(
     Threads::Threads
     nlohmann_json::nlohmann_json
     ZLIB::ZLIB
+    ${Backtrace_LIBRARIES}
 )
 

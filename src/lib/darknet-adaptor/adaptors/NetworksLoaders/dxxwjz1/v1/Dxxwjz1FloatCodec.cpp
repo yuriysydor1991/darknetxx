@@ -4,9 +4,15 @@
 #include <clocale>
 #include <cmath>
 #include <cstdint>
+#include <cstdlib>
 #include <cstring>
 #include <string>
 #include <system_error>
+
+// the strtof_l() of the BSDs
+#if __has_include(<xlocale.h>)
+#include <xlocale.h>
+#endif
 
 namespace darknet_adaptor::loaders::dxxwjz1::v1
 {
@@ -41,6 +47,38 @@ float float_of(const uint32_t bits)
   float value = 0.f;
   std::memcpy(&value, &bits, sizeof(value));
   return value;
+}
+
+/// @brief Reads the whole "C" locale decimal text of the float range.
+bool parse_number(const std::string& text, float& value)
+{
+#ifdef __cpp_lib_to_chars
+  const char* const last = text.data() + text.size();
+  const std::from_chars_result result =
+      std::from_chars(text.data(), last, value);
+
+  return result.ec == std::errc{} && result.ptr == last;
+#else
+  // The std::from_chars() of the libc++ older than the 20 one (the FreeBSD
+  // 15.1 one) reads the integers alone. The strtof_l() of the "C" locale reads
+  // the very same float once the leading spaces, the plus sign and the
+  // hexadecimal notation it takes are left out, while the infinity of the
+  // overflow and the zero of the non-zero digits (the "1e-50") are out of the
+  // range.
+  static const locale_t C_LOCALE = newlocale(LC_ALL_MASK, "C", nullptr);
+
+  if (text.find_first_not_of("0123456789.eE+-") != std::string::npos ||
+      text[0] == '+') {
+    return false;
+  }
+
+  char* end = nullptr;
+  value = strtof_l(text.c_str(), &end, C_LOCALE);
+
+  return end == text.c_str() + text.size() && std::isfinite(value) &&
+         (value != 0.f ||
+          text.find_first_of("123456789") >= text.find_first_of("eE"));
+#endif
 }
 
 }  // namespace
@@ -117,13 +155,9 @@ bool Dxxwjz1FloatCodec::decode_number(const std::string& text, float& value,
     source = &normalized;
   }
 
-  const char* const first = source->data();
-  const char* const last = first + source->size();
-
   float parsed = 0.f;
-  const std::from_chars_result result = std::from_chars(first, last, parsed);
 
-  if (result.ec != std::errc{} || result.ptr != last) {
+  if (!parse_number(*source, parsed)) {
     return false;
   }
 

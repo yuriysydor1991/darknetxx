@@ -2,9 +2,10 @@ cmake_minimum_required(VERSION 3.13)
 
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/compile-options")
 
-# CMAKE_C_COMPILER_ID STREQUAL "Clang"
 if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
   include(darknetxx-compile-options-MSVC)
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  include(darknetxx-compile-options-Clang)
 else()
   include(darknetxx-compile-options-GCC)
 endif()
