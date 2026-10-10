@@ -26,20 +26,21 @@ ARG srcD=/src
 
 WORKDIR $srcD
 
+ARG OPENCVBRANCH=4.x
 ARG OCVCONTRIBDN=opencv_contrib
 ARG OCVCONTRIBBUILD=$srcD/opencv_contrib-build
 ARG OCVCONTRIBD=$srcD/$OCVCONTRIBDN
 
 # no build required
-RUN git clone --single-branch --progress --depth 1 https://github.com/opencv/opencv_contrib.git $OCVCONTRIBDN
+RUN git clone --single-branch --progress --branch $OPENCVBRANCH --depth 1 https://github.com/opencv/opencv_contrib.git $OCVCONTRIBDN
 
 ARG OPENCVDIRN=opencv
-ARG OPENCVBUILDDIR=$srcD/opencv-4.x-build
+ARG OPENCVBUILDDIR=$srcD/opencv-$OPENCVBRANCH-build
 ARG OPENCVDIR=$srcD/$OPENCVDIRN
 
 WORKDIR $srcD
 
-RUN git clone --single-branch --progress --branch 4.x --depth 1 https://github.com/opencv/opencv.git $OPENCVDIRN
+RUN git clone --single-branch --progress --branch $OPENCVBRANCH --depth 1 https://github.com/opencv/opencv.git $OPENCVDIRN
 RUN mkdir -vp $OPENCVBUILDDIR
 WORKDIR $OPENCVBUILDDIR
 RUN cmake -S $OPENCVDIR -B $OPENCVBUILDDIR \
@@ -76,6 +77,19 @@ RUN --mount=from=project,target=$prjD \
   -DENABLE_SANITIZERS_THREADS=OFF -DENABLE_SANITIZERS=OFF && \
  cmake --build $BUILDDIR -j$(nproc) --verbose && \
  cmake --install $BUILDDIR --prefix $installPrefix
+
+# The container runs as the darknetxx user of the host user ids (the
+# DOCKER_USER_UID and the DOCKER_USER_GID CMake variables), so the host user
+# owns whatever it writes into the mounted folders. The ubuntu user of the
+# base image gives it's ids away, the other holders of them share them.
+ARG USER_UID=1000
+ARG USER_GID=1000
+RUN (userdel -r ubuntu || true) && \
+ groupadd -o -g $USER_GID darknetxx && \
+ useradd -l -o -m -u $USER_UID -g darknetxx -s /bin/bash darknetxx && \
+ install -d -m 0700 -o darknetxx -g darknetxx /run/user/$USER_UID
+ENV XDG_RUNTIME_DIR=/run/user/$USER_UID
+USER darknetxx
 
 WORKDIR /usr/share/yolo4-data/
 

@@ -23,8 +23,11 @@ bool WeightsConversionLib::libcall(LibraryContextPtr ctx)
   // the network to train of the cfg has no source to read
   const bool sourced = !ctx->convert_from.empty() || !ctx->convert_src.empty();
   const IWeightsFileFormatPtr from =
-      sourced ? WeightsFileFormats::named(ctx->convert_from) : nullptr;
-  const IWeightsFileFormatPtr into = WeightsFileFormats::named(ctx->convert_to);
+      sourced ? WeightsFileFormats::named(ctx->convert_from,
+                                          WeightsFileFormats::convertible())
+              : nullptr;
+  const IWeightsFileFormatPtr into = WeightsFileFormats::named(
+      ctx->convert_to, WeightsFileFormats::convertible());
 
   if (sourced && from == nullptr) {
     LOGE("Unknown source weights format: " << ctx->convert_from);

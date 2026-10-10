@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <stdio.h>
 
+#include "data.h"
 #include "src/clog/clog.h"
 
 int calc_map_init_ctx(struct detector_context *ctx)
@@ -18,8 +19,10 @@ int calc_map_init_ctx(struct detector_context *ctx)
     return 1;
   }
 
-  FILE *valid_file = fopen(ctx->net.valid_images, "r");
-  if (!valid_file) {
+  // the list of the dxxwjz2p project training is kept in the memory
+  const int kept = has_training_data_paths(ctx->net.valid_images);
+  FILE *valid_file = kept ? NULL : fopen(ctx->net.valid_images, "r");
+  if (!kept && !valid_file) {
     CLOGE(
         "Error: There is no %s file for mAP calculation! Don't use --map "
         "flag. Or set valid=<file> in the [net] section of your %s file.",
@@ -27,7 +30,7 @@ int calc_map_init_ctx(struct detector_context *ctx)
     return 0;
   }
 
-  fclose(valid_file);
+  if (valid_file) fclose(valid_file);
 
   // the mAP calculation network is loaded by the C++ network infrastructure
   // (the class names file of the command line included), it computes with

@@ -1,47 +1,54 @@
 cmake_minimum_required(VERSION 3.13)
 
-# The ApplicationFactory of the GUI binary: the very same source compiled with
-# the DARKNETXX_GUI definition, which creates the app::GuiApplication.
-add_executable(
-  UTEST_GuiApplicationFactory
-  UTEST_GuiApplicationFactory.cpp
-  ${PROJECT_SOURCE_DIR}/src/app/ApplicationFactory.cpp
-  ${APP_MOCKS_ROOT}/ApplicationContext/src/app/ApplicationContext.cpp
-)
+# The ApplicationFactory of the GUI binaries: the very same source compiled
+# with the DARKNETXX_TRAIN_GUI and the DARKNETXX_RECOGNITION_GUI definitions,
+# which create the app::TrainGuiApplication and the
+# app::RecognitionGuiApplication.
+foreach(GUI Train Recognition)
+  string(TOUPPER ${GUI} GUI_ID)
+  set(UTEST_TARGET UTEST_${GUI}GuiApplicationFactory)
 
-target_compile_definitions(
-  UTEST_GuiApplicationFactory
-  PRIVATE DARKNETXX_GUI
-)
+  add_executable(
+    ${UTEST_TARGET}
+    ${UTEST_TARGET}.cpp
+    ${PROJECT_SOURCE_DIR}/src/app/ApplicationFactory.cpp
+    ${APP_MOCKS_ROOT}/ApplicationContext/src/app/ApplicationContext.cpp
+  )
 
-# before the public library headers, which the facade mock replaces
-target_include_directories(
-  UTEST_GuiApplicationFactory
-  BEFORE PRIVATE
-    ${APP_MOCKS_ROOT}/ApplicationContext
-    ${APP_MOCKS_ROOT}/Application
-    ${APP_MOCKS_ROOT}/GuiApplication
-    ${APP_MOCKS_ROOT}/ApplicationHelpPrinter
-    ${APP_MOCKS_ROOT}/ApplicationVersionPrinter
-    ${APP_MOCKS_ROOT}/LibraryFacade
-    ${APP_MOCKS_ROOT}/CommandLineParser
-    ${SIGNALS_HANDLERS_MOCKS_ROOT}/SignalsHandler
-    ${GENERAL_MOCKS_ROOT}/project-global-decls
-    ${GENERAL_MOCKS_ROOT}/log
-    ${PROJECT_SOURCE_DIR}
-)
+  target_compile_definitions(
+    ${UTEST_TARGET}
+    PRIVATE DARKNETXX_${GUI_ID}_GUI
+  )
 
-target_link_libraries(
-  UTEST_GuiApplicationFactory
-  GTest::gtest_main GTest::gmock
-)
+  # before the public library headers, which the facade mock replaces
+  target_include_directories(
+    ${UTEST_TARGET}
+    BEFORE PRIVATE
+      ${APP_MOCKS_ROOT}/ApplicationContext
+      ${APP_MOCKS_ROOT}/Application
+      ${APP_MOCKS_ROOT}/GuiApplications
+      ${APP_MOCKS_ROOT}/ApplicationHelpPrinter
+      ${APP_MOCKS_ROOT}/ApplicationVersionPrinter
+      ${APP_MOCKS_ROOT}/LibraryFacade
+      ${APP_MOCKS_ROOT}/CommandLineParser
+      ${SIGNALS_HANDLERS_MOCKS_ROOT}/SignalsHandler
+      ${GENERAL_MOCKS_ROOT}/project-global-decls
+      ${GENERAL_MOCKS_ROOT}/log
+      ${PROJECT_SOURCE_DIR}
+  )
 
-include(GoogleTest)
+  target_link_libraries(
+    ${UTEST_TARGET}
+    GTest::gtest_main GTest::gmock
+  )
 
-gtest_add_tests(
-  TARGET UTEST_GuiApplicationFactory
-  TEST_SUFFIX .noArgs
-  TEST_LIST noArgsTests
-)
+  include(GoogleTest)
 
-set_tests_properties(${noArgsTests} PROPERTIES TIMEOUT 600)
+  gtest_add_tests(
+    TARGET ${UTEST_TARGET}
+    TEST_SUFFIX .noArgs
+    TEST_LIST noArgsTests
+  )
+
+  set_tests_properties(${noArgsTests} PROPERTIES TIMEOUT 600)
+endforeach()

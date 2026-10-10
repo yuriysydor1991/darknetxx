@@ -17,7 +17,7 @@ class BackgroundTrainer : public darknetxx011::ITrainer
   {
   }
 
-  bool train(const darknetxx011::Yolo4Folder&) override { return true; }
+  bool train(const darknetxx011::ATrainingProject&) override { return true; }
   void stop() override {}
   bool running() const override { return false; }
 

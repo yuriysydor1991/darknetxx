@@ -5,6 +5,7 @@
 #include "src/lib/libmain/LibFactory.h"
 #include "src/lib/libmain/LibMain.h"
 #include "src/lib/libmain/WeightsConversionLib.h"
+#include "src/lib/recognition/NetworkRecognizer.h"
 #include "src/lib/training/BackgroundTrainer.h"
 
 using darknetxx011::LibraryContext;
@@ -73,4 +74,11 @@ TEST_F(UTEST_LibFactory, the_trainer_runs_the_darknet_work_of_the_context)
   ASSERT_NE(trainer, nullptr);
   EXPECT_EQ(trainer->ctx, ctx);
   EXPECT_NE(std::dynamic_pointer_cast<LibMain>(trainer->training), nullptr);
+}
+
+TEST_F(UTEST_LibFactory, the_recognizer_recognizes_by_the_networks)
+{
+  EXPECT_NE(std::dynamic_pointer_cast<NetworkRecognizer>(
+                factory->create_recognizer()),
+            nullptr);
 }

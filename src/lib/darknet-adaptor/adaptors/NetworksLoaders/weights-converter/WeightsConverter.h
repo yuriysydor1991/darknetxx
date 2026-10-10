@@ -13,21 +13,23 @@ namespace darknet_adaptor::loaders
 
 /**
  * @brief Converts the network weights files between the formats (see the
- * WeightsFileFormats): the original darknet weights files, the dxxwjz1 and
- * the dxxwjz2 ones, either way and each one into itself.
+ * WeightsFileFormats): the original darknet weights files, the dxxwjz1, the
+ * dxxwjz2 and the dxxwjz3 ones and the projects, either way and each one
+ * into itself.
  *
  * The conversion is the read of the source file into the format neutral
  * WeightsDocument and the write of the document in the destination format,
  * which keeps every byte of the weights: the header, every float bit by bit,
  * the truncated arrays and the bytes after the arrays. So the original
- * weights file converted to the dxxwjz1 or the dxxwjz2 one and back is the
+ * weights file converted to the dxxwjz1, dxxwjz2 or dxxwjz3 one and back is the
  * same file, byte to byte. The network description and the training record
  * are kept by the formats which keep them alone: the cfg and the class names
  * files of the conversion describe the network of the destination, over the
  * description of the source.
  *
  * The conversion of no source file makes the network to train of the cfg
- * file: the dxxwjz2 file of the network description alone, of no layers.
+ * file: the dxxwjz2 (dxxwjz3) file of the network description alone, of no
+ * layers.
  * Such file converts into the formats of the weights alone into nothing but
  * a header, so that conversion fails.
  *

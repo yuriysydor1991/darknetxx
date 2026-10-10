@@ -1,0 +1,19 @@
+#ifndef DARKNETXX_PROJECT_CTEST_DXXWJZ3_DATA_PROVIDER_CLASS_H
+#define DARKNETXX_PROJECT_CTEST_DXXWJZ3_DATA_PROVIDER_CLASS_H
+
+class CTEST_Dxxwjz3_provider
+{
+ public:
+  // the root of the per test directories of the generated files, the tests
+  // remove their files at the end
+  inline static constexpr const char* const GENERATED_DIR = "@CMAKE_CURRENT_BINARY_DIR@/generated";
+
+  // the reference networks and weights files of the loader component test
+  inline static constexpr const char* const CFG_1 = "@CTEST_ORIG_DEFAULT_LOADER_DATA_DIR@/1.cfg";
+  inline static constexpr const char* const W_1 = "@CTEST_ORIG_DEFAULT_LOADER_DATA_DIR@/1.weights";
+
+  inline static constexpr const char* const CFG_2 = "@CTEST_ORIG_DEFAULT_LOADER_DATA_DIR@/2.cfg";
+  inline static constexpr const char* const W_2 = "@CTEST_ORIG_DEFAULT_LOADER_DATA_DIR@/2.weights";
+};
+
+#endif // DARKNETXX_PROJECT_CTEST_DXXWJZ3_DATA_PROVIDER_CLASS_H

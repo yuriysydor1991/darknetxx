@@ -23,6 +23,7 @@ target_link_libraries(
   GTest::gtest_main GTest::gmock 
   DarknetXXLog4CInterfaceObj 
   DarknetXXDefaultLoggerObj
+  ${Backtrace_LIBRARIES}
 )
 
 include(GoogleTest)

@@ -94,9 +94,14 @@ target_sources(
     $<TARGET_OBJECTS:DarknetCXXOrigWeightsOBJ>
     $<TARGET_OBJECTS:DarknetCXXDxxwjz1V1OBJ>
     $<TARGET_OBJECTS:DarknetCXXDxxwjz2V2OBJ>
+    $<TARGET_OBJECTS:DarknetCXXDxxwjz2pV1OBJ>
+    $<TARGET_OBJECTS:DarknetCXXDxxwjz3V3OBJ>
+    $<TARGET_OBJECTS:DarknetCXXDxxwjz3pV1OBJ>
+    $<TARGET_OBJECTS:DarknetCXXYolo4FolderOBJ>
     $<TARGET_OBJECTS:DarknetCXXWeightsFormatsOBJ>
     $<TARGET_OBJECTS:DarknetCXXWeightsConverterOBJ>
     $<TARGET_OBJECTS:DarknetCXXNetworksCApiOBJ>
+    $<TARGET_OBJECTS:DarknetCXXTrainingDataOBJ>
     $<TARGET_OBJECTS:DarknetCXXTrainingJournalOBJ>
     $<TARGET_OBJECTS:DarknetCXXTrainingChartOBJ>
     $<TARGET_OBJECTS:DarknetCXXDarknetContextOBJ>

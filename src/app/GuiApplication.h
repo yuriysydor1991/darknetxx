@@ -10,8 +10,8 @@ namespace app
 {
 
 /**
- * @brief The application of the GUI binary: the window of the src/gui
- * component, which runs the training of the Application.
+ * @brief The application of a GUI binary: the window of the src/gui
+ * component, which runs the work of the Application.
  */
 class GuiApplication : public Application
 {
@@ -23,7 +23,8 @@ class GuiApplication : public Application
   /// @brief Shows the window till the user closes it.
   virtual int perform(AppCtxPtr ctx) override;
 
-  virtual std::shared_ptr<gui::IGUIIniter> create_gui_initer();
+  /// @brief The GUI of the binary.
+  virtual std::shared_ptr<gui::IGUIIniter> create_gui_initer() = 0;
 };
 
 }  // namespace app

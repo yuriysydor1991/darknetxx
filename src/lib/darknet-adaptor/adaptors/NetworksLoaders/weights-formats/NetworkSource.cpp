@@ -1,8 +1,12 @@
 #include "src/lib/darknet-adaptor/adaptors/NetworksLoaders/weights-formats/NetworkSource.h"
 
+#include <exception>
 #include <filesystem>
+#include <regex>
+#include <sstream>
 #include <string>
 
+#include "src/lib/darknet-adaptor/adaptors/NetworksLoaders/OrigDefaultLoader/CfgSection.h"
 #include "src/lib/darknet-adaptor/adaptors/NetworksLoaders/weights-formats/WeightsFileFormats.h"
 #include "src/lib/darknet-adaptor/adaptors/NetworksLoaders/weights-model/NetworkFiles.h"
 #include "src/lib/darknet-adaptor/adaptors/NetworksLoaders/weights-model/WeightsDocument.h"
@@ -19,17 +23,24 @@ bool NetworkSource::describes(const std::string& path)
 bool NetworkSource::read(const std::string& path,
                          NetworkDescription& description)
 {
+  WeightsDocument rest;
+
+  if (!read(path, rest)) {
+    return false;
+  }
+
+  description = rest.network;
+
+  return true;
+}
+
+bool NetworkSource::read(const std::string& path, WeightsDocument& rest)
+{
   if (describes(path)) {
-    WeightsDocument rest;
     bool weights = false;
 
-    if (!WeightsFileFormats::of_file(path)->create_reader()->peek(path, rest,
-                                                                  weights)) {
-      return false;
-    }
-
-    description = rest.network;
-    return true;
+    return WeightsFileFormats::of_file(path)->create_reader()->peek(path, rest,
+                                                                    weights);
   }
 
   std::string text;
@@ -39,30 +50,49 @@ bool NetworkSource::read(const std::string& path,
     return false;
   }
 
-  description = NetworkDescription{text, {}};
+  rest.network = NetworkDescription{text, {}};
 
   return true;
 }
 
 std::string NetworkSource::base_of(const std::string& path, const int iteration)
 {
-  const std::string name = std::filesystem::path{path}.filename().string();
-  const std::string base = name.substr(0, name.find('.'));
+  // the suffix goes before the cut at the first dot, which the average loss
+  // of the numbered backup has
+  const std::regex backup{"(.+)_(last|final|best|ema|" +
+                          std::to_string(iteration) + "(_[^_]+)?)"};
+  const std::string stem = std::filesystem::path{path}.stem().string();
+  std::smatch match;
+  const std::string base =
+      describes(path) && std::regex_match(stem, match, backup) ? match.str(1)
+                                                               : stem;
 
-  if (!describes(path)) {
-    return base;
+  return base.substr(0, base.find('.'));
+}
+
+std::string NetworkSource::option_of(const std::string& path,
+                                     const std::string& key,
+                                     const std::string& def)
+{
+  NetworkDescription description;
+
+  if (!read(path, description)) {
+    return def;
   }
 
-  for (const std::string& suffix :
-       {std::string{"_last"}, std::string{"_final"}, std::string{"_best"},
-        std::string{"_ema"}, "_" + std::to_string(iteration)}) {
-    if (base.size() > suffix.size() &&
-        base.compare(base.size() - suffix.size(), suffix.size(), suffix) == 0) {
-      return base.substr(0, base.size() - suffix.size());
-    }
-  }
+  std::istringstream text{description.cfg()};
 
-  return base;
+  try {
+    CfgSection::CfgSections sections = CfgSection::read_cfg(text, path);
+
+    // the [net] section is the first one
+    return sections.empty() ? def
+                            : sections.front().find_str_quiet(key, def.c_str());
+  }
+  catch (const std::exception& e) {
+    LOGE("Couldn't read the [net] section of " << path << ": " << e.what());
+    return def;
+  }
 }
 
 }  // namespace darknet_adaptor::loaders

@@ -3,6 +3,7 @@
 
 #include <istream>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace darknet_adaptor::loaders
@@ -67,6 +68,11 @@ class CfgSection
 
   /// @brief Logs the options no lookup asked for, the option_unused().
   void unused() const;
+
+  /// @brief The keys and the values of the options in the file order, the
+  /// NULL value of the line without the '=' (see the add()). The pointers stay
+  /// valid for as long as the section does and no option is added to it.
+  std::vector<std::pair<std::string, const char*>> options() const;
 
  private:
   struct Option

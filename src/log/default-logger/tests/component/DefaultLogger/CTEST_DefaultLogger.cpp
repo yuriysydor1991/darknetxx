@@ -3,10 +3,12 @@
 
 #include <fstream>
 #include <functional>
+#include <locale>
 #include <set>
 #include <string>
 #include <thread>
 
+#include "GroupingNumpunct.h"
 #include "src/log/default-logger/DefaultLogger.h"
 
 using namespace testing;
@@ -243,6 +245,24 @@ TEST_F(CTEST_DefaultLogger, unopenable_log_file_is_not_fatal)
   DefaultLogger::log(DefaultLogger::LVL_ERROR, expect);
 
   EXPECT_THAT(get_default_log_file_contents(), EndsWith(expect + "\n"));
+}
+
+TEST_F(CTEST_DefaultLogger, log_fields_ignore_the_application_global_locale)
+{
+  const std::locale previous = std::locale::global(
+      std::locale{std::locale::classic(), new GroupingNumpunct});
+
+  default_log_init();
+
+  DefaultLogger::log(DefaultLogger::LVL_ERROR, "the message");
+
+  std::locale::global(previous);
+
+  // no group separators in the thread id and the timestamp of the logger
+  const auto logs = get_default_log_file_contents();
+
+  EXPECT_THAT(logs, Not(HasSubstr(",")));
+  EXPECT_THAT(logs, ContainsRegex(" ERR [0-9]+ the message"));
 }
 
 TEST_F(CTEST_DefaultLogger, multithread_logs)

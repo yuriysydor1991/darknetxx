@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <object class="GtkAdjustment" id="thresh_adjustment">
+    <property name="lower">0</property>
+    <property name="upper">1</property>
+    <property name="step-increment">0.05</property>
+    <property name="page-increment">0.1</property>
+  </object>
+  <object class="GtkWindow" id="main_window">
+    <property name="default-width">1100</property>
+    <property name="default-height">800</property>
+    <child>
+      <object class="GtkBox">
+        <property name="orientation">vertical</property>
+        <property name="spacing">8</property>
+        <property name="margin-start">12</property>
+        <property name="margin-end">12</property>
+        <property name="margin-top">12</property>
+        <property name="margin-bottom">12</property>
+        <child>
+          <object class="GtkGrid">
+            <property name="row-spacing">6</property>
+            <property name="column-spacing">6</property>
+            <child>
+              <object class="GtkLabel">
+                <property name="label">Weights file:</property>
+                <property name="xalign">0</property>
+                <layout>
+                  <property name="column">0</property>
+                  <property name="row">0</property>
+                </layout>
+              </object>
+            </child>
+            <child>
+              <object class="GtkEntry" id="weights_entry">
+                <property name="hexpand">true</property>
+                <property name="placeholder-text">The weights file of the network of any format, Enter recognizes the image</property>
+                <layout>
+                  <property name="column">1</property>
+                  <property name="row">0</property>
+                </layout>
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton" id="weights_button">
+                <property name="label">_Choose…</property>
+                <property name="use-underline">true</property>
+                <layout>
+                  <property name="column">2</property>
+                  <property name="row">0</property>
+                </layout>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="label">Network cfg:</property>
+                <property name="xalign">0</property>
+                <layout>
+                  <property name="column">0</property>
+                  <property name="row">1</property>
+                </layout>
+              </object>
+            </child>
+            <child>
+              <object class="GtkEntry" id="cfg_entry">
+                <property name="hexpand">true</property>
+                <property name="placeholder-text">The cfg file of the network, none for the dxxwjz2 or dxxwjz3 weights file, which keeps it</property>
+                <layout>
+                  <property name="column">1</property>
+                  <property name="row">1</property>
+                </layout>
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton" id="cfg_button">
+                <property name="label">C_hoose…</property>
+                <property name="use-underline">true</property>
+                <layout>
+                  <property name="column">2</property>
+                  <property name="row">1</property>
+                </layout>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="label">Class names:</property>
+                <property name="xalign">0</property>
+                <layout>
+                  <property name="column">0</property>
+                  <property name="row">2</property>
+                </layout>
+              </object>
+            </child>
+            <child>
+              <object class="GtkEntry" id="names_entry">
+                <property name="hexpand">true</property>
+                <property name="placeholder-text">The class names file, none for the names the network keeps</property>
+                <layout>
+                  <property name="column">1</property>
+                  <property name="row">2</property>
+                </layout>
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton" id="names_button">
+                <property name="label">Ch_oose…</property>
+                <property name="use-underline">true</property>
+                <layout>
+                  <property name="column">2</property>
+                  <property name="row">2</property>
+                </layout>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="label">Image:</property>
+                <property name="xalign">0</property>
+                <layout>
+                  <property name="column">0</property>
+                  <property name="row">3</property>
+                </layout>
+              </object>
+            </child>
+            <child>
+              <object class="GtkEntry" id="image_entry">
+                <property name="hexpand">true</property>
+                <property name="placeholder-text">The image to recognize</property>
+                <layout>
+                  <property name="column">1</property>
+                  <property name="row">3</property>
+                </layout>
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton" id="image_button">
+                <property name="label">Choos_e…</property>
+                <property name="use-underline">true</property>
+                <layout>
+                  <property name="column">2</property>
+                  <property name="row">3</property>
+                </layout>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox">
+            <property name="spacing">12</property>
+            <child>
+              <object class="GtkLabel">
+                <property name="label">_Threshold:</property>
+                <property name="use-underline">true</property>
+                <property name="mnemonic-widget">thresh_spin</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkSpinButton" id="thresh_spin">
+                <property name="adjustment">thresh_adjustment</property>
+                <property name="digits">2</property>
+                <property name="valign">center</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLabel" id="status_label">
+                <property name="xalign">0</property>
+                <property name="hexpand">true</property>
+                <property name="wrap">true</property>
+                <property name="label">Choose the weights file of the network and the image to recognize</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton" id="recognize_button">
+                <property name="label">_Recognize</property>
+                <property name="use-underline">true</property>
+                <property name="valign">center</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkPaned">
+            <property name="vexpand">true</property>
+            <property name="position">760</property>
+            <property name="start-child">
+              <object class="GtkPicture" id="image_picture">
+                <property name="hexpand">true</property>
+                <property name="vexpand">true</property>
+              </object>
+            </property>
+            <property name="end-child">
+              <object class="GtkScrolledWindow">
+                <property name="hscrollbar-policy">never</property>
+                <property name="child">
+                  <object class="GtkLabel" id="objects_label">
+                    <property name="xalign">0</property>
+                    <property name="yalign">0</property>
+                    <property name="wrap">true</property>
+                    <property name="selectable">true</property>
+                  </object>
+                </property>
+              </object>
+            </property>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>

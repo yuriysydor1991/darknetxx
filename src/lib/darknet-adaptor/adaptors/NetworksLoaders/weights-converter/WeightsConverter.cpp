@@ -132,7 +132,7 @@ bool WeightsConverter::check(const WeightsConversion& conversion)
     if (!conversion.to->keeps_network()) {
       LOGE("The " << conversion.to->name()
                   << " file keeps no network description, the network to "
-                     "train of no source file is the dxxwjz2 one");
+                     "train of no source file is the dxxwjz3 or dxxwjz2 one");
       return false;
     }
 
@@ -165,7 +165,8 @@ bool WeightsConverter::check(const WeightsConversion& conversion)
 
   std::error_code error;
 
-  if (!std::filesystem::is_regular_file(conversion.src, error)) {
+  // the YOLO4 folder is the directory of the files
+  if (!std::filesystem::exists(conversion.src, error)) {
     LOGE("The source file doesn't exist: " << conversion.src);
     return false;
   }
@@ -301,7 +302,7 @@ bool WeightsConverter::write_destination(const WeightsConversion& conversion,
       writer != nullptr && writer->write(document, temporary.string());
 
   if (!written || conversion.stopped()) {
-    std::filesystem::remove(temporary, error);
+    std::filesystem::remove_all(temporary, error);
 
     if (!written) {
       LOGE("Fail to write the " << conversion.to->name() << " file "
@@ -316,7 +317,7 @@ bool WeightsConverter::write_destination(const WeightsConversion& conversion,
   if (error) {
     LOGE("Fail to replace the destination " << conversion.dst << ": "
                                             << error.message());
-    std::filesystem::remove(temporary, error);
+    std::filesystem::remove_all(temporary, error);
     return false;
   }
 

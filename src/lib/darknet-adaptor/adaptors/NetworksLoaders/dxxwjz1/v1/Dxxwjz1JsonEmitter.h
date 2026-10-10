@@ -60,7 +60,7 @@ class Dxxwjz1JsonEmitter
 
   /// @brief The end of the layers, the trailing bytes and the end of the
   /// document.
-  void end(const std::vector<uint8_t>& trailing);
+  void end(const std::vector<uint8_t>& bytes);
 
   /// @brief The text generator of the files written.
   static std::string generator();
@@ -72,6 +72,9 @@ class Dxxwjz1JsonEmitter
   /// @brief The members between the generator and the header, each one
   /// written after the ",\n  " text (none of the first version).
   virtual void sections();
+
+  /// @brief The JSON value of the trailing bytes: the base64 text here.
+  virtual std::string trailing(const std::vector<uint8_t>& bytes) const;
 
   /// @brief The JSON text of the member key: "\"name\": ".
   static std::string key(const char* name);

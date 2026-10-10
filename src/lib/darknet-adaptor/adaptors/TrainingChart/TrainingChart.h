@@ -28,7 +28,7 @@ class TrainingChart
                      std::vector<unsigned char>& png);
 
   /// @brief The render() of the weights file which keeps the record (the
-  /// dxxwjz2 one), false for the rest of the files.
+  /// dxxwjz2 and the dxxwjz3 ones), false for the rest of the files.
   static bool render_file(const std::string& weights,
                           std::vector<unsigned char>& png);
 };

@@ -448,7 +448,7 @@ TEST_F(UTEST_CommandLineParser, conversion_names_alone_is_reported)
 
 TEST_F(UTEST_CommandLineParser, save_format)
 {
-  EXPECT_EQ(appctx->save_format, "dxxwjz2");
+  EXPECT_EQ(appctx->save_format, "dxxwjz3");
 
   set_args({"--train-cfg", "net.cfg", "--save-format", "weights"});
 

@@ -1,10 +1,8 @@
 #!/bin/bash
 #
-# The GTK 4 toolkit is the GUI binary one alone.
+# The GTK 4 toolkit is the one of the GUI binaries alone.
 
 set -euo pipefail
-
-shift
 
 for BINARY in "$@" ; do
     if ldd "${BINARY}" | grep -E 'libgtk-4|libgtkmm-4' ; then

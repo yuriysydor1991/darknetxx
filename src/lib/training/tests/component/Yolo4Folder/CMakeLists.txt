@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.13)
 add_executable(
   CTEST_Yolo4Folder
   CTEST_Yolo4Folder.cpp
+  ${PROJECT_SOURCE_DIR}/src/lib/training/ATrainingProject.cpp
   ${PROJECT_SOURCE_DIR}/src/lib/training/Yolo4Folder.cpp
 )
 

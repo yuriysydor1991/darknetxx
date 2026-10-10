@@ -29,9 +29,12 @@ class TrainingJournal
    *
    * @param nformat The format of the weights files the training saves.
    * @param nrest The network description and the training record resumed.
+   * @param nproject The project file of the training (the dxxwjz2p or the
+   * dxxwjz3p one), which every
+   * save of the weights but the EMA ones updates; empty for none.
    */
   TrainingJournal(loaders::IWeightsFileFormatPtr nformat,
-                  loaders::WeightsDocument nrest);
+                  loaders::WeightsDocument nrest, std::string nproject = {});
 
   /// @brief Records the losses of the iteration after the recorded ones.
   void record(int iteration, float loss, float avg_loss);
@@ -42,7 +45,7 @@ class TrainingJournal
   /**
    * @brief Saves the weights of the network (the EMA ones for the ema) into
    * the file of the stem path and the extension of the format with the rest
-   * of the training.
+   * of the training, the training ones into the project file as well.
    */
   bool save(network& net, const std::string& stem, bool ema);
 
@@ -50,8 +53,12 @@ class TrainingJournal
   const loaders::WeightsDocument& rest() const;
 
  private:
+  /// @brief Replaces the project file with the one of the weights.
+  bool save_project(network& net) const;
+
   loaders::IWeightsFileFormatPtr mformat;
   loaders::WeightsDocument mrest;
+  std::string mproject;
   /// the seconds of the resumed training
   double mresumed;
   std::chrono::steady_clock::time_point mstart;

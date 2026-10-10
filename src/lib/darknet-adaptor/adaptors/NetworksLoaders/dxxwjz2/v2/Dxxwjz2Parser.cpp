@@ -37,12 +37,21 @@ bool Dxxwjz2Parser::parse_file(const std::string& filename,
 bool Dxxwjz2Parser::peek(const std::string& filename, WeightsDocument& rest,
                          bool& weights, WeightsReport& report)
 {
-  const bool parsed = Dxxwjz1Parser::parse_file(
+  return peek(
       filename,
       [](WeightsDocument& parsed_rest, WeightsReport& findings) {
         return std::make_unique<Dxxwjz2SaxHandler>(parsed_rest, findings, true);
       },
-      rest, report);
+      rest, weights, report);
+}
+
+bool Dxxwjz2Parser::peek(const std::string& filename,
+                         const Dxxwjz1Parser::HandlerFactory& factory,
+                         WeightsDocument& rest, bool& weights,
+                         WeightsReport& report)
+{
+  const bool parsed =
+      Dxxwjz1Parser::parse_file(filename, factory, rest, report);
 
   // the peek stops at the first weight of the layers
   weights = rest.floats() > 0U;

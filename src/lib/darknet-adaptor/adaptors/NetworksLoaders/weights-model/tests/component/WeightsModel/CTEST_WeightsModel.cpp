@@ -303,15 +303,17 @@ TEST(CTEST_WeightsModel, validator_rejects_the_documents_of_the_errors)
   std::vector<Case> cases;
 
   cases.push_back(
-      {WeightsDocument{WeightsHeader{0, 1, 0, 0x100000000ULL}, {}, {}, {}, {}},
+      {WeightsDocument{
+           WeightsHeader{0, 1, 0, 0x100000000ULL}, {}, {}, {}, {}, {}},
        "keeps the 32 bits seen"});
   cases.push_back(
       {WeightsDocument{
-           WeightsHeader{}, {weights_layer(-1, MAXPOOL)}, {}, {}, {}},
+           WeightsHeader{}, {weights_layer(-1, MAXPOOL)}, {}, {}, {}, {}},
        "negative"});
   cases.push_back(
       {WeightsDocument{WeightsHeader{},
                        {weights_layer(1, MAXPOOL), weights_layer(1, ROUTE)},
+                       {},
                        {},
                        {},
                        {}},
@@ -319,6 +321,7 @@ TEST(CTEST_WeightsModel, validator_rejects_the_documents_of_the_errors)
   cases.push_back(
       {WeightsDocument{WeightsHeader{},
                        {weights_layer(2, MAXPOOL), weights_layer(1, ROUTE)},
+                       {},
                        {},
                        {},
                        {}},
@@ -330,12 +333,14 @@ TEST(CTEST_WeightsModel, validator_rejects_the_documents_of_the_errors)
                           {weights_array(S::None, K::Weights, 1U)})},
            {},
            {},
+           {},
            {}},
        "keeps no weights"});
   cases.push_back(
       {WeightsDocument{WeightsHeader{},
                        {weights_layer(0, SHORTCUT,
                                       {weights_array(S::None, K::Biases, 1U)})},
+                       {},
                        {},
                        {},
                        {}},
@@ -346,12 +351,14 @@ TEST(CTEST_WeightsModel, validator_rejects_the_documents_of_the_errors)
            {weights_layer(0, RNN, {weights_array(S::None, K::Biases, 1U)})},
            {},
            {},
+           {},
            {}},
        "has no biases array"});
   cases.push_back(
       {WeightsDocument{
            WeightsHeader{},
            {weights_layer(0, LSTM, {weights_array(S::Vf, K::Biases, 1U)})},
+           {},
            {},
            {},
            {}},
@@ -363,6 +370,7 @@ TEST(CTEST_WeightsModel, validator_rejects_the_documents_of_the_errors)
                                        weights_array(S::None, K::Biases, 1U)})},
                        {},
                        {},
+                       {},
                        {}},
        "given twice"});
   cases.push_back(
@@ -370,6 +378,7 @@ TEST(CTEST_WeightsModel, validator_rejects_the_documents_of_the_errors)
                        {weights_layer(0, CONVOLUTIONAL,
                                       {weights_array(S::None, K::Weights, 1U),
                                        weights_array(S::None, K::Biases, 1U)})},
+                       {},
                        {},
                        {},
                        {}},

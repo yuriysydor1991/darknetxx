@@ -5,8 +5,10 @@
 #include <tuple>
 #include <vector>
 
+#include "ATrainingProject.h"
 #include "ILib.h"
 #include "ILogger.h"
+#include "IRecognizer.h"
 #include "ITrainer.h"
 #include "LibraryAPI.h"
 #include "LibraryContext.h"
@@ -37,11 +39,23 @@ class DARKNETXX_LIB_API LibraryFacade
    */
   static ILibPtr create_library(LibraryContextPtr ctx);
 
-  /// @brief The trainer of the YOLO4 folders into the context.
+  /// @brief The trainer of the training projects into the context.
   static ITrainerPtr create_trainer(LibraryContextPtr ctx);
 
-  /// @brief The network weights files formats the conversion accepts.
+  /// @brief The training project of the path: the one of the dxxwjz2p or
+  /// the dxxwjz3p project file, the YOLO4 folder one of the rest.
+  static ATrainingProjectPtr open_training_project(const std::string& path);
+
+  /// @brief The recognizer of the images by the networks of the weights files.
+  static IRecognizerPtr create_recognizer();
+
+  /// @brief The network weights files formats the conversion accepts and
+  /// the YOLO4 folder of the training project.
   static FormatsDescriptions conversion_formats();
+
+  /// @brief The file name extensions of the network weights files of every
+  /// format the training and the recognition read, e.g. ".dxxwjz2".
+  static std::vector<std::string> weights_extensions();
 
   /**
    * @brief The PNG image of the training chart the weights file keeps the

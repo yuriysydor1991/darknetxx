@@ -8,6 +8,7 @@
 
 #include "src/detector/detector_context.h"
 #include "src/lib/darknet-adaptor/DarknetStrings.h"
+#include "src/lib/darknet-adaptor/adaptors/NetworksLoaders/weights-model/Yolo4Annotations.h"
 #include "src/lib/facade/public/LibraryContext.h"
 
 namespace darknet_adaptor
@@ -213,6 +214,14 @@ class DarknetContext
   /// computation context becomes it's view.
   void set_detect_network(ANetworkAdaptorPtr nnet);
 
+  /**
+   * @brief Hands the image lists and the labels of the YOLO4 annotations of
+   * the dxxwjz2p project to the computation (see the TrainingDataRegistry)
+   * until the release_networks() call, the networks of which read the lists
+   * of the TrainingDataRegistry names.
+   */
+  void set_training_annotations(const loaders::Yolo4Annotations& annotations);
+
   const ANetworkAdaptorPtrs& get_train_networks() const;
   const ANetworkAdaptorPtr& get_map_network() const;
   const ANetworkAdaptorPtr& get_detect_network() const;
@@ -310,6 +319,8 @@ class DarknetContext
 
   TrainingJournalPtr journal;
   std::string training_base;
+  /// @brief The training data of the annotations is published.
+  bool annotated{false};
 
   /// @brief The class names and the names array of the computation context.
   std::vector<std::string> class_names;

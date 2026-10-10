@@ -8,7 +8,7 @@ set(POSIX_SIGNALS_HANDLERS_MOCKS_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/signals-handl
 
 # The sources every executable is built of: the main one, the network weights
 # files converter only one (see the src/darknetxxConverter-target.cmake) and
-# the GUI one (see the src/darknetxx-gui-target.cmake), which compile them
+# the GUI ones (see the src/darknetxx-gui-targets.cmake), which compile them
 # with their own definitions.
 darknetxx_targets_sources(
   DARKNETXX_APP_TARGETS

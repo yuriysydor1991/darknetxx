@@ -1,9 +1,13 @@
 cmake_minimum_required(VERSION 3.13)
 
+# the parts every window shares
 add_library(
   DarknetXXGtkmm4OBJ OBJECT
+  AWindowContext.cpp
+  AWindowLoader.cpp
+  ChooserEventsHandler.cpp
   GtkmmIniter.cpp
-  MainWindowContext.cpp
+  StopSignalEventsHandler.cpp
 )
 
 target_include_directories(
@@ -18,12 +22,20 @@ target_link_libraries(
   PRIVATE PkgConfig::GTKMM
 )
 
-target_link_libraries(
-  ${DARKNETXX_GUI_BINARY_NAME}
-  DarknetXXGtkmm4OBJ
-  PkgConfig::GTKMM
-)
+foreach(GUI_BINARY_NAME ${DARKNETXX_TRAIN_GUI_BINARY_NAME} ${DARKNETXX_RECOGNITION_GUI_BINARY_NAME})
+  target_link_libraries(
+    ${GUI_BINARY_NAME}
+    DarknetXXGtkmm4OBJ
+    DarknetXXGuiResourcesOBJ
+    PkgConfig::GTKMM
+  )
+endforeach()
+
+# the recognition window recognizes in a thread of it's own
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
 
 add_subdirectory(ui)
-add_subdirectory(main-window)
+add_subdirectory(train-window)
+add_subdirectory(recognition-window)
 add_subdirectory(tests)

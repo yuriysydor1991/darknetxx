@@ -139,6 +139,14 @@ data concat_datas(data *d, int n);
 void fill_truth(char *path, char **labels, int k, float *truth);
 void fill_truth_smooth(char *path, char **labels, int k, float *truth,
                        float label_smooth_eps);
+
+// The image lists and the labels of the training of a dxxwjz2p project, which
+// the C++ training data keeps in the memory instead of the list and the label
+// files (see the TrainingDataCApi): the list of the name and the boxes of the
+// label file path, NULL for none (read the files then).
+list *get_training_data_paths(const char *name);
+int has_training_data_paths(const char *name);
+box_label *read_training_data_boxes(const char *labelpath, int *n);
 #ifdef __cplusplus
 }
 

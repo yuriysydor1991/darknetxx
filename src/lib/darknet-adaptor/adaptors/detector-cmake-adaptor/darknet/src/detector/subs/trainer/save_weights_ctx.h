@@ -7,7 +7,8 @@
 extern "C" {
 #endif
 
-/// @brief Saves the periodic checkpoints of the current training iteration.
+/// @brief Saves the periodic checkpoints of the current training iteration:
+/// the numbered <base>_<iteration>_<avg loss> file and the <base>_last one.
 void save_weights_ctx(struct detector_context* ctx);
 
 /// @brief Saves the current weights as the <base>_last file (and the

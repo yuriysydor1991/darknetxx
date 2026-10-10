@@ -289,7 +289,7 @@ bool Dxxwjz1SaxHandler::key(string_t& name)
     return false;
   }
 
-  if (mfield == Field::Skip && frame.context == Context::Document) {
+  if (frame.context == Context::Document) {
     mdelegate = extension(name);
 
     if (mdelegate != nullptr) {

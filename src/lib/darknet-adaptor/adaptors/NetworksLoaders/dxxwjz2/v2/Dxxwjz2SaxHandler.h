@@ -40,6 +40,14 @@ class Dxxwjz2SaxHandler : public dxxwjz1::v1::Dxxwjz1SaxHandler
   bool extension_end(const std::string& name) override;
   bool appended() override;
 
+  /// @brief The reader of the network and the training trees.
+  virtual Dxxwjz2MetadataReader& metadata();
+
+  /// @brief The handler of the trailing value, which builds the trailing bytes
+  /// of the document itself; nullptr for the base64 text of the dxxwjz1
+  /// handler here.
+  virtual Delegate* trailing();
+
  private:
   Dxxwjz2SubtreeBuilder mbuilder;
   Dxxwjz2MetadataReader mmetadata;

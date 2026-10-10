@@ -161,6 +161,7 @@ typedef struct network
   char *backup_directory;
   int saveweights;
   int savelast;
+  int savechart;
   int classes;
 } network;
 

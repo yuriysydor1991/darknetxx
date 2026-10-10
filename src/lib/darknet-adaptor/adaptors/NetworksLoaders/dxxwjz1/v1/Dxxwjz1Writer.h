@@ -74,7 +74,8 @@ class Dxxwjz1Writer : public IWeightsWriter
  protected:
   /// @brief The emitter of the text of the document and its rest.
   virtual std::unique_ptr<Dxxwjz1JsonEmitter> create_emitter(
-      std::ostream& out, const WeightsDocument& rest) const;
+      std::ostream& out, const WeightsDocument& rest,
+      const std::string& filename) const;
 
   /// @brief Checks the rest of the document of the file, false for the one
   /// unable to be written (logged).

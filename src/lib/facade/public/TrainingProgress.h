@@ -22,7 +22,8 @@ class DARKNETXX_LIB_API TrainingProgress
   /// @brief The done part of the training iterations, from 0 to 1.
   double done_fraction() const;
 
-  /// @brief The done and all the iterations, e.g. "1200 / 6000".
+  /// @brief The done and all the iterations with the done percent, e.g.
+  /// "1200 / 6000 iterations (20.0%)".
   std::string iterations_text() const;
 
   std::string loss_text() const;

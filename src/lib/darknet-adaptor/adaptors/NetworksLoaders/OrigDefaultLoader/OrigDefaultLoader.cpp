@@ -55,6 +55,7 @@
 #include "src/lib/darknet-adaptor/adaptors/NetworksLoaders/weights-formats/NetworkSource.h"
 #include "src/lib/darknet-adaptor/adaptors/NetworksLoaders/weights-formats/WeightsFileFormats.h"
 #include "src/lib/darknet-adaptor/adaptors/NetworksLoaders/weights-model/NetworkFiles.h"
+#include "src/lib/darknet-adaptor/adaptors/TrainingData/TrainingDataRegistry.h"
 #include "src/lib/darknet-adaptor/adaptors/TrainingJournal/TrainingJournal.h"
 #include "src/lib/darknet-adaptor/adaptors/orig-includes.h"
 #include "src/log/log.h"
@@ -196,7 +197,10 @@ bool OrigDefaultLoader::load_train_networks(const DarknetContextPtr& dctx)
                        dctx->get_Save_format());
   }
 
-  const NetworkDescription description = read_description(cfg);
+  // the network file of the dxxwjz2p project keeps the annotations too
+  const WeightsDocument source = read_source(cfg);
+  const NetworkDescription& description = source.network;
+  const bool annotated = !source.annotations.empty();
   WeightsDocument rest;
   std::vector<ANetworkAdaptorPtr> nets;
   // the iteration of the weights the training goes on from
@@ -227,6 +231,12 @@ bool OrigDefaultLoader::load_train_networks(const DarknetContextPtr& dctx)
 
     view.learning_rate *= static_cast<float>(odctx->ngpus);
 
+    // the lists of the dxxwjz2p project over the ones of the cfg
+    if (annotated) {
+      net->train_images(adaptors::TrainingDataRegistry::TRAIN_LIST);
+      net->valid_images(adaptors::TrainingDataRegistry::VALID_LIST);
+    }
+
     nets.push_back(std::move(net));
   }
 
@@ -234,6 +244,10 @@ bool OrigDefaultLoader::load_train_networks(const DarknetContextPtr& dctx)
 
   if (odctx->calc_map) {
     map = make_map_network(dctx, description, nets.front());
+  }
+
+  if (map != nullptr && annotated) {
+    map->valid_images(adaptors::TrainingDataRegistry::VALID_LIST);
   }
 
   // the training from the beginning has no record to resume, the one of the
@@ -245,7 +259,7 @@ bool OrigDefaultLoader::load_train_networks(const DarknetContextPtr& dctx)
   rest.training.truncate_after(iteration);
 
   const std::vector<std::string> names =
-      class_names(dctx, rest, description, *nets.front()->get());
+      class_names(dctx->get_Names(), rest, description, *nets.front()->get());
   const network& net = *nets.front()->get();
 
   if (odctx->calc_map &&
@@ -258,14 +272,24 @@ bool OrigDefaultLoader::load_train_networks(const DarknetContextPtr& dctx)
   }
 
   rest.network = NetworkDescription{description.cfg(), names};
+  rest.annotations = source.annotations;
 
   dctx->set_class_names(names);
   dctx->set_training_base(NetworkSource::base_of(cfg, iteration));
 
   dctx->set_train_networks(std::move(nets));
   dctx->set_map_network(std::move(map));
-  dctx->set_training_journal(
-      std::make_shared<adaptors::TrainingJournal>(format, std::move(rest)));
+
+  if (annotated) {
+    LOGI("Training the " << source.annotations.training_paths().size()
+                         << " images of the " << cfg
+                         << " project instead of the lists of it's cfg");
+    dctx->set_training_annotations(source.annotations);
+  }
+
+  // the project is the latest weights of it's training, the backups aside
+  dctx->set_training_journal(std::make_shared<adaptors::TrainingJournal>(
+      format, std::move(rest), annotated ? cfg : std::string{}));
 
   return true;
 }
@@ -305,10 +329,23 @@ ANetworkAdaptorPtr OrigDefaultLoader::make_map_network(
 
 bool OrigDefaultLoader::load_detect_network(const DarknetContextPtr& dctx)
 {
-  auto odctx = dctx->get_darknet_ctx();
+  std::vector<std::string> names;
+  ANetworkAdaptorPtr net =
+      load_inference_network(dctx->get_Detect_cfg(), dctx->get_Latest_weights(),
+                             dctx->get_Names(), names);
 
-  const std::string& cfg = dctx->get_Detect_cfg();
-  const std::string& weights = dctx->get_Latest_weights();
+  net->get()->benchmark_layers = dctx->get_darknet_ctx()->benchmark_layers;
+
+  dctx->set_class_names(std::move(names));
+  dctx->set_detect_network(std::move(net));
+
+  return true;
+}
+
+ANetworkAdaptorPtr OrigDefaultLoader::load_inference_network(
+    const std::string& cfg, const std::string& weights,
+    const std::string& names, std::vector<std::string>& classes)
+{
   const NetworkDescription description = read_description(cfg);
 
   // set batch=1
@@ -320,26 +357,28 @@ bool OrigDefaultLoader::load_detect_network(const DarknetContextPtr& dctx)
 
   load_weights(*net->get(), weights, rest);
 
-  net->get()->benchmark_layers = odctx->benchmark_layers;
-
   net->fuse_conv_batchnorm();
   net->calculate_binary_weights();
 
-  dctx->set_class_names(class_names(dctx, rest, description, *net->get()));
-  dctx->set_detect_network(std::move(net));
+  classes = class_names(names, rest, description, *net->get());
 
-  return true;
+  return net;
 }
 
 NetworkDescription OrigDefaultLoader::read_description(const std::string& path)
 {
-  NetworkDescription description;
+  return read_source(path).network;
+}
 
-  if (!NetworkSource::read(path, description)) {
+WeightsDocument OrigDefaultLoader::read_source(const std::string& path)
+{
+  WeightsDocument source;
+
+  if (!NetworkSource::read(path, source)) {
     throw NetworkError("Couldn't read the network of the file: " + path);
   }
 
-  return description;
+  return source;
 }
 
 void OrigDefaultLoader::load_weights(network& net, const std::string& weights,
@@ -368,11 +407,10 @@ void OrigDefaultLoader::require_weights(const std::string& weights)
 }
 
 std::vector<std::string> OrigDefaultLoader::class_names(
-    const DarknetContextPtr& dctx, const WeightsDocument& rest,
+    const std::string& file, const WeightsDocument& rest,
     const NetworkDescription& description, const network& net)
 {
   std::vector<std::string> names;
-  const std::string& file = dctx->get_Names();
 
   if (!file.empty()) {
     if (!NetworkFiles::read_classes(file, names)) {
@@ -996,11 +1034,13 @@ void OrigDefaultLoader::parse_net_options(CfgSection& options,
   CLOGI("validate images file: %s", net.valid_images);
   CLOGI("backup directory: %s", net.backup_directory);
 
-  // configure when to write weights (the original Darknet defaults).
-  // Very useful for smaller datasets!
+  // configure when to write weights and the chart (the original Darknet
+  // defaults). Very useful for smaller datasets!
   net.saveweights =
       options.find_int("saveweights", (net.max_batches < 10000) ? 1000 : 10000);
   net.savelast = options.find_int("savelast", 100);
+  // none leaves the chart to the --save-charts-every-iter flag
+  net.savechart = options.find_int_quiet("savechart", 0);
 }
 
 ALayerAdaptorPtr OrigDefaultLoader::parse_local(CfgSection& options,

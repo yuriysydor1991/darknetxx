@@ -42,9 +42,9 @@ set(
 
 set(
   DARKNETXX_WIX_PRODUCT_ICON
-  ""
+  "${DARKNETXX_LOGO_ICO}"
   CACHE STRING
-  "Optional absolute path to an .ico file used as the MSI product icon"
+  "Absolute path to an .ico file used as the MSI product icon (the Darknet logo by default, empty for none)"
 )
 
 set(CPACK_GENERATOR "WIX")
@@ -67,6 +67,20 @@ endif()
 
 if(DARKNETXX_WIX_PRODUCT_ICON)
   set(CPACK_WIX_PRODUCT_ICON ${DARKNETXX_WIX_PRODUCT_ICON})
+endif()
+
+# The GUI binaries are the desktop apps: the Start Menu and the desktop
+# shortcuts of the installer start them.
+if(ENABLE_DARKNETXX_GUI)
+  set(
+    CPACK_PACKAGE_EXECUTABLES
+    ${DARKNETXX_TRAIN_GUI_BINARY_NAME} ${DARKNETXX_TRAIN_GUI_BINARY_NAME}
+    ${DARKNETXX_RECOGNITION_GUI_BINARY_NAME} ${DARKNETXX_RECOGNITION_GUI_BINARY_NAME}
+  )
+  set(
+    CPACK_CREATE_DESKTOP_LINKS
+    ${DARKNETXX_TRAIN_GUI_BINARY_NAME} ${DARKNETXX_RECOGNITION_GUI_BINARY_NAME}
+  )
 endif()
 
 include(CPack)

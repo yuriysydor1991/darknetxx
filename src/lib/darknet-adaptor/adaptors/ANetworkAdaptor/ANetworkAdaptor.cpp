@@ -1207,6 +1207,12 @@ int ANetworkAdaptor::savelast() const
   return net->savelast;
 }
 
+int ANetworkAdaptor::savechart() const
+{
+  assert(net != nullptr);
+  return net->savechart;
+}
+
 int ANetworkAdaptor::classes() const
 {
   assert(net != nullptr);
@@ -2084,6 +2090,12 @@ void ANetworkAdaptor::savelast(const int& nval)
 {
   assert(net != nullptr);
   net->savelast = nval;
+}
+
+void ANetworkAdaptor::savechart(const int& nval)
+{
+  assert(net != nullptr);
+  net->savechart = nval;
 }
 
 void ANetworkAdaptor::classes(const int& nval)

@@ -3,6 +3,7 @@
 #include <chrono>
 #include <condition_variable>
 #include <filesystem>
+#include <fstream>
 #include <memory>
 #include <mutex>
 #include <numeric>
@@ -10,11 +11,23 @@
 
 #include "ITrainingListener.h"
 #include "LibraryFacade.h"
-#include "src/lib/darknet-adaptor/adaptors/NetworksLoaders/dxxwjz2/v2/Dxxwjz2Reader.h"
+#include "Yolo4Folder.h"
+#include "src/lib/darknet-adaptor/adaptors/NetworksLoaders/dxxwjz2p/v1/Dxxwjz2pReader.h"
+#include "src/lib/darknet-adaptor/adaptors/NetworksLoaders/dxxwjz3/v3/Dxxwjz3Reader.h"
+#include "src/lib/darknet-adaptor/adaptors/NetworksLoaders/weights-converter/WeightsConverter.h"
+#include "src/lib/darknet-adaptor/adaptors/NetworksLoaders/weights-formats/WeightsFileFormats.h"
+#include "src/lib/darknet-adaptor/adaptors/NetworksLoaders/weights-model/NetworkFiles.h"
 #include "src/lib/darknet-adaptor/adaptors/NetworksLoaders/weights-model/WeightsDocument.h"
+#include "src/lib/darknet-adaptor/adaptors/TrainingData/TrainingDataRegistry.h"
 
+using darknet_adaptor::adaptors::TrainingDataRegistry;
+using darknet_adaptor::loaders::NetworkFiles;
+using darknet_adaptor::loaders::WeightsConversion;
+using darknet_adaptor::loaders::WeightsConverter;
 using darknet_adaptor::loaders::WeightsDocument;
-using darknet_adaptor::loaders::dxxwjz2::v2::Dxxwjz2Reader;
+using darknet_adaptor::loaders::WeightsFileFormats;
+using darknet_adaptor::loaders::dxxwjz2p::v1::Dxxwjz2pReader;
+using darknet_adaptor::loaders::dxxwjz3::v3::Dxxwjz3Reader;
 using darknetxx011::ITrainer;
 using darknetxx011::LibraryContext;
 using darknetxx011::LibraryFacade;
@@ -141,8 +154,8 @@ class CTEST_BackgroundTrainer : public testing::Test
     WeightsDocument rest;
     bool weights = false;
 
-    EXPECT_TRUE(Dxxwjz2Reader{}.peek(
-        (folder / "backup" / "digits_last.dxxwjz2").string(), rest, weights));
+    EXPECT_TRUE(Dxxwjz3Reader{}.peek(
+        (folder / "backup" / "digits_last.dxxwjz3").string(), rest, weights));
     EXPECT_TRUE(weights);
 
     return rest;
@@ -163,7 +176,7 @@ TEST_F(CTEST_BackgroundTrainer, stops_saving_the_weights_and_the_chart)
 
   EXPECT_EQ(listener->first, 1);
   EXPECT_EQ(Yolo4Folder{folder.string()}.latest_weights(),
-            (folder / "backup" / "digits_last.dxxwjz2").string());
+            (folder / "backup" / "digits_last.dxxwjz3").string());
 
   // the single chart of the training start
   const std::string chart = Yolo4Folder{folder.string()}.chart();
@@ -210,4 +223,85 @@ TEST_F(CTEST_BackgroundTrainer, no_second_training_while_one_runs)
   trainer->stop();
 
   ASSERT_TRUE(listener->wait_finished());
+}
+
+TEST_F(CTEST_BackgroundTrainer, trains_the_dxxwjz2p_project_of_the_folder)
+{
+  const fs::path project = folder / "project" / "digits.dxxwjz2p";
+  WeightsConversion conversion;
+  WeightsDocument rest;
+  bool weights = false;
+  std::string cfg;
+
+  // three iterations of the training, the mAP of the validation images at
+  // the end of it
+  ASSERT_TRUE(
+      NetworkFiles::read_text((folder / "cfg" / "digits.cfg").string(), cfg));
+  cfg.replace(cfg.find("max_batches=400"), 15, "max_batches=3");
+  cfg.replace(cfg.find("train=data/train.txt"), 20,
+              "train=data/train.txt\nvalid=data/valid.txt");
+  std::ofstream{folder / "cfg" / "digits.cfg"} << cfg;
+  std::ofstream{folder / "data" / "valid.txt"}
+      << "data/obj/digit_0_0.png\ndata/obj/digit_1_0.png\n";
+
+  conversion.from =
+      WeightsFileFormats::named("yolo4", WeightsFileFormats::convertible());
+  conversion.src = folder.string();
+  conversion.to = WeightsFileFormats::named("dxxwjz2p");
+  conversion.dst = project.string();
+
+  ASSERT_TRUE(WeightsConverter{}.convert(conversion));
+
+  // the project keeps the lists and the labels the training reads
+  fs::remove(folder / "data" / "train.txt");
+  fs::remove(folder / "data" / "valid.txt");
+
+  for (const auto& entry : fs::directory_iterator{folder / "data" / "obj"}) {
+    if (entry.path().extension() == ".txt") {
+      fs::remove(entry.path());
+    }
+  }
+
+  ctx->map = true;
+
+  const darknetxx011::ATrainingProjectPtr opened =
+      LibraryFacade::open_training_project(project.string());
+
+  ASSERT_TRUE(opened->valid());
+  EXPECT_EQ(opened->path(), folder / "project");
+  EXPECT_TRUE(opened->latest_weights().empty());
+
+  ASSERT_TRUE(trainer->train(*opened));
+  ASSERT_TRUE(listener->wait_finished());
+  EXPECT_TRUE(listener->succeeded);
+  EXPECT_EQ(listener->last, 3);
+
+  // the project keeps the latest weights and the record of them, the backup
+  // folder beside it the rest
+  ASSERT_TRUE(Dxxwjz2pReader{}.peek(project.string(), rest, weights));
+  EXPECT_TRUE(weights);
+  EXPECT_EQ(rest.annotations.images.size(), 82U);
+  EXPECT_EQ(rest.annotations.validation_paths().size(), 2U);
+  EXPECT_EQ(rest.training.size(), 3U);
+  EXPECT_EQ(rest.training.map_size(), 1U);
+  EXPECT_FALSE(fs::is_empty(folder / "project" / "backup"));
+  EXPECT_EQ(
+      LibraryFacade::open_training_project(project.string())->latest_weights(),
+      project.string());
+  EXPECT_FALSE(TrainingDataRegistry::has(TrainingDataRegistry::TRAIN_LIST));
+}
+
+TEST_F(CTEST_BackgroundTrainer, projects_of_the_paths)
+{
+  const darknetxx011::ATrainingProjectPtr yolo4 =
+      LibraryFacade::open_training_project(folder.string());
+  const darknetxx011::ATrainingProjectPtr none =
+      LibraryFacade::open_training_project((folder / "none.dxxwjz2p").string());
+
+  EXPECT_TRUE(yolo4->valid());
+  EXPECT_EQ(yolo4->cfg(), (folder / "cfg" / "digits.cfg").string());
+  EXPECT_FALSE(none->valid());
+  EXPECT_EQ(none->path(), folder);
+  EXPECT_FALSE(trainer->train(*none));
+  EXPECT_FALSE(trainer->running());
 }

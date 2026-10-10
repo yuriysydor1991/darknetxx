@@ -4,7 +4,8 @@ cmake_minimum_required(VERSION 3.13)
 # layer kind keeps and their order (the WeightsSchema), the arrays of the
 # network in the order of the files (the WeightsLayout), the content of the
 # file every format reads and writes (the WeightsDocument with the network
-# description and the training record) and its validation.
+# description, the training record and the YOLO4 annotations of the training
+# project) and its validation.
 add_library(
   DarknetCXXWeightsModelOBJ OBJECT
   NetworkDescription.cpp
@@ -15,6 +16,8 @@ add_library(
   WeightsLayout.cpp
   WeightsReport.cpp
   WeightsSchema.cpp
+  Yolo4Annotations.cpp
+  Yolo4Image.cpp
 )
 
 target_include_directories(

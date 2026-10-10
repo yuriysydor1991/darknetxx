@@ -21,7 +21,7 @@ TEST(UTEST_TrainingProgress, texts)
 {
   const TrainingProgress progress{1200, 6000, 2.5f, 3.25f, 0.001f, 1.5};
 
-  EXPECT_EQ(progress.iterations_text(), "1200 / 6000");
+  EXPECT_EQ(progress.iterations_text(), "1200 / 6000 iterations (20.0%)");
   EXPECT_EQ(progress.loss_text(), "2.5000");
   EXPECT_EQ(progress.details_text(),
             "avg loss 3.2500, learning rate 0.001000, 1.50 hours left");

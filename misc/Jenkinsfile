@@ -241,22 +241,32 @@ pipeline {
         stage('CTEST_BackgroundTrainer') {
           steps { sh 'cd $BUILDDIR && ctest -R "CTEST_BackgroundTrainer\\." --output-on-failure --output-junit $BDJUNITOUT/CTEST_BackgroundTrainer.junit.xml' }
         }
+        stage('CTEST_NetworkRecognizer') {
+          steps { sh 'cd $BUILDDIR && ctest -R "CTEST_NetworkRecognizer\\." --output-on-failure --output-junit $BDJUNITOUT/CTEST_NetworkRecognizer.junit.xml' }
+        }
       }
       post { always { junit "$BUILDDIR/$BDJUNITOUT/*.xml" } }
     }
 
-    // The tests of the darknetxx-gui binary. The CTEST_GtkmmWindow ones skip
-    // themselves without a display to show the window on.
+    // The tests of the GUI binaries. The CTEST_TrainWindow and the
+    // CTEST_RecognitionWindow ones skip themselves without a display to show
+    // the window on.
     stage('GUI tests') {
       parallel {
         stage('UTEST_GuiApplication') {
           steps { sh 'cd $BUILDDIR && ctest -R "UTEST_GuiApplication\\." --output-on-failure --output-junit $BDJUNITOUT/UTEST_GuiApplication.junit.xml' }
         }
-        stage('UTEST_GuiApplicationFactory') {
-          steps { sh 'cd $BUILDDIR && ctest -R "UTEST_GuiApplicationFactory\\." --output-on-failure --output-junit $BDJUNITOUT/UTEST_GuiApplicationFactory.junit.xml' }
+        stage('UTEST_TrainGuiApplicationFactory') {
+          steps { sh 'cd $BUILDDIR && ctest -R "UTEST_TrainGuiApplicationFactory\\." --output-on-failure --output-junit $BDJUNITOUT/UTEST_TrainGuiApplicationFactory.junit.xml' }
         }
-        stage('CTEST_GtkmmWindow') {
-          steps { sh 'cd $BUILDDIR && ctest -R "CTEST_GtkmmWindow\\." --output-on-failure --output-junit $BDJUNITOUT/CTEST_GtkmmWindow.junit.xml' }
+        stage('UTEST_RecognitionGuiApplicationFactory') {
+          steps { sh 'cd $BUILDDIR && ctest -R "UTEST_RecognitionGuiApplicationFactory\\." --output-on-failure --output-junit $BDJUNITOUT/UTEST_RecognitionGuiApplicationFactory.junit.xml' }
+        }
+        stage('CTEST_TrainWindow') {
+          steps { sh 'cd $BUILDDIR && ctest -R "CTEST_TrainWindow\\." --output-on-failure --output-junit $BDJUNITOUT/CTEST_TrainWindow.junit.xml' }
+        }
+        stage('CTEST_RecognitionWindow') {
+          steps { sh 'cd $BUILDDIR && ctest -R "CTEST_RecognitionWindow\\." --output-on-failure --output-junit $BDJUNITOUT/CTEST_RecognitionWindow.junit.xml' }
         }
         stage('ITEST_gui_bash') {
           steps { sh 'cd $BUILDDIR && ctest -R "ITEST_gui_bash\\." --output-on-failure --output-junit $BDJUNITOUT/ITEST_gui_bash.junit.xml' }

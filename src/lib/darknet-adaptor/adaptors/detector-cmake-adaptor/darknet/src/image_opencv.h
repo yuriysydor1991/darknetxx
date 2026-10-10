@@ -126,7 +126,7 @@ void draw_train_loss_ex(char *windows_name, mat_cv *img_src, int img_size,
                         int max_batches, float precision, int draw_precision,
                         char *accuracy_name, float contr_acc, int dont_show,
                         int mjpeg_port, double time_remaining,
-                        int save_every_chart, train_chart_state *state);
+                        int save_chart_nth, train_chart_state *state);
 
 // Data augmentation
 image image_data_augmentation(mat_cv *mat, int w, int h, int pleft, int ptop,

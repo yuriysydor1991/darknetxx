@@ -20,7 +20,7 @@ BackgroundTrainer::BackgroundTrainer(LibraryContextPtr nctx, ILibPtr ntraining)
   assert(training != nullptr);
 }
 
-bool BackgroundTrainer::train(const darknetxx011::Yolo4Folder& folder)
+bool BackgroundTrainer::train(const darknetxx011::ATrainingProject& project)
 {
   if (running()) {
     LOGE("The training is running already");
@@ -36,8 +36,8 @@ bool BackgroundTrainer::train(const darknetxx011::Yolo4Folder& folder)
     return false;
   }
 
-  if (!folder.valid() || !folder.enter(*ctx)) {
-    LOGE("No network to train found in the folder " << folder.path());
+  if (!project.valid() || !project.enter(*ctx)) {
+    LOGE("No network to train found in the project " << project.path());
     return false;
   }
 

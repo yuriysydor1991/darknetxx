@@ -17,7 +17,7 @@ for CONVERSION_FLAG in --convert-from --convert-src --convert-to --convert-dst \
     itest_expect_output_contains "${PRINTED}" "${CONVERSION_FLAG}"
 done
 
-for CONVERSION_FORMAT in weights dxxwjz1 dxxwjz2 ; do
+for CONVERSION_FORMAT in weights dxxwjz1 dxxwjz2 dxxwjz2p dxxwjz3 dxxwjz3p yolo4 ; do
     itest_expect_output_contains "${PRINTED}" "${CONVERSION_FORMAT}"
 done
 

@@ -34,8 +34,8 @@ configure_file(
 )
 
 # The executables over the library: the main one and the network weights
-# files converter only and the GUI ones beside it, which add themselves to the
-# list. They are declared before the components below, since the components
+# files converter only and the GUI training and recognition ones beside it,
+# which add themselves to the list. They are declared before the components below, since the components
 # hand their sources to them.
 set(DARKNETXX_APP_TARGETS "")
 
@@ -44,7 +44,7 @@ if(ENABLE_DARKNETXX_EXECUTABLES)
   list(APPEND DARKNETXX_APP_TARGETS ${DARKNETXX_BINARY_NAME})
 
   include(${CMAKE_CURRENT_SOURCE_DIR}/darknetxxConverter-target.cmake)
-  include(${CMAKE_CURRENT_SOURCE_DIR}/darknetxx-gui-target.cmake)
+  include(${CMAKE_CURRENT_SOURCE_DIR}/darknetxx-gui-targets.cmake)
 endif()
 
 # the digits YOLO4 folder the training component tests copy and train
@@ -61,7 +61,7 @@ if(ENABLE_DARKNETXX_EXECUTABLES)
   add_subdirectory(scripts)
 endif()
 
-if(TARGET ${DARKNETXX_GUI_BINARY_NAME})
+if(TARGET ${DARKNETXX_TRAIN_GUI_BINARY_NAME})
   add_subdirectory(gui)
 endif()
 

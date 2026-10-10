@@ -3,12 +3,12 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <cstdio>
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
 #include <iterator>
 #include <nlohmann/json.hpp>
-#include <numeric>
 #include <regex>
 #include <string>
 #include <vector>
@@ -156,12 +156,12 @@ TEST_F(ITEST_digits, recognizes_digit_8) { expect_recognized(8); }
 
 TEST_F(ITEST_digits, recognizes_digit_9) { expect_recognized(9); }
 
-/// Checks the dxxwjz2 files of the trainings: the one the ITEST_digits_training
+/// Checks the dxxwjz3 files of the trainings: the one the ITEST_digits_training
 /// test saved, the one of the training resumed of it and the one of the network
-/// of no weights trained, and the detection with the dxxwjz2 file alone. The
+/// of no weights trained, and the detection with the dxxwjz3 file alone. The
 /// files are the gzip compressed JSON documents, read and written here by the
 /// zlib and the nlohmann json alone.
-class ITEST_digits_dxxwjz2 : public ITEST_digits
+class ITEST_digits_dxxwjz3 : public ITEST_digits
 {
  public:
   using json = nlohmann::json;
@@ -210,7 +210,7 @@ class ITEST_digits_dxxwjz2 : public ITEST_digits
     return text;
   }
 
-  /// The document of the dxxwjz2 file.
+  /// The document of the dxxwjz3 file.
   static json document_of(const std::filesystem::path& path)
   {
     std::string text;
@@ -242,15 +242,6 @@ class ITEST_digits_dxxwjz2 : public ITEST_digits
     return classes;
   }
 
-  static std::vector<int> iterations_up_to(const int last)
-  {
-    std::vector<int> iterations(static_cast<size_t>(last));
-
-    std::iota(iterations.begin(), iterations.end(), 1);
-
-    return iterations;
-  }
-
   static std::vector<std::string> charts_of(const std::filesystem::path& dir)
   {
     std::vector<std::string> charts;
@@ -271,7 +262,7 @@ class ITEST_digits_dxxwjz2 : public ITEST_digits
       "five", "six", "seven", "eight", "nine"};
 };
 
-TEST_F(ITEST_digits_dxxwjz2, trained_file_keeps_the_network_and_the_training)
+TEST_F(ITEST_digits_dxxwjz3, trained_file_keeps_the_network_and_the_training)
 {
   const json document = document_of(WEIGHTS);
 
@@ -279,21 +270,28 @@ TEST_F(ITEST_digits_dxxwjz2, trained_file_keeps_the_network_and_the_training)
 
   const json& training = document["training"];
 
-  EXPECT_EQ(document["format"], "dxxwjz2");
-  EXPECT_EQ(document["network"]["cfg"].get<std::string>(), text_of(CFG));
+  EXPECT_EQ(document["format"], "dxxwjz3");
+  EXPECT_EQ(document["network"]["net"]["max_batches"], 400);
+  EXPECT_EQ(document["network"]["net"]["steps"], json::parse("[300, 350]"));
+  EXPECT_EQ(document["network"]["layers"].size(), 9U);
+  EXPECT_EQ(
+      document["network"]["layers"][0],
+      json::parse(
+          R"({"type": "convolutional", "options": {"batch_normalize": 1, "filters": 8, "size": 3, "stride": 1, "pad": 1, "activation": "leaky"}})"));
   EXPECT_EQ(classes_of(document),
             (std::vector<std::string>{"0", "1", "2", "3", "4", "5", "6", "7",
                                       "8", "9"}));
-  EXPECT_EQ(training["iteration"].get<std::vector<int>>(),
-            iterations_up_to(400));
+  // the losses of the iterations of their indexes
+  EXPECT_FALSE(training.contains("iteration"));
   EXPECT_EQ(training["loss"].size(), 400U);
+  EXPECT_EQ(training["avg_loss"].size(), 400U);
   EXPECT_GE(training["seconds"].get<double>(), 1.0);
   EXPECT_LT(training["avg_loss"].back().get<double>(),
             training["avg_loss"].front().get<double>());
   EXPECT_FALSE(document["layers"].empty());
 }
 
-TEST_F(ITEST_digits_dxxwjz2, chart_is_named_after_the_training_start)
+TEST_F(ITEST_digits_dxxwjz3, chart_is_named_after_the_training_start)
 {
   const std::vector<std::string> charts = charts_of(TRAINING_DIR);
 
@@ -304,11 +302,11 @@ TEST_F(ITEST_digits_dxxwjz2, chart_is_named_after_the_training_start)
       << charts.front();
 }
 
-TEST_F(ITEST_digits_dxxwjz2, file_alone_detects_with_its_class_names)
+TEST_F(ITEST_digits_dxxwjz3, file_alone_detects_with_its_class_names)
 {
   const auto dir = work_dir("named");
   const auto words = dir / "words.names";
-  const auto named = dir / "named.dxxwjz2";
+  const auto named = dir / "named.dxxwjz3";
 
   {
     std::ofstream file{words};
@@ -318,8 +316,8 @@ TEST_F(ITEST_digits_dxxwjz2, file_alone_detects_with_its_class_names)
     }
   }
 
-  ASSERT_EQ(run(dir, "--convert-from dxxwjz2 --convert-src " + quote(WEIGHTS) +
-                         " --convert-to dxxwjz2 --convert-dst " +
+  ASSERT_EQ(run(dir, "--convert-from dxxwjz3 --convert-src " + quote(WEIGHTS) +
+                         " --convert-to dxxwjz3 --convert-dst " +
                          quote(named.string()) + " --convert-names " +
                          quote(words.string())),
             0);
@@ -350,33 +348,40 @@ TEST_F(ITEST_digits_dxxwjz2, file_alone_detects_with_its_class_names)
   }
 }
 
-TEST_F(ITEST_digits_dxxwjz2, resumed_training_adds_its_record)
+TEST_F(ITEST_digits_dxxwjz3, resumed_training_adds_its_record)
 {
   const auto dir = work_dir("resumed");
-  const std::string cfg =
-      cfg_with({{"max_batches", "420"}, {"backup", (dir / "backup").string()}});
+  const std::string cfg = cfg_with({{"max_batches", "420\nsaveweights=20"},
+                                    {"backup", (dir / "backup").string()}});
 
-  std::filesystem::copy_file(WEIGHTS, dir / "start.dxxwjz2");
+  std::filesystem::copy_file(WEIGHTS, dir / "start.dxxwjz3");
   std::ofstream{dir / "more.cfg"} << cfg;
 
   ASSERT_EQ(
-      run(dir, "--train-cfg more.cfg --weights start.dxxwjz2 --dont-show"), 0)
+      run(dir, "--train-cfg more.cfg --weights start.dxxwjz3 --dont-show"), 0)
       << "see the " << dir / "output.log";
 
   const json first = document_of(WEIGHTS);
-  const json resumed = document_of(dir / "backup" / "more_final.dxxwjz2");
+  const json resumed = document_of(dir / "backup" / "more_final.dxxwjz3");
   const json& losses = resumed["training"]["loss"];
 
   ASSERT_TRUE(resumed.is_object());
 
-  EXPECT_EQ(resumed["network"]["cfg"].get<std::string>(), cfg);
+  EXPECT_EQ(resumed["network"]["net"]["max_batches"], 420);
+  EXPECT_EQ(resumed["network"]["net"]["backup"], (dir / "backup").string());
   EXPECT_EQ(classes_of(resumed), classes_of(first));
-  EXPECT_EQ(resumed["training"]["iteration"].get<std::vector<int>>(),
-            iterations_up_to(420));
+  EXPECT_EQ(losses.size(), 420U);
   EXPECT_EQ(json(std::vector<json>(losses.begin(), losses.begin() + 400)),
             first["training"]["loss"]);
   EXPECT_GE(resumed["training"]["seconds"].get<double>(),
             first["training"]["seconds"].get<double>());
+
+  // the numbered backup names the average loss of the iteration
+  char numbered[64];
+
+  std::snprintf(numbered, sizeof(numbered), "more_420_%f.dxxwjz3",
+                resumed["training"]["avg_loss"][419].get<double>());
+  EXPECT_TRUE(std::filesystem::exists(dir / "backup" / numbered)) << numbered;
 
   // the average loss goes on of the record
   const double average = resumed["training"]["avg_loss"][400].get<double>();
@@ -392,15 +397,15 @@ TEST_F(ITEST_digits_dxxwjz2, resumed_training_adds_its_record)
   ASSERT_EQ(charts.size(), 1U);
   EXPECT_GE(
       std::filesystem::last_write_time(dir / charts.front()),
-      std::filesystem::last_write_time(dir / "backup" / "more_final.dxxwjz2"));
+      std::filesystem::last_write_time(dir / "backup" / "more_final.dxxwjz3"));
 }
 
-TEST_F(ITEST_digits_dxxwjz2, map_calculations_go_into_the_record)
+TEST_F(ITEST_digits_dxxwjz3, map_calculations_go_into_the_record)
 {
   const auto dir = work_dir("mapped");
 
   // the class names of the file alone, the names= one of the cfg is missing
-  std::filesystem::copy_file(WEIGHTS, dir / "start.dxxwjz2");
+  std::filesystem::copy_file(WEIGHTS, dir / "start.dxxwjz3");
   std::ofstream{dir / "mapped.cfg"} << cfg_with(
       {{"max_batches", "420"},
        {"backup", (dir / "backup").string()},
@@ -409,13 +414,13 @@ TEST_F(ITEST_digits_dxxwjz2, map_calculations_go_into_the_record)
 
   ASSERT_EQ(
       run(dir,
-          "--train-cfg mapped.cfg --weights start.dxxwjz2 --dont-show --map"),
+          "--train-cfg mapped.cfg --weights start.dxxwjz3 --dont-show --map"),
       0)
       << "see the " << dir / "output.log";
 
   // the structure alone: the mAP values of the tiny network vary
   for (const std::string& file : {"mapped_final", "mapped_best"}) {
-    const json document = document_of(dir / "backup" / (file + ".dxxwjz2"));
+    const json document = document_of(dir / "backup" / (file + ".dxxwjz3"));
     const json& training = document["training"];
 
     SCOPED_TRACE(file);
@@ -430,12 +435,12 @@ TEST_F(ITEST_digits_dxxwjz2, map_calculations_go_into_the_record)
   }
 
   EXPECT_EQ(document_of(dir / "backup" /
-                        "mapped_final.dxxwjz2")["training"]["map_iteration"]
+                        "mapped_final.dxxwjz3")["training"]["map_iteration"]
                 .back(),
             420);
 }
 
-TEST_F(ITEST_digits_dxxwjz2, chart_of_the_file_is_drawn)
+TEST_F(ITEST_digits_dxxwjz3, chart_of_the_file_is_drawn)
 {
   const auto dir = work_dir("chart");
   const auto png = dir / "drawn.png";
@@ -466,7 +471,7 @@ TEST_F(ITEST_digits_dxxwjz2, chart_of_the_file_is_drawn)
   EXPECT_FALSE(std::filesystem::exists(dir / "never.png"));
 }
 
-TEST_F(ITEST_digits_dxxwjz2, network_of_no_weights_is_trained)
+TEST_F(ITEST_digits_dxxwjz3, network_of_no_weights_is_trained)
 {
   const auto dir = work_dir("project");
 
@@ -483,12 +488,12 @@ TEST_F(ITEST_digits_dxxwjz2, network_of_no_weights_is_trained)
 
   // the network to train the converter makes of the cfg
   ASSERT_EQ(run(dir,
-                "--convert-to dxxwjz2 --convert-dst project.dxxwjz2 "
+                "--convert-to dxxwjz3 --convert-dst project.dxxwjz3 "
                 "--convert-cfg project.cfg --convert-names words.names"),
             0)
       << "see the " << dir / "output.log";
 
-  const json made = document_of(dir / "project.dxxwjz2");
+  const json made = document_of(dir / "project.dxxwjz3");
 
   EXPECT_FALSE(made.contains("header"));
   EXPECT_FALSE(made.contains("layers"));
@@ -497,15 +502,14 @@ TEST_F(ITEST_digits_dxxwjz2, network_of_no_weights_is_trained)
   std::filesystem::remove(dir / "project.cfg");
   std::filesystem::remove(dir / "words.names");
 
-  ASSERT_EQ(run(dir, "--weights project.dxxwjz2 --dont-show"), 0)
+  ASSERT_EQ(run(dir, "--weights project.dxxwjz3 --dont-show"), 0)
       << "see the " << dir / "output.log";
 
-  const json trained = document_of(dir / "backup" / "project_final.dxxwjz2");
+  const json trained = document_of(dir / "backup" / "project_final.dxxwjz3");
 
   ASSERT_TRUE(trained.is_object());
 
   EXPECT_EQ(classes_of(trained), WORDS);
-  EXPECT_EQ(trained["training"]["iteration"].get<std::vector<int>>(),
-            iterations_up_to(12));
+  EXPECT_EQ(trained["training"]["loss"].size(), 12U);
   EXPECT_FALSE(trained["layers"].empty());
 }

@@ -66,6 +66,7 @@ set(
       -f "${DARKNETXX_CPU_PREDICTOR_DOCKERFILE_DST}"
       --build-context project=${PROJECT_SOURCE_DIR}
       --build-arg CACHEBUST="${PROJECT_CONFIGURE_DATE}" 
+      ${DOCKER_USER_BUILD_ARGS}
       -t ${DARKNETXX_CPU_PREDICTOR_DOCKER_SINGLE_RUN_NAME} .
 )
 

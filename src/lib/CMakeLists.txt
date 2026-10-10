@@ -15,6 +15,7 @@ add_subdirectory(helpers)
 add_subdirectory(OMP)
 add_subdirectory(zlib)
 add_subdirectory(training)
+add_subdirectory(recognition)
 add_subdirectory(libmain)
 add_subdirectory(facade)
 
@@ -30,6 +31,7 @@ target_sources(
     $<TARGET_OBJECTS:DarknetCXXADetectorTrainerAdaptorOBJ>
     $<TARGET_OBJECTS:DarknetCXXOpenMPControllerOBJ>
     $<TARGET_OBJECTS:DarknetXXTrainingOBJ>
+    $<TARGET_OBJECTS:DarknetXXRecognitionOBJ>
     $<TARGET_OBJECTS:DarknetXXLibMainOBJ>
     $<TARGET_OBJECTS:DarknetXXLibFacadeOBJ>
 )

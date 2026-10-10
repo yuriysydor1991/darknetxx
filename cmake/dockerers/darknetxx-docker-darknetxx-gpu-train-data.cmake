@@ -56,6 +56,7 @@ set(
       -f "${DARKNETXX_GPU_TRAIN_DOCKERFILE_DST}"
       --build-context project=${PROJECT_SOURCE_DIR}
       --build-arg CACHEBUST="${PROJECT_CONFIGURE_DATE}" 
+      ${DOCKER_USER_BUILD_ARGS}
       -t ${DARKNETXX_GPU_TRAIN_DOCKER_SINGLE_RUN_NAME} .
 )
 
@@ -103,7 +104,7 @@ add_custom_target(
   COMMENT "Running the docker single run image ${DARKNETXX_GPU_TRAIN_DOCKER_SINGLE_RUN_NAME}"
 )
 
-# the training of the image behind the window of the darknetxx-gui
+# the training of the image behind the window of the darknetxx-train-gui
 add_custom_target(
   docker-single-run-darknetxx-gpu-train-gui
   COMMAND ${CMAKE_COMMAND} -E env DOCKER_HOST=${DOCKER_HOST_STR}
@@ -111,7 +112,8 @@ add_custom_target(
     ${DARKNETXX_GPU_TRAIN_DOCKER_SINGLE_RUN_NAME}
     ${YOLO4_TRAINING_DATA_DIR}
     --gpus all --runtime=nvidia
+    -- ${DOCKER_GUI_TRAINING_ARGS}
   DEPENDS docker-single-build-darknetxx-gpu-train
-  COMMENT "Running the darknetxx-gui of the docker image ${DARKNETXX_GPU_TRAIN_DOCKER_SINGLE_RUN_NAME}"
+  COMMENT "Running the darknetxx-train-gui of the docker image ${DARKNETXX_GPU_TRAIN_DOCKER_SINGLE_RUN_NAME}"
   VERBATIM
 )

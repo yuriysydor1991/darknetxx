@@ -5,6 +5,8 @@ add_executable(
   UTEST_GuiApplication.cpp
   ${PROJECT_SOURCE_DIR}/src/app/Application.cpp
   ${PROJECT_SOURCE_DIR}/src/app/GuiApplication.cpp
+  ${PROJECT_SOURCE_DIR}/src/app/RecognitionGuiApplication.cpp
+  ${PROJECT_SOURCE_DIR}/src/app/TrainGuiApplication.cpp
   ${PROJECT_SOURCE_DIR}/src/lib/facade/LibraryContext.cpp
   ${APP_MOCKS_ROOT}/ApplicationContext/src/app/ApplicationContext.cpp
 )
@@ -16,7 +18,7 @@ target_include_directories(
     ${APP_MOCKS_ROOT}/ApplicationContext
     ${APP_MOCKS_ROOT}/LibraryFacade
     ${APP_MOCKS_ROOT}/ApplicationContext2LibraryContext
-    ${APP_MOCKS_ROOT}/GtkmmIniter
+    ${APP_MOCKS_ROOT}/GtkmmIniters
     ${GENERAL_MOCKS_ROOT}/project-global-decls
     ${GENERAL_MOCKS_ROOT}/log
     ${PROJECT_SOURCE_DIR}

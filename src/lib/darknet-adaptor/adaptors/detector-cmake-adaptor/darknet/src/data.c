@@ -19,6 +19,10 @@ pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 list *get_paths(char *filename)
 {
+  list *kept = get_training_data_paths(filename);
+
+  if (kept) return kept;
+
   char *path;
   FILE *file = fopen(filename, "r");
   if (!file) file_error(__FILE__, __LINE__, filename);
@@ -217,7 +221,11 @@ matrix load_image_augment_paths(char **paths, int n, int use_flip, int min,
 
 box_label *read_boxes(char *filename, int *n)
 {
-  box_label *boxes = (box_label *)xcalloc(1, sizeof(box_label));
+  box_label *boxes = read_training_data_boxes(filename, n);
+
+  if (boxes) return boxes;
+
+  boxes = (box_label *)xcalloc(1, sizeof(box_label));
   FILE *file = fopen(filename, "r");
   if (!file) {
     CLOGE(

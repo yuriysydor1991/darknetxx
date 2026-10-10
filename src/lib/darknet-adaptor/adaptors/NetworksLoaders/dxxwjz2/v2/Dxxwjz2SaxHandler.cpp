@@ -48,6 +48,10 @@ std::vector<std::string> Dxxwjz2SaxHandler::required_keys() const
 Dxxwjz2SaxHandler::Delegate* Dxxwjz2SaxHandler::extension(
     const std::string& name)
 {
+  if (name == Dxxwjz1Format::TRAILING_KEY) {
+    return trailing();
+  }
+
   if (name != Dxxwjz2Format::NETWORK_KEY &&
       name != Dxxwjz2Format::TRAINING_KEY) {
     return nullptr;
@@ -60,16 +64,20 @@ Dxxwjz2SaxHandler::Delegate* Dxxwjz2SaxHandler::extension(
 
 bool Dxxwjz2SaxHandler::extension_end(const std::string& name)
 {
+  if (name == Dxxwjz1Format::TRAILING_KEY) {
+    return true;
+  }
+
   const bool read =
       name == Dxxwjz2Format::NETWORK_KEY
-          ? mmetadata.network(mbuilder.tree(), document().network)
-          : mmetadata.training(mbuilder.tree(), document().training);
+          ? metadata().network(mbuilder.tree(), document().network)
+          : metadata().training(mbuilder.tree(), document().training);
 
   // the tree of the losses of the long trainings isn't kept
   mbuilder.reset(name);
 
   if (!read) {
-    return fail(mmetadata.error());
+    return fail(metadata().error());
   }
 
   mnetwork = mnetwork || name == Dxxwjz2Format::NETWORK_KEY;
@@ -83,5 +91,9 @@ bool Dxxwjz2SaxHandler::appended()
 
   return !mstopped;
 }
+
+Dxxwjz2MetadataReader& Dxxwjz2SaxHandler::metadata() { return mmetadata; }
+
+Dxxwjz2SaxHandler::Delegate* Dxxwjz2SaxHandler::trailing() { return nullptr; }
 
 }  // namespace darknet_adaptor::loaders::dxxwjz2::v2

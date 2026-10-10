@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# The help and the version messages of the GUI binary name it.
+# The help and the version messages of a GUI binary name it.
 
 set -euo pipefail
 

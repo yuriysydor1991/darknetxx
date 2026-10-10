@@ -4,6 +4,7 @@
 #include <istream>
 #include <string>
 
+#include "src/lib/darknet-adaptor/adaptors/NetworksLoaders/dxxwjz1/v1/Dxxwjz1Parser.h"
 #include "src/lib/darknet-adaptor/adaptors/NetworksLoaders/weights-model/WeightsDocument.h"
 #include "src/lib/darknet-adaptor/adaptors/NetworksLoaders/weights-model/WeightsReport.h"
 
@@ -36,6 +37,11 @@ class Dxxwjz2Parser
    */
   static bool peek(const std::string& filename, WeightsDocument& rest,
                    bool& weights, WeightsReport& report);
+
+  /// @brief The peek() by the handler of the factory, the one of the peek.
+  static bool peek(const std::string& filename,
+                   const dxxwjz1::v1::Dxxwjz1Parser::HandlerFactory& factory,
+                   WeightsDocument& rest, bool& weights, WeightsReport& report);
 };
 
 }  // namespace darknet_adaptor::loaders::dxxwjz2::v2

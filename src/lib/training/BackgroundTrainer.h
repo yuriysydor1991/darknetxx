@@ -25,7 +25,7 @@ class BackgroundTrainer : public darknetxx011::ITrainer
   virtual ~BackgroundTrainer();
   BackgroundTrainer(LibraryContextPtr nctx, ILibPtr ntraining);
 
-  virtual bool train(const darknetxx011::Yolo4Folder& folder) override;
+  virtual bool train(const darknetxx011::ATrainingProject& project) override;
   virtual void stop() override;
   virtual bool running() const override;
 

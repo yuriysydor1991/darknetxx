@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gresources>
   <gresource prefix="/ua/org/kytok/darknetxx/gui">
-    <file>GtkmmWindow.ui</file>
+    <file>RecognitionWindow.ui</file>
+    <file>TrainWindow.ui</file>
+  </gresource>
+  <gresource prefix="/ua/org/kytok/darknetxx/gui/icons/256x256/apps">
+    <file>darknet-logo.png</file>
   </gresource>
 </gresources>

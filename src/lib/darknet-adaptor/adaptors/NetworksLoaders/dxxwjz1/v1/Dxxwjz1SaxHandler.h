@@ -61,7 +61,8 @@ class Dxxwjz1SaxHandler : public nlohmann::json_sax<nlohmann::json>
   virtual std::vector<std::string> required_keys() const;
 
   /// @brief The handler of the value of a document key of a later version,
-  /// nullptr for the unknown key, which is skipped with a warning.
+  /// which may take over the keys of the earlier ones (the trailing one),
+  /// nullptr for the rest: the unknown keys are skipped with a warning.
   virtual Delegate* extension(const std::string& name);
 
   /// @brief The value of the extension() key is complete, false fails the

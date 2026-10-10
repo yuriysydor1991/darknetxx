@@ -7,6 +7,7 @@ description: |
 
 grade: ${DARKNETXX_SNAP_GRADE}
 confinement: ${DARKNETXX_SNAP_CONFINEMENT}
+${DARKNETXX_SNAP_ICON}
 
 apps:
   ${DARKNETXX_BINARY_NAME}:

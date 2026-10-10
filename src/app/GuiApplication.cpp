@@ -2,7 +2,6 @@
 
 #include <cassert>
 
-#include "src/gui/gtkmm4/GtkmmIniter.h"
 #include "src/log/log.h"
 
 namespace app
@@ -18,7 +17,9 @@ int GuiApplication::perform(AppCtxPtr ctx)
     return INVALID;
   }
 
-  // the window shows the training chart, saved on every iteration for it
+  // the windows show no OpenCV ones, the training one shows the training
+  // chart, saved on every iteration for it unless the cfg savechart= key
+  // tells another cadence
   libctx->dont_show = true;
   libctx->dont_save_charts_every_iter = false;
 
@@ -40,11 +41,6 @@ int GuiApplication::perform(AppCtxPtr ctx)
   }
 
   return 0;
-}
-
-std::shared_ptr<gui::IGUIIniter> GuiApplication::create_gui_initer()
-{
-  return std::make_shared<darknetxxGtkmm4::GtkmmIniter>();
 }
 
 }  // namespace app

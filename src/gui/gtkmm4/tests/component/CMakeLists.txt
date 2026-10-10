@@ -4,4 +4,5 @@ if(NOT ENABLE_COMPONENT_TESTS)
   return()
 endif()
 
-add_subdirectory(GtkmmWindow)
+add_subdirectory(TrainWindow)
+add_subdirectory(RecognitionWindow)

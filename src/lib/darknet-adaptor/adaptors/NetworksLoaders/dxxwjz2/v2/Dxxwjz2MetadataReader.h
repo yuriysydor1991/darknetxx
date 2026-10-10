@@ -22,29 +22,25 @@ namespace darknet_adaptor::loaders::dxxwjz2::v2
 class Dxxwjz2MetadataReader
 {
  public:
-  using json = nlohmann::json;
+  /// @brief The trees of the keys in the file order.
+  using json = nlohmann::ordered_json;
 
   virtual ~Dxxwjz2MetadataReader() = default;
   explicit Dxxwjz2MetadataReader(WeightsReport& nreport);
 
   /// @brief The value of the network key, false for the wrong one (see the
   /// error()).
-  bool network(const json& value, NetworkDescription& description);
+  virtual bool network(const json& value, NetworkDescription& description);
 
   /// @brief The value of the training key, false for the wrong one.
-  bool training(const json& value, TrainingRecord& record);
+  virtual bool training(const json& value, TrainingRecord& record);
 
   const std::string& error() const;
 
- private:
+ protected:
   /// @brief The optional map columns of the training value.
   bool maps(const json& value, TrainingRecord& record);
-  bool classes(const json& value, std::vector<std::string>& names);
-  bool class_of(const json& value, const std::string& path,
-                std::vector<std::string>& names, std::vector<bool>& given);
   bool seconds(const json& value, double& result);
-  bool integers(const json& value, const std::string& path,
-                std::vector<int>& column);
   bool floats(const json& value, const std::string& path,
               std::vector<float>& column);
 
@@ -57,6 +53,15 @@ class Dxxwjz2MetadataReader
   static std::string member(const std::string& path, const char* name);
 
   bool fail(const std::string& message);
+
+  /// @brief The value of the classes key of the network.
+  bool classes(const json& value, std::vector<std::string>& names);
+
+ private:
+  bool class_of(const json& value, const std::string& path,
+                std::vector<std::string>& names, std::vector<bool>& given);
+  bool integers(const json& value, const std::string& path,
+                std::vector<int>& column);
 
   WeightsReport& mreport;
   std::string merror;

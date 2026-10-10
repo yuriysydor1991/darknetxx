@@ -45,9 +45,8 @@ void Dxxwjz2JsonEmitter::network()
 {
   const std::vector<std::string>& classes = mnetwork.classes();
 
-  write(",\n  " + key(Dxxwjz2Format::NETWORK_KEY) + "{" +
-        key(Dxxwjz2Format::CFG_KEY) + Dxxwjz1JsonString::quote(mnetwork.cfg()) +
-        ", " + key(Dxxwjz2Format::CLASSES_KEY) + "[");
+  write(",\n  " + key(Dxxwjz2Format::NETWORK_KEY) + "{" + cfg(mnetwork) + ", " +
+        key(Dxxwjz2Format::CLASSES_KEY) + "[");
 
   for (std::size_t index = 0U; index < classes.size(); ++index) {
     write(std::string{index == 0U ? "\n    {" : ",\n    {"} +
@@ -59,6 +58,11 @@ void Dxxwjz2JsonEmitter::network()
   write(classes.empty() ? "]}" : "\n  ]}");
 }
 
+std::string Dxxwjz2JsonEmitter::cfg(const NetworkDescription& network) const
+{
+  return key(Dxxwjz2Format::CFG_KEY) + Dxxwjz1JsonString::quote(network.cfg());
+}
+
 void Dxxwjz2JsonEmitter::training()
 {
   const double time = mtraining.seconds();
@@ -66,15 +70,8 @@ void Dxxwjz2JsonEmitter::training()
       std::isfinite(time) ? std::llround(std::max(0.0, time)) : 0LL;
 
   write(",\n  " + key(Dxxwjz2Format::TRAINING_KEY) + "{" +
-        key(Dxxwjz2Format::SECONDS_KEY) + std::to_string(seconds) + ",\n    " +
-        key(Dxxwjz2Format::ITERATION_KEY));
-  integers(mtraining.iterations());
-
-  write(",\n    " + key(Dxxwjz2Format::LOSS_KEY));
-  values(mtraining.losses().data(), mtraining.size());
-
-  write(",\n    " + key(Dxxwjz2Format::AVG_LOSS_KEY));
-  values(mtraining.avg_losses().data(), mtraining.size());
+        key(Dxxwjz2Format::SECONDS_KEY) + std::to_string(seconds));
+  losses(mtraining);
 
   // the trainings of no mAP calculation write the files of the losses alone
   if (mtraining.map_size() > 0U) {
@@ -86,6 +83,23 @@ void Dxxwjz2JsonEmitter::training()
   }
 
   write("\n  }");
+}
+
+void Dxxwjz2JsonEmitter::losses(const TrainingRecord& training)
+{
+  write(",\n    " + key(Dxxwjz2Format::ITERATION_KEY));
+  integers(training.iterations());
+  columns(training.losses(), training.avg_losses());
+}
+
+void Dxxwjz2JsonEmitter::columns(const std::vector<float>& losses,
+                                 const std::vector<float>& avg_losses)
+{
+  write(",\n    " + key(Dxxwjz2Format::LOSS_KEY));
+  values(losses.data(), losses.size());
+
+  write(",\n    " + key(Dxxwjz2Format::AVG_LOSS_KEY));
+  values(avg_losses.data(), avg_losses.size());
 }
 
 void Dxxwjz2JsonEmitter::integers(const std::vector<int>& values)

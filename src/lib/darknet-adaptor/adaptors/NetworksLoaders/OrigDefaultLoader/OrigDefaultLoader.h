@@ -25,9 +25,9 @@ namespace darknet_adaptor::loaders
  * The loader builds the networks of the C++ adaptors: the layers are made by
  * the layer classes of the Layers directory, the network memory belongs to
  * the ANetworkAdaptor and the darknet C code computes with it's struct view.
- * The networks are made of the cfg files or of the dxxwjz2 ones (see the
- * NetworkSource), the weights are loaded by the readers of their formats
- * (see the WeightsFileFormats).
+ * The networks are made of the cfg files or of the dxxwjz2 and the dxxwjz3 ones
+ * (see the NetworkSource), the weights are loaded by the readers of their
+ * formats (see the WeightsFileFormats).
  *
  * The parse errors, where the original darknet ended the process with the
  * error() call, throw NetworkError here; the load() of the context catches
@@ -107,6 +107,19 @@ class OrigDefaultLoader : virtual public INetworkLoader
                                          const std::string& weights, bool clear,
                                          int batch);
 
+  /**
+   * @brief The single image batch inference network of the network file (the
+   * cfg or the dxxwjz2 one) with the weights of the weights file of any
+   * format, the batch normalization fused into them, and it's class names
+   * (see the load(), the names file is the --names one).
+   *
+   * Throws NetworkError on the failure.
+   */
+  ANetworkAdaptorPtr load_inference_network(const std::string& cfg,
+                                            const std::string& weights,
+                                            const std::string& names,
+                                            std::vector<std::string>& classes);
+
  private:
   /// @brief The state of the network parse passed to the parse_*() methods.
   struct size_params
@@ -139,6 +152,10 @@ class OrigDefaultLoader : virtual public INetworkLoader
   /// throws NetworkError on the failure.
   static NetworkDescription read_description(const std::string& path);
 
+  /// @brief Everything the network file keeps but the weights (see the
+  /// NetworkSource::read()), throws NetworkError on the failure.
+  static WeightsDocument read_source(const std::string& path);
+
   /// @brief Loads the weights file of any format into the network, keeps the
   /// rest of the file. Throws NetworkError on the failure.
   static void load_weights(network& net, const std::string& weights,
@@ -148,9 +165,10 @@ class OrigDefaultLoader : virtual public INetworkLoader
   /// network to train.
   static void require_weights(const std::string& weights);
 
-  /// @brief The class names of the work (see the load()).
+  /// @brief The class names of the work (see the load()), the names file is
+  /// the --names one.
   static std::vector<std::string> class_names(
-      const DarknetContextPtr& dctx, const WeightsDocument& rest,
+      const std::string& file, const WeightsDocument& rest,
       const NetworkDescription& description, const network& net);
 
   void parse_net_options(CfgSection& options, ANetworkAdaptor& net);

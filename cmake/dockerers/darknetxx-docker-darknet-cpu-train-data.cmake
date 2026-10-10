@@ -67,6 +67,7 @@ set(
       --build-context project=${PROJECT_SOURCE_DIR}
       --build-context darknetmod=${DARKNET_ORIG_SOURCE_DIR}
       --build-arg CACHEBUST="${PROJECT_CONFIGURE_DATE}" 
+      ${DOCKER_USER_BUILD_ARGS}
       -t ${DARKNET_CPU_TRAIN_DOCKER_SINGLE_RUN_NAME} .
 )
 

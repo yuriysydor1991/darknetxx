@@ -95,7 +95,7 @@ class DARKNETXX_LIB_API LibraryContext
   double stop_less_avg_loss{0.0};
   /// @brief The network weights file format the training saves, see the
   /// LibraryFacade::conversion_formats.
-  std::string save_format{"dxxwjz2"};
+  std::string save_format{"dxxwjz3"};
   /// @brief Listens to the training, none by default.
   ITrainingListenerPtr training_listener;
 

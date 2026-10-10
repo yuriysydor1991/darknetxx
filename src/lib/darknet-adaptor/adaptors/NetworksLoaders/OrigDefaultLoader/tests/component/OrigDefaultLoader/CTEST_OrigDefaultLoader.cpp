@@ -538,13 +538,29 @@ TEST_F(CTEST_OrigDefaultLoader, net_options_defaults)
   EXPECT_FLOAT_EQ(view.momentum, 0.9f);
   EXPECT_FLOAT_EQ(view.decay, 0.0001f);
   EXPECT_EQ(view.policy, CONSTANT);
-  // the original darknet weights saving intervals
+  // the original darknet weights saving intervals, the chart one of the
+  // --save-charts-every-iter flag
   EXPECT_EQ(view.saveweights, 1000);
   EXPECT_EQ(view.savelast, 100);
+  EXPECT_EQ(view.savechart, 0);
   EXPECT_STREQ(view.names, "data/names.list");
   EXPECT_STREQ(view.train_images, "data/train.txt");
   EXPECT_STREQ(view.valid_images, "data/train.txt");
   EXPECT_STREQ(view.backup_directory, "backup");
+}
+
+TEST_F(CTEST_OrigDefaultLoader, saving_intervals)
+{
+  const ANetworkAdaptorPtr net = parse(
+      "[net]\nwidth=8\nheight=8\nchannels=3\n"
+      "saveweights=50\nsavelast=10\nsavechart=5\n"
+      "[maxpool]\nsize=2\nstride=2\n");
+
+  const network& view = *net->get();
+
+  EXPECT_EQ(view.saveweights, 50);
+  EXPECT_EQ(view.savelast, 10);
+  EXPECT_EQ(view.savechart, 5);
 }
 
 TEST_F(CTEST_OrigDefaultLoader, steps_policy_arrays)

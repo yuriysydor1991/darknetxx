@@ -18,7 +18,7 @@ Dxxwjz2Writer::Dxxwjz2WriterPtr Dxxwjz2Writer::create()
 }
 
 std::unique_ptr<dxxwjz1::v1::Dxxwjz1JsonEmitter> Dxxwjz2Writer::create_emitter(
-    std::ostream& out, const WeightsDocument& rest) const
+    std::ostream& out, const WeightsDocument& rest, const std::string&) const
 {
   return std::make_unique<Dxxwjz2JsonEmitter>(out, rest.network, rest.training);
 }

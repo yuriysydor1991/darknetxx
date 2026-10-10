@@ -46,6 +46,12 @@ int64_t Dxxwjz1JsonEmitter::format_version() const
 
 void Dxxwjz1JsonEmitter::sections() {}
 
+std::string Dxxwjz1JsonEmitter::trailing(
+    const std::vector<uint8_t>& bytes) const
+{
+  return Dxxwjz1JsonString::quote(Dxxwjz1Base64::encode(bytes));
+}
+
 std::string Dxxwjz1JsonEmitter::key(const char* const name)
 {
   return Dxxwjz1JsonString::quote(name) + ": ";
@@ -119,15 +125,14 @@ void Dxxwjz1JsonEmitter::layer(const int index, const LAYER_TYPE type,
   write(nested ? "\n      }}\n    }}" : "\n    }}");
 }
 
-void Dxxwjz1JsonEmitter::end(const std::vector<uint8_t>& trailing)
+void Dxxwjz1JsonEmitter::end(const std::vector<uint8_t>& bytes)
 {
   if (mweights) {
     write(mfirst_layer ? "]" : "\n  ]");
   }
 
-  if (mweights && !trailing.empty()) {
-    write(",\n  " + key(Dxxwjz1Format::TRAILING_KEY) +
-          Dxxwjz1JsonString::quote(Dxxwjz1Base64::encode(trailing)));
+  if (mweights && !bytes.empty()) {
+    write(",\n  " + key(Dxxwjz1Format::TRAILING_KEY) + trailing(bytes));
   }
 
   write("\n}\n");

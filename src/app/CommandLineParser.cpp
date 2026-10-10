@@ -134,7 +134,7 @@ bool check_conversion(const std::shared_ptr<ApplicationContext>& ctx)
             " parameters, or the " + CMDParamNames::convert_tow + ", " +
             CMDParamNames::convert_dstw + " and " +
             CMDParamNames::convert_cfgw +
-            " ones of the dxxwjz2 network to train";
+            " ones of the dxxwjz2 or dxxwjz3 network to train";
   } else if (!requested && !ctx->convert_cfg.empty()) {
     error = "The " + CMDParamNames::convert_cfgw +
             " parameter goes with the conversion ones alone";

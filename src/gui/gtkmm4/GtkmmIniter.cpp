@@ -2,16 +2,21 @@
 
 #include <glibmm/miscutils.h>
 #include <gtkmm/application.h>
+#include <gtkmm/icontheme.h>
 
 #include <algorithm>
 #include <cassert>
 
 #include "project-global-decls.h"
-#include "src/gui/gtkmm4/MainWindowContext.h"
 #include "src/log/log.h"
 
 namespace darknetxxGtkmm4
 {
+
+GtkmmIniter::GtkmmIniter(std::string nname, std::string nid)
+    : mname{std::move(nname)}, mid{std::move(nid)}
+{
+}
 
 bool GtkmmIniter::run(app::AppCtxPtr ctx,
                       darknetxx011::LibraryContextPtr libctx)
@@ -24,14 +29,13 @@ bool GtkmmIniter::run(app::AppCtxPtr ctx,
     return false;
   }
 
-  mwctx = MainWindowContext::build_context(ctx, libctx);
+  mwctx = create_window_context(ctx, libctx);
 
   // the Wayland app id, which names the desktop entry and the icon
-  Glib::set_prgname(project_decls::PROJECT_APPLICATION_ID);
+  Glib::set_prgname(mid);
 
-  // every process trains it's own folder
-  auto app = Gtk::Application::create(project_decls::PROJECT_APPLICATION_ID,
-                                      Gio::Application::Flags::NON_UNIQUE);
+  // every process works on it's own
+  auto app = Gtk::Application::create(mid, Gio::Application::Flags::NON_UNIQUE);
 
   bool shown = false;
 
@@ -59,21 +63,19 @@ void GtkmmIniter::deinit()
 
 bool GtkmmIniter::show_window(Gtk::Application& app)
 {
-  if (!mwctx->wloader->load()) {
-    LOGE("Fail to load the window");
+  if (!mwctx->load()) {
     return false;
   }
 
-  if (!mwctx->weHandler->init(mwctx)) {
-    LOGE("Fail to init the window event handlers");
-    return false;
-  }
+  auto* window = mwctx->window();
 
-  auto* window = mwctx->wloader->window();
+  window->set_title(mname + " " + project_decls::PROJECT_BUILD_VERSION);
 
-  window->set_title(project_decls::PROJECT_GUI_NAME + " " +
-                    project_decls::PROJECT_BUILD_VERSION);
-  window->set_icon_name(project_decls::PROJECT_APPLICATION_ID);
+  // the Darknet logo of the GResource, which the installed icons are as well,
+  // so the binary shows it uninstalled too
+  Gtk::IconTheme::get_for_display(window->get_display())
+      ->add_resource_path("/ua/org/kytok/darknetxx/gui/icons");
+  window->set_icon_name("darknet-logo");
 
   app.add_window(*window);
   window->present();

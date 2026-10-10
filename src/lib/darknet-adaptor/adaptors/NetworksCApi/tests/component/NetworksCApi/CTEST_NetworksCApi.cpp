@@ -6,11 +6,13 @@
 #include <filesystem>
 #include <fstream>
 #include <memory>
+#include <nlohmann/json.hpp>
 #include <random>
 #include <string>
 #include <thread>
 #include <vector>
 
+#include "darknet.h"
 #include "src/lib/darknet-adaptor/adaptors/ANetworkAdaptor/ANetworkAdaptor.h"
 #include "src/lib/darknet-adaptor/adaptors/NetworksCApi/NetworksRegistry.h"
 #include "src/lib/darknet-adaptor/adaptors/NetworksLoaders/OrigDefaultLoader/OrigDefaultLoader.h"
@@ -539,4 +541,32 @@ TEST_F(CTEST_NetworksCApi, the_registry_serves_the_threads)
 
   EXPECT_EQ(failures.load(), 0);
   EXPECT_EQ(NetworksRegistry::size(), registered);
+}
+
+/*
+ * The detections JSON.
+ */
+
+TEST_F(CTEST_NetworksCApi, detection_to_json_escapes_the_class_names)
+{
+  float probs[] = {0.f, 0.9f};
+  detection det{};
+  std::string plain{"a"};
+  std::string quoted{"\"\\"};
+  char* names[] = {c_str(plain), c_str(quoted)};
+
+  det.classes = 2;
+  det.prob = probs;
+
+  char* json = detection_to_json(&det, 1, 2, names, 1, nullptr);
+
+  ASSERT_NE(json, nullptr);
+
+  const nlohmann::json parsed = nlohmann::json::parse(json, nullptr, false);
+
+  free(json);
+
+  ASSERT_FALSE(parsed.is_discarded());
+  ASSERT_EQ(parsed["objects"].size(), 1U);
+  EXPECT_EQ(parsed["objects"][0]["name"], quoted);
 }

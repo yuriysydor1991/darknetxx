@@ -5,6 +5,7 @@
 #include <filesystem>
 #include <iomanip>
 #include <iostream>
+#include <locale>
 #include <thread>
 
 namespace default_logger
@@ -21,6 +22,12 @@ void RealDefaultLogger::log(const unsigned short& loglvl,
   std::lock_guard<std::mutex> alogfile_m_guard{alogfile_m};
 
   std::ostringstream finalLog;
+
+  // The layout of the line is the logger's own, so it takes no digit groups
+  // of the application global locale (the user's one the GTKmm installs),
+  // which turn the thread id into 140,482,768,250,560. The message itself is
+  // formatted by the LOG_BODY stream of the application locale.
+  finalLog.imbue(std::locale::classic());
 
   insert_current_timestamp(finalLog);
 

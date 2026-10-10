@@ -779,6 +779,20 @@ void free_batch_detections(det_num_pair *det_num_pairs, int n)
 // ]
 //},
 
+// the class name of the JSON string, of it's quotes and backslashes escaped
+static void json_escaped_name(char *escaped, const size_t size,
+                              const char *name)
+{
+  size_t n = 0;
+
+  for (; *name != '\0' && n + 2 < size; ++name) {
+    if (*name == '"' || *name == '\\') escaped[n++] = '\\';
+    escaped[n++] = *name;
+  }
+
+  escaped[n] = '\0';
+}
+
 char *detection_to_json(detection *dets, int nboxes, int classes, char **names,
                         long long int frame_id, char *filename)
 {
@@ -809,6 +823,8 @@ char *detection_to_json(detection *dets, int nboxes, int classes, char **names,
         class_id = j;
         char *buf = (char *)calloc(2048, sizeof(char));
         if (!buf) return 0;
+        char name[512];
+        json_escaped_name(name, sizeof(name), names[j]);
         // sprintf(buf, "{\"image_id\":%d, \"category_id\":%d, \"bbox\":[%f, %f,
         // %f, %f], \"score\":%f}",
         //     image_id, j, dets[i].bbox.x, dets[i].bbox.y, dets[i].bbox.w,
@@ -818,7 +834,7 @@ char *detection_to_json(detection *dets, int nboxes, int classes, char **names,
                 "  {\"class_id\":%d, \"name\":\"%s\", "
                 "\"relative_coordinates\":{\"center_x\":%f, \"center_y\":%f, "
                 "\"width\":%f, \"height\":%f}, \"confidence\":%f}",
-                j, names[j], dets[i].bbox.x, dets[i].bbox.y, dets[i].bbox.w,
+                j, name, dets[i].bbox.x, dets[i].bbox.y, dets[i].bbox.w,
                 dets[i].bbox.h, dets[i].prob[j]);
 
         int send_buf_len = strlen(send_buf);

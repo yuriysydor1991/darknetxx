@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "LibraryContext.h"
 #include "src/lib/darknet-adaptor/adaptors/NetworksLoaders/weights-converter/WeightsConverter.h"
@@ -95,6 +96,34 @@ TEST_F(UTEST_WeightsConversionLib, formats_of_both_directions)
   WeightsConverter::onMockCreate = onMockCreate.AsStdFunction();
 
   EXPECT_TRUE(conversionLib.libcall(ctx));
+}
+
+TEST_F(UTEST_WeightsConversionLib,
+       yolo4_folder_converts_into_the_project_and_back)
+{
+  MockFunction<void(WeightsConverter&)> onMockCreate;
+
+  EXPECT_CALL(onMockCreate, Call(_))
+      .Times(2)
+      .WillRepeatedly(Invoke([this](WeightsConverter& instance) {
+        EXPECT_CALL(instance, convert(_))
+            .Times(1)
+            .WillOnce(Invoke([this](const WeightsConversion& conversion) {
+              EXPECT_EQ(conversion.from->name(), ctx->convert_from);
+              EXPECT_EQ(conversion.to->name(), ctx->convert_to);
+              return true;
+            }));
+      }));
+
+  WeightsConverter::onMockCreate = onMockCreate.AsStdFunction();
+
+  for (const auto& [from, to] :
+       {std::pair{"yolo4", "dxxwjz2p"}, std::pair{"dxxwjz2p", "yolo4"}}) {
+    ctx->convert_from = from;
+    ctx->convert_to = to;
+
+    EXPECT_TRUE(conversionLib.libcall(ctx)) << from << " into " << to;
+  }
 }
 
 TEST_F(UTEST_WeightsConversionLib, unknown_formats_convert_nothing)

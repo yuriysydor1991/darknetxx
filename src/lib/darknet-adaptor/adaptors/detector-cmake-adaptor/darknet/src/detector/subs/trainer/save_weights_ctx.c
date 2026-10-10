@@ -25,8 +25,8 @@ void save_weights_ctx(struct detector_context* ctx)
     ctx->iter_save = iteration;
     sync_gpu_nets_ctx(ctx);
     char stem[PATH_MAX];
-    snprintf(stem, sizeof(stem), "%s/%s_%d", ctx->net.backup_directory,
-             ctx->base, iteration);
+    snprintf(stem, sizeof(stem), "%s/%s_%d_%f", ctx->net.backup_directory,
+             ctx->base, iteration, ctx->avg_loss);
     save_train_weights_ctx(ctx, stem, 0);
   }
 

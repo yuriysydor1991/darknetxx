@@ -1145,15 +1145,29 @@ extern "C" mat_cv *draw_train_chart(char *windows_name, float max_img_loss,
       // draw new chart
       char char_buff[PATH_MAX];
       int i;
+      // the decimals the loss step of the labelled lines takes (two for the
+      // 0.05 one of the max_chart_loss=0.5), so no two labels read the same
+      int decimals = 1;
+      for (float step =
+               max_img_loss * 100 / static_cast<float>(number_of_lines);
+           decimals < 3 && std::fabs(step - std::round(step)) > 1e-3f;
+           step *= 10) {
+        ++decimals;
+      }
       // vertical lines
       pt1.x = img_offset;
-      pt2.x = img_size, pt_text.x = 30;
+      pt2.x = img_size;
       for (i = 1; i <= number_of_lines; ++i) {
         pt1.y = pt2.y = (float)i * draw_size / number_of_lines;
         cv::line(img, pt1, pt2, CV_RGB(224, 224, 224), 1, 8, 0);
         if (i % 10 == 0) {
-          sprintf(char_buff, "%2.1f",
+          sprintf(char_buff, "%.*f", decimals,
                   max_img_loss * (number_of_lines - i) / number_of_lines);
+          // right aligned to the grid, however long
+          pt_text.x = img_offset - 4 -
+                      cv::getTextSize(char_buff, cv::FONT_HERSHEY_COMPLEX_SMALL,
+                                      0.7, 1, nullptr)
+                          .width;
           pt_text.y = pt1.y + 3;
 
           cv::putText(img, char_buff, pt_text, cv::FONT_HERSHEY_COMPLEX_SMALL,
@@ -1331,14 +1345,14 @@ extern "C" void draw_train_loss(char *windows_name, mat_cv *img_src,
   draw_train_loss_ex(windows_name, img_src, img_size, avg_loss, max_img_loss,
                      current_batch, max_batches, precision, draw_precision,
                      accuracy_name, contr_acc, dont_show, mjpeg_port,
-                     time_remaining, 0, &state);
+                     time_remaining, 100, &state);
 }
 
 extern "C" void draw_train_loss_ex(
     char *windows_name, mat_cv *img_src, int img_size, float avg_loss,
     float max_img_loss, int current_batch, int max_batches, float precision,
     int draw_precision, char *accuracy_name, float contr_acc, int dont_show,
-    int mjpeg_port, double time_remaining, int save_every_chart,
+    int mjpeg_port, double time_remaining, int save_chart_nth,
     train_chart_state *state)
 {
   try {
@@ -1394,8 +1408,8 @@ extern "C" void draw_train_loss_ex(
       cv::imshow(windows_name, img);
       k = cv::waitKey(20);
     }
-    if (k == 's' || current_batch == (max_batches - 1) ||
-        (current_batch / 100 > state->saved_batch / 100) || save_every_chart) {
+    if (k == 's' || current_batch == (max_batches - 1) || save_chart_nth <= 1 ||
+        (current_batch / save_chart_nth > state->saved_batch / save_chart_nth)) {
       state->saved_batch = current_batch;
       save_mat_png(img, windows_name);
       cv::putText(img, "- Saved", cv::Point(260, img_size - 10),

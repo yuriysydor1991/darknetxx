@@ -51,9 +51,9 @@ class ApplicationFactory
 
   /**
    * @brief Creates default instance for the application implementation: the
-   * library one, or the GUI one of the GUI binary. The network weights files
-   * converter only binary has none, its factory creates the help printer
-   * instead.
+   * library one, or the window one of a GUI binary. The network weights
+   * files converter only binary has none, its factory creates the help
+   * printer instead.
    *
    * @return Returns created default application.
    */

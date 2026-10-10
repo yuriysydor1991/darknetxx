@@ -58,7 +58,7 @@ bool Dxxwjz1Writer::save(network& net, const std::string& filename,
   const WeightsLayoutEntries layout = WeightsLayout::of(net, options);
 
   const std::unique_ptr<Dxxwjz1JsonEmitter> emitter =
-      create_emitter(*file, rest);
+      create_emitter(*file, rest, filename);
 
   emitter->begin(WeightsHeader::current(*net.seen));
 
@@ -111,7 +111,7 @@ bool Dxxwjz1Writer::write(const WeightsDocument& document,
   }
 
   const std::unique_ptr<Dxxwjz1JsonEmitter> emitter =
-      create_emitter(*file, document);
+      create_emitter(*file, document, filename);
 
   emitter->begin(document.header, writes_weights(document));
 
@@ -139,7 +139,7 @@ bool Dxxwjz1Writer::write(const WeightsDocument& document,
 }
 
 std::unique_ptr<Dxxwjz1JsonEmitter> Dxxwjz1Writer::create_emitter(
-    std::ostream& out, const WeightsDocument&) const
+    std::ostream& out, const WeightsDocument&, const std::string&) const
 {
   return std::make_unique<Dxxwjz1JsonEmitter>(out);
 }

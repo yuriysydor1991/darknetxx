@@ -10,6 +10,7 @@
 #include "src/lib/darknet-adaptor/adaptors/NetworksLoaders/weights-model/NetworkDescription.h"
 #include "src/lib/darknet-adaptor/adaptors/NetworksLoaders/weights-model/TrainingRecord.h"
 #include "src/lib/darknet-adaptor/adaptors/NetworksLoaders/weights-model/WeightsSchema.h"
+#include "src/lib/darknet-adaptor/adaptors/NetworksLoaders/weights-model/Yolo4Annotations.h"
 
 namespace darknet_adaptor::loaders
 {
@@ -85,7 +86,9 @@ struct WeightsLayer
  * than the network one is the truncated one.
  *
  * The network description and the training record are kept by the formats
- * which keep them alone (the dxxwjz2 one), the rest leaves them out.
+ * which keep them alone (the dxxwjz2 and the dxxwjz3 ones), the rest leaves
+ * them out, the YOLO4 annotations of the training project by the dxxwjz2p
+ * and the dxxwjz3p formats alone.
  */
 struct WeightsDocument
 {
@@ -97,6 +100,7 @@ struct WeightsDocument
   std::vector<uint8_t> trailing;
   NetworkDescription network;
   TrainingRecord training;
+  Yolo4Annotations annotations;
 
   /// @brief The layer of the index, nullptr for none.
   const WeightsLayer* find(int index) const;

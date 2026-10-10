@@ -1,9 +1,11 @@
 #ifndef DARKNET_CXX_PORT_PROJECT_WEIGHTS_FILE_FORMATS_CLASS_H
 #define DARKNET_CXX_PORT_PROJECT_WEIGHTS_FILE_FORMATS_CLASS_H
 
+#include <initializer_list>
 #include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "src/lib/darknet-adaptor/adaptors/NetworksLoaders/IWeightsFileFormat.h"
 
@@ -14,11 +16,29 @@ namespace darknet_adaptor::loaders
 class WeightsFileFormats
 {
  public:
-  static IWeightsFileFormatPtr named(const std::string& name)
+  static const std::vector<IWeightsFileFormatPtr>& all()
   {
-    for (const char* const known : {"weights", "dxxwjz1", "dxxwjz2"}) {
-      if (name == known) {
-        return std::make_shared<Named>(name);
+    static const std::vector<IWeightsFileFormatPtr> formats =
+        of({"weights", "dxxwjz1", "dxxwjz2", "dxxwjz2p"});
+
+    return formats;
+  }
+
+  static const std::vector<IWeightsFileFormatPtr>& convertible()
+  {
+    static const std::vector<IWeightsFileFormatPtr> formats =
+        of({"weights", "dxxwjz1", "dxxwjz2", "dxxwjz2p", "yolo4"});
+
+    return formats;
+  }
+
+  static IWeightsFileFormatPtr named(
+      const std::string& name,
+      const std::vector<IWeightsFileFormatPtr>& formats = all())
+  {
+    for (const IWeightsFileFormatPtr& format : formats) {
+      if (format->name() == name) {
+        return format;
       }
     }
 
@@ -26,6 +46,18 @@ class WeightsFileFormats
   }
 
  private:
+  static std::vector<IWeightsFileFormatPtr> of(
+      std::initializer_list<const char*> names)
+  {
+    std::vector<IWeightsFileFormatPtr> formats;
+
+    for (const char* const name : names) {
+      formats.push_back(std::make_shared<Named>(name));
+    }
+
+    return formats;
+  }
+
   class Named : public IWeightsFileFormat
   {
    public:

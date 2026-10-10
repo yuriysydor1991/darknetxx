@@ -4,6 +4,7 @@
 #include <memory>
 
 #include "ILib.h"
+#include "IRecognizer.h"
 #include "ITrainer.h"
 #include "LibraryContext.h"
 
@@ -19,6 +20,7 @@ class LibFactory
   using LibFactoryPtr = std::shared_ptr<LibFactory>;
   using ILibPtr = darknetxx011::ILibPtr;
   using ITrainerPtr = darknetxx011::ITrainerPtr;
+  using IRecognizerPtr = darknetxx011::IRecognizerPtr;
   using LibraryContextPtr = darknetxx011::LibraryContextPtr;
 
   virtual ~LibFactory() = default;
@@ -32,6 +34,8 @@ class LibFactory
   virtual ILibPtr create_library(LibraryContextPtr ctx);
 
   virtual ITrainerPtr create_trainer(LibraryContextPtr ctx);
+
+  virtual IRecognizerPtr create_recognizer();
 
   static LibFactoryPtr create_factory();
 

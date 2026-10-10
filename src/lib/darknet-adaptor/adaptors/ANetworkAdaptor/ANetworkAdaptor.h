@@ -210,6 +210,7 @@ class ANetworkAdaptor : virtual public IDarknetAdaptor,
   const std::string& backup_directory() const;
   int saveweights() const;
   int savelast() const;
+  int savechart() const;
   int classes() const;
 
   int h() const;
@@ -444,6 +445,7 @@ class ANetworkAdaptor : virtual public IDarknetAdaptor,
   void backup_directory(const std::string& nval);
   void saveweights(const int& nval);
   void savelast(const int& nval);
+  void savechart(const int& nval);
   void classes(const int& nval);
 
  private:

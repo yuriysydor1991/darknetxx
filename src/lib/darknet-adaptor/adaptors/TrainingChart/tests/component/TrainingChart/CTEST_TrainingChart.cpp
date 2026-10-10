@@ -9,6 +9,7 @@
 
 #include "image_opencv.h"
 #include "src/detector/subs/trainer/draw_train_chart_ctx.h"
+#include "src/detector/subs/trainer/draw_train_loss_ctx.h"
 #include "src/lib/darknet-adaptor/adaptors/TrainingChart/TrainingChart.h"
 
 using namespace testing;
@@ -76,7 +77,7 @@ void draw_live(mat_cv* img, const int from, const int to,
   for (int iteration = from; iteration <= to; ++iteration) {
     draw_train_loss_ex(name, img, SIZE, loss_of(iteration), MAX_LOSS, iteration,
                        MAX_BATCHES, static_cast<float>(iteration) / 1e3f,
-                       iteration % 50 == 0, accuracy, -1.f, 1, 0, 0.0, 0,
+                       iteration % 50 == 0, accuracy, -1.f, 1, 0, 0.0, 100,
                        &state);
   }
 }
@@ -217,4 +218,40 @@ TEST_F(CTEST_TrainingChart, resumed_training_chart_starts_with_the_record)
   ASSERT_TRUE(std::filesystem::exists(fresh.windows_name));
   EXPECT_TRUE(
       same_rows(cv::imread(fresh.windows_name), rendered(rest_of(0)), SIZE));
+}
+
+TEST_F(CTEST_TrainingChart, chart_is_saved_every_savechart_iterations)
+{
+  char base[] = "net";
+  detector_context ctx{};
+
+  ctx.net.max_batches = MAX_BATCHES;
+  ctx.net.max_chart_loss = MAX_LOSS;
+  ctx.base = base;
+  ctx.dont_show = 1;
+
+  // the --save-charts-every-iter flag tells the cadence of no cfg key alone
+  EXPECT_EQ(save_chart_nth_ctx(&ctx), 100);
+  ctx.save_chart_every_iter = 1;
+  EXPECT_EQ(save_chart_nth_ctx(&ctx), 1);
+  ctx.net.savechart = 10;
+  EXPECT_EQ(save_chart_nth_ctx(&ctx), 10);
+
+  draw_train_chart_ctx(&ctx);
+  std::filesystem::remove(ctx.windows_name);
+
+  std::vector<int> saved;
+
+  for (ctx.current_iteration = 1; ctx.current_iteration <= 35;
+       ++ctx.current_iteration) {
+    draw_train_loss_ctx(&ctx);
+
+    if (std::filesystem::remove(ctx.windows_name)) {
+      saved.push_back(ctx.current_iteration);
+    }
+  }
+
+  release_mat(&ctx.img);
+
+  EXPECT_EQ(saved, (std::vector<int>{10, 20, 30}));
 }

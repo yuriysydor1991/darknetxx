@@ -20,7 +20,8 @@ namespace darknet_adaptor::loaders::dxxwjz2::v2
 class Dxxwjz2SubtreeBuilder : public nlohmann::json_sax<nlohmann::json>
 {
  public:
-  using json = nlohmann::json;
+  /// @brief The tree of the keys in the file order.
+  using json = nlohmann::ordered_json;
   /// @brief Takes the error message, returns false.
   using Failure = std::function<bool(const std::string&)>;
 

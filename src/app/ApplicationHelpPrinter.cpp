@@ -59,22 +59,25 @@ void print_conversion_options(std::ostream& out)
 {
   out << "\nNetwork weights files conversion options (the four of them go\n"
       << "together and convert the weights file with no training nor\n"
-      << "detection started, the --convert-to dxxwjz2, --convert-dst and\n"
+      << "detection started, the --convert-to dxxwjz3, --convert-dst and\n"
       << "--convert-cfg ones alone make the network to train of no weights):\n";
   print_option(out, CMDParamNames::convert_fromw, "<FORMAT>",
                "the network weights file format to read");
   print_option(out, CMDParamNames::convert_srcw, "<FILE>",
-               "the network weights file to read");
+               "the network weights file to read, the folder of the yolo4 "
+               "FORMAT");
   print_option(out, CMDParamNames::convert_tow, "<FORMAT>",
                "the network weights file format to write");
   print_option(out, CMDParamNames::convert_dstw, "<FILE>",
-               "the network weights file to write (replaced)");
+               "the network weights file to write (replaced), the new folder "
+               "of the yolo4 FORMAT");
   print_option(out, CMDParamNames::convert_cfgw, "<FILE>",
                "the network cfg file of the weights: required to read the "
-               "weights FORMAT, validates the rest, the dxxwjz2 one keeps it");
+               "weights FORMAT, validates the rest, the dxxwjz2 and dxxwjz3 "
+               "ones keep it");
   print_option(out, CMDParamNames::convert_namesw, "<FILE>",
-               "the class names file the dxxwjz2 FORMAT keeps (overrides the "
-               "cfg [net] names= key)");
+               "the class names file the dxxwjz2 and dxxwjz3 FORMATs keep "
+               "(overrides the cfg [net] names= key)");
 
   out << "\n  Where FORMAT is one of:\n";
 
@@ -127,15 +130,17 @@ int ApplicationHelpPrinter::run(std::shared_ptr<ApplicationContext> ctx)
 
   out << "\nNetwork and model options:\n";
   print_option(out, CMDParamNames::train_cfgw, "<FILE>",
-               "training network configuration (*.cfg or *.dxxwjz2) file");
+               "training network configuration (*.cfg, *.dxxwjz2 or "
+               "*.dxxwjz3) file");
   print_option(out, CMDParamNames::detect_cfgw, "<FILE>",
-               "detection network configuration (*.cfg or *.dxxwjz2) file");
+               "detection network configuration (*.cfg, *.dxxwjz2 or "
+               "*.dxxwjz3) file");
   print_option(out, CMDParamNames::namesw, "<FILE>",
-               "class names file (overrides the dxxwjz2 classes and the cfg "
-               "[net] names= key)");
+               "class names file (overrides the dxxwjz2 and dxxwjz3 classes "
+               "and the cfg [net] names= key)");
   print_option(out, CMDParamNames::latest_weightsw, "<FILE>",
-               "network weights file to load of any FORMAT; the dxxwjz2 one "
-               "alone is detected with, or trained of no weights");
+               "network weights file to load of any FORMAT; the dxxwjz2 or "
+               "dxxwjz3 one alone is detected with, or trained of no weights");
   print_option(out, CMDParamNames::detect_imagew, "<FILE>",
                "image file to run the detection on");
   print_option(out, CMDParamNames::gpusw, "<LIST>",
@@ -162,16 +167,18 @@ int ApplicationHelpPrinter::run(std::shared_ptr<ApplicationContext> ctx)
                "stop the training once the average loss reaches "
                "the given value or less");
   print_option(out, CMDParamNames::save_formatw, "<FORMAT>",
-               "the weights FORMAT the training saves (default dxxwjz2)");
+               "the weights FORMAT the training saves (default dxxwjz3)");
   print_option(out, CMDParamNames::chartw, "<FILE>",
                "chart image the training chart continues (every training "
                "start saves the new chart_<base>_<date>--<time>.png, the "
-               "record of the dxxwjz2 weights redraws it instead)");
+               "record of the dxxwjz2 and dxxwjz3 weights redraws it "
+               "instead)");
   print_option(out, CMDParamNames::draw_chartw, "<FILE>",
-               "draw the training chart of the dxxwjz2 --weights file into "
-               "the PNG file, nothing else");
+               "draw the training chart of the dxxwjz2 or dxxwjz3 --weights "
+               "file into the PNG file, nothing else");
   print_option(out, CMDParamNames::save_charts_every_iterw, "",
-               "save the training chart on every iteration, not every 100");
+               "save the training chart on every iteration, not every 100 "
+               "(the cfg savechart= key overrides both)");
   print_option(out, CMDParamNames::dont_save_charts_every_iterw, "",
                "save the training chart every 100 iterations (the default)");
   print_option(out, CMDParamNames::draw_precisionw, "",

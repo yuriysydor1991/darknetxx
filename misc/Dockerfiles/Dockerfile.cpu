@@ -1,7 +1,8 @@
 # The original AlexeyAB Darknet CPU image recipe, kept for the comparisons: it
 # builds the Darknet with it's own Makefile, so the build context must be an
 # original Darknet checkout and not the darknetxx one, for example:
-#   docker build -f misc/Dockerfiles/Dockerfile.cpu /path/to/darknet
+#   docker build -f misc/Dockerfiles/Dockerfile.cpu \
+#     --build-arg USER_UID=$(id -u) --build-arg USER_GID=$(id -g) /path/to/darknet
 # No CMake target uses it, see the ENABLE_DOCKER_DARKNET ones instead.
 
 FROM ubuntu:latest AS builder
@@ -32,11 +33,15 @@ RUN apt-get update -y
 
 RUN apt-get install -y sudo libgomp1
 
-RUN useradd -U -m yolo
+# the yolo user of the host user ids, so the host user owns whatever it
+# writes into the mounted folders (the ubuntu user gives it's ids away)
+ARG USER_UID=1000
+ARG USER_GID=1000
+RUN (userdel -r ubuntu || true) && \
+ groupadd -o -g $USER_GID yolo && \
+ useradd -l -o -m -u $USER_UID -g yolo -s /bin/bash yolo
 
 RUN usermod -aG sudo yolo
-
-RUN usermod --shell /bin/bash yolo
 
 RUN echo "yolo:yolo" | chpasswd
 

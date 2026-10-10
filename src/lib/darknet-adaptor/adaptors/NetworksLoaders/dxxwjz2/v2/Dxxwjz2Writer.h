@@ -30,7 +30,8 @@ class Dxxwjz2Writer : public dxxwjz1::v1::Dxxwjz1Writer
 
  protected:
   virtual std::unique_ptr<dxxwjz1::v1::Dxxwjz1JsonEmitter> create_emitter(
-      std::ostream& out, const WeightsDocument& rest) const override;
+      std::ostream& out, const WeightsDocument& rest,
+      const std::string& filename) const override;
 
   virtual bool check(const WeightsDocument& rest,
                      const std::string& filename) const override;

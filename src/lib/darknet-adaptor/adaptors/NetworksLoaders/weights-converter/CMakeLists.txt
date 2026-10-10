@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 3.13)
 
 # The conversion of the network weights files between the formats: the
-# original darknet weights, the dxxwjz1 and the dxxwjz2 ones.
+# original darknet weights, the dxxwjz1, the dxxwjz2 and the dxxwjz3 ones and
+# their projects.
 add_library(
   DarknetCXXWeightsConverterOBJ OBJECT
   WeightsConversion.cpp

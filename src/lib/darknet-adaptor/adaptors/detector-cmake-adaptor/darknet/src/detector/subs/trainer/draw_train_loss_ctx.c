@@ -34,6 +34,15 @@ void draw_train_loss_ctx(struct detector_context* ctx)
                      ctx->mean_average_precision, draw_precision, "mAP%",
                      ctx->net.contrastive ? ctx->avg_contrastive_acc / 100 : -1,
                      ctx->dont_show, ctx->mjpeg_port, ctx->avg_time,
-                     ctx->save_chart_every_iter, &ctx->chart_state);
+                     save_chart_nth_ctx(ctx), &ctx->chart_state);
 #endif  // OPENCV
+}
+
+int save_chart_nth_ctx(const struct detector_context* ctx)
+{
+  if (ctx->net.savechart > 0) {
+    return ctx->net.savechart;
+  }
+
+  return ctx->save_chart_every_iter ? 1 : 100;
 }

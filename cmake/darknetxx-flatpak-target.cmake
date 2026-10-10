@@ -5,11 +5,13 @@ find_program(FLATPAK_EXEC flatpak REQUIRED)
 
 set(FLATPAK_PROJECT_URL ${DARKNETXX_APPLICATION_ID})
 
-# the GUI binary is the one the desktops start, when it is built
+# The GUI training binary is the one the package runs, when it is built. The
+# desktop entries of both GUI binaries are the package ones, since their names
+# start with the package id, so the desktops start the recognition one too.
 set(FLATPAK_COMMAND ${DARKNETXX_BINARY_NAME})
 
 if(ENABLE_DARKNETXX_GUI)
-  set(FLATPAK_COMMAND ${DARKNETXX_GUI_BINARY_NAME})
+  set(FLATPAK_COMMAND ${DARKNETXX_TRAIN_GUI_BINARY_NAME})
 endif()
 set(FLATPAK_REPO ${DARKNETXX_BINARY_NAME}-repo)
 set(FLATPAK_DST_NAME ${DARKNETXX_BINARY_NAME}-${PROJECT_VERSION}.flatpak)

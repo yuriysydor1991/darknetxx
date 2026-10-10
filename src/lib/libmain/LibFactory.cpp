@@ -4,6 +4,7 @@
 
 #include "src/lib/libmain/LibMain.h"
 #include "src/lib/libmain/WeightsConversionLib.h"
+#include "src/lib/recognition/NetworkRecognizer.h"
 #include "src/lib/training/BackgroundTrainer.h"
 #include "src/log/log.h"
 
@@ -37,7 +38,8 @@ LibFactory::ILibPtr LibFactory::create_library(LibraryContextPtr ctx)
     return create_conversion_lib();
   }
 
-  // the weights file alone may keep it's network (the dxxwjz2 one)
+  // the weights file alone may keep it's network (the dxxwjz2 and dxxwjz3
+  // ones)
   if (!ctx->detect_cfg.empty() || !ctx->train_cfg.empty() ||
       !ctx->latest_weights.empty()) {
     return create_darknet_lib();
@@ -45,8 +47,8 @@ LibFactory::ILibPtr LibFactory::create_library(LibraryContextPtr ctx)
 
   LOGE(
       "The context asks for no work: give it the training or the detection "
-      "network cfg file, the dxxwjz2 weights file or the network weights file "
-      "conversion");
+      "network cfg file, the dxxwjz2 or dxxwjz3 weights file or the network "
+      "weights file conversion");
 
   return {};
 }
@@ -56,6 +58,11 @@ LibFactory::ITrainerPtr LibFactory::create_trainer(LibraryContextPtr ctx)
   assert(ctx != nullptr);
 
   return std::make_shared<BackgroundTrainer>(ctx, create_darknet_lib());
+}
+
+LibFactory::IRecognizerPtr LibFactory::create_recognizer()
+{
+  return std::make_shared<NetworkRecognizer>();
 }
 
 LibFactoryPtr LibFactory::create_factory()

@@ -146,7 +146,7 @@ set(
 
 option(
   ENABLE_DARKNETXX_EXECUTABLES
-  "Build and install the darknetxx, the darknetxxConverter and the darknetxx-gui executables beside the library"
+  "Build and install the darknetxx, the darknetxxConverter and the GUI executables beside the library"
   ${DARKNETXX_IS_TOP_LEVEL}
 )
 
@@ -185,25 +185,41 @@ set(
 )
 
 # ---------------------------------------------------------------------------
-# The GUI binary: the training of the main binary behind a GTKmm 4 window,
-# which trains the chosen YOLO4 folder (see the src/darknetxx-gui-target.cmake).
+# The GUI binaries: the works of the main binary behind the GTKmm 4 windows
+# (see the src/darknetxx-gui-targets.cmake), the training one, which trains the
+# chosen YOLO4 folder, and the recognition one, which detects the objects in
+# the chosen image or classifies it by the network of the chosen weights file.
 #
-#   -DENABLE_DARKNETXX_GUI=OFF             -> no GUI binary, no GTKmm 4 needed
+#   -DENABLE_DARKNETXX_GUI=OFF             -> no GUI binaries, no GTKmm 4 needed
 # ---------------------------------------------------------------------------
 option(
   ENABLE_DARKNETXX_GUI
-  "Build the GUI training binary beside the main application one (requires the GTKmm 4)"
+  "Build the GUI training and recognition binaries beside the main application one (requires the GTKmm 4)"
   ON
 )
 
 set(
-  DARKNETXX_GUI_BINARY_NAME "${DARKNETXX_BINARY_NAME}-gui"
+  DARKNETXX_TRAIN_GUI_BINARY_NAME "${DARKNETXX_BINARY_NAME}-train-gui"
   CACHE STRING "The GUI training binary name and target"
 )
 
-# The GUI application id: it's D-Bus name, the names of it's desktop entry and
-# icon files and the flatpak package id.
+set(
+  DARKNETXX_RECOGNITION_GUI_BINARY_NAME "${DARKNETXX_BINARY_NAME}-recognition-gui"
+  CACHE STRING "The GUI recognition binary name and target"
+)
+
+# The application ids of the GUI binaries: their D-Bus names and the names of
+# their desktop entries and icons, the training one is the flatpak package id
+# as well.
 set(DARKNETXX_APPLICATION_ID "ua.org.kytok.template.${DARKNETXX_BINARY_NAME}")
+set(DARKNETXX_RECOGNITION_APPLICATION_ID "${DARKNETXX_APPLICATION_ID}.recognition")
+
+# The Darknet logo of the Darknet sources, the icon of the GUI binaries and of
+# their shortcuts on the MS Windows and of the MSI package.
+set(
+  DARKNETXX_LOGO_ICO
+  "${PROJECT_SOURCE_DIR}/src/lib/darknet-adaptor/adaptors/detector-cmake-adaptor/darknet/src/darknet.ico"
+)
 
 option(
   ENABLE_DOCKER_DARKNET_PREDICTOR

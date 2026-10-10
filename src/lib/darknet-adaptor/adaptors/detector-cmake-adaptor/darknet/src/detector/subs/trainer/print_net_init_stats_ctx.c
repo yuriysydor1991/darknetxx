@@ -5,6 +5,7 @@
 
 #include "memory.h"
 #include "src/clog/clog.h"
+#include "src/detector/subs/trainer/draw_train_loss_ctx.h"
 #include "utils.h"
 
 void print_net_init_stats_ctx(struct detector_context* ctx)
@@ -30,8 +31,9 @@ void print_net_init_stats_ctx(struct detector_context* ctx)
 
   CLOGI(
       "Weights are saved after: %d iterations. Last weights (*_last.weight) "
-      "are stored every %d iterations.",
-      ctx->net.saveweights, ctx->net.savelast);
+      "are stored every %d iterations. The chart is saved every %d "
+      "iterations.",
+      ctx->net.saveweights, ctx->net.savelast, save_chart_nth_ctx(ctx));
 
   CLOGI("Learning Rate: %g, Momentum: %g, Decay: %g", ctx->net.learning_rate,
         ctx->net.momentum, ctx->net.decay);

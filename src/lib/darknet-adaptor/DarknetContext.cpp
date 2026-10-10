@@ -14,6 +14,7 @@
 #include "src/gpu_index_decls.h"
 #include "src/lib/darknet-adaptor/adaptors/ANetworkAdaptor/ANetworkAdaptor.h"
 #include "src/lib/darknet-adaptor/adaptors/NetworksCApi/NetworksRegistry.h"
+#include "src/lib/darknet-adaptor/adaptors/TrainingData/TrainingDataRegistry.h"
 #include "src/lib/darknet-adaptor/adaptors/TrainingJournal/TrainingJournal.h"
 #include "src/lib/facade/public/ITrainingListener.h"
 #include "src/lib/facade/public/LibraryContext.h"
@@ -1454,9 +1455,21 @@ const DarknetContext::ANetworkAdaptorPtr& DarknetContext::get_detect_network()
   return detect_network;
 }
 
+void DarknetContext::set_training_annotations(
+    const loaders::Yolo4Annotations& annotations)
+{
+  adaptors::TrainingDataRegistry::publish(annotations);
+  annotated = true;
+}
+
 void DarknetContext::release_networks()
 {
   assert(internal != nullptr);
+
+  if (annotated) {
+    adaptors::TrainingDataRegistry::withdraw();
+    annotated = false;
+  }
 
   // the computation context must not refer to the released networks
   internal->nets = nullptr;

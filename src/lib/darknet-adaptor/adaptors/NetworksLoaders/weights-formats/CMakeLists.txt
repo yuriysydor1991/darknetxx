@@ -1,8 +1,10 @@
 cmake_minimum_required(VERSION 3.13)
 
-# The network weights file formats: the original darknet weights, the dxxwjz1
-# and the dxxwjz2 ones, found by their names and their file name extensions,
-# and the files networks are made of: the cfg and the dxxwjz2 ones.
+# The network weights file formats: the original darknet weights, the dxxwjz1,
+# the dxxwjz2, the dxxwjz2p, the dxxwjz3 and the dxxwjz3p ones, found by their
+# names and their file name extensions, the YOLO4 folder one of the
+# conversion, and the files networks are made of: the cfg, the dxxwjz2, the
+# dxxwjz2p, the dxxwjz3 and the dxxwjz3p ones.
 add_library(
   DarknetCXXWeightsFormatsOBJ OBJECT
   NetworkSource.cpp

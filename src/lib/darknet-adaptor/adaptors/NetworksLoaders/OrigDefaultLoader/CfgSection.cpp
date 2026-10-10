@@ -195,4 +195,16 @@ void CfgSection::unused() const
   }
 }
 
+std::vector<std::pair<std::string, const char*>> CfgSection::options() const
+{
+  std::vector<std::pair<std::string, const char*>> result;
+
+  for (const Option& option : moptions) {
+    result.emplace_back(option.key,
+                        option.has_val ? option.val.c_str() : nullptr);
+  }
+
+  return result;
+}
+
 }  // namespace darknet_adaptor::loaders

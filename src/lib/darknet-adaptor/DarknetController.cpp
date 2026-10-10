@@ -36,8 +36,8 @@ bool DarknetController::perform([[maybe_unused]] LibCtxPtr ctx)
   if (worker == nullptr) {
     LOGE(
         "Failure while creating appropriate worker: provide the "
-        "--train-cfg or the --detect-cfg parameter, or the dxxwjz2 --weights "
-        "file alone");
+        "--train-cfg or the --detect-cfg parameter, or the dxxwjz2 or "
+        "dxxwjz3 --weights file alone");
     return false;
   }
 

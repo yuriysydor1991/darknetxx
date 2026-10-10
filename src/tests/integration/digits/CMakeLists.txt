@@ -4,8 +4,8 @@ cmake_minimum_required(VERSION 3.13)
 # ITEST_digits_training test trains a tiny network from scratch to detect the
 # digit glyphs of the misc/data/labels images, then the ITEST_digits tests run
 # the darknetxx detection on every glyph and expect its digit to be recognized,
-# check the dxxwjz2 file of the training, resume the training and train the
-# network of the dxxwjz2 file of no weights.
+# check the dxxwjz3 file of the training, resume the training and train the
+# network of the dxxwjz3 file of no weights.
 
 if(NOT TARGET ${DARKNETXX_BINARY_NAME})
   message(STATUS
@@ -20,9 +20,9 @@ set(ITEST_DIGITS_TRAIN_LIST "${CMAKE_CURRENT_BINARY_DIR}/train.txt")
 set(ITEST_DIGITS_TRAINING_DIR "${CMAKE_CURRENT_BINARY_DIR}/training")
 set(ITEST_DIGITS_BACKUP_DIR "${ITEST_DIGITS_TRAINING_DIR}/backup")
 set(ITEST_DIGITS_CFG "${CMAKE_CURRENT_BINARY_DIR}/digits.cfg")
-# the training names the final weights after the cfg file, the dxxwjz2 file
-# keeps the network and the training beside them
-set(ITEST_DIGITS_WEIGHTS "${ITEST_DIGITS_BACKUP_DIR}/digits_final.dxxwjz2")
+# the training names the final weights after the cfg file, the dxxwjz3 file
+# (the default format) keeps the network and the training beside them
+set(ITEST_DIGITS_WEIGHTS "${ITEST_DIGITS_BACKUP_DIR}/digits_final.dxxwjz3")
 # the working directories of the trainings the tests resume and start
 set(ITEST_DIGITS_RESUMED_DIR "${CMAKE_CURRENT_BINARY_DIR}/resumed")
 set(ITEST_DIGITS_DETECTIONS_DIR "${CMAKE_CURRENT_BINARY_DIR}/detections")
@@ -103,7 +103,7 @@ target_include_directories(
   PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-# the dxxwjz2 files of the trainings are the gzip compressed JSON documents
+# the dxxwjz3 files of the trainings are the gzip compressed JSON documents
 target_link_libraries(
   ITEST_digits
   nlohmann_json::nlohmann_json

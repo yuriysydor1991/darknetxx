@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <ostream>
+#include <string>
 #include <vector>
 
 #include "src/lib/darknet-adaptor/adaptors/NetworksLoaders/dxxwjz1/v1/Dxxwjz1JsonEmitter.h"
@@ -31,6 +32,18 @@ class Dxxwjz2JsonEmitter : public dxxwjz1::v1::Dxxwjz1JsonEmitter
   virtual const char* format_name() const override;
   virtual int64_t format_version() const override;
   virtual void sections() override;
+
+  /// @brief The members of the network description before its classes: the
+  /// cfg text member here.
+  virtual std::string cfg(const NetworkDescription& network) const;
+
+  /// @brief The loss columns of the training record: the iteration, the
+  /// loss and the avg_loss ones here.
+  virtual void losses(const TrainingRecord& training);
+
+  /// @brief The loss and the avg_loss columns.
+  void columns(const std::vector<float>& losses,
+               const std::vector<float>& avg_losses);
 
  private:
   void network();

@@ -32,7 +32,12 @@ double TrainingProgress::done_fraction() const
 
 std::string TrainingProgress::iterations_text() const
 {
-  return std::to_string(miteration) + " / " + std::to_string(miterations);
+  std::ostringstream percent;
+
+  percent << std::fixed << std::setprecision(1) << done_fraction() * 100;
+
+  return std::to_string(miteration) + " / " + std::to_string(miterations) +
+         " iterations (" + percent.str() + "%)";
 }
 
 std::string TrainingProgress::loss_text() const

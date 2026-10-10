@@ -18,9 +18,11 @@
 #include "src/app/signals-handlers/SignalsHandler.h"
 #include "src/log/log.h"
 
-#ifdef DARKNETXX_GUI
-#include "src/app/GuiApplication.h"
-#endif  // DARKNETXX_GUI
+#if defined(DARKNETXX_TRAIN_GUI)
+#include "src/app/TrainGuiApplication.h"
+#elif defined(DARKNETXX_RECOGNITION_GUI)
+#include "src/app/RecognitionGuiApplication.h"
+#endif
 
 namespace app
 {
@@ -85,8 +87,10 @@ std::shared_ptr<IApplication> ApplicationFactory::create_default_application()
   // do is named by the conversion command line flags, so the help message
   // which lists them is what an empty command line deserves.
   return create_help_printer();
-#elif defined(DARKNETXX_GUI)
-  return std::make_shared<GuiApplication>();
+#elif defined(DARKNETXX_TRAIN_GUI)
+  return std::make_shared<TrainGuiApplication>();
+#elif defined(DARKNETXX_RECOGNITION_GUI)
+  return std::make_shared<RecognitionGuiApplication>();
 #else
   return create_library_application();
 #endif

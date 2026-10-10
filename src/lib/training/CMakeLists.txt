@@ -2,7 +2,9 @@ cmake_minimum_required(VERSION 3.13)
 
 add_library(
   DarknetXXTrainingOBJ OBJECT
+  ATrainingProject.cpp
   BackgroundTrainer.cpp
+  DxxwjzProject.cpp
   Yolo4Folder.cpp
 )
 

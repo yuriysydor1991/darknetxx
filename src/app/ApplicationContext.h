@@ -104,7 +104,7 @@ struct ApplicationContext
   bool clear{false};
   /// @brief The training charts are saved every 100 iterations by default
   /// (the original Darknet cadence), the --save-charts-every-iter flag saves
-  /// them on every iteration.
+  /// them on every iteration, the cfg savechart= key overrides both.
   bool dont_save_charts_every_iter{true};
   bool draw_precision{false};
   std::string train_cfg;
@@ -157,9 +157,10 @@ struct ApplicationContext
   double stop_less_avg_loss{0.0};
   /// @brief The network weights file format the training saves, the name
   /// given after the --save-format command line flag.
-  std::string save_format{"dxxwjz2"};
-  /// @brief The PNG file the training chart of the dxxwjz2 --weights file is
-  /// drawn into, given after the --draw-chart command line flag.
+  std::string save_format{"dxxwjz3"};
+  /// @brief The PNG file the training chart of the dxxwjz3 or dxxwjz2
+  /// --weights file is drawn into, given after the --draw-chart command line
+  /// flag.
   std::string draw_chart;
 
   /// @brief The network weights file format to read, the name given after the

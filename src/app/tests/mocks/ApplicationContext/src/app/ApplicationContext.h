@@ -82,7 +82,7 @@ struct ApplicationContext
   unsigned int net_nth_resize{10};
   unsigned int nth_iteration_reload{0U};
   double stop_less_avg_loss{0.0};
-  std::string save_format{"dxxwjz2"};
+  std::string save_format{"dxxwjz3"};
   std::string draw_chart;
   std::string convert_from;
   std::string convert_src;

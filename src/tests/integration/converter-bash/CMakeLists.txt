@@ -29,6 +29,8 @@ set(
   ITEST_CASES
   converts-the-reference-weights-back-and-forth
   converts-through-the-dxxwjz2-file
+  converts-through-the-dxxwjz3-file
+  converts-the-yolo4-folder-through-the-project
   writes-the-gzip-compressed-json-document
   converts-with-the-main-binary-too
   reports-a-failing-conversion
