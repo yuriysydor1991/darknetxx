@@ -68,7 +68,7 @@ Weights trained from either source must stay interchangeable, so the native read
 
 ## The darknet core touch points
 
-Paths are relative to `src/lib/darknet-adaptor/adaptors/detector-cmake-adaptor/darknet/src/`.
+Paths are relative to `src/darknet-adaptor/adaptors/detector-cmake-adaptor/darknet/src/`.
 
 | Where | What it reads |
 |---|---|
@@ -125,8 +125,8 @@ Each class goes in its own file pair.
 |---|---|---|
 | `ITrainingSource` | `src/lib/facade/public/` | abstract `valid()`, `path()`, `latest_weights()`, `chart()`, `enter(LibraryContext&)`, pulled out of `Yolo4Folder` |
 | `Yolo4Folder` | existing | implements it, with unchanged behavior |
-| `AnnotationsProject` | `src/lib/facade/public/`, `src/lib/training/` | implements it for a project file: enters the file's directory and sets `LibraryContext::annotations_project`. Built without DataDrivers, it stays in the API and is never `valid()` |
-| `AnnotationsDataset` | `src/lib/darknet-adaptor/` (internal) | loads the project once through DataDrivers, keeps the immutable paths and boxes, owns the two `dataset_source` and the static `read_boxes` callback. `DarknetContext` owns it for the training call |
+| `AnnotationsProject` | `src/lib/facade/public/`, `src/training/` | implements it for a project file: enters the file's directory and sets `LibraryContext::annotations_project`. Built without DataDrivers, it stays in the API and is never `valid()` |
+| `AnnotationsDataset` | `src/darknet-adaptor/` (internal) | loads the project once through DataDrivers, keeps the immutable paths and boxes, owns the two `dataset_source` and the static `read_boxes` callback. `DarknetContext` owns it for the training call |
 
 - `ITrainer::train(const ITrainingSource&)` replaces `train(const Yolo4Folder&)`.
 - `LibraryFacade::create_training_source(path)` returns `Yolo4Folder` for a directory and `AnnotationsProject` for a file. The GUI (`TrainingEventsHandler::train()`, which builds the `Yolo4Folder` from the folder entry today) and the CLI stop branching on concrete classes.

@@ -3,7 +3,8 @@
 Уся функціональність проекту - навчання і розпізнавання darknet,
 конвертування файлів ваг нейромереж, фонове навчання тек YOLO4 та проектів
 dxxwjz2p і dxxwjz3p і розпізнавання зображень нейромережами файлів ваг - це спільна
-бібліотека `darknetxx-0.11` директорії [`src/lib`](/src/lib), впорядкована
+бібліотека `darknetxx-0.11`, яку директорія [`src/lib`](/src/lib) будує з
+фасаду, `libmain` і компонентів поруч з нею, впорядкована
 так, як гілка `applib` проекту
 [cpp-app-template](https://github.com/yuriysydor1991/cpp-app-template)
 впорядковує свою бібліотеку. Виконувані файли проекту (`darknetxx`,
@@ -193,15 +194,19 @@ LibraryFacade ..> ILogger : adopts
 
 ## Реалізація
 
-Решта директорії [`src/lib`](/src/lib) приватна для бібліотеки:
+Директорія [`src/lib`](/src/lib) містить `libmain` бібліотеки поруч з фасадом,
+а `src/lib/CMakeLists.txt` підключає решту бібліотеки, компоненти директорії
+[`src`](/src), з їх власних директорій, тож вони будуються з визначеннями
+бібліотеки. Усі вони приватні для бібліотеки:
 
 | Директорія | Містить |
 | --- | --- |
-| [`libmain`](/src/lib/libmain) | `darknetxx_impl::LibFactory` робіт, які видає фасад, `LibMain` (навчання і розпізнавання за допомогою `DarknetController` після налаштування потоків OpenMP) і `WeightsConversionLib` (конвертування файлів ваг нейромереж) |
-| [`training`](/src/lib/training) | `BackgroundTrainer`, `ATrainingProject`, `Yolo4Folder` і `DxxwjzProject` файлів проектів dxxwjz2p і dxxwjz3p |
-| [`recognition`](/src/lib/recognition) | `NetworkRecognizer`, який розпізнає нейромережею для розпізнавання, створеною `OrigDefaultLoader`, за допомогою `ObjectsDetection` чи `ImageClassification` (реалізацій `IRecognitionMethod`) і обводить об'єкти рамками за допомогою `RecognitionPainter` |
-| [`darknet-adaptor`](/src/lib/darknet-adaptor) | міст до оригінального коду Darknet (див. секцію [Компоненти адаптера Darknet](/doc/sections/uk_UA/4-7-2-darknet-adaptor-components.md)) |
-| [`OMP`](/src/lib/OMP), [`zlib`](/src/lib/zlib), [`helpers`](/src/lib/helpers) | допоміжні компоненти (див. секцію [Допоміжні компоненти](/doc/sections/uk_UA/4-7-3-supporting-components.md)) |
+| [`src/lib/libmain`](/src/lib/libmain) | `darknetxx_impl::LibFactory` робіт, які видає фасад, `LibMain` (навчання і розпізнавання за допомогою `DarknetController` після налаштування потоків OpenMP) і `WeightsConversionLib` (конвертування файлів ваг нейромереж) |
+| [`src/training`](/src/training) | `BackgroundTrainer`, `ATrainingProject`, `Yolo4Folder` і `DxxwjzProject` файлів проектів dxxwjz2p і dxxwjz3p |
+| [`src/recognition`](/src/recognition) | `NetworkRecognizer`, який розпізнає нейромережею для розпізнавання, створеною `OrigDefaultLoader`, за допомогою `ObjectsDetection` чи `ImageClassification` (реалізацій `IRecognitionMethod`) і обводить об'єкти рамками за допомогою `RecognitionPainter` |
+| [`src/darknet-adaptor`](/src/darknet-adaptor) | міст до оригінального коду Darknet (див. секцію [Компоненти адаптера Darknet](/doc/sections/uk_UA/4-7-2-darknet-adaptor-components.md)) |
+| [`src/NetworksLoaders`](/src/NetworksLoaders) | завантажувачі нейромереж і файли ваг нейромереж, які підключає і будує з заголовками Darknet адаптер Darknet (див. секцію [Файли ваг нейромереж](/doc/sections/uk_UA/4-7-4-network-weights-files.md)) |
+| [`src/OMP`](/src/OMP), [`src/zlib`](/src/zlib), [`src/helpers`](/src/helpers) | допоміжні компоненти (див. секцію [Допоміжні компоненти](/doc/sections/uk_UA/4-7-3-supporting-components.md)) |
 
 Бібліотека має власну копію підсистеми журналювання
 [`src/log`](/src/log), як і кожен виконуваний файл проекту: проксі
