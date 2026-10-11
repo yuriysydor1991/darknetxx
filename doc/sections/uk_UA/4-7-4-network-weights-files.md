@@ -11,6 +11,8 @@
 
 **Тека навчання YOLO4**, та, яку експортує ImagesAnnotator, конвертується у проект dxxwjz2p і назад: це формат `yolo4`, який використовує лише конвертування (див. секцію [Тека навчання YOLO4](#тека-навчання-yolo4)).
 
+[ImagesAnnotator](https://github.com/yuriysydor1991/ImagesAnnotator) сам генерує файли найновіших форматів: проект dxxwjz3p своїх анотацій і нейромережу dxxwjz3, яку треба навчити, своєї теки навчання YOLO4 (а також файли dxxwjz2p і dxxwjz2), і читає їх назад (див. секцію [Файли ImagesAnnotator](#файли-imagesannotator)).
+
 Навчання і розпізнавання `darknetxx` читають файли ваг кожного формату (параметр командного рядка `--weights`, формат файлу визначає розширення його назви), навчання за замовчуванням зберігає свої ваги у файли dxxwjz3 (див. секцію [Навчання і формати](#навчання-і-формати) нижче), а самі лише файли dxxwjz2, dxxwjz2p, dxxwjz3 і dxxwjz3p - це нейромережі, з якими працює розпізнавання.
 
 Ваги форматів конвертуються один в одний без втрат: оригінальний файл ваг, конвертований у файл dxxwjz1, dxxwjz2 чи dxxwjz3 і назад, байт у байт збігається з початковим (див. секції [Конвертування файлів ваг нейромереж](/doc/sections/uk_UA/6-2-4-converting-the-network-weights-files.md) і [Бінарний файл darknetxxConverter](/doc/sections/uk_UA/5-35-the-darknetxxConverter-binary.md)), тоді як опис нейромережі і запис навчання зберігають лише файли dxxwjz2 і dxxwjz3 та їхні проекти, а анотації зображень - лише проекти dxxwjz2p і dxxwjz3p.
@@ -767,7 +769,7 @@ TrainingJournal ..> WeightsFileFormats : updates the dxxwjz2p and the dxxwjz3p p
 
 Під час читання дерево члена network будується пошарово: масиви об'єкта шару переходять у шари документа, щойно об'єкт завершено, тож дерево JSON з вагами всієї нейромережі не будується. Член network зберігає і опис нейромережі, і ваги, тож попереднє читання (peek) файлу читає увесь член: воно триває приблизно стільки, скільки читання всього файлу (нейромережа з 9 мільйонів значень float - близько 2 секунд у збірці release), тоді як попереднє читання файлу dxxwjz2 зупиняється на його першій вазі.
 
-В усьому іншому файл dxxwjz3 - це файл dxxwjz2: навчання і розпізнавання його читають, навчання його зберігає (за замовчуванням, `--save-format dxxwjz3`), конвертер конвертує його в інші формати і назад з вагами тих самих байтів, а файл без ваг - це нейромережа, яку треба навчити. Класи версії dxxwjz3 побудовані на класах dxxwjz2, а директорія [`dxxwjz/dxxwjz3`](/src/NetworksLoaders/dxxwjz/dxxwjz3) містить те, що вони додають:
+В усьому іншому файл dxxwjz3 - це файл dxxwjz2: навчання і розпізнавання його читають, навчання його зберігає (за замовчуванням, `--save-format dxxwjz3`), конвертер конвертує його в інші формати і назад з вагами тих самих байтів, а файл без ваг - це нейромережа, яку треба навчити, та, яку ImagesAnnotator записує поряд з cfg теки YOLO4, яку він експортує (див. секцію [Файли ImagesAnnotator](#файли-imagesannotator)). Класи версії dxxwjz3 побудовані на класах dxxwjz2, а директорія [`dxxwjz/dxxwjz3`](/src/NetworksLoaders/dxxwjz/dxxwjz3) містить те, що вони додають:
 
 - **`Dxxwjz3Format`** - константи формату: назва, версія, розширення назв файлів і ключі JSON, які він додає.
 - **`Dxxwjz3ValueCodec`** - значення JSON опцій cfg з таблиці вище в обидва боки: текст JSON тексту опції і текст cfg значення JSON.
@@ -782,7 +784,7 @@ TrainingJournal ..> WeightsFileFormats : updates the dxxwjz2p and the dxxwjz3p p
 
 ## Формат файлу проекту dxxwjz3p
 
-Файл dxxwjz3p - це проект dxxwjz2p (див. вище) з документом dxxwjz3, тож увесь проект навчання складається лише з даних JSON: член network і хвостові байти - це члени dxxwjz3, а член annotations - член dxxwjz2p.
+Файл dxxwjz3p - це проект dxxwjz2p (див. вище) з документом dxxwjz3, тож увесь проект навчання складається лише з даних JSON: член network і хвостові байти - це члени dxxwjz3, а член annotations - член dxxwjz2p. ImagesAnnotator експортує свої анотації у проект dxxwjz3p з нейромережею, яку треба навчити (див. секцію [Файли ImagesAnnotator](#файли-imagesannotator)).
 
 ```
 {
@@ -824,6 +826,42 @@ TrainingJournal ..> WeightsFileFormats : updates the dxxwjz2p and the dxxwjz3p p
 | тека резервних копій, яку називає ключ `backup=` з cfg | найновіші ваги, з яких продовжується навчання (оригінальний файл ваг читається для нейромережі з cfg теки) | `backup/<name>_last.dxxwjz3` з вагами документа і його записом навчання |
 
 Тека, конвертована у файл dxxwjz2p і назад, має ті самі списки, мітки, назви класів і ваги. Конвертер не записує теку в теку з файлами (тека призначення конвертера замінює лише порожню теку), тож жодна тека користувача не видаляється.
+
+## Файли ImagesAnnotator
+
+[ImagesAnnotator](https://github.com/yuriysydor1991/ImagesAnnotator), анотатор зображень, який рекомендує darknetxx, сам генерує файли найновіших форматів: підменю `DarknetXX` його меню експорту (а також формати параметра `--convert-to` його командного рядка) записує анотації його проекту в чотири розкладки бібліотеки [ImagesAnnotator-DataExporters](https://github.com/yuriysydor1991/ImagesAnnotator-DataExporters), які darknetxx навчає без жодного конвертування:
+
+| Пункт меню (формат) | Розкладка | Навчання всередині неї |
+| --- | --- | --- |
+| `dxxwjz3p project` (`dxxwjz3p`) | проект `yolov4-obj.dxxwjz3p` поряд з текою `images/` з копіями зображень і порожньою текою `backup/` | `darknetxx --train-cfg yolov4-obj.dxxwjz3p` |
+| `dxxwjz2p project` (`dxxwjz2p`) | те саме з проектом `yolov4-obj.dxxwjz2p` | `darknetxx --train-cfg yolov4-obj.dxxwjz2p` |
+| `dxxwjz3 with YOLO4 folder` (`dxxwjz3`) | тека навчання YOLO4 з нейромережею `cfg/yolov4-obj.dxxwjz3`, яку треба навчити, поряд з її `cfg/yolov4-obj.cfg` | `darknetxx --train-cfg cfg/yolov4-obj.dxxwjz3` |
+| `dxxwjz2 with YOLO4 folder` (`dxxwjz2`) | те саме з нейромережею `cfg/yolov4-obj.dxxwjz2`, яку треба навчити | `darknetxx --train-cfg cfg/yolov4-obj.dxxwjz2` |
+
+Графічний інтерфейс навчання теж відкриває ці проекти і теки. Нейромережа - це нейромережа YOLO v4 теки YOLO4, яку експортує ImagesAnnotator, записана для класів проекту (відсортованих назв його анотацій), без ваг, тож навчання починається з нуля. Файли - це ті, які записує darknetxx, байт у байт, окрім ключа `generator`: нейромережі тек - це ті, які конвертер створює з файлів cfg і назв класів теки (`--convert-to dxxwjz3 --convert-dst <file> --convert-cfg cfg/yolov4-obj.cfg --convert-names data/obj.names`), а проекти - ті, які конвертер записує з них назад. Анотації проекту - це цілочислові прямокутники в пікселях зображень теки `images`, відносної до файлу проекту, тож теку проекту можна переміщувати цілком, і жодне зображення не є зображенням для перевірки: mAP обчислюється на зображеннях навчання.
+
+Підменю `DarknetXX` меню імпорту (а також формати параметра `--convert-from`) читає чотири розкладки назад за допомогою бібліотеки [ImagesAnnotator-DataImporters](https://github.com/yuriysydor1991/ImagesAnnotator-DataImporters): анотації проектів dxxwjz2p і dxxwjz3p, включно з тими, в які навчання зберегло ваги, і теки YOLO4 з назвами класів їхньої нейромережі, якщо файлу `data/obj.names` немає. Імпорт відхиляє документи іншого формату чи версії і пропускає ваги частинами, тож проект із сотнями мегабайтів ваг читається в обсязі пам'яті його анотацій. Файли dxxwjz1 і оригінальні файли ваг містять лише ваги, тож розкладок для них немає.
+
+```
+# проект анотацій ImagesAnnotator у проект dxxwjz3p
+ImagesAnnotatorConverter \
+  --convert-from imagesannotator \
+  --convert-src ./cars.json \
+  --convert-to dxxwjz3p \
+  --convert-dst ./cars
+
+# навчання всередині теки проекту зберігає ваги у проект
+(cd ./cars && darknetxx --train-cfg yolov4-obj.dxxwjz3p)
+
+# анотації навченого проекту назад у проект анотацій
+ImagesAnnotatorConverter \
+  --convert-from dxxwjz3p \
+  --convert-src ./cars/yolov4-obj.dxxwjz3p \
+  --convert-to imagesannotator \
+  --convert-dst ./cars-trained.json
+```
+
+Перевірено 2026-10-11 з ImagesAnnotator `bc4b605`, ImagesAnnotator-DataExporters `d730625` (0.12.0) і ImagesAnnotator-DataImporters `814d224` (0.14.0).
 
 ## Незалежна від формату модель
 

@@ -11,6 +11,8 @@ The `darknetxx` reads and writes the weights of the networks in six formats:
 
 The **YOLO4 training folder**, the one the ImagesAnnotator exports, converts into the dxxwjz2p project and back: it's the `yolo4` format of the conversion alone (see the [The YOLO4 training folder](#the-yolo4-training-folder) section).
 
+The [ImagesAnnotator](https://github.com/yuriysydor1991/ImagesAnnotator) generates the files of the most recent formats itself, the dxxwjz3p project of its annotations and the dxxwjz3 network to train of its YOLO4 training folder (the dxxwjz2p and the dxxwjz2 ones too), and reads them back (see the [The files of the ImagesAnnotator](#the-files-of-the-imagesannotator) section).
+
 The training and the detection of the `darknetxx` read the weights files of every format (the `--weights` command line parameter, the format of a file is told by its name extension), the training saves its weights into the dxxwjz3 files by default (see the [Training with the formats](#training-with-the-formats) section below) and the dxxwjz2, the dxxwjz2p, the dxxwjz3 and the dxxwjz3p files alone are the networks the detection runs with.
 
 The weights of the formats convert into each other with no loss: the original weights file converted to the dxxwjz1, the dxxwjz2 or the dxxwjz3 one and back is the same file byte to byte (see the [Converting the network weights files](/doc/sections/en_US/6-2-4-converting-the-network-weights-files.md) section and the [The darknetxxConverter binary](/doc/sections/en_US/5-35-the-darknetxxConverter-binary.md) one), while the network description and the training record are kept by the dxxwjz2 and the dxxwjz3 files and their projects alone, the annotations of the images by the dxxwjz2p and the dxxwjz3p projects.
@@ -767,7 +769,7 @@ The readers turn the network member into the cfg text of the network: the `[net]
 
 The readers build the tree of the network member a layer at a time: the arrays of a layer object go into the layers of the document once the object is complete, so no JSON tree of the weights of the whole network is made. The network member keeps both the network description and the weights, so the peek of the file reads the whole member: it takes about the time of the read of the whole file (the network of the 9 million floats takes about 2 seconds of the release build), while the peek of the dxxwjz2 file stops at its first weight.
 
-The dxxwjz3 file is the dxxwjz2 one for everything else: the training and the detection read it, the training saves it (by default, the `--save-format dxxwjz3`), the converter converts it into the other formats and back of the weights of the same bytes, the file of no weights is the network to train. The classes of the dxxwjz3 version are built on the dxxwjz2 ones, the [`dxxwjz/dxxwjz3`](/src/NetworksLoaders/dxxwjz/dxxwjz3) directory keeps what they add:
+The dxxwjz3 file is the dxxwjz2 one for everything else: the training and the detection read it, the training saves it (by default, the `--save-format dxxwjz3`), the converter converts it into the other formats and back of the weights of the same bytes, the file of no weights is the network to train, the one the ImagesAnnotator writes beside the cfg of the YOLO4 folder it exports (see the [The files of the ImagesAnnotator](#the-files-of-the-imagesannotator) section). The classes of the dxxwjz3 version are built on the dxxwjz2 ones, the [`dxxwjz/dxxwjz3`](/src/NetworksLoaders/dxxwjz/dxxwjz3) directory keeps what they add:
 
 - **`Dxxwjz3Format`** - the constants of the format: the name, the version, the file name extension and the JSON keys it adds.
 - **`Dxxwjz3ValueCodec`** - the JSON values of the cfg options of the table above both ways: the JSON text of the option text, the cfg text of the JSON value.
@@ -782,7 +784,7 @@ The dxxwjz3 file is the dxxwjz2 one for everything else: the training and the de
 
 ## The dxxwjz3p project file format
 
-The dxxwjz3p file is the dxxwjz2p project (see above) of the dxxwjz3 document, so the whole training project is the JSON data alone: the network member and the trailing bytes are the dxxwjz3 ones, the annotations member is the dxxwjz2p one.
+The dxxwjz3p file is the dxxwjz2p project (see above) of the dxxwjz3 document, so the whole training project is the JSON data alone: the network member and the trailing bytes are the dxxwjz3 ones, the annotations member is the dxxwjz2p one. The ImagesAnnotator exports its annotations into the dxxwjz3p project of the network to train (see the [The files of the ImagesAnnotator](#the-files-of-the-imagesannotator) section).
 
 ```
 {
@@ -824,6 +826,42 @@ The YOLO4 training folder, the one the ImagesAnnotator exports, is the `yolo4` f
 | the backup folder of the `backup=` key of the cfg | the latest weights the training resumes from, of the network of the folder cfg for the original weights file | the `backup/<name>_last.dxxwjz3` of the weights of the document and of it's training record |
 
 The folder converted into the dxxwjz2p file and back is of the same lists, labels, class names and weights. The converter writes no folder into a folder of the files (the destination folder of the converter replaces the empty one alone), so no folder of the user is deleted.
+
+## The files of the ImagesAnnotator
+
+The [ImagesAnnotator](https://github.com/yuriysydor1991/ImagesAnnotator), the annotator of the images the darknetxx recommends, generates the files of the most recent formats itself: the `DarknetXX` submenu of its export menu (and the formats of the `--convert-to` of its command line) writes the annotations of its project into the four layouts of the [ImagesAnnotator-DataExporters](https://github.com/yuriysydor1991/ImagesAnnotator-DataExporters) library, which the darknetxx trains with no conversion:
+
+| The entry (the format) | The layout | The training inside of it |
+| --- | --- | --- |
+| `dxxwjz3p project` (`dxxwjz3p`) | the `yolov4-obj.dxxwjz3p` project beside the `images/` folder of the copies of the images and the empty `backup/` one | `darknetxx --train-cfg yolov4-obj.dxxwjz3p` |
+| `dxxwjz2p project` (`dxxwjz2p`) | the same of the `yolov4-obj.dxxwjz2p` project | `darknetxx --train-cfg yolov4-obj.dxxwjz2p` |
+| `dxxwjz3 with YOLO4 folder` (`dxxwjz3`) | the YOLO4 training folder of the `cfg/yolov4-obj.dxxwjz3` network to train beside it's `cfg/yolov4-obj.cfg` | `darknetxx --train-cfg cfg/yolov4-obj.dxxwjz3` |
+| `dxxwjz2 with YOLO4 folder` (`dxxwjz2`) | the same of the `cfg/yolov4-obj.dxxwjz2` network to train | `darknetxx --train-cfg cfg/yolov4-obj.dxxwjz2` |
+
+The training GUI opens the projects and the folders as well. The network is the YOLO v4 one of the YOLO4 folder the ImagesAnnotator exports, written for the classes of the project (the sorted names of its annotations), of no weights, so the training starts from scratch. The files are the ones the darknetxx writes, byte to byte but the `generator` key: the networks of the folders are the ones the converter makes of the cfg and the class names files of the folder (`--convert-to dxxwjz3 --convert-dst <file> --convert-cfg cfg/yolov4-obj.cfg --convert-names data/obj.names`), the projects are the ones the converter writes back of them. The annotations of a project are the integer pixel rects of the images of the `images` folder relative to the project file, so the folder of the project moves as a whole, and no image is the validation one: the mAP is calculated on the training images.
+
+The `DarknetXX` submenu of the import menu (and the formats of the `--convert-from`) reads the four layouts back by the [ImagesAnnotator-DataImporters](https://github.com/yuriysydor1991/ImagesAnnotator-DataImporters) library: the annotations of the dxxwjz2p and the dxxwjz3p projects, the ones the training has saved the weights into included, and the YOLO4 folders, of the class names of their network when they have no `data/obj.names` file. The import refuses the documents of another format or version and steps over the weights a chunk at a time, so the project of the hundreds of megabytes of the weights is read in the memory of its annotations. The dxxwjz1 and the original weights files keep the weights alone, so they have no layout.
+
+```
+# the annotations project of the ImagesAnnotator to the dxxwjz3p project
+ImagesAnnotatorConverter \
+  --convert-from imagesannotator \
+  --convert-src ./cars.json \
+  --convert-to dxxwjz3p \
+  --convert-dst ./cars
+
+# the training inside of the project folder saves the weights into the project
+(cd ./cars && darknetxx --train-cfg yolov4-obj.dxxwjz3p)
+
+# the annotations of the trained project back to the annotations project
+ImagesAnnotatorConverter \
+  --convert-from dxxwjz3p \
+  --convert-src ./cars/yolov4-obj.dxxwjz3p \
+  --convert-to imagesannotator \
+  --convert-dst ./cars-trained.json
+```
+
+Checked on 2026-10-11 against the ImagesAnnotator `bc4b605`, the ImagesAnnotator-DataExporters `d730625` (0.12.0) and the ImagesAnnotator-DataImporters `814d224` (0.14.0).
 
 ## The format neutral model
 
