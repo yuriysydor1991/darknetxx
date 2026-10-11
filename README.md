@@ -12,6 +12,17 @@ See more at the [kytok.org.ua](http://www.kytok.org.ua/)
 
 In order to train the network on your own data set you'll need annotated images with the bounding box labels in the Darknet/YOLO format. It's recommended to prepare such annotations with the `ImagesAnnotator` tool available at [https://github.com/yuriysydor1991/ImagesAnnotator](https://github.com/yuriysydor1991/ImagesAnnotator).
 
+# Components
+
+The diagram below shows all the components of the [`src`](/src) directory, the
+executables built of them and the darknetxx library the [`src/lib`](/src/lib)
+component builds of them. Its PlantUML source is
+[`doc/diagrams/all-components.puml`](/doc/diagrams/all-components.puml), the
+[Project components and architecture](/doc/sections/en_US/4-7-components-and-architecture.md)
+section describes the components in detail.
+
+![All the components of the darknetxx src directory](/doc/diagrams/all-components.svg)
+
 # Documentation contents
 
 **Document is under the refinement**

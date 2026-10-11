@@ -12,6 +12,17 @@
 
 Для того щоб навчити мережу на власному наборі даних знадобляться анотовані зображення з мітками обмежувальних рамок у форматі Darknet/YOLO. Рекомендується готувати такі анотації за допомогою інструмента `ImagesAnnotator` що доступний за адресою [https://github.com/yuriysydor1991/ImagesAnnotator](https://github.com/yuriysydor1991/ImagesAnnotator).
 
+# Компоненти
+
+Діаграма нижче показує усі компоненти директорії [`src`](/src), виконувані
+файли, побудовані з них, і бібліотеку darknetxx, яку з них будує компонент
+[`src/lib`](/src/lib). Її вихідний файл PlantUML -
+[`doc/diagrams/all-components.puml`](/doc/diagrams/all-components.puml), а
+секція [Компоненти проекту і архітектура](/doc/sections/uk_UA/4-7-components-and-architecture.md)
+описує компоненти детально.
+
+![Усі компоненти директорії src проекту darknetxx](/doc/diagrams/all-components.svg)
+
 # Зміст документації
 
 **Даний документ у процесі покращення**

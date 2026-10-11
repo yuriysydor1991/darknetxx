@@ -1,0 +1,225 @@
+@startuml all-components
+title darknetxx - all the components of the src directory
+
+skinparam componentStyle rectangle
+skinparam shadowing false
+skinparam packageStyle folder
+
+package "executables (src/main.cpp, src/*-target.cmake)" as exes {
+  artifact "darknetxx" as bin_main
+  artifact "darknetxxConverter" as bin_conv
+  artifact "darknetxx-train-gui" as bin_tgui
+  artifact "darknetxx-recognition-gui" as bin_rgui
+  [main()] as main
+}
+
+package "src/tests" {
+  [component\n(weights-factory, bias-networks)] as testsdata
+  [integration\n(digits, converter, gui-bash, ...)] as itests
+}
+
+package "src/scripts" {
+  [Docker trainer and\npredictor starters] as scripts
+}
+
+package "src/app" {
+  [ApplicationFactory] as factory
+  [CommandLineParser\n(+ CMDParamNames)] as parser
+  [ApplicationContext] as appctx
+
+  package "applications" {
+    [IApplication] as iapp
+    [Application] as application
+    [GuiApplication\n(+ TrainGuiApplication,\nRecognitionGuiApplication)] as guiapp
+    [ApplicationHelpPrinter,\nApplicationVersionPrinter,\nNetworkCfgPrinter] as printers
+  }
+
+  package "signals-handlers" {
+    [SignalsHandler] as signals
+    [handlers/posix\n(Stop, Pause, Continue,\nReload, User, Ignored)] as handlers
+  }
+}
+
+package "src/converters" {
+  [ApplicationContext2LibraryContext] as ctxconv
+}
+
+package "src/gui/gtkmm4" {
+  [window parts\n(AWindowLoader, GtkmmIniter, ...)] as guicore
+  [train-window] as trainwin
+  [recognition-window] as recwin
+  [ui (GResource)] as guiui
+}
+
+package "src/lib (the darknetxx-0.11 shared library)" as libpkg {
+  package "facade/public" {
+    [LibraryFacade] as facade
+    [LibraryContext] as libctx
+    [ILib, ITrainer, IRecognizer,\nATrainingProject, ...] as libapi
+  }
+
+  package "libmain" {
+    [LibFactory] as libfactory
+    [LibMain] as lmain
+    [WeightsConversionLib] as convlib
+  }
+}
+
+note right of libpkg
+  The src/lib/CMakeLists.txt builds the
+  src/darknet-adaptor (with the src/NetworksLoaders),
+  src/training, src/recognition, src/OMP, src/zlib
+  and src/helpers components into the library.
+end note
+
+package "src/training" {
+  [BackgroundTrainer] as bgtrainer
+  [Yolo4Folder, DxxwjzProject] as projects
+}
+
+package "src/recognition" {
+  [NetworkRecognizer] as recognizer
+  [ObjectsDetection,\nImageClassification,\nRecognitionPainter] as recmethods
+}
+
+package "src/darknet-adaptor" {
+  [DarknetController] as dctrl
+  [DarknetContext] as dctx
+
+  package "adaptors" {
+    [ADetector, ADetectorTrainer] as workers
+    [ANetworkAdaptor] as netadaptor
+    [ALayerAdaptor] as layeradaptor
+    [Layers] as layers
+    [NetworksCApi] as capi
+    [TrainingData] as trainingdata
+    [TrainingJournal] as journal
+    [TrainingChart] as chart
+    [detector-cmake-adaptor/darknet\n(the original Darknet C code)] as darknetc
+  }
+}
+
+package "src/NetworksLoaders" {
+  [INetworkLoader, IWeightsFileFormat,\nIWeightsReader, IWeightsWriter] as loaderapi
+  [OrigDefaultLoader] as cfgloader
+  [weights-formats] as formats
+  [weights-converter] as converter
+  [weights-model] as model
+  [original-weights] as origweights
+  [yolo4-folder] as yolo4folder
+
+  package "dxxwjz" as dxxwjzpkg {
+    [dxxwjz1] as dxxwjz1
+    [dxxwjz2] as dxxwjz2
+    [dxxwjz2p] as dxxwjz2p
+    [dxxwjz3] as dxxwjz3
+    [dxxwjz3p] as dxxwjz3p
+  }
+}
+
+package "src/OMP" {
+  [OMPController] as omp
+}
+
+package "src/zlib" {
+  [ZlibController,\nGzipFileStreams] as zlib
+}
+
+package "src/helpers" {
+  [StringTools] as helpers
+}
+
+package "src/log" as logpkg {
+  [log.h, cpplog4c,\ndefault-logger] as log
+}
+
+note bottom of logpkg
+  The log macros every component logs by.
+end note
+
+bin_main ..> main : built of
+bin_conv ..> main : built of
+bin_tgui ..> main : built of
+bin_rgui ..> main : built of
+itests ..> exes : drive
+itests ..> testsdata
+scripts ..> bin_main : start
+
+main --> factory
+factory --> parser
+factory --> iapp : creates
+factory --> signals : installs
+parser --> appctx : fills
+signals --> handlers
+handlers --> appctx : raises the flags
+application -up-|> iapp
+guiapp -up-|> application
+printers -up-|> iapp
+application --> ctxconv : converts the context
+ctxconv --> libctx : fills
+application --> facade : runs the works
+printers --> facade : formats, network cfg
+guiapp --> trainwin : shows
+guiapp --> recwin : shows
+trainwin --> guicore
+recwin --> guicore
+guicore --> guiui
+trainwin --> facade : trains
+recwin --> facade : recognizes
+
+facade --> libfactory : creates the works
+facade --> projects : opens
+facade --> chart : draws
+libfactory --> lmain
+libfactory --> convlib
+libfactory --> bgtrainer
+libfactory --> recognizer
+bgtrainer --> lmain : trains in a thread
+bgtrainer --> projects
+projects --> formats
+lmain --> omp
+lmain --> dctrl : trains, detects
+convlib --> converter : converts
+recognizer --> recmethods
+recognizer --> cfgloader : loads the network
+recognizer --> darknetc : computes
+
+dctrl --> dctx
+dctrl --> workers : selects
+dctx --> libctx : stop requests, progress
+dctx --> trainingdata
+dctx --> journal
+dctx ..> helpers
+workers --> darknetc : trains, detects
+workers --> cfgloader : loads the networks
+darknetc --> capi : parses, resizes,\nreads and writes the weights
+darknetc --> trainingdata : reads the images
+capi --> cfgloader
+capi --> formats
+capi --> netadaptor
+cfgloader --> netadaptor
+cfgloader --> layers
+netadaptor --> layers
+layers --> layeradaptor
+journal --> formats : saves the weights
+chart --> formats
+
+cfgloader ..|> loaderapi
+formats --> origweights
+formats --> dxxwjzpkg : reads, writes
+formats --> yolo4folder
+converter --> formats
+dxxwjz2 --> dxxwjz1 : extends
+dxxwjz2p --> dxxwjz2 : extends
+dxxwjz3 --> dxxwjz2 : extends
+dxxwjz3p --> dxxwjz3 : extends
+dxxwjz3p --> dxxwjz2p
+origweights --> model
+dxxwjz1 --> model
+yolo4folder --> model
+dxxwjz1 --> zlib : gzip streams
+
+' keeps the log of every component beside the other supporting ones
+model -[hidden]-> log
+
+@enduml

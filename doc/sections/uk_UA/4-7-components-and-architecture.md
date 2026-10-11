@@ -6,6 +6,12 @@
 [`doc/diagrams`](/doc/diagrams), тому вони можуть відображатись як під час
 побудови документації Doxygen, так і будь-яким окремим інструментом PlantUML.
 
+Діаграма усіх компонентів директорії `src`,
+[`doc/diagrams/all-components.puml`](/doc/diagrams/all-components.puml),
+зберігається відображеною у файлі [`doc/diagrams/all-components.svg`](/doc/diagrams/all-components.svg),
+який показують README: після її змін відобразіть її знову командою
+`plantuml -tsvg doc/diagrams/all-components.puml`.
+
 Програма організована у декілька взаємодіючих рівнів:
 
 1. [Компоненти виконання програми](/doc/sections/uk_UA/4-7-1-application-runtime-components.md) - інфраструктура, яка розбирає параметри командного рядка, будує контекст виконання і обирає програму для запуску, яка використовує бібліотеку darknetxx (простір імен `app`).

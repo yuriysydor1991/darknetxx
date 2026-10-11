@@ -6,6 +6,12 @@ the [PlantUML](https://plantuml.com/) language and their sources are kept under
 the [`doc/diagrams`](/doc/diagrams) directory so they can be rendered both by the
 Doxygen documentation build and by any standalone PlantUML tool.
 
+The diagram of all the components of the `src` directory,
+[`doc/diagrams/all-components.puml`](/doc/diagrams/all-components.puml), is
+kept rendered as the [`doc/diagrams/all-components.svg`](/doc/diagrams/all-components.svg)
+the READMEs show: render it again by the `plantuml -tsvg doc/diagrams/all-components.puml`
+command after changing it.
+
 The application is organized into a few cooperating layers:
 
 1. [Application runtime components](/doc/sections/en_US/4-7-1-application-runtime-components.md) - the infrastructure that parses the command line, builds the run context and selects the application to execute, which uses the darknetxx library (the `app` namespace).
