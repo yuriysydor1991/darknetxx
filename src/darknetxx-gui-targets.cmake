@@ -43,8 +43,8 @@ foreach(GUI Train Recognition)
   target_sources(
     ${GUI_BINARY_NAME}
     PRIVATE
-      ${CMAKE_CURRENT_LIST_DIR}/app/GuiApplication.cpp
-      ${CMAKE_CURRENT_LIST_DIR}/app/${GUI}GuiApplication.cpp
+      ${CMAKE_CURRENT_LIST_DIR}/app/applications/GuiApplication.cpp
+      ${CMAKE_CURRENT_LIST_DIR}/app/applications/${GUI}GuiApplication.cpp
       ${DARKNETXX_GUI_RC}
   )
 

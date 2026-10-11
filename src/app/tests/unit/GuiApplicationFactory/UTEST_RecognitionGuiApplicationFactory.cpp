@@ -4,7 +4,7 @@
 #include <memory>
 
 #include "src/app/ApplicationFactory.h"
-#include "src/app/RecognitionGuiApplication.h"
+#include "src/app/applications/RecognitionGuiApplication.h"
 
 using namespace app;
 

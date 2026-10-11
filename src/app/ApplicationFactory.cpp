@@ -7,22 +7,22 @@
 #include <memory>
 
 #include "LibraryFacade.h"
-#include "src/app/Application.h"
 #include "src/app/ApplicationContext.h"
-#include "src/app/ApplicationHelpPrinter.h"
-#include "src/app/ApplicationVersionPrinter.h"
 #include "src/app/CMDParamNames.h"
 #include "src/app/CommandLineParser.h"
-#include "src/app/IApplication.h"
-#include "src/app/NetworkCfgPrinter.h"
+#include "src/app/applications/Application.h"
+#include "src/app/applications/ApplicationHelpPrinter.h"
+#include "src/app/applications/ApplicationVersionPrinter.h"
+#include "src/app/applications/IApplication.h"
+#include "src/app/applications/NetworkCfgPrinter.h"
 #include "src/app/signals-handlers/ISignalsHandler.h"
 #include "src/app/signals-handlers/SignalsHandler.h"
 #include "src/log/log.h"
 
 #if defined(DARKNETXX_TRAIN_GUI)
-#include "src/app/TrainGuiApplication.h"
+#include "src/app/applications/TrainGuiApplication.h"
 #elif defined(DARKNETXX_RECOGNITION_GUI)
-#include "src/app/RecognitionGuiApplication.h"
+#include "src/app/applications/RecognitionGuiApplication.h"
 #endif
 
 namespace app

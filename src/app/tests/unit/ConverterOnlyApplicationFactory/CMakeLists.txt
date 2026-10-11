@@ -20,10 +20,10 @@ target_include_directories(
   UTEST_ConverterOnlyApplicationFactory
   BEFORE PRIVATE
     ${APP_MOCKS_ROOT}/ApplicationContext
-    ${APP_MOCKS_ROOT}/Application
-    ${APP_MOCKS_ROOT}/ApplicationHelpPrinter
-    ${APP_MOCKS_ROOT}/ApplicationVersionPrinter
-    ${APP_MOCKS_ROOT}/NetworkCfgPrinter
+    ${APPLICATIONS_MOCKS_ROOT}/Application
+    ${APPLICATIONS_MOCKS_ROOT}/ApplicationHelpPrinter
+    ${APPLICATIONS_MOCKS_ROOT}/ApplicationVersionPrinter
+    ${APPLICATIONS_MOCKS_ROOT}/NetworkCfgPrinter
     ${APP_MOCKS_ROOT}/LibraryFacade
     ${APP_MOCKS_ROOT}/CommandLineParser
     ${SIGNALS_HANDLERS_MOCKS_ROOT}/SignalsHandler

@@ -4,11 +4,11 @@
 #include <memory>
 
 #include "LibraryFacade.h"
-#include "src/app/Application.h"
 #include "src/app/ApplicationFactory.h"
-#include "src/app/ApplicationHelpPrinter.h"
-#include "src/app/ApplicationVersionPrinter.h"
-#include "src/app/NetworkCfgPrinter.h"
+#include "src/app/applications/Application.h"
+#include "src/app/applications/ApplicationHelpPrinter.h"
+#include "src/app/applications/ApplicationVersionPrinter.h"
+#include "src/app/applications/NetworkCfgPrinter.h"
 #include "src/app/signals-handlers/SignalsHandler.h"
 
 using namespace app;
