@@ -182,6 +182,9 @@ struct ApplicationContext
   /// @brief The class names file of the converted weights, given after the
   /// --convert-names command line flag.
   std::string convert_names;
+  /// @brief The weights file the network cfg of which is printed into the
+  /// standard output, given after the --dump-cfg command line flag.
+  std::string dump_cfg;
 
   /**
    * @brief Tells the network weights file conversion was requested on the
@@ -193,6 +196,10 @@ struct ApplicationContext
   /// @brief Tells the training chart of the weights file was requested on
   /// the command line, which no training or detection goes with.
   bool chart_requested() const;
+
+  /// @brief Tells the network cfg of the weights file was requested on the
+  /// command line, which no other work goes with.
+  bool cfg_dump_requested() const;
 };
 
 using AppCtxPtr = std::shared_ptr<ApplicationContext>;

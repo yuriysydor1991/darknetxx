@@ -6,6 +6,7 @@
 #include "Yolo4Folder.h"
 #include "src/lib/darknet-adaptor/adaptors/NetworksLoaders/dxxwjz2p/v1/Dxxwjz2pFormat.h"
 #include "src/lib/darknet-adaptor/adaptors/NetworksLoaders/dxxwjz3p/v1/Dxxwjz3pFormat.h"
+#include "src/lib/darknet-adaptor/adaptors/NetworksLoaders/weights-formats/NetworkSource.h"
 #include "src/lib/darknet-adaptor/adaptors/NetworksLoaders/weights-formats/WeightsFileFormats.h"
 #include "src/lib/darknet-adaptor/adaptors/TrainingChart/TrainingChart.h"
 #include "src/lib/libmain/LibFactory.h"
@@ -88,6 +89,19 @@ std::vector<unsigned char> LibraryFacade::training_chart(
   }
 
   return png;
+}
+
+std::string LibraryFacade::network_cfg(const std::string& weights)
+{
+  using darknet_adaptor::loaders::NetworkSource;
+
+  darknet_adaptor::loaders::NetworkDescription description;
+
+  // the read of the other files takes their whole text for the cfg one
+  return NetworkSource::describes(weights) &&
+                 NetworkSource::read(weights, description)
+             ? description.cfg()
+             : std::string{};
 }
 
 void LibraryFacade::init_logger(const logger::ILoggerPtr& appLogger)

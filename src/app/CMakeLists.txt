@@ -18,6 +18,7 @@ darknetxx_targets_sources(
   ${CMAKE_CURRENT_SOURCE_DIR}/ApplicationHelpPrinter.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/ApplicationVersionPrinter.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/CommandLineParser.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/NetworkCfgPrinter.cpp
 )
 
 add_subdirectory(signals-handlers)

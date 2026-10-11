@@ -29,6 +29,7 @@ class LibraryFacade
   inline static std::function<void(const logger::ILoggerPtr&)> on_init_logger;
   inline static std::function<std::vector<unsigned char>(const std::string&)>
       on_training_chart;
+  inline static std::function<std::string(const std::string&)> on_network_cfg;
 
   static LibraryContextPtr create_library_context()
   {
@@ -58,6 +59,11 @@ class LibraryFacade
                              : std::vector<unsigned char>{};
   }
 
+  static std::string network_cfg(const std::string& weights)
+  {
+    return on_network_cfg ? on_network_cfg(weights) : std::string{};
+  }
+
   static void init_logger(const logger::ILoggerPtr& appLogger)
   {
     if (on_init_logger) {
@@ -71,6 +77,7 @@ class LibraryFacade
     on_create_trainer = nullptr;
     on_init_logger = nullptr;
     on_training_chart = nullptr;
+    on_network_cfg = nullptr;
   }
 };
 

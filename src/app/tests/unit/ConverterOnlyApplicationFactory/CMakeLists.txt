@@ -23,6 +23,7 @@ target_include_directories(
     ${APP_MOCKS_ROOT}/Application
     ${APP_MOCKS_ROOT}/ApplicationHelpPrinter
     ${APP_MOCKS_ROOT}/ApplicationVersionPrinter
+    ${APP_MOCKS_ROOT}/NetworkCfgPrinter
     ${APP_MOCKS_ROOT}/LibraryFacade
     ${APP_MOCKS_ROOT}/CommandLineParser
     ${SIGNALS_HANDLERS_MOCKS_ROOT}/SignalsHandler

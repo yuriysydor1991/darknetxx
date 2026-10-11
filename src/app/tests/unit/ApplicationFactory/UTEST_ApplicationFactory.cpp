@@ -8,6 +8,7 @@
 #include "src/app/ApplicationFactory.h"
 #include "src/app/ApplicationHelpPrinter.h"
 #include "src/app/ApplicationVersionPrinter.h"
+#include "src/app/NetworkCfgPrinter.h"
 #include "src/app/signals-handlers/SignalsHandler.h"
 
 using namespace app;
@@ -353,6 +354,18 @@ TEST_F(UTEST_ApplicationFactory, create_application_formats_converter)
 
   // the conversion is the library work of the default application
   EXPECT_NE(std::dynamic_pointer_cast<Application>(app), nullptr);
+}
+
+TEST_F(UTEST_ApplicationFactory, create_application_cfg_printer)
+{
+  std::shared_ptr<ApplicationContext> ctx =
+      create_context(customArgc, customArgv);
+
+  ctx->dump_cfg = "net.dxxwjz3";
+
+  EXPECT_NE(std::dynamic_pointer_cast<NetworkCfgPrinter>(
+                factory->create_application(ctx)),
+            nullptr);
 }
 
 TEST_F(UTEST_ApplicationFactory,

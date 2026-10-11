@@ -425,6 +425,38 @@ TEST_F(UTEST_CommandLineParser, draw_chart_of_the_weights_file)
   }
 }
 
+TEST_F(UTEST_CommandLineParser, dump_cfg_of_the_weights_file)
+{
+  set_args({"--dump-cfg", "net.dxxwjz3"});
+
+  EXPECT_CALL(*appctx, push_error(_)).Times(0);
+
+  EXPECT_TRUE(parser->parse_args(appctx));
+  EXPECT_EQ(appctx->dump_cfg, "net.dxxwjz3");
+  EXPECT_TRUE(appctx->cfg_dump_requested());
+  EXPECT_FALSE(appctx->conversion_requested());
+
+  const std::vector<std::vector<std::string>> wrongs{
+      {"--dump-cfg", "net.dxxwjz3", "--train-cfg", "net.cfg"},
+      {"--dump-cfg", "net.dxxwjz3", "--detect-cfg", "net.cfg"},
+      {"--dump-cfg", "net.dxxwjz3", "--weights", "net.dxxwjz2", "--draw-chart",
+       "chart.png"},
+      {"--dump-cfg", "net.dxxwjz3", "--convert-from", "dxxwjz3",
+       "--convert-src", "net.dxxwjz3", "--convert-to", "dxxwjz2",
+       "--convert-dst", "net.dxxwjz2"}};
+
+  for (const std::vector<std::string>& wrong : wrongs) {
+    appctx = create_context(argc, argv);
+
+    set_args(wrong);
+
+    EXPECT_CALL(*appctx, push_error(HasSubstr("--dump-cfg"))).Times(1);
+
+    EXPECT_FALSE(parser->parse_args(appctx));
+    EXPECT_TRUE(appctx->print_help_and_exit);
+  }
+}
+
 TEST_F(UTEST_CommandLineParser, conversion_cfg_alone_is_reported)
 {
   set_args({"--convert-cfg", "a.cfg"});
@@ -482,7 +514,8 @@ TEST_F(UTEST_CommandLineParser, conversion_flags_require_their_values)
        {std::string{"--convert-from"}, std::string{"--convert-src"},
         std::string{"--convert-to"}, std::string{"--convert-dst"},
         std::string{"--convert-cfg"}, std::string{"--convert-names"},
-        std::string{"--save-format"}, std::string{"--draw-chart"}}) {
+        std::string{"--save-format"}, std::string{"--draw-chart"},
+        std::string{"--dump-cfg"}}) {
     appctx = create_context(argc, argv);
 
     set_args({flag});

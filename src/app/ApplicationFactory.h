@@ -82,6 +82,14 @@ class ApplicationFactory
   virtual std::shared_ptr<IApplication> create_version_printer();
 
   /**
+   * @brief Instantiates the printer of the network cfg the weights file
+   * keeps.
+   *
+   * @return Returns the created network cfg printer.
+   */
+  virtual std::shared_ptr<IApplication> create_cfg_printer();
+
+  /**
    * @brief Creates context and perform args parse operation
    *
    * @return Returns filled and parsed application context

@@ -33,6 +33,7 @@ set(
   converts-the-yolo4-folder-through-the-project
   writes-the-gzip-compressed-json-document
   converts-with-the-main-binary-too
+  dumps-the-network-cfg
   reports-a-failing-conversion
   prints-the-conversion-help
 )

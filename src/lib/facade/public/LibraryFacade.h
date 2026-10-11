@@ -67,6 +67,17 @@ class DARKNETXX_LIB_API LibraryFacade
   static std::vector<unsigned char> training_chart(const std::string& weights);
 
   /**
+   * @brief The darknet (YOLO4) cfg text of the network the weights file keeps
+   * (the dxxwjz2, the dxxwjz2p, the dxxwjz3 and the dxxwjz3p ones): the cfg
+   * text the dxxwjz2 file keeps as it is, the one of the JSON options of the
+   * dxxwjz3 file of no comments.
+   *
+   * @return The empty text for the file of no network cfg or unable to be
+   * read.
+   */
+  static std::string network_cfg(const std::string& weights);
+
+  /**
    * @brief Hands the logger of the library user over to the library, which
    * logs into it then. Call it before the other library calls.
    */

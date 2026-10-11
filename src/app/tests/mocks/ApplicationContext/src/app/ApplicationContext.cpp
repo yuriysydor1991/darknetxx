@@ -10,6 +10,11 @@ ApplicationContext::ApplicationContext(int& gargc, char**& gargv)
 
 bool ApplicationContext::chart_requested() const { return !draw_chart.empty(); }
 
+bool ApplicationContext::cfg_dump_requested() const
+{
+  return !dump_cfg.empty();
+}
+
 bool ApplicationContext::conversion_requested() const
 {
   return !convert_from.empty() || !convert_src.empty() || !convert_to.empty() ||

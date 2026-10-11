@@ -29,6 +29,7 @@ foreach(GUI Train Recognition)
       ${APP_MOCKS_ROOT}/GuiApplications
       ${APP_MOCKS_ROOT}/ApplicationHelpPrinter
       ${APP_MOCKS_ROOT}/ApplicationVersionPrinter
+      ${APP_MOCKS_ROOT}/NetworkCfgPrinter
       ${APP_MOCKS_ROOT}/LibraryFacade
       ${APP_MOCKS_ROOT}/CommandLineParser
       ${SIGNALS_HANDLERS_MOCKS_ROOT}/SignalsHandler

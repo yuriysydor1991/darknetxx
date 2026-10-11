@@ -60,7 +60,8 @@ void print_conversion_options(std::ostream& out)
   out << "\nNetwork weights files conversion options (the four of them go\n"
       << "together and convert the weights file with no training nor\n"
       << "detection started, the --convert-to dxxwjz3, --convert-dst and\n"
-      << "--convert-cfg ones alone make the network to train of no weights):\n";
+      << "--convert-cfg ones alone make the network to train of no weights,\n"
+      << "the --dump-cfg one goes alone):\n";
   print_option(out, CMDParamNames::convert_fromw, "<FORMAT>",
                "the network weights file format to read");
   print_option(out, CMDParamNames::convert_srcw, "<FILE>",
@@ -78,6 +79,9 @@ void print_conversion_options(std::ostream& out)
   print_option(out, CMDParamNames::convert_namesw, "<FILE>",
                "the class names file the dxxwjz2 and dxxwjz3 FORMATs keep "
                "(overrides the cfg [net] names= key)");
+  print_option(out, CMDParamNames::dump_cfgw, "<FILE>",
+               "print the YOLO4 network cfg the dxxwjz2, dxxwjz2p, dxxwjz3 or "
+               "dxxwjz3p FILE keeps into the stdout, nothing else");
 
   out << "\n  Where FORMAT is one of:\n";
 

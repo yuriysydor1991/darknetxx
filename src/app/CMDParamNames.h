@@ -87,6 +87,7 @@ class CMDParamNames
   inline static const std::string convert_dstw{"--convert-dst"};
   inline static const std::string convert_cfgw{"--convert-cfg"};
   inline static const std::string convert_namesw{"--convert-names"};
+  inline static const std::string dump_cfgw{"--dump-cfg"};
 };
 
 }  // namespace app

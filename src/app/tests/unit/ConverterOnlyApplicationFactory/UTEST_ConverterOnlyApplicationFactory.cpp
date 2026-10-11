@@ -8,6 +8,7 @@
 #include "src/app/ApplicationFactory.h"
 #include "src/app/ApplicationHelpPrinter.h"
 #include "src/app/ApplicationVersionPrinter.h"
+#include "src/app/NetworkCfgPrinter.h"
 #include "src/app/signals-handlers/SignalsHandler.h"
 
 using namespace app;
@@ -74,6 +75,19 @@ TEST_F(UTEST_ConverterOnlyApplicationFactory,
   EXPECT_NE(
       std::dynamic_pointer_cast<Application>(factory->create_application(ctx)),
       nullptr);
+}
+
+TEST_F(UTEST_ConverterOnlyApplicationFactory, cfg_dump_creates_the_cfg_printer)
+{
+  auto ctx = std::make_shared<ApplicationContext>(customArgc, customArgv);
+
+  ctx->dump_cfg = "net.dxxwjz3";
+
+  EXPECT_CALL(*ctx, push_error(_)).Times(0);
+
+  EXPECT_NE(std::dynamic_pointer_cast<NetworkCfgPrinter>(
+                factory->create_application(ctx)),
+            nullptr);
 }
 
 TEST_F(UTEST_ConverterOnlyApplicationFactory, chart_is_no_work_of_the_converter)

@@ -90,9 +90,11 @@ struct ApplicationContext
   std::string convert_dst;
   std::string convert_cfg;
   std::string convert_names;
+  std::string dump_cfg;
 
   bool conversion_requested() const;
   bool chart_requested() const;
+  bool cfg_dump_requested() const;
 };
 
 using AppCtxPtr = std::shared_ptr<ApplicationContext>;

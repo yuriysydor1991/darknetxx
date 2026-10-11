@@ -63,8 +63,8 @@ TEST_F(UTEST_ApplicationHelpPrinter, conversion_options_and_formats_are_listed)
 
   for (const std::string& flag : std::vector<std::string>{
            "--convert-from", "--convert-src", "--convert-to", "--convert-dst",
-           "--convert-cfg", "--convert-names", "weights", "dxxwjz1",
-           "dxxwjz2"}) {
+           "--convert-cfg", "--convert-names", "--dump-cfg", "weights",
+           "dxxwjz1", "dxxwjz2"}) {
     EXPECT_NE(printed.find(flag), std::string::npos) << flag;
   }
 

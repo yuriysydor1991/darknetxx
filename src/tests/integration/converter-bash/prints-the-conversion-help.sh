@@ -13,7 +13,7 @@ PRINTED="$("${CONVERTER_BINARY}" --help)"
 itest_expect_output_contains "${PRINTED}" "$(basename "${CONVERTER_BINARY}") [OPTIONS]"
 
 for CONVERSION_FLAG in --convert-from --convert-src --convert-to --convert-dst \
-                       --convert-cfg --convert-names ; do
+                       --convert-cfg --convert-names --dump-cfg ; do
     itest_expect_output_contains "${PRINTED}" "${CONVERSION_FLAG}"
 done
 

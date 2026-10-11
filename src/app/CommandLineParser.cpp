@@ -175,6 +175,28 @@ bool check_chart(const std::shared_ptr<ApplicationContext>& ctx)
   return reported(ctx, error);
 }
 
+/**
+ * @brief Checks the network cfg dump flag: it prints the cfg of the file with
+ * no training, no detection, no chart (of the --weights file) and no
+ * conversion.
+ */
+bool check_dump(const std::shared_ptr<ApplicationContext>& ctx)
+{
+  std::string error;
+
+  if (ctx->cfg_dump_requested() &&
+      (!ctx->train_cfg.empty() || !ctx->detect_cfg.empty() ||
+       !ctx->latest_weights.empty() || ctx->conversion_requested())) {
+    error = "The " + CMDParamNames::dump_cfgw +
+            " parameter can't be combined with the " +
+            CMDParamNames::train_cfgw + ", the " + CMDParamNames::detect_cfgw +
+            ", the " + CMDParamNames::latest_weightsw +
+            " and the conversion parameters";
+  }
+
+  return reported(ctx, error);
+}
+
 }  // namespace
 
 bool CommandLineParser::parse_args(std::shared_ptr<ApplicationContext> ctx)
@@ -217,7 +239,7 @@ bool CommandLineParser::parse_args(std::shared_ptr<ApplicationContext> ctx)
     return false;
   }
 
-  return check_conversion(ctx) && check_chart(ctx);
+  return check_conversion(ctx) && check_chart(ctx) && check_dump(ctx);
 }
 
 bool CommandLineParser::check_4_data(
@@ -448,6 +470,10 @@ bool CommandLineParser::parse_known_arg(std::shared_ptr<ApplicationContext> ctx,
     ctx->convert_names = nextParam;
     LOGD(
         "Found the class names file of the conversion: " << ctx->convert_names);
+  } else if (param == CMDParamNames::dump_cfgw) {
+    ctx->dump_cfg = nextParam;
+    LOGD("Found the weights file of the network cfg to print: "
+         << ctx->dump_cfg);
   } else {
     ctx->print_help_and_exit = true;
     ctx->push_error("Unknown parameter: " + param);
@@ -502,7 +528,8 @@ const std::set<std::string>& CommandLineParser::get_params_requiring_data()
       CMDParamNames::convert_tow,
       CMDParamNames::convert_dstw,
       CMDParamNames::convert_cfgw,
-      CMDParamNames::convert_namesw};
+      CMDParamNames::convert_namesw,
+      CMDParamNames::dump_cfgw};
 
   return requireNext;
 }
