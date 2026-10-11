@@ -273,11 +273,17 @@ TEST_F(ITEST_digits_dxxwjz3, trained_file_keeps_the_network_and_the_training)
   EXPECT_EQ(document["format"], "dxxwjz3");
   EXPECT_EQ(document["network"]["net"]["max_batches"], 400);
   EXPECT_EQ(document["network"]["net"]["steps"], json::parse("[300, 350]"));
-  EXPECT_EQ(document["network"]["layers"].size(), 9U);
+  const json& layers = document["network"]["layers"];
+
+  ASSERT_EQ(layers.size(), 9U);
+  EXPECT_EQ(layers[0]["type"], "convolutional");
   EXPECT_EQ(
-      document["network"]["layers"][0],
+      layers[0]["options"],
       json::parse(
-          R"({"type": "convolutional", "options": {"batch_normalize": 1, "filters": 8, "size": 3, "stride": 1, "pad": 1, "activation": "leaky"}})"));
+          R"({"batch_normalize": 1, "filters": 8, "size": 3, "stride": 1, "pad": 1, "activation": "leaky"})"));
+  // the weights of the layer in it's arrays
+  EXPECT_EQ(layers[0]["arrays"]["biases"].size(), 8U);
+  EXPECT_FALSE(document.contains("layers"));
   EXPECT_EQ(classes_of(document),
             (std::vector<std::string>{"0", "1", "2", "3", "4", "5", "6", "7",
                                       "8", "9"}));
@@ -288,7 +294,6 @@ TEST_F(ITEST_digits_dxxwjz3, trained_file_keeps_the_network_and_the_training)
   EXPECT_GE(training["seconds"].get<double>(), 1.0);
   EXPECT_LT(training["avg_loss"].back().get<double>(),
             training["avg_loss"].front().get<double>());
-  EXPECT_FALSE(document["layers"].empty());
 }
 
 TEST_F(ITEST_digits_dxxwjz3, chart_is_named_after_the_training_start)
@@ -496,7 +501,7 @@ TEST_F(ITEST_digits_dxxwjz3, network_of_no_weights_is_trained)
   const json made = document_of(dir / "project.dxxwjz3");
 
   EXPECT_FALSE(made.contains("header"));
-  EXPECT_FALSE(made.contains("layers"));
+  EXPECT_FALSE(made["network"]["layers"][0].contains("arrays"));
 
   // the file alone keeps the network and it's class names
   std::filesystem::remove(dir / "project.cfg");
@@ -511,5 +516,5 @@ TEST_F(ITEST_digits_dxxwjz3, network_of_no_weights_is_trained)
 
   EXPECT_EQ(classes_of(trained), WORDS);
   EXPECT_EQ(trained["training"]["loss"].size(), 12U);
-  EXPECT_FALSE(trained["layers"].empty());
+  EXPECT_TRUE(trained["network"]["layers"][0].contains("arrays"));
 }

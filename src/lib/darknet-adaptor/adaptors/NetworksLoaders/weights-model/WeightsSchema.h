@@ -93,6 +93,11 @@ class WeightsSchema
   /// @brief The layer type of the name, false for an unknown name.
   static bool parse(const std::string& name, LAYER_TYPE& type);
 
+  /// @brief The layer type the darknet parses the cfg section of the header
+  /// into (the "[conv]" and the "[convolutional]" ones into the
+  /// CONVOLUTIONAL, ...), the BLANK one for an unknown header.
+  static LAYER_TYPE section_type(const std::string& header);
+
   /// @brief Tells the layer types, which keep the weights.
   static bool has_weights(LAYER_TYPE type);
 

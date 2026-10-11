@@ -6,6 +6,7 @@ cmake_minimum_required(VERSION 3.13)
 # member of theirs (see the Dxxwjz2pFormat).
 add_library(
   DarknetCXXDxxwjz2pV1OBJ OBJECT
+  Dxxwjz2pAnnotationsJson.cpp
   Dxxwjz2pAnnotationsReader.cpp
   Dxxwjz2pFileFormat.cpp
   Dxxwjz2pJsonEmitter.cpp

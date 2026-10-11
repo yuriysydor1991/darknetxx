@@ -48,6 +48,11 @@ class Dxxwjz2SubtreeBuilder : public nlohmann::json_sax<nlohmann::json>
   bool parse_error(std::size_t position, const std::string& last_token,
                    const nlohmann::detail::exception& ex) override;
 
+ protected:
+  /// @brief The container value is complete, false fails the build: true
+  /// here.
+  virtual bool closed(json& value);
+
  private:
   /// @brief Puts the value at the current position, the container ones
   /// become the current ones.

@@ -43,6 +43,10 @@ class Dxxwjz2SaxHandler : public dxxwjz1::v1::Dxxwjz1SaxHandler
   /// @brief The reader of the network and the training trees.
   virtual Dxxwjz2MetadataReader& metadata();
 
+  /// @brief The builder of the tree of the network or the training value:
+  /// the subtree builder of both here.
+  virtual Dxxwjz2SubtreeBuilder& builder(const std::string& name);
+
   /// @brief The handler of the trailing value, which builds the trailing bytes
   /// of the document itself; nullptr for the base64 text of the dxxwjz1
   /// handler here.

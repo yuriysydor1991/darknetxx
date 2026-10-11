@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <iterator>
+#include <map>
 #include <string>
 #include <utility>
 #include <vector>
@@ -177,6 +178,58 @@ bool WeightsSchema::parse(const std::string& name, WeightsSubLayer& sub)
 bool WeightsSchema::parse(const std::string& name, LAYER_TYPE& type)
 {
   return value_of(type_names(), name, type);
+}
+
+LAYER_TYPE WeightsSchema::section_type(const std::string& header)
+{
+  static const std::map<std::string, LAYER_TYPE> section2type{
+      {"[shortcut]", SHORTCUT},
+      {"[scale_channels]", SCALE_CHANNELS},
+      {"[sam]", SAM},
+      {"[crop]", CROP},
+      {"[cost]", COST},
+      {"[detection]", DETECTION},
+      {"[region]", REGION},
+      {"[yolo]", YOLO},
+      {"[Gaussian_yolo]", GAUSSIAN_YOLO},
+      {"[local]", LOCAL},
+      {"[conv]", CONVOLUTIONAL},
+      {"[convolutional]", CONVOLUTIONAL},
+      {"[activation]", ACTIVE},
+      {"[net]", NETWORK},
+      {"[network]", NETWORK},
+      {"[crnn]", CRNN},
+      {"[gru]", GRU},
+      {"[lstm]", LSTM},
+      {"[conv_lstm]", CONV_LSTM},
+      {"[history]", HISTORY},
+      {"[rnn]", RNN},
+      {"[conn]", CONNECTED},
+      {"[connected]", CONNECTED},
+      {"[max]", MAXPOOL},
+      {"[maxpool]", MAXPOOL},
+      {"[local_avg]", LOCAL_AVGPOOL},
+      {"[local_avgpool]", LOCAL_AVGPOOL},
+      {"[reorg3d]", REORG},
+      {"[reorg]", REORG_OLD},
+      {"[avg]", AVGPOOL},
+      {"[avgpool]", AVGPOOL},
+      {"[dropout]", DROPOUT},
+      {"[lrn]", NORMALIZATION},
+      {"[normalization]", NORMALIZATION},
+      {"[batchnorm]", BATCHNORM},
+      {"[soft]", SOFTMAX},
+      {"[softmax]", SOFTMAX},
+      {"[contrastive]", CONTRASTIVE},
+      {"[route]", ROUTE},
+      {"[upsample]", UPSAMPLE},
+      {"[empty]", EMPTY},
+      {"[silence]", EMPTY},
+      {"[implicit]", IMPLICIT}};
+
+  const auto found = section2type.find(header);
+
+  return found == section2type.end() ? BLANK : found->second;
 }
 
 bool WeightsSchema::has_weights(const LAYER_TYPE type)

@@ -3,10 +3,12 @@
 
 #include <cstdint>
 #include <filesystem>
+#include <string>
 
 #include "src/lib/darknet-adaptor/adaptors/NetworksLoaders/dxxwjz2p/v1/Dxxwjz2pSaxHandler.h"
 #include "src/lib/darknet-adaptor/adaptors/NetworksLoaders/dxxwjz3/v3/Dxxwjz3Bytes.h"
 #include "src/lib/darknet-adaptor/adaptors/NetworksLoaders/dxxwjz3/v3/Dxxwjz3MetadataReader.h"
+#include "src/lib/darknet-adaptor/adaptors/NetworksLoaders/dxxwjz3/v3/Dxxwjz3NetworkBuilder.h"
 
 namespace darknet_adaptor::loaders::dxxwjz3p::v1
 {
@@ -29,11 +31,15 @@ class Dxxwjz3pSaxHandler : public dxxwjz2p::v1::Dxxwjz2pSaxHandler
  protected:
   const char* format_name() const override;
   int64_t format_version() const override;
+  /// @brief The layers of the dxxwjz3 documents are the network ones.
+  bool layers_member() const override;
   dxxwjz2::v2::Dxxwjz2MetadataReader& metadata() override;
+  dxxwjz2::v2::Dxxwjz2SubtreeBuilder& builder(const std::string& name) override;
   Delegate* trailing() override;
 
  private:
   dxxwjz3::v3::Dxxwjz3MetadataReader mdescription;
+  dxxwjz3::v3::Dxxwjz3NetworkBuilder mnetwork;
   dxxwjz3::v3::Dxxwjz3Bytes mbytes;
 };
 

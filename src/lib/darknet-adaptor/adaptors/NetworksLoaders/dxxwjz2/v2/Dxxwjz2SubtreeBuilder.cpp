@@ -80,9 +80,12 @@ bool Dxxwjz2SubtreeBuilder::key(string_t& name)
 
 bool Dxxwjz2SubtreeBuilder::end_object()
 {
+  json& value = *mstack.back();
+
   mstack.pop_back();
   mpaths.pop_back();
-  return true;
+
+  return closed(value);
 }
 
 bool Dxxwjz2SubtreeBuilder::start_array(std::size_t)
@@ -98,17 +101,20 @@ bool Dxxwjz2SubtreeBuilder::parse_error(std::size_t, const std::string&,
   return false;
 }
 
+bool Dxxwjz2SubtreeBuilder::closed(json&) { return true; }
+
 bool Dxxwjz2SubtreeBuilder::add(json value, const bool container)
 {
-  const std::string where = path();
-  const std::string inside = path(false);
+  // the path of the container alone, which the values of the big arrays
+  // don't take the time of
+  const std::string inside = container ? path(false) : std::string{};
   json* slot = &mtree;
 
   if (mstack.empty()) {
     mtree = std::move(value);
   } else if (mstack.back()->is_object()) {
     if (mstack.back()->contains(mkey)) {
-      return fail("the key " + where + " is given twice");
+      return fail("the key " + path() + " is given twice");
     }
 
     slot = &((*mstack.back())[mkey] = std::move(value));

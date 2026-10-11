@@ -1,16 +1,24 @@
 #include "src/lib/darknet-adaptor/adaptors/NetworksLoaders/dxxwjz3p/v1/Dxxwjz3pJsonEmitter.h"
 
 #include <cstdint>
+#include <filesystem>
 #include <string>
-#include <vector>
+#include <utility>
 
-#include "src/lib/darknet-adaptor/adaptors/NetworksLoaders/dxxwjz3/v3/Dxxwjz3Bytes.h"
-#include "src/lib/darknet-adaptor/adaptors/NetworksLoaders/dxxwjz3/v3/Dxxwjz3CfgJson.h"
-#include "src/lib/darknet-adaptor/adaptors/NetworksLoaders/dxxwjz3/v3/Dxxwjz3Losses.h"
 #include "src/lib/darknet-adaptor/adaptors/NetworksLoaders/dxxwjz3p/v1/Dxxwjz3pFormat.h"
 
 namespace darknet_adaptor::loaders::dxxwjz3p::v1
 {
+
+Dxxwjz3pJsonEmitter::Dxxwjz3pJsonEmitter(std::ostream& out,
+                                         const NetworkDescription& network,
+                                         const TrainingRecord& training,
+                                         const Yolo4Annotations& annotations,
+                                         std::filesystem::path directory)
+    : Dxxwjz3JsonEmitter{out, network, training},
+      mannotations{network, annotations, std::move(directory)}
+{
+}
 
 const char* Dxxwjz3pJsonEmitter::format_name() const
 {
@@ -22,23 +30,10 @@ int64_t Dxxwjz3pJsonEmitter::format_version() const
   return Dxxwjz3pFormat::VERSION;
 }
 
-std::string Dxxwjz3pJsonEmitter::cfg(const NetworkDescription& network) const
+void Dxxwjz3pJsonEmitter::members()
 {
-  return dxxwjz3::v3::Dxxwjz3CfgJson::members(network.cfg());
-}
-
-std::string Dxxwjz3pJsonEmitter::trailing(
-    const std::vector<uint8_t>& bytes) const
-{
-  return dxxwjz3::v3::Dxxwjz3Bytes::json_of(bytes);
-}
-
-void Dxxwjz3pJsonEmitter::losses(const TrainingRecord& training)
-{
-  columns(dxxwjz3::v3::Dxxwjz3Losses::indexed(training.iterations(),
-                                              training.losses()),
-          dxxwjz3::v3::Dxxwjz3Losses::indexed(training.iterations(),
-                                              training.avg_losses()));
+  Dxxwjz3JsonEmitter::members();
+  mannotations.write([this](const std::string& text) { write(text); });
 }
 
 }  // namespace darknet_adaptor::loaders::dxxwjz3p::v1

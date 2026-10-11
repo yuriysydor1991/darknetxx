@@ -18,6 +18,15 @@ Dxxwjz3pWriter::Dxxwjz3pWriterPtr Dxxwjz3pWriter::create()
   return std::make_shared<Dxxwjz3pWriter>();
 }
 
+bool Dxxwjz3pWriter::save(network& net, const std::string& filename,
+                          const int cutoff, const bool save_ema,
+                          const WeightsDocument& rest)
+{
+  return dxxwjz3::v3::Dxxwjz3Writer::keeps(rest.network, net, cutoff,
+                                           filename) &&
+         Dxxwjz2pWriter::save(net, filename, cutoff, save_ema, rest);
+}
+
 std::unique_ptr<dxxwjz1::v1::Dxxwjz1JsonEmitter> Dxxwjz3pWriter::create_emitter(
     std::ostream& out, const WeightsDocument& rest,
     const std::string& filename) const
@@ -31,7 +40,7 @@ bool Dxxwjz3pWriter::check(const WeightsDocument& rest,
                            const std::string& filename) const
 {
   return Dxxwjz2pWriter::check(rest, filename) &&
-         dxxwjz3::v3::Dxxwjz3Writer::keeps_cfg(rest.network, filename);
+         dxxwjz3::v3::Dxxwjz3Writer::keeps(rest.network, rest.layers, filename);
 }
 
 }  // namespace darknet_adaptor::loaders::dxxwjz3p::v1

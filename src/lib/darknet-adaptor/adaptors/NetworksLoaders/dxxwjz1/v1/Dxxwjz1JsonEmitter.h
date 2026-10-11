@@ -47,7 +47,7 @@ class Dxxwjz1JsonEmitter
 
   /// @brief The format, the version, the generator, the sections(), the
   /// header and the start of the layers, the last two for the weights alone.
-  void begin(const WeightsHeader& header, bool weights = true);
+  virtual void begin(const WeightsHeader& header, bool weights = true);
 
   /**
    * @brief One layer with its arrays.
@@ -55,12 +55,12 @@ class Dxxwjz1JsonEmitter
    * @param arrays The arrays in the file order (see the WeightsSchema::rank()),
    * the arrays of the sub-layers one sub-layer after another.
    */
-  void layer(int index, LAYER_TYPE type,
-             const std::vector<Dxxwjz1ArrayView>& arrays);
+  virtual void layer(int index, LAYER_TYPE type,
+                     const std::vector<Dxxwjz1ArrayView>& arrays);
 
   /// @brief The end of the layers, the trailing bytes and the end of the
   /// document.
-  void end(const std::vector<uint8_t>& bytes);
+  virtual void end(const std::vector<uint8_t>& bytes);
 
   /// @brief The text generator of the files written.
   static std::string generator();
@@ -78,6 +78,13 @@ class Dxxwjz1JsonEmitter
 
   /// @brief The JSON text of the member key: "\"name\": ".
   static std::string key(const char* name);
+
+  /// @brief The JSON text of the header member.
+  static std::string header_member(const WeightsHeader& header);
+
+  /// @brief The arrays members of the layer object (see the layer()) and the
+  /// end of the object.
+  void arrays(const std::vector<Dxxwjz1ArrayView>& arrays);
 
   /// @brief The JSON array of the floats, the zeros for the nullptr data.
   void values(const float* data, std::size_t count);

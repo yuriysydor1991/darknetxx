@@ -5,16 +5,17 @@
 #include <set>
 #include <sstream>
 #include <string>
+#include <vector>
 
 #include "src/lib/darknet-adaptor/adaptors/NetworksLoaders/dxxwjz1/v1/Dxxwjz1Format.h"
 #include "src/lib/darknet-adaptor/adaptors/NetworksLoaders/dxxwjz1/v1/Dxxwjz1JsonString.h"
 #include "src/lib/darknet-adaptor/adaptors/NetworksLoaders/dxxwjz3/v3/Dxxwjz3Format.h"
 #include "src/lib/darknet-adaptor/adaptors/NetworksLoaders/dxxwjz3/v3/Dxxwjz3ValueCodec.h"
+#include "src/lib/darknet-adaptor/adaptors/NetworksLoaders/weights-model/WeightsSchema.h"
 
 namespace darknet_adaptor::loaders::dxxwjz3::v3
 {
 
-using dxxwjz1::v1::Dxxwjz1Format;
 using dxxwjz1::v1::Dxxwjz1JsonString;
 
 namespace
@@ -28,7 +29,7 @@ std::string key(const std::string& name)
 
 }  // namespace
 
-std::string Dxxwjz3CfgJson::members(const std::string& cfg)
+Dxxwjz3CfgJson::Dxxwjz3CfgJson(const std::string& cfg)
 {
   std::istringstream text{cfg};
   CfgSections sections;
@@ -37,36 +38,45 @@ std::string Dxxwjz3CfgJson::members(const std::string& cfg)
     sections = CfgSection::read_cfg(text, "the network cfg text");
   }
   catch (const std::exception&) {
-    return {};
+    return;
   }
 
   if (sections.empty() || (sections.front().type() != "[net]" &&
                            sections.front().type() != "[network]")) {
-    return {};
+    return;
   }
-
-  std::string json = key(Dxxwjz3Format::NET_KEY) + "{" +
-                     options(sections.front()) + "}, " +
-                     key(Dxxwjz1Format::LAYERS_KEY) + "[";
 
   for (std::size_t index = 1U; index < sections.size(); ++index) {
     const std::string& header = sections[index].type();
     const std::string inner = options(sections[index]);
 
     if (header.size() < 3U || header.back() != ']') {
-      return {};
+      return;
     }
 
-    json += (index == 1U ? "\n    {" : ",\n    {") +
-            key(Dxxwjz1Format::TYPE_KEY) +
-            Dxxwjz1JsonString::quote(header.substr(1U, header.size() - 2U)) +
-            (inner.empty()
-                 ? "}"
-                 : ", " + key(Dxxwjz3Format::OPTIONS_KEY) + "{" + inner + "}}");
+    mlayers.push_back(
+        key(dxxwjz1::v1::Dxxwjz1Format::TYPE_KEY) +
+        Dxxwjz1JsonString::quote(header.substr(1U, header.size() - 2U)) +
+        (inner.empty()
+             ? ""
+             : ", " + key(Dxxwjz3Format::OPTIONS_KEY) + "{" + inner + "}"));
+    mtypes.push_back(WeightsSchema::section_type(header));
   }
 
-  return json + (sections.size() > 1U ? "\n  ]" : "]");
+  mnet = options(sections.front());
+  mvalid = true;
 }
+
+bool Dxxwjz3CfgJson::valid() const { return mvalid; }
+
+const std::string& Dxxwjz3CfgJson::net() const { return mnet; }
+
+const std::vector<std::string>& Dxxwjz3CfgJson::layers() const
+{
+  return mlayers;
+}
+
+const std::vector<LAYER_TYPE>& Dxxwjz3CfgJson::types() const { return mtypes; }
 
 std::string Dxxwjz3CfgJson::options(const CfgSection& section)
 {

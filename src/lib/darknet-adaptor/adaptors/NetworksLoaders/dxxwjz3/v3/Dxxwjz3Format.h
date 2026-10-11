@@ -7,7 +7,8 @@
  * @brief The dxxwjz3 (the darknetxx weights json zipped) network weights
  * files of the third version: the dxxwjz2 document (see the Dxxwjz2Format)
  * of nothing but the JSON data. The network cfg is the JSON structure of the
- * network member and the trailing bytes are the JSON array of their values:
+ * network member, it's layers keep their arrays, and the trailing bytes are
+ * the JSON array of their values:
  *
  * @code
  * {
@@ -16,8 +17,16 @@
  *   "generator": "darknetxx 0.11.0",
  *   "network": {"net": {"batch": 64, "width": 416, "steps": [400,450]},
  *     "layers": [
- *     {"type": "convolutional", "options": {"filters": 32, "size": 3}},
+ *     {"type": "convolutional", "options": {"filters": 32, "size": 3},
+ *      "arrays": {
+ *       "biases": [0.5, -0.25],
+ *       "weights": [0.125, "0x7fc00000", ...]
+ *     }},
  *     {"type": "maxpool", "options": {"size": 2, "stride": 2}},
+ *     {"type": "rnn", "options": {"output": 16}, "sublayers": {
+ *       "input_layer": {"arrays": {"biases": [...], "weights": [...]}},
+ *       ...
+ *     }},
  *     {"type": "yolo", "options": {"mask": [0,1,2], "jitter": 0.3}}
  *   ], "classes": [
  *     {"index": 0, "name": "person"}
@@ -29,7 +38,6 @@
  *     "map": [0.0125]
  *   },
  *   "header": {"major": 0, "minor": 2, "revision": 5, "seen": 192},
- *   "layers": [...],
  *   "trailing": [0,1]
  * }
  * @endcode
@@ -43,11 +51,17 @@
  *   of the option line without the '=' (see the Dxxwjz3ValueCodec). The
  *   comments and the white space of the cfg aren't kept, nor the repeated
  *   keys of a section, which darknet never reads.
+ * - The layer keeps it's weights in the arrays (or the sublayers) object of
+ *   the dxxwjz1 layers (see the Dxxwjz1Format): the layer of the index of
+ *   the layer object, of the type the darknet parses the section into. The
+ *   layer of no arrays keeps no weights (the layers of no weights and the
+ *   ones beyond the cutoff of the save).
  * - The training is the dxxwjz2 one of no iteration column: the losses of
  *   an index are the ones of the iteration of the index + 1, the NaN ones of
  *   the iterations of none (see the Dxxwjz3Losses).
- * - The header and the layers are the dxxwjz2 ones, the trailing bytes are
- *   the integers from 0 to 255.
+ * - The header is the dxxwjz2 one, the trailing bytes are the integers from
+ *   0 to 255; the file of no header keeps no weights, it's the network to
+ *   train.
  */
 namespace darknet_adaptor::loaders::dxxwjz3::v3
 {

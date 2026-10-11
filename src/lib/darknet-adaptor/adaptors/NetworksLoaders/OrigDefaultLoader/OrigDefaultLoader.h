@@ -173,7 +173,6 @@ class OrigDefaultLoader : virtual public INetworkLoader
 
   void parse_net_options(CfgSection& options, ANetworkAdaptor& net);
   static learning_rate_policy get_policy(const std::string& s);
-  static LAYER_TYPE string_to_layer_type(const std::string& type);
   static void set_train_only_bn(network& net);
 
   /// @brief The layer of the index of the network parsed so far, throws

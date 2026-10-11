@@ -9,7 +9,6 @@
 #include <ctime>
 #include <filesystem>
 #include <fstream>
-#include <map>
 #include <memory>
 #include <sstream>
 #include <string>
@@ -55,6 +54,7 @@
 #include "src/lib/darknet-adaptor/adaptors/NetworksLoaders/weights-formats/NetworkSource.h"
 #include "src/lib/darknet-adaptor/adaptors/NetworksLoaders/weights-formats/WeightsFileFormats.h"
 #include "src/lib/darknet-adaptor/adaptors/NetworksLoaders/weights-model/NetworkFiles.h"
+#include "src/lib/darknet-adaptor/adaptors/NetworksLoaders/weights-model/WeightsSchema.h"
 #include "src/lib/darknet-adaptor/adaptors/TrainingData/TrainingDataRegistry.h"
 #include "src/lib/darknet-adaptor/adaptors/TrainingJournal/TrainingJournal.h"
 #include "src/lib/darknet-adaptor/adaptors/orig-includes.h"
@@ -598,7 +598,7 @@ ANetworkAdaptorPtr OrigDefaultLoader::parse_network_text(
     CLOGI("%4d ", count);
 
     ALayerAdaptorPtr adaptor;
-    const LAYER_TYPE lt = string_to_layer_type(options.type());
+    const LAYER_TYPE lt = WeightsSchema::section_type(options.type());
 
     if (lt == CONVOLUTIONAL) {
       adaptor = parse_convolutional(options, params);
@@ -2362,58 +2362,6 @@ std::shared_ptr<tree> OrigDefaultLoader::read_tree(const std::string& filename)
 
   // an aliasing pointer: the tree view keeps it's storage alive
   return std::shared_ptr<tree>(storage, &storage->view);
-}
-
-LAYER_TYPE OrigDefaultLoader::string_to_layer_type(const std::string& type)
-{
-  static const std::map<std::string, LAYER_TYPE> section2type{
-      {"[shortcut]", SHORTCUT},
-      {"[scale_channels]", SCALE_CHANNELS},
-      {"[sam]", SAM},
-      {"[crop]", CROP},
-      {"[cost]", COST},
-      {"[detection]", DETECTION},
-      {"[region]", REGION},
-      {"[yolo]", YOLO},
-      {"[Gaussian_yolo]", GAUSSIAN_YOLO},
-      {"[local]", LOCAL},
-      {"[conv]", CONVOLUTIONAL},
-      {"[convolutional]", CONVOLUTIONAL},
-      {"[activation]", ACTIVE},
-      {"[net]", NETWORK},
-      {"[network]", NETWORK},
-      {"[crnn]", CRNN},
-      {"[gru]", GRU},
-      {"[lstm]", LSTM},
-      {"[conv_lstm]", CONV_LSTM},
-      {"[history]", HISTORY},
-      {"[rnn]", RNN},
-      {"[conn]", CONNECTED},
-      {"[connected]", CONNECTED},
-      {"[max]", MAXPOOL},
-      {"[maxpool]", MAXPOOL},
-      {"[local_avg]", LOCAL_AVGPOOL},
-      {"[local_avgpool]", LOCAL_AVGPOOL},
-      {"[reorg3d]", REORG},
-      {"[reorg]", REORG_OLD},
-      {"[avg]", AVGPOOL},
-      {"[avgpool]", AVGPOOL},
-      {"[dropout]", DROPOUT},
-      {"[lrn]", NORMALIZATION},
-      {"[normalization]", NORMALIZATION},
-      {"[batchnorm]", BATCHNORM},
-      {"[soft]", SOFTMAX},
-      {"[softmax]", SOFTMAX},
-      {"[contrastive]", CONTRASTIVE},
-      {"[route]", ROUTE},
-      {"[upsample]", UPSAMPLE},
-      {"[empty]", EMPTY},
-      {"[silence]", EMPTY},
-      {"[implicit]", IMPLICIT}};
-
-  const auto found = section2type.find(type);
-
-  return found == section2type.end() ? BLANK : found->second;
 }
 
 const layer& OrigDefaultLoader::parsed_layer(const size_params& params,

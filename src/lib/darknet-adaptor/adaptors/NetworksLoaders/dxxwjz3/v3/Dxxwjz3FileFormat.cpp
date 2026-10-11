@@ -26,7 +26,8 @@ const std::string& Dxxwjz3FileFormat::description() const
   static const std::string text{
       "the darknetxx weights JSON zipped file of the third version "
       "(*.dxxwjz3), the dxxwjz2 one of nothing but the JSON data: the "
-      "network cfg of the JSON options of its sections too"};
+      "network cfg of the JSON options of its sections, which keep the "
+      "arrays of their layers"};
   return text;
 }
 

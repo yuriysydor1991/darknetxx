@@ -57,9 +57,11 @@ Dxxwjz2SaxHandler::Delegate* Dxxwjz2SaxHandler::extension(
     return nullptr;
   }
 
-  mbuilder.reset(name);
+  Dxxwjz2SubtreeBuilder& tree = builder(name);
 
-  return &mbuilder;
+  tree.reset(name);
+
+  return &tree;
 }
 
 bool Dxxwjz2SaxHandler::extension_end(const std::string& name)
@@ -68,13 +70,13 @@ bool Dxxwjz2SaxHandler::extension_end(const std::string& name)
     return true;
   }
 
-  const bool read =
-      name == Dxxwjz2Format::NETWORK_KEY
-          ? metadata().network(mbuilder.tree(), document().network)
-          : metadata().training(mbuilder.tree(), document().training);
+  Dxxwjz2SubtreeBuilder& tree = builder(name);
+  const bool read = name == Dxxwjz2Format::NETWORK_KEY
+                        ? metadata().network(tree.tree(), document().network)
+                        : metadata().training(tree.tree(), document().training);
 
   // the tree of the losses of the long trainings isn't kept
-  mbuilder.reset(name);
+  tree.reset(name);
 
   if (!read) {
     return fail(metadata().error());
@@ -93,6 +95,11 @@ bool Dxxwjz2SaxHandler::appended()
 }
 
 Dxxwjz2MetadataReader& Dxxwjz2SaxHandler::metadata() { return mmetadata; }
+
+Dxxwjz2SubtreeBuilder& Dxxwjz2SaxHandler::builder(const std::string&)
+{
+  return mbuilder;
+}
 
 Dxxwjz2SaxHandler::Delegate* Dxxwjz2SaxHandler::trailing() { return nullptr; }
 

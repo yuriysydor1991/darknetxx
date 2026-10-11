@@ -37,7 +37,7 @@ namespace
 {
 
 const std::string NETWORK_MEMBER =
-    R"("network": {"net": {"width": 8}, "layers": [{"type": "maxpool"}], "classes": [{"index": 0, "name": "cat"}, {"index": 1, "name": "dog"}]})";
+    R"("network": {"net": {"width": 8}, "layers": [{"type": "convolutional", "arrays": {"biases": [0.5, -1]}}, {"type": "maxpool"}], "classes": [{"index": 0, "name": "cat"}, {"index": 1, "name": "dog"}]})";
 
 const std::string ANNOTATIONS_MEMBER =
     R"("annotations": {"ImagesAnnotator": {"version": "0.12.0"}, "annotations": [{"db": {"path": "data"}, "annotations": [
@@ -46,7 +46,9 @@ const std::string ANNOTATIONS_MEMBER =
   {"rel_path": "street.png", "width": 320, "height": 200, "validation": true, "annotations": []}]}]})";
 
 const std::string WEIGHTS_MEMBERS =
-    R"("header": {"major": 0, "minor": 2, "revision": 5, "seen": 192}, "layers": [{"index": 0, "type": "convolutional", "arrays": {"biases": [0.5, -1]}}], "trailing": [7])";
+    R"("header": {"major": 0, "minor": 2, "revision": 5, "seen": 192}, "trailing": [7])";
+
+const std::string READ_CFG = "[net]\nwidth=8\n\n[convolutional]\n\n[maxpool]\n";
 
 std::string document(const std::string& members)
 {
@@ -131,7 +133,11 @@ TEST_F(CTEST_Dxxwjz3p, reads_the_annotations_of_the_json_network)
   const std::vector<Yolo4Image>& images = result.annotations.images;
 
   EXPECT_TRUE(report.warnings().empty());
-  EXPECT_EQ(result.network.cfg(), "[net]\nwidth=8\n\n[maxpool]\n");
+  EXPECT_EQ(result.network.cfg(), READ_CFG);
+  ASSERT_EQ(result.layers.size(), 1U);
+  EXPECT_EQ(result.layers[0].type, CONVOLUTIONAL);
+  EXPECT_EQ(result.layers[0].arrays.at(0).values,
+            (std::vector<float>{0.5f, -1.f}));
   EXPECT_EQ(result.trailing, std::vector<uint8_t>{7U});
   ASSERT_EQ(images.size(), 2U);
   EXPECT_EQ(images[0].path, (dir / "data" / "park.jpg").string());
@@ -163,7 +169,7 @@ TEST_F(CTEST_Dxxwjz3p, peek_reads_the_annotations_after_the_weights)
 
   EXPECT_TRUE(weights);
   EXPECT_TRUE(rest.layers.empty());
-  EXPECT_EQ(rest.network.cfg(), "[net]\nwidth=8\n\n[maxpool]\n");
+  EXPECT_EQ(rest.network.cfg(), READ_CFG);
   EXPECT_EQ(rest.annotations.images.size(), 2U);
 }
 

@@ -429,6 +429,8 @@ std::vector<std::string> Dxxwjz1SaxHandler::required_keys() const
           Dxxwjz1Format::HEADER_KEY, Dxxwjz1Format::LAYERS_KEY};
 }
 
+bool Dxxwjz1SaxHandler::layers_member() const { return true; }
+
 Dxxwjz1SaxHandler::Delegate* Dxxwjz1SaxHandler::extension(const std::string&)
 {
   return nullptr;
@@ -547,7 +549,9 @@ Dxxwjz1SaxHandler::Field Dxxwjz1SaxHandler::field_of(const Frame& frame,
       if (name == Dxxwjz1Format::VERSION_KEY) return Field::Version;
       if (name == Dxxwjz1Format::GENERATOR_KEY) return Field::Generator;
       if (name == Dxxwjz1Format::HEADER_KEY) return Field::Header;
-      if (name == Dxxwjz1Format::LAYERS_KEY) return Field::Layers;
+      if (name == Dxxwjz1Format::LAYERS_KEY && layers_member()) {
+        return Field::Layers;
+      }
       if (name == Dxxwjz1Format::TRAILING_KEY) return Field::Trailing;
       return Field::Skip;
     case Context::Header:

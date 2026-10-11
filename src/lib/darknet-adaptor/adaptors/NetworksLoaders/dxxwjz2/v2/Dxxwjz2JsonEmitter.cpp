@@ -43,24 +43,27 @@ void Dxxwjz2JsonEmitter::sections()
 
 void Dxxwjz2JsonEmitter::network()
 {
-  const std::vector<std::string>& classes = mnetwork.classes();
+  write(",\n  " + key(Dxxwjz2Format::NETWORK_KEY) + "{" +
+        key(Dxxwjz2Format::CFG_KEY) + Dxxwjz1JsonString::quote(mnetwork.cfg()) +
+        ", ");
+  classes();
+  write("}");
+}
 
-  write(",\n  " + key(Dxxwjz2Format::NETWORK_KEY) + "{" + cfg(mnetwork) + ", " +
-        key(Dxxwjz2Format::CLASSES_KEY) + "[");
+void Dxxwjz2JsonEmitter::classes()
+{
+  const std::vector<std::string>& names = mnetwork.classes();
 
-  for (std::size_t index = 0U; index < classes.size(); ++index) {
+  write(key(Dxxwjz2Format::CLASSES_KEY) + "[");
+
+  for (std::size_t index = 0U; index < names.size(); ++index) {
     write(std::string{index == 0U ? "\n    {" : ",\n    {"} +
           key(Dxxwjz1Format::INDEX_KEY) + std::to_string(index) + ", " +
           key(Dxxwjz2Format::NAME_KEY) +
-          Dxxwjz1JsonString::quote(classes[index]) + "}");
+          Dxxwjz1JsonString::quote(names[index]) + "}");
   }
 
-  write(classes.empty() ? "]}" : "\n  ]}");
-}
-
-std::string Dxxwjz2JsonEmitter::cfg(const NetworkDescription& network) const
-{
-  return key(Dxxwjz2Format::CFG_KEY) + Dxxwjz1JsonString::quote(network.cfg());
+  write(names.empty() ? "]" : "\n  ]");
 }
 
 void Dxxwjz2JsonEmitter::training()

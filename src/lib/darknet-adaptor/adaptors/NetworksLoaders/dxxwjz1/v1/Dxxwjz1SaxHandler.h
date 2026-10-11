@@ -60,6 +60,11 @@ class Dxxwjz1SaxHandler : public nlohmann::json_sax<nlohmann::json>
   /// @brief The keys every document has.
   virtual std::vector<std::string> required_keys() const;
 
+  /// @brief Tells the layers member keeps the layers of the document, true
+  /// here: the later versions of the layers elsewhere skip it as an unknown
+  /// key.
+  virtual bool layers_member() const;
+
   /// @brief The handler of the value of a document key of a later version,
   /// which may take over the keys of the earlier ones (the trailing one),
   /// nullptr for the rest: the unknown keys are skipped with a warning.

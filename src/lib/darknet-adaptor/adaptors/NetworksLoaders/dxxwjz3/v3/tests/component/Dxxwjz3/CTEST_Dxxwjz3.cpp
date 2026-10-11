@@ -36,6 +36,7 @@ using darknet_adaptor::loaders::NetworkFiles;
 using darknet_adaptor::loaders::OrigWeightsReader;
 using darknet_adaptor::loaders::OrigWeightsWriter;
 using darknet_adaptor::loaders::WeightsDocument;
+using darknet_adaptor::loaders::WeightsLayer;
 using darknet_adaptor::loaders::WeightsReport;
 using darknet_adaptor::loaders::dxxwjz3::v3::Dxxwjz3CfgJson;
 using darknet_adaptor::loaders::dxxwjz3::v3::Dxxwjz3Parser;
@@ -78,16 +79,32 @@ const std::string READ_CFG =
     "[convolutional]\nfilters=8\nactivation=leaky\n\n[maxpool]\n\n"
     "[yolo]\nmask=0,1,2\nanchors=10,13,16,30\n";
 
-const std::string WEIGHTS_MEMBERS =
-    R"("header": {"major": 0, "minor": 2, "revision": 5, "seen": 192}, "layers": [{"index": 0, "type": "maxpool"}])";
+const std::string HEADER_MEMBER =
+    R"("header": {"major": 0, "minor": 2, "revision": 5, "seen": 192})";
 
+/// @brief The network of the layers of the arrays, of the sub-layers ones
+/// and of none.
 NetSpec small_net()
 {
   NetSpec spec;
   spec.name = "small";
-  spec.layers = {conv(6, 3).with_bn(), maxpool(2, 2), connected(7).with_bn(),
-                 softmax()};
+  spec.height = 12;
+  spec.layers = {conv(6, 3).with_bn(),    maxpool(2, 2),
+                 crnn(4, 3, 3).with_bn(), rnn(6, 5).with_bn(),
+                 connected(7).with_bn(),  softmax()};
   return spec;
+}
+
+/// @brief The JSON of the cfg the dxxwjz3 file keeps: the net members, then
+/// the members of every layer.
+std::vector<std::string> json_of(const std::string& cfg)
+{
+  const Dxxwjz3CfgJson json{cfg};
+  std::vector<std::string> members = json.layers();
+
+  members.insert(members.begin(), json.net());
+
+  return members;
 }
 
 /// @brief The document of the network member and the rest.
@@ -245,6 +262,12 @@ TEST_F(CTEST_Dxxwjz3, cfg_is_the_json_structure_of_the_network)
 
   EXPECT_EQ(read.network.cfg(), READ_CFG);
   EXPECT_EQ(read.network.classes(), document.network.classes());
+
+  bool weights = true;
+
+  ASSERT_TRUE(Dxxwjz3Reader{}.peek(path, read, weights));
+  EXPECT_FALSE(weights);
+  EXPECT_FALSE(written.contains("header"));
 }
 
 TEST_F(CTEST_Dxxwjz3, losses_are_the_ones_of_the_iterations_of_their_indexes)
@@ -301,8 +324,7 @@ TEST_F(CTEST_Dxxwjz3, saved_network_loads_of_the_cfg_it_keeps)
   EXPECT_TRUE(weights);
 
   // the JSON of the cfg text read is the one of the cfg
-  EXPECT_EQ(Dxxwjz3CfgJson::members(read.network.cfg()),
-            Dxxwjz3CfgJson::members(spec.cfg()));
+  EXPECT_EQ(json_of(read.network.cfg()), json_of(spec.cfg()));
 
   std::ofstream{again} << read.network.cfg();
 
@@ -314,6 +336,177 @@ TEST_F(CTEST_Dxxwjz3, saved_network_loads_of_the_cfg_it_keeps)
   EXPECT_TRUE(loaded.holds(memory, Pattern{SEED}));
   EXPECT_EQ(read.network.classes(), rest.network.classes());
   EXPECT_EQ(read.training.size(), 1U);
+}
+
+TEST_F(CTEST_Dxxwjz3, arrays_are_the_members_of_the_layer_objects)
+{
+  const NetSpec spec = small_net();
+  const std::string cfg = workspace.write_cfg(spec);
+  const std::string path = workspace.file("arrays.dxxwjz3");
+  const std::string again = workspace.file("again.dxxwjz3");
+  WeightsDocument rest;
+  WeightsDocument read;
+
+  rest.network = NetworkDescription{spec.cfg(), {}};
+
+  {
+    DarknetNetwork saved{cfg, ParseMode::Train};
+
+    ASSERT_TRUE(saved.fill(spec.layout(), Pattern{SEED}));
+    ASSERT_TRUE(
+        Dxxwjz3Writer{}.save(saved.net(), path, saved.net().n, false, rest));
+  }
+
+  const std::string text = gunzipped(path);
+  const json written = json::parse(text);
+  const json& layers = written["network"]["layers"];
+  std::vector<std::string> keys;
+
+  for (const auto& item : written.items()) {
+    keys.push_back(item.key());
+  }
+
+  // the header of the weights follows the rest, the layers are the network
+  // ones alone
+  EXPECT_EQ(keys, (std::vector<std::string>{"format", "version", "generator",
+                                            "network", "training", "header"}));
+  ASSERT_EQ(layers.size(), spec.layers.size());
+
+  std::vector<std::string> arrays;
+
+  for (const auto& item : layers[0]["arrays"].items()) {
+    arrays.push_back(item.key());
+  }
+
+  EXPECT_EQ(layers[0]["type"], "convolutional");
+  EXPECT_EQ(arrays,
+            (std::vector<std::string>{"biases", "scales", "rolling_mean",
+                                      "rolling_variance", "weights"}));
+  EXPECT_EQ(layers[0]["arrays"]["biases"].size(), 6U);
+  EXPECT_FALSE(layers[1].contains("arrays"));
+  EXPECT_FALSE(layers[1].contains("sublayers"));
+  EXPECT_TRUE(layers[2]["sublayers"].contains("self_layer"));
+  EXPECT_TRUE(layers[3]["sublayers"]["input_layer"].contains("arrays"));
+  EXPECT_FALSE(layers[5].contains("arrays"));
+  EXPECT_NE(text.find("\n    {\"type\": \"maxpool\", \"options\": {\"size\": "
+                      "2, \"stride\": 2}},\n"),
+            std::string::npos)
+      << text;
+
+  // the layers of no arrays aren't the layers of the document, the document
+  // writes the same file
+  ASSERT_TRUE(Dxxwjz3Reader{}.read(path, nullptr, read));
+  EXPECT_EQ(read.layers.size(), 4U);
+  EXPECT_EQ(read.layers[1].index, 2);
+  EXPECT_EQ(read.layers[1].type, CRNN);
+  ASSERT_TRUE(Dxxwjz3Writer{}.write(read, again));
+  EXPECT_TRUE(files_equal(path, again));
+}
+
+TEST_F(CTEST_Dxxwjz3, layers_beyond_the_cutoff_keep_no_arrays)
+{
+  const NetSpec spec = small_net();
+  const std::string cfg = workspace.write_cfg(spec);
+  const std::string path = workspace.file("cutoff.dxxwjz3");
+  WeightsDocument rest;
+  WeightsDocument read;
+
+  rest.network = NetworkDescription{spec.cfg(), {}};
+
+  DarknetNetwork darknet{cfg, ParseMode::Train};
+
+  ASSERT_TRUE(darknet.fill(spec.layout(), Pattern{SEED}));
+  ASSERT_TRUE(Dxxwjz3Writer{}.save(darknet.net(), path, 1, false, rest));
+
+  const json layers = json::parse(gunzipped(path))["network"]["layers"];
+
+  ASSERT_EQ(layers.size(), spec.layers.size());
+  EXPECT_TRUE(layers[0].contains("arrays"));
+  EXPECT_FALSE(layers[2].contains("sublayers"));
+  EXPECT_FALSE(layers[4].contains("arrays"));
+
+  ASSERT_TRUE(Dxxwjz3Reader{}.read(path, &darknet.net(), read));
+  EXPECT_EQ(read.layers.size(), 1U);
+}
+
+TEST_F(CTEST_Dxxwjz3, layers_of_no_cfg_section_are_not_written)
+{
+  const NetSpec spec = small_net();
+  const std::string cfg = workspace.write_cfg(spec);
+  const std::string path = workspace.file("unkept.dxxwjz3");
+  WeightsDocument document;
+  WeightsDocument rest;
+
+  document.network = NetworkDescription{"[net]\n\n[maxpool]\n", {}};
+
+  for (const WeightsLayer& layer :
+       {WeightsLayer{1, MAXPOOL, {}}, WeightsLayer{0, CONVOLUTIONAL, {}}}) {
+    document.layers = {layer};
+
+    EXPECT_FALSE(Dxxwjz3Writer{}.write(document, path));
+    EXPECT_FALSE(std::filesystem::exists(path));
+  }
+
+  // the network of another cfg
+  rest.network = document.network;
+
+  DarknetNetwork darknet{cfg, ParseMode::Train};
+
+  EXPECT_FALSE(
+      Dxxwjz3Writer{}.save(darknet.net(), path, darknet.net().n, false, rest));
+  EXPECT_FALSE(std::filesystem::exists(path));
+}
+
+TEST_F(CTEST_Dxxwjz3, wrong_arrays_are_rejected)
+{
+  const auto layer = [](const std::string& members) {
+    return document_text(R"({"net": {}, "layers": [{"type": )" + members +
+                         "}]}");
+  };
+  const std::vector<std::pair<std::string, std::vector<std::string>>> cases{
+      {layer(R"("foo", "arrays": {"weights": [1]})"),
+       {"network.\"layers\"[0].\"type\"", "isn't the darknet layer type"}},
+      {layer(R"("convolutional", "arrays": [])"),
+       {"network.\"layers\"[0].\"arrays\"", "isn't an object"}},
+      {layer(R"("convolutional", "arrays": {"bias": [1]})"),
+       {"\"bias\"", "isn't a darknet weights array name"}},
+      {layer(R"("convolutional", "arrays": {"biases": 1})"),
+       {"\"biases\"", "isn't an array"}},
+      {layer(R"("convolutional", "arrays": {"biases": [1, true]})"),
+       {"\"biases\"[1]", "isn't a float"}},
+      {layer(R"("convolutional", "arrays": {"biases": ["0x7fc0"]})"),
+       {"isn't a float"}},
+      {layer(R"("convolutional", "arrays": {"biases": [1e39]})"),
+       {"out of the float range"}},
+      {layer(R"("convolutional", "arrays": {"biases": [1], "biases": [2]})"),
+       {"given twice"}},
+      {layer(R"("rnn", "sublayers": [])"),
+       {"network.\"layers\"[0].\"sublayers\"", "isn't an object"}},
+      {layer(R"("rnn", "sublayers": {"input": {}})"),
+       {"\"input\"", "isn't a darknet sub-layer name"}},
+      {layer(R"("rnn", "sublayers": {"input_layer": []})"),
+       {"\"input_layer\"", "isn't an object"}}};
+
+  for (const auto& [text, words] : cases) {
+    EXPECT_TRUE(rejects(text, words));
+  }
+}
+
+TEST_F(CTEST_Dxxwjz3, layers_member_is_the_unknown_key)
+{
+  std::istringstream text{document_text(
+      R"({"net": {}, "layers": [{"type": "maxpool"}]})",
+      ", " + HEADER_MEMBER +
+          R"(, "layers": [{"index": 0, "type": "connected", "arrays": {"biases": [1]}}])")};
+  WeightsDocument document;
+  WeightsReport report;
+
+  ASSERT_TRUE(Dxxwjz3Parser::parse(text, document, report));
+  EXPECT_TRUE(document.layers.empty());
+  ASSERT_FALSE(report.warnings().empty());
+  EXPECT_NE(report.warnings().front().find("\"layers\" is skipped"),
+            std::string::npos)
+      << report.warnings().front();
 }
 
 TEST_F(CTEST_Dxxwjz3, original_weights_convert_into_the_same_bytes)
@@ -340,8 +533,7 @@ TEST_F(CTEST_Dxxwjz3, original_weights_convert_into_the_same_bytes)
     ASSERT_TRUE(Dxxwjz3Writer{}.write(document, dxxwjz3));
     ASSERT_TRUE(Dxxwjz3Reader{}.read(dxxwjz3, &darknet.net(), read));
 
-    EXPECT_EQ(Dxxwjz3CfgJson::members(read.network.cfg()),
-              Dxxwjz3CfgJson::members(text));
+    EXPECT_EQ(json_of(read.network.cfg()), json_of(text));
     EXPECT_EQ(read.network.classes(), document.network.classes());
 
     ASSERT_TRUE(OrigWeightsWriter{}.write(read, back));
@@ -355,7 +547,7 @@ TEST_F(CTEST_Dxxwjz3, trailing_bytes_are_the_array_of_their_values)
   WeightsDocument document;
   WeightsDocument read;
 
-  document.network = NetworkDescription{"[net]\nwidth=8\n", {}};
+  document.network = NetworkDescription{"[net]\nwidth=8\n\n[maxpool]\n", {}};
   document.layers.push_back({0, MAXPOOL, {}});
   document.trailing = {0U, 1U, 255U};
 
@@ -369,7 +561,7 @@ TEST_F(CTEST_Dxxwjz3, trailing_bytes_are_the_array_of_their_values)
        {R"("AAE=")", "[256]", "[-1]", "[1.5]", "[[1]]", "7"}) {
     EXPECT_TRUE(rejects(
         document_text(R"({"net": {}, "layers": []})",
-                      ", " + WEIGHTS_MEMBERS + R"(, "trailing": )" + wrong),
+                      ", " + HEADER_MEMBER + R"(, "trailing": )" + wrong),
         {"\"trailing\"", "the integers from 0 to 255"}));
   }
 }

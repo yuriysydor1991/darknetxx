@@ -74,12 +74,18 @@ void Dxxwjz1JsonEmitter::begin(const WeightsHeader& header, const bool weights)
     return;
   }
 
-  write(",\n  " + key(Dxxwjz1Format::HEADER_KEY) + "{" +
-        key(Dxxwjz1Format::MAJOR_KEY) + std::to_string(header.major) + ", " +
-        key(Dxxwjz1Format::MINOR_KEY) + std::to_string(header.minor) + ", " +
-        key(Dxxwjz1Format::REVISION_KEY) + std::to_string(header.revision) +
-        ", " + key(Dxxwjz1Format::SEEN_KEY) + std::to_string(header.seen) +
-        "},\n  " + key(Dxxwjz1Format::LAYERS_KEY) + "[");
+  write(",\n  " + header_member(header) + ",\n  " +
+        key(Dxxwjz1Format::LAYERS_KEY) + "[");
+}
+
+std::string Dxxwjz1JsonEmitter::header_member(const WeightsHeader& header)
+{
+  return key(Dxxwjz1Format::HEADER_KEY) + "{" + key(Dxxwjz1Format::MAJOR_KEY) +
+         std::to_string(header.major) + ", " + key(Dxxwjz1Format::MINOR_KEY) +
+         std::to_string(header.minor) + ", " +
+         key(Dxxwjz1Format::REVISION_KEY) + std::to_string(header.revision) +
+         ", " + key(Dxxwjz1Format::SEEN_KEY) + std::to_string(header.seen) +
+         "}";
 }
 
 void Dxxwjz1JsonEmitter::layer(const int index, const LAYER_TYPE type,
@@ -91,7 +97,11 @@ void Dxxwjz1JsonEmitter::layer(const int index, const LAYER_TYPE type,
   write(key(Dxxwjz1Format::INDEX_KEY) + std::to_string(index) + ", " +
         key(Dxxwjz1Format::TYPE_KEY) +
         Dxxwjz1JsonString::quote(WeightsSchema::name(type)));
+  this->arrays(arrays);
+}
 
+void Dxxwjz1JsonEmitter::arrays(const std::vector<Dxxwjz1ArrayView>& arrays)
+{
   if (arrays.empty()) {
     write("}");
     return;

@@ -10,6 +10,7 @@
 #include "src/lib/darknet-adaptor/adaptors/NetworksLoaders/dxxwjz2/v2/Dxxwjz2Format.h"
 #include "src/lib/darknet-adaptor/adaptors/NetworksLoaders/dxxwjz3/v3/Dxxwjz3Format.h"
 #include "src/lib/darknet-adaptor/adaptors/NetworksLoaders/dxxwjz3/v3/Dxxwjz3ValueCodec.h"
+#include "src/lib/darknet-adaptor/adaptors/NetworksLoaders/weights-model/WeightsSchema.h"
 
 namespace darknet_adaptor::loaders::dxxwjz3::v3
 {
@@ -107,6 +108,45 @@ bool Dxxwjz3MetadataReader::training(const json& value, TrainingRecord& record)
   return maps(value, record);
 }
 
+bool Dxxwjz3MetadataReader::arrays(json& value, const int index,
+                                   std::vector<WeightsLayer>& layers)
+{
+  const std::string path =
+      member(Dxxwjz2Format::NETWORK_KEY, Dxxwjz1Format::LAYERS_KEY) + "[" +
+      std::to_string(index) + "]";
+  const auto flat = value.find(Dxxwjz1Format::ARRAYS_KEY);
+  const auto nested = value.find(Dxxwjz1Format::SUBLAYERS_KEY);
+  const auto type = value.find(Dxxwjz1Format::TYPE_KEY);
+  WeightsLayer layer{index, BLANK, {}};
+
+  if (flat == value.end() && nested == value.end()) {
+    return true;
+  }
+
+  if (type == value.end() || !type->is_string() ||
+      (layer.type = WeightsSchema::section_type("[" + type->get<std::string>() +
+                                                "]")) == BLANK) {
+    return fail(member(path, Dxxwjz1Format::TYPE_KEY) +
+                " isn't the darknet layer type of the arrays");
+  }
+
+  if ((flat != value.end() &&
+       !arrays_of(*flat, member(path, Dxxwjz1Format::ARRAYS_KEY),
+                  WeightsSubLayer::None, layer.arrays)) ||
+      (nested != value.end() &&
+       !sublayers_of(*nested, member(path, Dxxwjz1Format::SUBLAYERS_KEY),
+                     layer.arrays))) {
+    return false;
+  }
+
+  // the tree of the network keeps no weights
+  value.erase(Dxxwjz1Format::ARRAYS_KEY);
+  value.erase(Dxxwjz1Format::SUBLAYERS_KEY);
+  layers.push_back(std::move(layer));
+
+  return true;
+}
+
 bool Dxxwjz3MetadataReader::layer(const json& value, const std::string& path,
                                   std::string& cfg)
 {
@@ -164,6 +204,63 @@ bool Dxxwjz3MetadataReader::section(const std::string& type,
 
     // the null of the key alone, of no '=' (the NULL value of the darknet)
     cfg += null ? name + "\n" : name + "=" + text + "\n";
+  }
+
+  return true;
+}
+
+bool Dxxwjz3MetadataReader::sublayers_of(const json& value,
+                                         const std::string& path,
+                                         std::vector<WeightsArray>& arrays)
+{
+  if (!value.is_object()) {
+    return fail(path + " isn't an object");
+  }
+
+  for (const auto& item : value.items()) {
+    const std::string where = member(path, item.key().c_str());
+    const auto found = item.value().find(Dxxwjz1Format::ARRAYS_KEY);
+    WeightsSubLayer sub = WeightsSubLayer::None;
+
+    if (!WeightsSchema::parse(item.key(), sub)) {
+      return fail(where + " isn't a darknet sub-layer name");
+    }
+
+    if (!object(item.value(), where, {}, {Dxxwjz1Format::ARRAYS_KEY}) ||
+        (found != item.value().end() &&
+         !arrays_of(*found, member(where, Dxxwjz1Format::ARRAYS_KEY), sub,
+                    arrays))) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+bool Dxxwjz3MetadataReader::arrays_of(const json& value,
+                                      const std::string& path,
+                                      const WeightsSubLayer sub,
+                                      std::vector<WeightsArray>& arrays)
+{
+  if (!value.is_object()) {
+    return fail(path + " isn't an object");
+  }
+
+  for (const auto& item : value.items()) {
+    const std::string where = member(path, item.key().c_str());
+    WeightsArray array;
+
+    array.sub = sub;
+
+    if (!WeightsSchema::parse(item.key(), array.kind)) {
+      return fail(where + " isn't a darknet weights array name");
+    }
+
+    if (!floats(item.value(), where, array.values)) {
+      return false;
+    }
+
+    arrays.push_back(std::move(array));
   }
 
   return true;
