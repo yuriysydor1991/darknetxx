@@ -4,7 +4,8 @@ Beside the `darknetxx` application the project builds a second binary,
 `darknetxxConverter`, which converts the network weights files between the
 original darknet weights format, the dxxwjz1, the dxxwjz2, the dxxwjz2p, the
 dxxwjz3 and the dxxwjz3p ones, the YOLO4 training folders into the dxxwjz2p and
-the dxxwjz3p projects and back, and does
+the dxxwjz3p projects and back, prints the YOLO4 network cfg the dxxwjz2,
+dxxwjz2p, dxxwjz3 and dxxwjz3p files keep, and does
 nothing else. It
 is the very same conversion the main binary offers through its own [command
 line](/doc/sections/en_US/6-2-4-converting-the-network-weights-files.md) -
@@ -45,13 +46,16 @@ section describes it in full:
   --convert-src ./cars \
   --convert-to dxxwjz2p \
   --convert-dst ./cars.dxxwjz2p
+
+# the network cfg the dxxwjz3 file keeps into the cfg file
+./src/darknetxxConverter --dump-cfg ./yolov3.dxxwjz3 > ./yolov3.cfg
 ```
 
 `--help` and `--version` work as they do for the main binary and name this
 one, while the help lists the conversion options alone. A command line which
-asks for no conversion has nothing to start - there is no training nor
-detection behind this binary - so it is answered with the help message and a
-non zero exit status.
+asks for no conversion nor cfg print has nothing to start - there is no
+training nor detection behind this binary - so it is answered with the help
+message and a non zero exit status.
 
 ### Building it
 

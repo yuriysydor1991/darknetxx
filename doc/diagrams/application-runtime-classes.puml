@@ -43,6 +43,10 @@ class ApplicationVersionPrinter {
   +run(ctx) : int
 }
 
+class NetworkCfgPrinter {
+  +run(ctx) : int
+}
+
 class ApplicationFactory {
   +create_default_context(argc, argv) : ApplicationContext
   +create_default_arg_parser() : CommandLineParser
@@ -52,6 +56,7 @@ class ApplicationFactory {
   +create_library_application() : IApplication
   +create_help_printer() : IApplication
   +create_version_printer() : IApplication
+  +create_cfg_printer() : IApplication
   +run(argc, argv) : int
   +{static} execute(argc, argv) : int
 }
@@ -97,13 +102,16 @@ struct ApplicationContext {
   +second_user_request : atomic_bool
   +convert_from / convert_src / convert_to : string
   +convert_dst / convert_cfg : string
+  +dump_cfg : string
   +push_error(desc)
   +conversion_requested() : bool
+  +cfg_dump_requested() : bool
 }
 
 IApplication <|.. Application
 IApplication <|.. ApplicationHelpPrinter
 IApplication <|.. ApplicationVersionPrinter
+IApplication <|.. NetworkCfgPrinter
 Application <|-- GuiApplication
 GuiApplication <|-- TrainGuiApplication
 GuiApplication <|-- RecognitionGuiApplication
@@ -122,5 +130,6 @@ ApplicationContext2LibraryContext ..> "darknetxx011::LibraryContext" : fills
 Application ..> "darknetxx011::LibraryFacade" : performs the work it creates
 GuiApplication ..> "gui::IGUIIniter" : shows the window of
 ApplicationFactory ..> "darknetxx011::LibraryFacade" : hands the logger over
+NetworkCfgPrinter ..> "darknetxx011::LibraryFacade" : prints the network cfg of
 
 @enduml

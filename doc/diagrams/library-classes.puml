@@ -14,6 +14,7 @@ package "darknetxx011 (the installed facade/public headers)" {
     +{static} conversion_formats() : FormatsDescriptions
     +{static} weights_extensions() : string list
     +{static} training_chart(weights) : PNG bytes
+    +{static} network_cfg(weights) : string
     +{static} init_logger(logger)
   }
 

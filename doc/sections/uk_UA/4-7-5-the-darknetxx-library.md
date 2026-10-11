@@ -28,6 +28,7 @@ package "darknetxx011 (the installed facade/public headers)" {
     +{static} conversion_formats() : FormatsDescriptions
     +{static} weights_extensions() : string list
     +{static} training_chart(weights) : PNG bytes
+    +{static} network_cfg(weights) : string
     +{static} init_logger(logger)
   }
 
@@ -149,9 +150,10 @@ LibraryFacade ..> ILogger : adopts
   яку просить контекст, фоновий тренер, розпізнавач зображень, перелічує
   формати файлів ваг нейромереж, які приймає конвертування, малює зображення
   PNG графіка навчання, запис якого зберігає файл dxxwjz2 (`training_chart`),
-  переймає журнал користувача бібліотеки, відкриває проекти навчання за
-  їхніми шляхами (`open_training_project`) і перелічує розширення назв файлів
-  ваг кожного формату (`weights_extensions`).
+  повертає текст cfg нейромережі, який зберігає файл dxxwjz2, dxxwjz2p, dxxwjz3
+  чи dxxwjz3p (`network_cfg`), переймає журнал користувача бібліотеки,
+  відкриває проекти навчання за їхніми шляхами (`open_training_project`) і
+  перелічує розширення назв файлів ваг кожного формату (`weights_extensions`).
 - **`LibraryContext`** - параметри роботи бібліотеки, названі так само, як
   параметри командного рядка `darknetxx`, слухач навчання і запит зупинки:
   власний (`request_stop()`) і прапорець користувача бібліотеки

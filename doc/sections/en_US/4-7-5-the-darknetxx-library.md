@@ -28,6 +28,7 @@ package "darknetxx011 (the installed facade/public headers)" {
     +{static} conversion_formats() : FormatsDescriptions
     +{static} weights_extensions() : string list
     +{static} training_chart(weights) : PNG bytes
+    +{static} network_cfg(weights) : string
     +{static} init_logger(logger)
   }
 
@@ -149,10 +150,12 @@ project name and it's major and minor version):
   work the context asks for, the background trainer, the recognizer of the
   images, lists the network weights
   files formats the conversion accepts, draws the PNG image of the training
-  chart the record of a dxxwjz2 file keeps (`training_chart`) and adopts the
-  logger of the library user, opens the training projects of their paths
-  (`open_training_project`) and lists the file name extensions of the weights
-  files of every format (`weights_extensions`).
+  chart the record of a dxxwjz2 file keeps (`training_chart`), gives the
+  network cfg text a dxxwjz2, dxxwjz2p, dxxwjz3 or dxxwjz3p file keeps
+  (`network_cfg`) and adopts the logger of the library user, opens the
+  training projects of their paths (`open_training_project`) and lists the
+  file name extensions of the weights files of every format
+  (`weights_extensions`).
 - **`LibraryContext`** - the parameters of a library work, named the way the
   `darknetxx` command line parameters are, the training listener and the stop
   request: the own one (`request_stop()`) and the flag of the library user

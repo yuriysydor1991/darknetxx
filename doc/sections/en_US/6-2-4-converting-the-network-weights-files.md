@@ -85,6 +85,7 @@ binary](/doc/sections/en_US/5-35-the-darknetxxConverter-binary.md).
 | `--convert-dst` | `<FILE>` | the network weights file to write, replaced if it exists; the new folder of the `yolo4` format |
 | `--convert-cfg` | `<FILE>` | the network cfg file of the weights (or the dxxwjz2 file of the network) |
 | `--convert-names` | `<FILE>` | the class names file of the network the dxxwjz2 file keeps |
+| `--dump-cfg` | `<FILE>` | the dxxwjz2, dxxwjz2p, dxxwjz3 or dxxwjz3p file the network cfg of which is printed into the standard output, alone (see [below](#printing-the-network-cfg-of-the-file)) |
 
 The four first flags go together, or the `--convert-to`, the `--convert-dst`
 and the `--convert-cfg` ones alone make the network to train of the cfg file.
@@ -184,3 +185,39 @@ for an unknown format name, an unreadable or invalid source, a destination that
 can not be written. A stop signal (a Ctrl+C) stops the conversion between its
 steps with the `128 + signal number` exit status, the one the shell reports for
 a process the signal killed.
+
+#### Printing the network cfg of the file
+
+The dxxwjz2, the dxxwjz2p, the dxxwjz3 and the dxxwjz3p files keep the network
+cfg beside the weights, which the `--dump-cfg` flag prints into the standard
+output as the darknet (YOLO4) cfg text, so the network of the file is
+examined, compared with another one or trained anew with no conversion:
+
+```
+# from the build dir
+
+# the network cfg the dxxwjz3 file keeps
+./src/darknetxxConverter --dump-cfg ./yolov4.dxxwjz3
+
+# into the cfg file of the very same network
+./src/darknetxxConverter --dump-cfg ./yolov4.dxxwjz3 > ./yolov4.cfg
+```
+
+The standard output gets the cfg alone - the log messages of the errors go into
+the standard error output - so the output redirected into a file is the cfg
+file. The dxxwjz2 file and project print the very cfg text they keep, the
+comments included, while the dxxwjz3 ones print the cfg of the JSON options of
+their sections: a section header or an option on a line, the empty line
+between the sections, no comments and no repeated keys (see the
+[The dxxwjz3 file format of the third version](/doc/sections/en_US/4-7-4-network-weights-files.md#the-dxxwjz3-file-format-of-the-third-version)
+section). Either cfg makes the very same network: the dxxwjz3 file of the
+printed cfg and of the weights of the file is the same file. The class names
+the files keep go into the `data/obj.names` file of the conversion into the
+`yolo4` folder.
+
+The flag goes alone: it's combination with the conversion flags, the
+`--train-cfg`, the `--detect-cfg` or the `--weights` one is an error. The
+original weights and the dxxwjz1 files keep no network cfg, so their print, as
+the print of a file unable to be read, prints nothing and ends with a non zero
+exit status. The `darknetxx` binary and the GUI ones print the cfg the very
+same way.

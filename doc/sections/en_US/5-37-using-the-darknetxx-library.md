@@ -101,7 +101,9 @@ network and the `detect_cfg` one detects, while the
 dxxwjz2p or a dxxwjz3p project file) in the background and reports the iterations to the
 `training_listener` of the context, and the
 `LibraryFacade::training_chart` gives the PNG image of the training chart of a
-dxxwjz2 or dxxwjz3 weights file (the empty one for a file of no training record). A program
+dxxwjz2 or dxxwjz3 weights file (the empty one for a file of no training record), the
+`LibraryFacade::network_cfg` the darknet cfg text of the network a dxxwjz2,
+dxxwjz2p, dxxwjz3 or dxxwjz3p file keeps (the empty one for the rest). A program
 of an own logger hands it over by the `LibraryFacade::init_logger` before any
 other call, the library logs into the `darknetxx-0.11.0.log` file of the
 working directory and the console otherwise.

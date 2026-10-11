@@ -31,7 +31,7 @@ The options are grouped below by their purpose. The options with a value placeho
 
 ## Network weights files conversion options
 
-The four first options go together and convert the network weights file with no training nor detection started, while the `--convert-to dxxwjz2` (or `dxxwjz3`), the `--convert-dst` and the `--convert-cfg` ones alone make the network to train of the cfg file (the dxxwjz2 or the dxxwjz3 file of no weights), see the [Converting the network weights files](/doc/sections/en_US/6-2-4-converting-the-network-weights-files.md) section.
+The four first options go together and convert the network weights file with no training nor detection started, while the `--convert-to dxxwjz2` (or `dxxwjz3`), the `--convert-dst` and the `--convert-cfg` ones alone make the network to train of the cfg file (the dxxwjz2 or the dxxwjz3 file of no weights) and the `--dump-cfg` one goes alone, see the [Converting the network weights files](/doc/sections/en_US/6-2-4-converting-the-network-weights-files.md) section.
 
 | Option | Value | Description |
 | --- | --- | --- |
@@ -41,6 +41,7 @@ The four first options go together and convert the network weights file with no 
 | `--convert-dst` | `<FILE>` | the network weights file to write (replaced), the new folder of the `yolo4` format |
 | `--convert-cfg` | `<FILE>` | the network cfg file of the weights: required to read the `weights` format, validates the rest, the `dxxwjz2` and the `dxxwjz3` ones keep it |
 | `--convert-names` | `<FILE>` | the class names file the `dxxwjz2` and the `dxxwjz3` formats keep (overrides the cfg `[net]` `names=` key) |
+| `--dump-cfg` | `<FILE>` | print the YOLO4 network cfg the `*.dxxwjz2`, `*.dxxwjz2p`, `*.dxxwjz3` or `*.dxxwjz3p` file keeps into the standard output, nothing else (see [Printing the network cfg of the file](/doc/sections/en_US/6-2-4-converting-the-network-weights-files.md#printing-the-network-cfg-of-the-file)) |
 
 ## Training options
 

@@ -6,7 +6,7 @@
 - **файл dxxwjz1** (`*.dxxwjz1`, від англ. **d**arknet**xx** **w**eights **j**son **z**ipped - стиснений файл ваг darknetxx у форматі JSON, перша версія) - стиснений gzip документ JSON з тими самими вагами, який може прочитати як будь-який інструмент для роботи з JSON, так і людина;
 - **файл dxxwjz2** (`*.dxxwjz2`, друга версія) - документ dxxwjz1 з усім, з чим нейромережу навчають і з чим вона розпізнає, окрім її ваг: текстом файлу cfg нейромережі, назвами класів з їхніми індексами, втратами (loss) кожної ітерації навчання у порядку навчання і часом, який зайняло навчання;
 - **файл dxxwjz2p** (`*.dxxwjz2p`, від англ. dxxwjz2 **p**roject - файл проекту dxxwjz2) - документ dxxwjz2 проекту навчання YOLO4: нейромережа, ваги і запис навчання поряд з анотаціями зображень YOLO4, тобто все, що потрібно навчанню, окрім самих зображень (див. секцію [Формат файлу проекту dxxwjz2p](#формат-файлу-проекту-dxxwjz2p));
-- **файл dxxwjz3** (`*.dxxwjz3`, третя версія) - документ dxxwjz2, який складається лише з даних JSON: cfg нейромережі - це структура JSON опцій її секцій, об'єкт `net` опцій секції `[net]`, а не текст файлу cfg (див. секцію [Формат файлу dxxwjz3 третьої версії](#формат-файлу-dxxwjz3-третьої-версії));
+- **файл dxxwjz3** (`*.dxxwjz3`, третя версія) - документ dxxwjz2, який складається лише з даних JSON: cfg нейромережі - це структура JSON опцій її секцій, об'єкт `net` опцій секції `[net]`, а не текст файлу cfg, а секції шарів зберігають масиви своїх шарів (див. секцію [Формат файлу dxxwjz3 третьої версії](#формат-файлу-dxxwjz3-третьої-версії));
 - **файл dxxwjz3p** (`*.dxxwjz3p`, від англ. dxxwjz3 **p**roject - файл проекту dxxwjz3) - проект dxxwjz2p з документом dxxwjz3, тобто весь проект навчання лише з даних JSON (див. секцію [Формат файлу проекту dxxwjz3p](#формат-файлу-проекту-dxxwjz3p)).
 
 **Тека навчання YOLO4**, та, яку експортує ImagesAnnotator, конвертується у проект dxxwjz2p і назад: це формат `yolo4`, який використовує лише конвертування (див. секцію [Тека навчання YOLO4](#тека-навчання-yolo4)).
@@ -66,6 +66,7 @@ package "weights-model" {
   class WeightsSchema {
     +{static} name(kind / sub / type) : string
     +{static} parse(name, kind / sub / type) : bool
+    +{static} section_type(header) : LAYER_TYPE
     +{static} sublayers(type) : subs
     +{static} arrays(type) : kinds
     +{static} rank(type, sub, kind) : int
@@ -202,15 +203,19 @@ package "dxxwjz2::v2" {
   }
   class Dxxwjz2SaxHandler {
     #metadata() : Dxxwjz2MetadataReader
+    #builder(name) : Dxxwjz2SubtreeBuilder
     #trailing() : delegate
   }
-  class Dxxwjz2SubtreeBuilder
+  class Dxxwjz2SubtreeBuilder {
+    #closed(value) : bool
+  }
   class Dxxwjz2MetadataReader {
     +network(value, description) : bool
     +training(value, record) : bool
   }
   class Dxxwjz2JsonEmitter {
-    #cfg(network) : string
+    #classes()
+    #training()
   }
   class Dxxwjz2Format <<constants>>
 }
@@ -232,13 +237,16 @@ package "dxxwjz2p::v1" {
     +annotations(value, classes, annotations) : bool
   }
   class Dxxwjz2pJsonEmitter
+  class Dxxwjz2pAnnotationsJson {
+    +write(sink)
+  }
   class Dxxwjz2pFormat <<constants>>
 }
 
 package "dxxwjz3::v3" {
   class Dxxwjz3Reader
   class Dxxwjz3Writer {
-    +{static} keeps_cfg(network, filename) : bool
+    +{static} keeps(description, layers, filename) : bool
   }
   class Dxxwjz3FileFormat
   class Dxxwjz3Validator {
@@ -251,10 +259,16 @@ package "dxxwjz3::v3" {
   class Dxxwjz3SaxHandler
   class Dxxwjz3MetadataReader {
     +network(value, description) : bool
+    +arrays(value, index, layers) : bool
   }
-  class Dxxwjz3JsonEmitter
+  class Dxxwjz3NetworkBuilder
+  class Dxxwjz3JsonEmitter {
+    #members()
+  }
   class Dxxwjz3CfgJson {
-    +{static} members(cfg) : string
+    +net() : string
+    +layers() : strings
+    +types() : types
   }
   class Dxxwjz3ValueCodec {
     +{static} json_of(value) : string
@@ -375,7 +389,8 @@ Dxxwjz2MetadataReader <|-- Dxxwjz3MetadataReader
 Dxxwjz2pReader <|-- Dxxwjz3pReader
 Dxxwjz2pWriter <|-- Dxxwjz3pWriter
 Dxxwjz2pSaxHandler <|-- Dxxwjz3pSaxHandler
-Dxxwjz2pJsonEmitter <|-- Dxxwjz3pJsonEmitter
+Dxxwjz3JsonEmitter <|-- Dxxwjz3pJsonEmitter
+Dxxwjz2SubtreeBuilder <|-- Dxxwjz3NetworkBuilder
 
 OrigWeightsReader ..> OrigWeightsValidator : splits the file by
 OrigWeightsReader ..> WeightsLayout
@@ -410,12 +425,15 @@ Dxxwjz2pParser ..> Dxxwjz2Parser : peeks by
 Dxxwjz2pParser ..> Dxxwjz2pSaxHandler
 Dxxwjz2pSaxHandler ..> Dxxwjz2pAnnotationsReader : the annotations tree
 Dxxwjz2pWriter ..> Dxxwjz2pJsonEmitter
+Dxxwjz2pJsonEmitter ..> Dxxwjz2pAnnotationsJson : the annotations
 
 Dxxwjz3Reader ..> Dxxwjz3Validator
 Dxxwjz3Validator ..> Dxxwjz3Parser
 Dxxwjz3Validator ..> Dxxwjz2Validator : validates the rest by
 Dxxwjz3Parser ..> Dxxwjz3SaxHandler
+Dxxwjz3SaxHandler ..> Dxxwjz3NetworkBuilder : the network tree
 Dxxwjz3SaxHandler ..> Dxxwjz3MetadataReader : the network tree
+Dxxwjz3NetworkBuilder ..> Dxxwjz3MetadataReader : the arrays of the layers
 Dxxwjz3SaxHandler ..> Dxxwjz3Bytes : the trailing bytes
 Dxxwjz3MetadataReader ..> Dxxwjz3ValueCodec : the option values
 Dxxwjz3Writer ..> Dxxwjz3JsonEmitter
@@ -427,11 +445,12 @@ Dxxwjz3CfgJson ..> "CfgSection" : reads the cfg text by
 Dxxwjz3pReader ..> Dxxwjz3pValidator
 Dxxwjz3pValidator ..> Dxxwjz3pParser
 Dxxwjz3pParser ..> Dxxwjz3pSaxHandler
+Dxxwjz3pSaxHandler ..> Dxxwjz3NetworkBuilder : the network tree
 Dxxwjz3pSaxHandler ..> Dxxwjz3MetadataReader : the network tree
 Dxxwjz3pSaxHandler ..> Dxxwjz3Bytes : the trailing bytes
 Dxxwjz3pWriter ..> Dxxwjz3pJsonEmitter
-Dxxwjz3pWriter ..> Dxxwjz3Writer : checks the cfg by
-Dxxwjz3pJsonEmitter ..> Dxxwjz3CfgJson : the network cfg
+Dxxwjz3pWriter ..> Dxxwjz3Writer : checks the network by
+Dxxwjz3pJsonEmitter ..> Dxxwjz2pAnnotationsJson : the annotations
 
 Yolo4FolderReader ..> Yolo4FolderLayout
 Yolo4FolderWriter ..> Yolo4FolderLayout
@@ -470,7 +489,7 @@ TrainingJournal ..> WeightsFileFormats : updates the dxxwjz2p and the dxxwjz3p p
 
 Кожен формат реалізує три інтерфейси:
 
-- **`IWeightsReader`** ([`IWeightsReader.h`](/src/lib/darknet-adaptor/adaptors/NetworksLoaders/IWeightsReader.h)) - метод `load(net, filename, cutoff)` завантажує ваги шарів до межі відсікання у масиви нейромережі (`load_weights_upto()` оригінального Darknet), а метод `load(net, filename, cutoff, rest)` ще й зберігає решту файлу: документ без масивів з описом нейромережі і записом навчання тих форматів, які їх зберігають. Метод `read(filename, net, document)` читає весь файл у незалежний від формату `WeightsDocument`, а метод `peek(filename, rest, weights)` читає решту файлу до першого масиву ваг і повідомляє, чи містить файл ваги (лише файли dxxwjz2 і dxxwjz3 та їхні проекти: решта форматів не зберігає опису нейромережі, який можна було б прочитати).
+- **`IWeightsReader`** ([`IWeightsReader.h`](/src/lib/darknet-adaptor/adaptors/NetworksLoaders/IWeightsReader.h)) - метод `load(net, filename, cutoff)` завантажує ваги шарів до межі відсікання у масиви нейромережі (`load_weights_upto()` оригінального Darknet), а метод `load(net, filename, cutoff, rest)` ще й зберігає решту файлу: документ без масивів з описом нейромережі і записом навчання тих форматів, які їх зберігають. Метод `read(filename, net, document)` читає весь файл у незалежний від формату `WeightsDocument`, а метод `peek(filename, rest, weights)` читає решту файлу до першого масиву ваг (усю нейромережу файлів dxxwjz3 та їхніх проектів, яка зберігає ваги) і повідомляє, чи містить файл ваги (лише файли dxxwjz2 і dxxwjz3 та їхні проекти: решта форматів не зберігає опису нейромережі, який можна було б прочитати).
 - **`IWeightsWriter`** ([`IWeightsWriter.h`](/src/lib/darknet-adaptor/adaptors/NetworksLoaders/IWeightsWriter.h)) - метод `save(net, filename, cutoff, save_ema)` зберігає ваги шарів до межі відсікання (`save_weights_upto()` оригінального Darknet: поточну версію, значення seen поточної ітерації, масиви EMA згорткових шарів для `save_ema`), а метод `save(net, filename, cutoff, save_ema, rest)` зберігає поряд з ними опис нейромережі і запис навчання з решти, які формати лише ваг пропускають. Метод `write(document, filename)` записує документ.
 - **`IWeightsFileFormat`** ([`IWeightsFileFormat.h`](/src/lib/darknet-adaptor/adaptors/NetworksLoaders/IWeightsFileFormat.h)) - сам формат: його назва (та, що в командному рядку), розширення назв його файлів і опис, чи зберігають його файли структуру нейромережі (шари і назви масивів, тож файли читаються без нейромережі) і опис нейромережі, класи читання і запису його файлів. `WeightsFileFormats` директорії [`weights-formats`](/src/lib/darknet-adaptor/adaptors/NetworksLoaders/weights-formats) знаходить формати за їхніми назвами і розширеннями назв файлів (будь-яке розширення, окрім `.dxxwjz1`, `.dxxwjz2`, `.dxxwjz2p`, `.dxxwjz3` і `.dxxwjz3p`, - це оригінальний файл ваг) і формати конвертування: усі формати і теку YOLO4 (його метод `convertible()`), а `NetworkSource` читає опис нейромережі з файлу, з якого вона будується (текст файлу cfg або опис, який зберігають файли dxxwjz2 і dxxwjz3 та їхні проекти), і ключі секції `[net]` цього опису.
 
@@ -564,8 +583,8 @@ TrainingJournal ..> WeightsFileFormats : updates the dxxwjz2p and the dxxwjz3p p
 - **`Dxxwjz1FloatCodec`** - описаний вище текст JSON значень float (функції C++17 `std::to_chars()` і `std::from_chars()`, які не залежать від локалі).
 - **`Dxxwjz1Base64`** - текст base64 хвостових байтів.
 - **`Dxxwjz1JsonString`** - текст рядка JSON для будь-якого тексту: байти, які не є UTF-8, замінюються символами U+FFFD.
-- **`Dxxwjz1JsonEmitter`** - записує текст JSON документа у потік пошарово, розміщуючи кожен шар і кожен масив в окремому рядку, безпосередньо з масивів нейромережі чи документа. Класи запису наступних версій записують свої члени через його метод `sections()`, а свої хвостові байти - через його метод `trailing()`.
-- **`Dxxwjz1SaxHandler`** - будує документ з подій SAX-аналізатора [nlohmann json](https://github.com/nlohmann/json) по одному значенню, тож дерево JSON з мільйонів значень float не будується, і попутно перевіряє структуру документа: синтаксис JSON, формат і версію, типи значень, назви типів шарів, підшарів і масивів, повторювані ключі. Обробники наступних версій задають свої назву формату, версію й обов'язкові ключі і приймають значення своїх ключів документа, включно з ключем trailing версії dxxwjz3 (див. формати dxxwjz2 і dxxwjz3 нижче).
+- **`Dxxwjz1JsonEmitter`** - записує текст JSON документа у потік пошарово, розміщуючи кожен шар і кожен масив в окремому рядку, безпосередньо з масивів нейромережі чи документа. Класи запису наступних версій записують свої члени через його метод `sections()`, а свої хвостові байти - через його метод `trailing()`; класи dxxwjz3 записують свій документ через його методи `begin()`, `layer()` і `end()` з масивами шарів його методу `arrays()`.
+- **`Dxxwjz1SaxHandler`** - будує документ з подій SAX-аналізатора [nlohmann json](https://github.com/nlohmann/json) по одному значенню, тож дерево JSON з мільйонів значень float не будується, і попутно перевіряє структуру документа: синтаксис JSON, формат і версію, типи значень, назви типів шарів, підшарів і масивів, повторювані ключі. Обробники наступних версій задають свої назву формату, версію й обов'язкові ключі і приймають значення своїх ключів документа, включно з ключем trailing версії dxxwjz3, тоді як обробники dxxwjz3 пропускають ключ layers як невідомий (їхній метод `layers_member()`, див. формати dxxwjz2 і dxxwjz3 нижче).
 - **`Dxxwjz1Parser`** - читає текст JSON у документ обробником. Розбір виконується в числовій локалі "C" свого потоку, тож документ читається однаково, хай у якій локалі працює програма (включно з локалями, де десятковим роздільником є кома чи багатобайтовий символ), а локаль програми та її інших потоків залишається незмінною.
 - **`Dxxwjz1Reader`**, **`Dxxwjz1Writer`** - класи читання і запису (див. вище). Клас запису стискає текст у файл у міру запису з найшвидшим рівнем стиснення zlib, якщо його конструктору не передано інший рівень: типовий рівень zlib потребує приблизно вшестеро більше часу і дає файли, менші приблизно на 12%, а найкращий - приблизно втридцятеро більше часу для файлів, менших приблизно на 14%, тоді як під час читання приймається файл будь-якого рівня стиснення.
 - **`Dxxwjz1Validator`** - валідатор файлів (див. нижче).
@@ -619,7 +638,7 @@ TrainingJournal ..> WeightsFileFormats : updates the dxxwjz2p and the dxxwjz3p p
 
 - **`Dxxwjz2Format`** - константи формату: назва, версія, розширення назв файлів і ключі JSON, які він додає.
 - **`Dxxwjz2JsonEmitter`** - `Dxxwjz1JsonEmitter` з членами network і training, які він записує між generator і header (його метод `sections()`): клас у рядку і стовпець втрат у рядку, член cfg нейромережі - через свій метод `cfg()`, а стовпці втрат - через свій метод `losses()`.
-- **`Dxxwjz2SaxHandler`** - `Dxxwjz1SaxHandler` з назвою, версією і обов'язковими ключами формату dxxwjz2, який передає значення ключів network і training класам `Dxxwjz2SubtreeBuilder` (їхні дерева JSON, малі порівняно з вагами, значення float - точні значення їхніх текстів) і `Dxxwjz2MetadataReader` (`NetworkDescription` і `TrainingRecord` з цих дерев). Його попереднє читання (peek) зупиняється на першій вазі, щойно прочитано network, тож опис нейромережі файлу читається без його ваг. Обробники наступних версій читають дерево network класом читання свого методу `metadata()`, а хвостові байти - обробником свого методу `trailing()`.
+- **`Dxxwjz2SaxHandler`** - `Dxxwjz1SaxHandler` з назвою, версією і обов'язковими ключами формату dxxwjz2, який передає значення ключів network і training класам `Dxxwjz2SubtreeBuilder` (їхні дерева JSON, малі порівняно з вагами, значення float - точні значення їхніх текстів) і `Dxxwjz2MetadataReader` (`NetworkDescription` і `TrainingRecord` з цих дерев). Його попереднє читання (peek) зупиняється на першій вазі, щойно прочитано network, тож опис нейромережі файлу читається без його ваг. Обробники наступних версій будують дерево network класом побудови свого методу `builder()`, читають його класом читання свого методу `metadata()`, а хвостові байти - обробником свого методу `trailing()`.
 - **`Dxxwjz2Parser`** - розбір файлів і текстів класом `Dxxwjz1Parser` з обробником dxxwjz2, попереднє читання файлів.
 - **`Dxxwjz2Reader`**, **`Dxxwjz2Writer`** - `Dxxwjz1Reader` і `Dxxwjz1Writer` з перевіркою і записом dxxwjz2: опис нейромережі і запис навчання потрапляють у решту завантаження і беруться з решти збереження та з документа, що записується. Клас запису відхиляє решту без тексту cfg, бо файл зберігає опис нейромережі.
 - **`Dxxwjz2Validator`** - валідатор файлів: перевірки `Dxxwjz1Validator`, текст cfg, назви класів нейромережі.
@@ -682,7 +701,7 @@ TrainingJournal ..> WeightsFileFormats : updates the dxxwjz2p and the dxxwjz3p p
 Класи версії dxxwjz2p побудовані на класах dxxwjz2, а директорія [`dxxwjz2p/v1`](/src/lib/darknet-adaptor/adaptors/NetworksLoaders/dxxwjz2p/v1) містить те, що вони додають:
 
 - **`Dxxwjz2pFormat`** - константи формату: назва, версія, розширення назв файлів, версія структури ImagesAnnotator і ключі JSON, які він додає.
-- **`Dxxwjz2pJsonEmitter`** - `Dxxwjz2JsonEmitter` з членом annotations, який він записує після членів network і training: теку зображень для кожного шляху db, зображення в рядку.
+- **`Dxxwjz2pJsonEmitter`** - `Dxxwjz2JsonEmitter` з членом annotations, який він записує після членів network і training класом **`Dxxwjz2pAnnotationsJson`** (ним же користуються проекти dxxwjz3p): теку зображень для кожного шляху db, зображення в рядку.
 - **`Dxxwjz2pAnnotationsReader`** - `Dxxwjz2MetadataReader` для `Yolo4Annotations` з дерева annotations.
 - **`Dxxwjz2pSaxHandler`** - `Dxxwjz2SaxHandler` з назвою, версією і обов'язковими ключами формату dxxwjz2p, який читає дерево annotations, щойно прочитано назви класів нейромережі. Його попереднє читання зупиняється на першій вазі, щойно прочитано і network, і annotations.
 - **`Dxxwjz2pParser`** - розбір і попереднє читання файлів обробником dxxwjz2p з текою файлу.
@@ -692,7 +711,7 @@ TrainingJournal ..> WeightsFileFormats : updates the dxxwjz2p and the dxxwjz3p p
 
 ## Формат файлу dxxwjz3 третьої версії
 
-Файл dxxwjz3 - це документ dxxwjz2 (див. вище), який складається лише з даних JSON: член network зберігає структуру JSON cfg нейромережі замість тексту файлу cfg, а хвостові байти - це масив JSON їхніх значень замість тексту base64, тож будь-який інструмент для роботи з JSON читає і редагує кожну опцію нейромережі (`gzip -dc net.dxxwjz3 | jq .network.net.batch`). Документ нейромережі з двома класами:
+Файл dxxwjz3 - це документ dxxwjz2 (див. вище), який складається лише з даних JSON: член network зберігає структуру JSON cfg нейромережі замість тексту файлу cfg, кожен його шар зберігає масиви шару, а хвостові байти - це масив JSON їхніх значень замість тексту base64, тож будь-який інструмент для роботи з JSON читає і редагує кожну опцію нейромережі (`gzip -dc net.dxxwjz3 | jq .network.net.batch`). Документ нейромережі з двома класами:
 
 ```
 {
@@ -700,7 +719,13 @@ TrainingJournal ..> WeightsFileFormats : updates the dxxwjz2p and the dxxwjz3p p
   "version": 3,
   "generator": "darknetxx 0.11.0",
   "network": {"net": {"batch": 64, "subdivisions": 16, "width": 416, "height": 416, "channels": 3, "hue": 0.1, "learning_rate": 0.0013, "max_batches": 6000, "policy": "steps", "steps": [4800,5400], "scales": [0.1,0.1]}, "layers": [
-    {"type": "convolutional", "options": {"batch_normalize": 1, "filters": 32, "size": 3, "stride": 1, "pad": 1, "activation": "mish"}},
+    {"type": "convolutional", "options": {"batch_normalize": 1, "filters": 32, "size": 3, "stride": 1, "pad": 1, "activation": "mish"}, "arrays": {
+      "biases": [0.5,-0.25,...],
+      "scales": [...],
+      "rolling_mean": [...],
+      "rolling_variance": [...],
+      "weights": [0.125,"0x7fc00000",...]
+    }},
     {"type": "maxpool", "options": {"size": 2, "stride": 2}},
     {"type": "route", "options": {"layers": [-1,-3]}},
     {"type": "yolo", "options": {"mask": [0,1,2], "anchors": [12,16,19,36,40,28], "classes": 2, "num": 3, "jitter": 0.3}}
@@ -715,25 +740,21 @@ TrainingJournal ..> WeightsFileFormats : updates the dxxwjz2p and the dxxwjz3p p
     "map": [0.0125]
   },
   "header": {"major": 0, "minor": 2, "revision": 5, "seen": 192},
-  "layers": [
-    {"index": 0, "type": "convolutional", "arrays": {...}},
-    ...
-  ],
   "trailing": [0,1]
 }
 ```
 
-Ключі документа, окрім ключів dxxwjz2 (header і layers ваг - це ключі dxxwjz2):
+Ключі документа, окрім ключів dxxwjz2 (header - це ключ dxxwjz2, файл без header не містить ваг; ключа layers немає, масиви зберігають шари нейромережі):
 
 | Ключ | Значення | Обов'язковий |
 | --- | --- | --- |
 | `format` | рядок `"dxxwjz3"` | так |
 | `version` | ціле число `3`, інші версії відхиляються | так |
-| `network` | опис нейромережі: об'єкт `net` опцій секції `[net]` cfg (секції `[network]`), масив `layers` секцій шарів у порядку cfg, обидва обов'язкові, і масив `classes` формату dxxwjz2 | так |
+| `network` | опис нейромережі: об'єкт `net` опцій секції `[net]` cfg (секції `[network]`), масив `layers` секцій шарів у порядку cfg з масивами їхніх шарів, обидва обов'язкові, і масив `classes` формату dxxwjz2 | так |
 | `training` | запис навчання dxxwjz2 без стовпця `iteration`: втрати індексу - це втрати ітерації індекс + 1, тож `loss` 1000-ї ітерації - це `loss[999]` (втрати NaN ітерацій без запису) | ні |
 | `trailing` | байти, які оригінальний файл ваг містить після масивів: масив цілих чисел від 0 до 255 | ні |
 
-Шар нейромережі - це об'єкт з рядком `type`, назвою секції cfg без дужок, як її називає cfg (`conv` секції `[conv]`, тоді як шари ваг зберігають назви типів шарів darknet), і з об'єктом `options` опцій секції, якого немає для секції без опцій. Опції - це рядки `key=value` секції у їхньому порядку, а значення - це значення JSON значень darknet:
+Шар нейромережі - це об'єкт з рядком `type`, назвою секції cfg без дужок, як її називає cfg (`conv` секції `[conv]`, тоді як шари ваг зберігають назви типів шарів darknet), і з об'єктом `options` опцій секції, якого немає для секції без опцій. Шар з вагами зберігає їх в об'єкті `arrays` шарів dxxwjz1 (в об'єкті `sublayers` для рекурентних шарів, див. секцію [Формат файлу dxxwjz1 першої версії](#формат-файлу-dxxwjz1-першої-версії)): масиви шару з індексом об'єкта в масиві `layers` і з типом шару, на який darknet перетворює секцію `type` (секції `[conv]` і `[convolutional]` - це згорткові шари, див. `WeightsSchema::section_type()`). Об'єкт шару без масивів не містить ваг: це шари без ваг (maxpool, route, yolo), кожен шар нейромережі, яку треба навчити, і шари поза межею відсікання збереження. Тож під час читання нейромережа і її ваги читаються з тих самих об'єктів, без індексів і типів шарів, які треба зіставляти, а класи запису відхиляють шар, який не є шаром секції cfg свого індексу (якої немає або яка має інший тип). Ключ документа `layers` (ключ документів dxxwjz1 і dxxwjz2) - це невідомий ключ, який під час читання пропускається з попередженням. Опції - це рядки `key=value` секції у їхньому порядку, а значення - це значення JSON значень darknet:
 
 | Опція cfg | Значення JSON |
 | --- | --- |
@@ -745,19 +766,22 @@ TrainingJournal ..> WeightsFileFormats : updates the dxxwjz2p and the dxxwjz3p p
 
 Число - це число того тексту, який darknet читає однаково: `atoi()` і `atof()` тексту і числа збігаються, тож `1e-3` залишається рядком `"1e-3"` (його `atoi()` дорівнює 1, а `atoi()` числа `0.001` - 0), так само як рядками залишаються `0x10` і `nan`. Під час читання приймаються числа JSON будь-якого запису (`"learning_rate": 1e-3`, відредагований вручну, - це `0.001`) і будь-яке значення, яке записують класи запису, а помилками є порожні значення, рядки з пробільними символами (darknet видаляє їх з рядків cfg), булеві значення, об'єкти і масиви чогось, окрім чисел і рядків, а також ключі опцій з пробільними символами, з `=` чи з `#`, `;` або `[` на початку і назви секцій з пробільними символами чи дужками.
 
-Під час читання член network перетворюється на текст cfg нейромережі: секцію `[net]` з опцій `net`, секцію кожного шару, рядок `key=value` кожної опції (сам ключ для `null`), а секції розділяються порожнім рядком. Тож решта darknetxx працює з текстом cfg файлу dxxwjz3 так само, як з текстом файлу dxxwjz2, а файл cfg відновлюється з файлу конвертером (файл dxxwjz3, конвертований у файл dxxwjz2, зберігає свій текст cfg). JSON не зберігає ні коментарів, ні пробільних символів файлу cfg, ні повторюваних ключів секції, з яких darknet читає лише перший: текст cfg, конвертований у файл dxxwjz3 і назад, - це та сама нейромережа з нормалізованим текстом cfg, яка знову конвертується у той самий файл dxxwjz3. Класи запису відхиляють текст cfg, якого JSON не може зберегти: без секції `[net]` першою, з опцією перед нею, з заголовком секції без закривальної дужки (такий cfg відхиляє і darknet).
+Під час читання член network перетворюється на текст cfg нейромережі: секцію `[net]` з опцій `net`, секцію кожного шару, рядок `key=value` кожної опції (сам ключ для `null`), а секції розділяються порожнім рядком. Тож решта darknetxx працює з текстом cfg файлу dxxwjz3 так само, як з текстом файлу dxxwjz2, а файл cfg відновлюється з файлу конвертером: прапорець `--dump-cfg` друкує його текст cfg (див. секцію [Друк cfg нейромережі файлу](/doc/sections/uk_UA/6-2-4-converting-the-network-weights-files.md#друк-cfg-нейромережі-файлу)), а файл dxxwjz3, конвертований у файл dxxwjz2, зберігає його. JSON не зберігає ні коментарів, ні пробільних символів файлу cfg, ні повторюваних ключів секції, з яких darknet читає лише перший: текст cfg, конвертований у файл dxxwjz3 і назад, - це та сама нейромережа з нормалізованим текстом cfg, яка знову конвертується у той самий файл dxxwjz3. Класи запису відхиляють текст cfg, якого JSON не може зберегти: без секції `[net]` першою, з опцією перед нею, з заголовком секції без закривальної дужки (такий cfg відхиляє і darknet).
+
+Під час читання дерево члена network будується пошарово: масиви об'єкта шару переходять у шари документа, щойно об'єкт завершено, тож дерево JSON з вагами всієї нейромережі не будується. Член network зберігає і опис нейромережі, і ваги, тож попереднє читання (peek) файлу читає увесь член: воно триває приблизно стільки, скільки читання всього файлу (нейромережа з 9 мільйонів значень float - близько 2 секунд у збірці release), тоді як попереднє читання файлу dxxwjz2 зупиняється на його першій вазі.
 
 В усьому іншому файл dxxwjz3 - це файл dxxwjz2: навчання і розпізнавання його читають, навчання його зберігає (за замовчуванням, `--save-format dxxwjz3`), конвертер конвертує його в інші формати і назад з вагами тих самих байтів, а файл без ваг - це нейромережа, яку треба навчити. Класи версії dxxwjz3 побудовані на класах dxxwjz2, а директорія [`dxxwjz3/v3`](/src/lib/darknet-adaptor/adaptors/NetworksLoaders/dxxwjz3/v3) містить те, що вони додають:
 
 - **`Dxxwjz3Format`** - константи формату: назва, версія, розширення назв файлів і ключі JSON, які він додає.
 - **`Dxxwjz3ValueCodec`** - значення JSON опцій cfg з таблиці вище в обидва боки: текст JSON тексту опції і текст cfg значення JSON.
-- **`Dxxwjz3CfgJson`** - текст JSON членів `net` і `layers` тексту cfg, який він читає так, як darknet (методом `CfgSection::read_cfg()` класу `OrigDefaultLoader`), шар у рядку.
+- **`Dxxwjz3CfgJson`** - текст JSON тексту cfg, який він читає так, як darknet (методом `CfgSection::read_cfg()` класу `OrigDefaultLoader`): члени опцій `[net]`, члени `type` і `options` кожної секції шару і типи шарів секцій.
 - **`Dxxwjz3Bytes`** - масив JSON хвостових байтів: текст байтів і байти з подій SAX масиву по одному значенню (дерево JSON з мегабайтів байтів оригінального файлу ваг іншої нейромережі не будується).
 - **`Dxxwjz3Losses`** - стовпці втрат з втратами ітерації за індексом ітерація - 1, втратами NaN ітерацій без них.
-- **`Dxxwjz3JsonEmitter`** - `Dxxwjz2JsonEmitter` з JSON cfg нейромережі (його метод `cfg()`), хвостових байтів (його метод `trailing()`) і стовпців втрат `Dxxwjz3Losses` (його метод `losses()`).
-- **`Dxxwjz3MetadataReader`** - `Dxxwjz2MetadataReader` тексту cfg з дерева network, яке він перевіряє так само, як перевіряються решта членів, і дерева training без стовпця ітерацій.
-- **`Dxxwjz3SaxHandler`** - `Dxxwjz2SaxHandler` з назвою і версією формату dxxwjz3, який читає дерево network класом `Dxxwjz3MetadataReader` (його метод `metadata()`), а хвостові байти - класом `Dxxwjz3Bytes` (його метод `trailing()`).
-- **`Dxxwjz3Parser`**, **`Dxxwjz3Reader`**, **`Dxxwjz3Writer`**, **`Dxxwjz3Validator`**, **`Dxxwjz3FileFormat`** - відповідні класи dxxwjz2 з обробником і класом запису JSON dxxwjz3; клас запису відхиляє текст cfg, якого JSON не може зберегти.
+- **`Dxxwjz3JsonEmitter`** - `Dxxwjz2JsonEmitter` з членом network з JSON cfg нейромережі, який записує кожен об'єкт шару з масивами свого методу `layer()` (шари без нього - без масивів), а члени після network - своїм методом `members()` перед header, з хвостовими байтами (його метод `trailing()`) і стовпцями втрат `Dxxwjz3Losses` (його метод `losses()`).
+- **`Dxxwjz3MetadataReader`** - `Dxxwjz2MetadataReader` тексту cfg з дерева network, яке він перевіряє так само, як перевіряються решта членів, масивів об'єкта шару (його метод `arrays()`, який переносить їх з дерева у шар документа з індексом об'єкта і типом його секції) і дерева training без стовпця ітерацій.
+- **`Dxxwjz3NetworkBuilder`** - `Dxxwjz2SubtreeBuilder` значення network, який передає кожен об'єкт шару методу `arrays()` класу `Dxxwjz3MetadataReader`, щойно об'єкт завершено (його метод `closed()`), тож дерево зберігає ваги лише одного шару.
+- **`Dxxwjz3SaxHandler`** - `Dxxwjz2SaxHandler` з назвою і версією формату dxxwjz3, який будує дерево network класом `Dxxwjz3NetworkBuilder` (його метод `builder()`), читає його класом `Dxxwjz3MetadataReader` (його метод `metadata()`), хвостові байти - класом `Dxxwjz3Bytes` (його метод `trailing()`) і пропускає ключ документа layers (його метод `layers_member()`).
+- **`Dxxwjz3Parser`**, **`Dxxwjz3Reader`**, **`Dxxwjz3Writer`**, **`Dxxwjz3Validator`**, **`Dxxwjz3FileFormat`** - відповідні класи dxxwjz2 з обробником і класом запису JSON dxxwjz3; клас запису відхиляє текст cfg, якого JSON не може зберегти, і шари, які не є шарами секцій cfg своїх індексів (його метод `keeps()`).
 
 ## Формат файлу проекту dxxwjz3p
 
@@ -778,8 +802,7 @@ TrainingJournal ..> WeightsFileFormats : updates the dxxwjz2p and the dxxwjz3p p
       {"rel_path": "park.jpg", "width": 640, "height": 480, "annotations": [{"name": "dog", "rect": {"x": 200, "y": 130, "width": 48, "height": 52}}]}
     ]}
   ]},
-  "header": {"major": 0, "minor": 2, "revision": 5, "seen": 192},
-  "layers": [...]
+  "header": {"major": 0, "minor": 2, "revision": 5, "seen": 192}
 }
 ```
 
@@ -790,7 +813,7 @@ TrainingJournal ..> WeightsFileFormats : updates the dxxwjz2p and the dxxwjz3p p
 | `network`, `training`, `trailing` | члени dxxwjz3 | так, ні, ні |
 | `annotations` | член dxxwjz2p | так |
 
-В усьому іншому файл dxxwjz3p - це файл dxxwjz2p: навчання `--train-cfg project.dxxwjz3p` навчає зображення його анотацій і оновлює проект, графічний інтерфейс навчання його відкриває, розпізнавання працює з його нейромережею, конвертер конвертує його у проект dxxwjz2p і назад з тими самими вагами й анотаціями та у файл ваг dxxwjz3 без анотацій. Класи директорії [`dxxwjz3p/v1`](/src/lib/darknet-adaptor/adaptors/NetworksLoaders/dxxwjz3p/v1) - це класи dxxwjz2p з членом network і хвостовими байтами dxxwjz3 (класами `Dxxwjz3CfgJson`, `Dxxwjz3MetadataReader` і `Dxxwjz3Bytes` версії dxxwjz3): `Dxxwjz3pFormat`, `Dxxwjz3pJsonEmitter`, `Dxxwjz3pSaxHandler`, `Dxxwjz3pParser`, `Dxxwjz3pReader`, `Dxxwjz3pWriter` (який теж відхиляє текст cfg, якого JSON dxxwjz3 не може зберегти), `Dxxwjz3pValidator` і `Dxxwjz3pFileFormat`.
+В усьому іншому файл dxxwjz3p - це файл dxxwjz2p: навчання `--train-cfg project.dxxwjz3p` навчає зображення його анотацій і оновлює проект, графічний інтерфейс навчання його відкриває, розпізнавання працює з його нейромережею, конвертер конвертує його у проект dxxwjz2p і назад з тими самими вагами й анотаціями та у файл ваг dxxwjz3 без анотацій. Класи директорії [`dxxwjz3p/v1`](/src/lib/darknet-adaptor/adaptors/NetworksLoaders/dxxwjz3p/v1) - це класи dxxwjz2p з членом network і хвостовими байтами dxxwjz3 (класами `Dxxwjz3NetworkBuilder`, `Dxxwjz3MetadataReader` і `Dxxwjz3Bytes` версії dxxwjz3): `Dxxwjz3pFormat`, `Dxxwjz3pJsonEmitter` (`Dxxwjz3JsonEmitter` з членом annotations класу `Dxxwjz2pAnnotationsJson`), `Dxxwjz3pSaxHandler`, `Dxxwjz3pParser`, `Dxxwjz3pReader`, `Dxxwjz3pWriter` (який теж відхиляє нейромережу, якої файл dxxwjz3 не може зберегти), `Dxxwjz3pValidator` і `Dxxwjz3pFileFormat`.
 
 ## Тека навчання YOLO4
 
@@ -826,7 +849,7 @@ TrainingJournal ..> WeightsFileFormats : updates the dxxwjz2p and the dxxwjz3p p
 | `Dxxwjz1Validator` | файл, який неможливо прочитати, пошкоджені чи обрізані дані gzip, синтаксичні помилки JSON, інший формат чи версія, хибна структура, документи, які відхиляє `WeightsDocumentValidator` | нестиснений файл JSON, невідомі ключі, попередження `WeightsDocumentValidator` |
 | `Dxxwjz2Validator` | помилки `Dxxwjz1Validator`, документ без тексту cfg, хибні члени network чи training | попередження `Dxxwjz1Validator` (окрім масивів нейромережі для файлу без ваг), кількість назв класів, відмінна від класів нейромережі |
 | `Dxxwjz2pValidator` | помилки `Dxxwjz2Validator`, хибні анотації, рамки класів без назви і рамки зображень без розміру | попередження `Dxxwjz2Validator`, невідомі ключі анотацій |
-| `Dxxwjz3Validator` | помилки `Dxxwjz2Validator` для документа dxxwjz3, хибні cfg нейромережі (члени `net` і `layers`, ключі і значення опцій) і хвостові байти | попередження `Dxxwjz2Validator`, невідомі ключі нейромережі та її шарів |
+| `Dxxwjz3Validator` | помилки `Dxxwjz2Validator` для документа dxxwjz3, хибні cfg нейромережі (члени `net` і `layers`, ключі і значення опцій), масиви шарів (назви масивів і підшарів, значення float, типи шарів масивів) і хвостові байти | попередження `Dxxwjz2Validator`, невідомі ключі нейромережі та її шарів, ключ документа layers |
 | `Dxxwjz3pValidator` | помилки `Dxxwjz3Validator` і `Dxxwjz2pValidator` | попередження `Dxxwjz3Validator` і `Dxxwjz2pValidator` |
 | `WeightsDocumentValidator` | 32-бітне поле seen для значення seen понад 32 біти, повторювані шари, масиви, яких немає у шарів їхнього типу; для нейромережі: шари поза межами її шарів або інших типів, масиви, яких у неї немає, масиви, довші за її масиви | масиви, коротші за масиви нейромережі, масиви нейромережі, яких немає в документі |
 

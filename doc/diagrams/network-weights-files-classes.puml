@@ -31,6 +31,7 @@ package "weights-model" {
   class WeightsSchema {
     +{static} name(kind / sub / type) : string
     +{static} parse(name, kind / sub / type) : bool
+    +{static} section_type(header) : LAYER_TYPE
     +{static} sublayers(type) : subs
     +{static} arrays(type) : kinds
     +{static} rank(type, sub, kind) : int
@@ -167,15 +168,19 @@ package "dxxwjz2::v2" {
   }
   class Dxxwjz2SaxHandler {
     #metadata() : Dxxwjz2MetadataReader
+    #builder(name) : Dxxwjz2SubtreeBuilder
     #trailing() : delegate
   }
-  class Dxxwjz2SubtreeBuilder
+  class Dxxwjz2SubtreeBuilder {
+    #closed(value) : bool
+  }
   class Dxxwjz2MetadataReader {
     +network(value, description) : bool
     +training(value, record) : bool
   }
   class Dxxwjz2JsonEmitter {
-    #cfg(network) : string
+    #classes()
+    #training()
   }
   class Dxxwjz2Format <<constants>>
 }
@@ -197,13 +202,16 @@ package "dxxwjz2p::v1" {
     +annotations(value, classes, annotations) : bool
   }
   class Dxxwjz2pJsonEmitter
+  class Dxxwjz2pAnnotationsJson {
+    +write(sink)
+  }
   class Dxxwjz2pFormat <<constants>>
 }
 
 package "dxxwjz3::v3" {
   class Dxxwjz3Reader
   class Dxxwjz3Writer {
-    +{static} keeps_cfg(network, filename) : bool
+    +{static} keeps(description, layers, filename) : bool
   }
   class Dxxwjz3FileFormat
   class Dxxwjz3Validator {
@@ -216,10 +224,16 @@ package "dxxwjz3::v3" {
   class Dxxwjz3SaxHandler
   class Dxxwjz3MetadataReader {
     +network(value, description) : bool
+    +arrays(value, index, layers) : bool
   }
-  class Dxxwjz3JsonEmitter
+  class Dxxwjz3NetworkBuilder
+  class Dxxwjz3JsonEmitter {
+    #members()
+  }
   class Dxxwjz3CfgJson {
-    +{static} members(cfg) : string
+    +net() : string
+    +layers() : strings
+    +types() : types
   }
   class Dxxwjz3ValueCodec {
     +{static} json_of(value) : string
@@ -340,7 +354,8 @@ Dxxwjz2MetadataReader <|-- Dxxwjz3MetadataReader
 Dxxwjz2pReader <|-- Dxxwjz3pReader
 Dxxwjz2pWriter <|-- Dxxwjz3pWriter
 Dxxwjz2pSaxHandler <|-- Dxxwjz3pSaxHandler
-Dxxwjz2pJsonEmitter <|-- Dxxwjz3pJsonEmitter
+Dxxwjz3JsonEmitter <|-- Dxxwjz3pJsonEmitter
+Dxxwjz2SubtreeBuilder <|-- Dxxwjz3NetworkBuilder
 
 OrigWeightsReader ..> OrigWeightsValidator : splits the file by
 OrigWeightsReader ..> WeightsLayout
@@ -375,12 +390,15 @@ Dxxwjz2pParser ..> Dxxwjz2Parser : peeks by
 Dxxwjz2pParser ..> Dxxwjz2pSaxHandler
 Dxxwjz2pSaxHandler ..> Dxxwjz2pAnnotationsReader : the annotations tree
 Dxxwjz2pWriter ..> Dxxwjz2pJsonEmitter
+Dxxwjz2pJsonEmitter ..> Dxxwjz2pAnnotationsJson : the annotations
 
 Dxxwjz3Reader ..> Dxxwjz3Validator
 Dxxwjz3Validator ..> Dxxwjz3Parser
 Dxxwjz3Validator ..> Dxxwjz2Validator : validates the rest by
 Dxxwjz3Parser ..> Dxxwjz3SaxHandler
+Dxxwjz3SaxHandler ..> Dxxwjz3NetworkBuilder : the network tree
 Dxxwjz3SaxHandler ..> Dxxwjz3MetadataReader : the network tree
+Dxxwjz3NetworkBuilder ..> Dxxwjz3MetadataReader : the arrays of the layers
 Dxxwjz3SaxHandler ..> Dxxwjz3Bytes : the trailing bytes
 Dxxwjz3MetadataReader ..> Dxxwjz3ValueCodec : the option values
 Dxxwjz3Writer ..> Dxxwjz3JsonEmitter
@@ -392,11 +410,12 @@ Dxxwjz3CfgJson ..> "CfgSection" : reads the cfg text by
 Dxxwjz3pReader ..> Dxxwjz3pValidator
 Dxxwjz3pValidator ..> Dxxwjz3pParser
 Dxxwjz3pParser ..> Dxxwjz3pSaxHandler
+Dxxwjz3pSaxHandler ..> Dxxwjz3NetworkBuilder : the network tree
 Dxxwjz3pSaxHandler ..> Dxxwjz3MetadataReader : the network tree
 Dxxwjz3pSaxHandler ..> Dxxwjz3Bytes : the trailing bytes
 Dxxwjz3pWriter ..> Dxxwjz3pJsonEmitter
-Dxxwjz3pWriter ..> Dxxwjz3Writer : checks the cfg by
-Dxxwjz3pJsonEmitter ..> Dxxwjz3CfgJson : the network cfg
+Dxxwjz3pWriter ..> Dxxwjz3Writer : checks the network by
+Dxxwjz3pJsonEmitter ..> Dxxwjz2pAnnotationsJson : the annotations
 
 Yolo4FolderReader ..> Yolo4FolderLayout
 Yolo4FolderWriter ..> Yolo4FolderLayout

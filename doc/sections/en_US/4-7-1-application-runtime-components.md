@@ -51,6 +51,10 @@ class ApplicationVersionPrinter {
   +run(ctx) : int
 }
 
+class NetworkCfgPrinter {
+  +run(ctx) : int
+}
+
 class ApplicationFactory {
   +create_default_context(argc, argv) : ApplicationContext
   +create_default_arg_parser() : CommandLineParser
@@ -60,6 +64,7 @@ class ApplicationFactory {
   +create_library_application() : IApplication
   +create_help_printer() : IApplication
   +create_version_printer() : IApplication
+  +create_cfg_printer() : IApplication
   +run(argc, argv) : int
   +{static} execute(argc, argv) : int
 }
@@ -105,13 +110,16 @@ struct ApplicationContext {
   +second_user_request : atomic_bool
   +convert_from / convert_src / convert_to : string
   +convert_dst / convert_cfg : string
+  +dump_cfg : string
   +push_error(desc)
   +conversion_requested() : bool
+  +cfg_dump_requested() : bool
 }
 
 IApplication <|.. Application
 IApplication <|.. ApplicationHelpPrinter
 IApplication <|.. ApplicationVersionPrinter
+IApplication <|.. NetworkCfgPrinter
 Application <|-- GuiApplication
 GuiApplication <|-- TrainGuiApplication
 GuiApplication <|-- RecognitionGuiApplication
@@ -130,6 +138,7 @@ ApplicationContext2LibraryContext ..> "darknetxx011::LibraryContext" : fills
 Application ..> "darknetxx011::LibraryFacade" : performs the work it creates
 GuiApplication ..> "gui::IGUIIniter" : shows the window of
 ApplicationFactory ..> "darknetxx011::LibraryFacade" : hands the logger over
+NetworkCfgPrinter ..> "darknetxx011::LibraryFacade" : prints the network cfg of
 @enduml
 
 ## Purpose of each class
@@ -140,8 +149,9 @@ ApplicationFactory ..> "darknetxx011::LibraryFacade" : hands the logger over
 - **`converters::ApplicationContext2LibraryContext`** ([`ApplicationContext2LibraryContext.h`](/src/converters/ApplicationContext2LibraryContext.h)) - copies the darknet and the conversion parameters of the `ApplicationContext` into the `darknetxx011::LibraryContext` and links the `stop` flag of the context the signals handlers raise to the stop request of the library.
 - **`ApplicationHelpPrinter`** ([`ApplicationHelpPrinter.h`](/src/app/ApplicationHelpPrinter.h)) - prints the help message that represents all the available command line parameters. See the [Available command line parameters](/doc/sections/en_US/6-2-3-available-command-line-parameters.md) section for the full list.
 - **`ApplicationVersionPrinter`** ([`ApplicationVersionPrinter.h`](/src/app/ApplicationVersionPrinter.h)) - prints the application version, build git commit and configure date taken from the generated `project-global-decls.h` file.
-- **`ApplicationFactory`** ([`ApplicationFactory.h`](/src/app/ApplicationFactory.h)) - the composition root. Its static `execute(argc, argv)` method (called from `main`) creates the context, runs the parser and instantiates the appropriate `IApplication` descendant in accordance with the parsed flags (help, version, the network weights files conversion or the default application) and hands the logger of the application over to the darknetxx library. Compiled with the `DARKNETXX_CONVERTER_ONLY` definition (the `darknetxxConverter` binary) it has no default application: a command line which asks for no conversion gets the failed help message, while the `DARKNETXX_TRAIN_GUI` and the `DARKNETXX_RECOGNITION_GUI` ones (the GUI binaries) make the `TrainGuiApplication` and the `RecognitionGuiApplication` the default one. It also creates the default `ISignalsHandler` implementation and hands the context over to its `install` method right before the application start, so the handled signals are released as soon as the `run` method returns.
-- **`CommandLineParser`** ([`CommandLineParser.h`](/src/app/CommandLineParser.h)) - parses the `argv` array into the `ApplicationContext` fields and validates that the parameters which require a value are given one and that the conversion flags go together. See [Available command line parameters](/doc/sections/en_US/6-2-3-available-command-line-parameters.md).
+- **`NetworkCfgPrinter`** ([`NetworkCfgPrinter.h`](/src/app/NetworkCfgPrinter.h)) - prints the darknet (YOLO4) cfg of the network the dxxwjz2, the dxxwjz2p, the dxxwjz3 or the dxxwjz3p file of the `--dump-cfg` flag keeps (the `darknetxx011::LibraryFacade::network_cfg`) into the standard output alone, the errors go into the standard error output (see the [Converting the network weights files](/doc/sections/en_US/6-2-4-converting-the-network-weights-files.md#printing-the-network-cfg-of-the-file) section).
+- **`ApplicationFactory`** ([`ApplicationFactory.h`](/src/app/ApplicationFactory.h)) - the composition root. Its static `execute(argc, argv)` method (called from `main`) creates the context, runs the parser and instantiates the appropriate `IApplication` descendant in accordance with the parsed flags (help, version, the network cfg print, the network weights files conversion or the default application) and hands the logger of the application over to the darknetxx library. Compiled with the `DARKNETXX_CONVERTER_ONLY` definition (the `darknetxxConverter` binary) it has no default application: a command line which asks for no conversion gets the failed help message, while the `DARKNETXX_TRAIN_GUI` and the `DARKNETXX_RECOGNITION_GUI` ones (the GUI binaries) make the `TrainGuiApplication` and the `RecognitionGuiApplication` the default one. It also creates the default `ISignalsHandler` implementation and hands the context over to its `install` method right before the application start, so the handled signals are released as soon as the `run` method returns.
+- **`CommandLineParser`** ([`CommandLineParser.h`](/src/app/CommandLineParser.h)) - parses the `argv` array into the `ApplicationContext` fields and validates that the parameters which require a value are given one and that the conversion flags go together, while the `--dump-cfg` one goes alone. See [Available command line parameters](/doc/sections/en_US/6-2-3-available-command-line-parameters.md).
 - **`ApplicationBinaryName.h`** ([`ApplicationBinaryName.h`](/src/app/ApplicationBinaryName.h)) - the name of the binary being run (the `darknetxx`, the `darknetxxConverter`, the `darknetxx-train-gui` or the `darknetxx-recognition-gui` one), which the help and the version printers print.
 - **`CMDParamNames`** ([`CMDParamNames.h`](/src/app/CMDParamNames.h)) - the single place that holds the command line flag string constants (for example `--help`, `--train-cfg`). Both the parser and the help printer reference these constants so the flag names cannot drift.
 - **`ISignalsHandler`** ([`ISignalsHandler.h`](/src/app/signals-handlers/ISignalsHandler.h)) - the interface of the `src/app/signals-handlers` subcomponent, implemented both by the `SignalsHandler` facade and by every single signals category handler, so the rest of the application depends on the interface alone.

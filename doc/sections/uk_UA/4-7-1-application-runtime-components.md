@@ -52,6 +52,10 @@ class ApplicationVersionPrinter {
   +run(ctx) : int
 }
 
+class NetworkCfgPrinter {
+  +run(ctx) : int
+}
+
 class ApplicationFactory {
   +create_default_context(argc, argv) : ApplicationContext
   +create_default_arg_parser() : CommandLineParser
@@ -61,6 +65,7 @@ class ApplicationFactory {
   +create_library_application() : IApplication
   +create_help_printer() : IApplication
   +create_version_printer() : IApplication
+  +create_cfg_printer() : IApplication
   +run(argc, argv) : int
   +{static} execute(argc, argv) : int
 }
@@ -106,13 +111,16 @@ struct ApplicationContext {
   +second_user_request : atomic_bool
   +convert_from / convert_src / convert_to : string
   +convert_dst / convert_cfg : string
+  +dump_cfg : string
   +push_error(desc)
   +conversion_requested() : bool
+  +cfg_dump_requested() : bool
 }
 
 IApplication <|.. Application
 IApplication <|.. ApplicationHelpPrinter
 IApplication <|.. ApplicationVersionPrinter
+IApplication <|.. NetworkCfgPrinter
 Application <|-- GuiApplication
 GuiApplication <|-- TrainGuiApplication
 GuiApplication <|-- RecognitionGuiApplication
@@ -131,6 +139,7 @@ ApplicationContext2LibraryContext ..> "darknetxx011::LibraryContext" : fills
 Application ..> "darknetxx011::LibraryFacade" : performs the work it creates
 GuiApplication ..> "gui::IGUIIniter" : shows the window of
 ApplicationFactory ..> "darknetxx011::LibraryFacade" : hands the logger over
+NetworkCfgPrinter ..> "darknetxx011::LibraryFacade" : prints the network cfg of
 @enduml
 
 ## Призначення кожного класу
@@ -141,8 +150,9 @@ ApplicationFactory ..> "darknetxx011::LibraryFacade" : hands the logger over
 - **`converters::ApplicationContext2LibraryContext`** ([`ApplicationContext2LibraryContext.h`](/src/converters/ApplicationContext2LibraryContext.h)) - копіює параметри darknet і конвертування `ApplicationContext` до `darknetxx011::LibraryContext` і пов'язує прапорець `stop` контексту, який підіймають обробники сигналів, із запитом зупинки бібліотеки.
 - **`ApplicationHelpPrinter`** ([`ApplicationHelpPrinter.h`](/src/app/ApplicationHelpPrinter.h)) - друкує довідкове повідомлення, яке представляє усі доступні параметри командного рядка. Дивись секцію [Доступні параметри командного рядка](/doc/sections/uk_UA/6-2-3-available-command-line-parameters.md) для повного переліку.
 - **`ApplicationVersionPrinter`** ([`ApplicationVersionPrinter.h`](/src/app/ApplicationVersionPrinter.h)) - друкує версію програми, git коміт побудови і дату конфігурації, взяті зі згенерованого файлу `project-global-decls.h`.
-- **`ApplicationFactory`** ([`ApplicationFactory.h`](/src/app/ApplicationFactory.h)) - корінь композиції. Його статичний метод `execute(argc, argv)` (викликаний з `main`) створює контекст, запускає розпізнавач і створює відповідного нащадка `IApplication` згідно з розпізнаними прапорцями (довідка, версія, конвертування файлів ваг нейромереж чи типова програма) і передає журнал програми бібліотеці darknetxx. Скомпільований з визначенням `DARKNETXX_CONVERTER_ONLY` (бінарний файл `darknetxxConverter`), він не має типової програми: на командний рядок, який не запитує конвертування, друкується довідкове повідомлення зі статусом помилки, а з визначеннями `DARKNETXX_TRAIN_GUI` і `DARKNETXX_RECOGNITION_GUI` (бінарні файли GUI) типовою програмою стає `TrainGuiApplication` чи `RecognitionGuiApplication` відповідно. Він також створює типову реалізацію інтерфейсу `ISignalsHandler` і передає контекст до її методу `install` безпосередньо перед запуском програми, тож оброблювані сигнали звільняються одразу після завершення методу `run`.
-- **`CommandLineParser`** ([`CommandLineParser.h`](/src/app/CommandLineParser.h)) - розбирає масив `argv` у поля `ApplicationContext` і перевіряє, що параметри, які потребують значення, його отримали, а прапорці конвертування вказано разом. Дивись [Доступні параметри командного рядка](/doc/sections/uk_UA/6-2-3-available-command-line-parameters.md).
+- **`NetworkCfgPrinter`** ([`NetworkCfgPrinter.h`](/src/app/NetworkCfgPrinter.h)) - друкує cfg darknet (YOLO4) нейромережі, яку зберігає файл dxxwjz2, dxxwjz2p, dxxwjz3 чи dxxwjz3p прапорця `--dump-cfg` (`darknetxx011::LibraryFacade::network_cfg`), лише у стандартний вивід, а помилки - у стандартний вивід помилок (див. секцію [Конвертування файлів ваг нейромереж](/doc/sections/uk_UA/6-2-4-converting-the-network-weights-files.md#друк-cfg-нейромережі-файлу)).
+- **`ApplicationFactory`** ([`ApplicationFactory.h`](/src/app/ApplicationFactory.h)) - корінь композиції. Його статичний метод `execute(argc, argv)` (викликаний з `main`) створює контекст, запускає розпізнавач і створює відповідного нащадка `IApplication` згідно з розпізнаними прапорцями (довідка, версія, друк cfg нейромережі, конвертування файлів ваг нейромереж чи типова програма) і передає журнал програми бібліотеці darknetxx. Скомпільований з визначенням `DARKNETXX_CONVERTER_ONLY` (бінарний файл `darknetxxConverter`), він не має типової програми: на командний рядок, який не запитує конвертування, друкується довідкове повідомлення зі статусом помилки, а з визначеннями `DARKNETXX_TRAIN_GUI` і `DARKNETXX_RECOGNITION_GUI` (бінарні файли GUI) типовою програмою стає `TrainGuiApplication` чи `RecognitionGuiApplication` відповідно. Він також створює типову реалізацію інтерфейсу `ISignalsHandler` і передає контекст до її методу `install` безпосередньо перед запуском програми, тож оброблювані сигнали звільняються одразу після завершення методу `run`.
+- **`CommandLineParser`** ([`CommandLineParser.h`](/src/app/CommandLineParser.h)) - розбирає масив `argv` у поля `ApplicationContext` і перевіряє, що параметри, які потребують значення, його отримали, а прапорці конвертування вказано разом, тоді як прапорець `--dump-cfg` - окремо від решти. Дивись [Доступні параметри командного рядка](/doc/sections/uk_UA/6-2-3-available-command-line-parameters.md).
 - **`ApplicationBinaryName.h`** ([`ApplicationBinaryName.h`](/src/app/ApplicationBinaryName.h)) - назва запущеного бінарного файлу (`darknetxx`, `darknetxxConverter`, `darknetxx-train-gui` або `darknetxx-recognition-gui`), яку друкують друкувальники довідки і версії.
 - **`CMDParamNames`** ([`CMDParamNames.h`](/src/app/CMDParamNames.h)) - єдине місце, що зберігає рядкові константи прапорців командного рядка (наприклад `--help`, `--train-cfg`). І розпізнавач, і друкувальник довідки використовують ці константи, тому назви прапорців не можуть розійтись.
 - **`ISignalsHandler`** ([`ISignalsHandler.h`](/src/app/signals-handlers/ISignalsHandler.h)) - інтерфейс підкомпонента `src/app/signals-handlers`, реалізований як фасадом `SignalsHandler`, так і кожним окремим обробником категорії сигналів, тож решта програми залежить лише від інтерфейсу.
