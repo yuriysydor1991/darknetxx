@@ -2,8 +2,8 @@
 
 #include <cassert>
 
-#include "src/lib/OMP/OMPController.h"
-#include "src/lib/darknet-adaptor/DarknetController.h"
+#include "src/OMP/OMPController.h"
+#include "src/darknet-adaptor/DarknetController.h"
 #include "src/log/log.h"
 
 namespace darknetxx_impl

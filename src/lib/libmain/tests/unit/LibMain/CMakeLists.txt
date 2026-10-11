@@ -5,8 +5,8 @@ add_executable(
   UTEST_LibMain.cpp
   ${PROJECT_SOURCE_DIR}/src/lib/libmain/LibMain.cpp
   ${PROJECT_SOURCE_DIR}/src/lib/facade/LibraryContext.cpp
-  ${LIBMAIN_MOCKS_ROOT}/DarknetController/src/lib/darknet-adaptor/DarknetController.cpp
-  ${LIBMAIN_MOCKS_ROOT}/OMPController/src/lib/OMP/OMPController.cpp
+  ${LIBMAIN_MOCKS_ROOT}/DarknetController/src/darknet-adaptor/DarknetController.cpp
+  ${LIBMAIN_MOCKS_ROOT}/OMPController/src/OMP/OMPController.cpp
 )
 
 target_include_directories(

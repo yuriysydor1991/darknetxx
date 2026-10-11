@@ -43,7 +43,7 @@ if (ENABLE_SANITIZERS OR ENABLE_SANITIZERS_THREADS)
 endif()
 
 # The dxxwjz1 network weights files (see the
-# src/lib/darknet-adaptor/adaptors/NetworksLoaders/dxxwjz1 directory) are the gzip
+# src/darknet-adaptor/adaptors/NetworksLoaders/dxxwjz1 directory) are the gzip
 # compressed JSON documents, which the zlib and the nlohmann json libraries
 # read and write, so neither of them can be left out. The option turned OFF is
 # turned back ON: the cache of a build directory configured before the files

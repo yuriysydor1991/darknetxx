@@ -5,8 +5,8 @@
 #include "src/lib/libmain/LibFactory.h"
 #include "src/lib/libmain/LibMain.h"
 #include "src/lib/libmain/WeightsConversionLib.h"
-#include "src/lib/recognition/NetworkRecognizer.h"
-#include "src/lib/training/BackgroundTrainer.h"
+#include "src/recognition/NetworkRecognizer.h"
+#include "src/training/BackgroundTrainer.h"
 
 using darknetxx011::LibraryContext;
 using darknetxx011::LibraryContextPtr;

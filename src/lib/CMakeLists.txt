@@ -10,12 +10,15 @@ cmake_minimum_required(VERSION 3.13)
 # the facade export half of the DARKNETXX_LIB_API of the public headers
 add_compile_definitions(DARKNETXX_LIB_BUILDING=1)
 
-add_subdirectory(darknet-adaptor)
-add_subdirectory(helpers)
-add_subdirectory(OMP)
-add_subdirectory(zlib)
-add_subdirectory(training)
-add_subdirectory(recognition)
+# The components the library is built of, the src directories beside this
+# one, included from here so they build under the library definitions above.
+foreach(LIB_COMPONENT darknet-adaptor helpers OMP zlib training recognition)
+  add_subdirectory(
+    ${PROJECT_SOURCE_DIR}/src/${LIB_COMPONENT}
+    ${PROJECT_BINARY_DIR}/src/${LIB_COMPONENT}
+  )
+endforeach()
+
 add_subdirectory(libmain)
 add_subdirectory(facade)
 

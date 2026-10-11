@@ -38,7 +38,7 @@ endif()
 # ${DARKNETXX_BINARY_NAME} executable or any of your own libraries):
 #   target_link_libraries(${DARKNETXX_BINARY_NAME} ZLIB::ZLIB)
 #
-# The darknetxx links it into the zlibi::ZlibController (see the src/lib/zlib
+# The darknetxx links it into the zlibi::ZlibController (see the src/zlib
 # directory), the compressor of the dxxwjz1 network weights files.
 #
 # See doc/sections/en_US/5-23-enabling-the-zlib-library.md (and the uk_UA copy).

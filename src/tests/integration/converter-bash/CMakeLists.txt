@@ -22,7 +22,7 @@ find_program(BASH_EXEC bash REQUIRED)
 set(ITESTS_WORK_DIR "${CMAKE_CURRENT_BINARY_DIR}/itests-data")
 set(
   ITESTS_REFERENCE_DIR
-  "${PROJECT_SOURCE_DIR}/src/lib/darknet-adaptor/adaptors/NetworksLoaders/OrigDefaultLoader/tests/component/OrigDefaultLoader/data"
+  "${PROJECT_SOURCE_DIR}/src/darknet-adaptor/adaptors/NetworksLoaders/OrigDefaultLoader/tests/component/OrigDefaultLoader/data"
 )
 
 set(

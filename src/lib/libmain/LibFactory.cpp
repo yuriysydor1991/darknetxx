@@ -4,9 +4,9 @@
 
 #include "src/lib/libmain/LibMain.h"
 #include "src/lib/libmain/WeightsConversionLib.h"
-#include "src/lib/recognition/NetworkRecognizer.h"
-#include "src/lib/training/BackgroundTrainer.h"
 #include "src/log/log.h"
+#include "src/recognition/NetworkRecognizer.h"
+#include "src/training/BackgroundTrainer.h"
 
 namespace darknetxx_impl
 {

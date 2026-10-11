@@ -2,7 +2,7 @@
 
 #include <cassert>
 
-#include "src/lib/darknet-adaptor/adaptors/NetworksLoaders/weights-formats/WeightsFileFormats.h"
+#include "src/darknet-adaptor/adaptors/NetworksLoaders/weights-formats/WeightsFileFormats.h"
 #include "src/log/log.h"
 
 namespace darknetxx_impl

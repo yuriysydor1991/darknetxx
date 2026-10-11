@@ -4,8 +4,8 @@
 #include <memory>
 
 #include "LibraryContext.h"
-#include "src/lib/OMP/OMPController.h"
-#include "src/lib/darknet-adaptor/DarknetController.h"
+#include "src/OMP/OMPController.h"
+#include "src/darknet-adaptor/DarknetController.h"
 #include "src/lib/libmain/LibMain.h"
 
 using darknet_adaptor::DarknetController;
