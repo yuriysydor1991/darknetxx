@@ -4,7 +4,8 @@ The Darknet adaptor components live in the `darknet_adaptor` namespace (under
 [`src/darknet-adaptor`](/src/darknet-adaptor), the network loaders of the
 `darknet_adaptor::loaders` one under [`src/NetworksLoaders`](/src/NetworksLoaders)).
 They form the bridge between the
-clean C++ application infrastructure and the original Darknet C/C++ code, so the
+clean C++ application infrastructure and the original Darknet C/C++ code (under
+[`src/detector-cmake-adaptor`](/src/detector-cmake-adaptor)), so the
 rest of the application does not depend on the original structures directly.
 
 The standalone source of the diagram below is

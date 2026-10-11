@@ -67,9 +67,9 @@ package "src/lib (the darknetxx-0.11 shared library)" as libpkg {
 
 note right of libpkg
   The src/lib/CMakeLists.txt builds the
-  src/darknet-adaptor (with the src/NetworksLoaders),
-  src/training, src/recognition, src/OMP, src/zlib
-  and src/helpers components into the library.
+  src/darknet-adaptor (with the src/detector-cmake-adaptor
+  and the src/NetworksLoaders), src/training, src/recognition,
+  src/OMP, src/zlib and src/helpers components into the library.
 end note
 
 package "src/training" {
@@ -95,8 +95,11 @@ package "src/darknet-adaptor" {
     [TrainingData] as trainingdata
     [TrainingJournal] as journal
     [TrainingChart] as chart
-    [detector-cmake-adaptor/darknet\n(the original Darknet C code)] as darknetc
   }
+}
+
+package "src/detector-cmake-adaptor" {
+  [darknet\n(the original Darknet C code)] as darknetc
 }
 
 package "src/NetworksLoaders" {

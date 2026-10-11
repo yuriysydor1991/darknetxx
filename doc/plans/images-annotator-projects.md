@@ -68,7 +68,7 @@ Weights trained from either source must stay interchangeable, so the native read
 
 ## The darknet core touch points
 
-Paths are relative to `src/darknet-adaptor/adaptors/detector-cmake-adaptor/darknet/src/`.
+Paths are relative to `src/detector-cmake-adaptor/darknet/src/`.
 
 | Where | What it reads |
 |---|---|

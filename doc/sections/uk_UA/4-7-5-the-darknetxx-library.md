@@ -205,6 +205,7 @@ LibraryFacade ..> ILogger : adopts
 | [`src/training`](/src/training) | `BackgroundTrainer`, `ATrainingProject`, `Yolo4Folder` і `DxxwjzProject` файлів проектів dxxwjz2p і dxxwjz3p |
 | [`src/recognition`](/src/recognition) | `NetworkRecognizer`, який розпізнає нейромережею для розпізнавання, створеною `OrigDefaultLoader`, за допомогою `ObjectsDetection` чи `ImageClassification` (реалізацій `IRecognitionMethod`) і обводить об'єкти рамками за допомогою `RecognitionPainter` |
 | [`src/darknet-adaptor`](/src/darknet-adaptor) | міст до оригінального коду Darknet (див. секцію [Компоненти адаптера Darknet](/doc/sections/uk_UA/4-7-2-darknet-adaptor-components.md)) |
+| [`src/detector-cmake-adaptor`](/src/detector-cmake-adaptor) | оригінальний код Darknet на C/C++ директорії `darknet`, який підключає і будує з заголовками Darknet і визначеннями OpenCV адаптер Darknet |
 | [`src/NetworksLoaders`](/src/NetworksLoaders) | завантажувачі нейромереж і файли ваг нейромереж, які підключає і будує з заголовками Darknet адаптер Darknet (див. секцію [Файли ваг нейромереж](/doc/sections/uk_UA/4-7-4-network-weights-files.md)) |
 | [`src/OMP`](/src/OMP), [`src/zlib`](/src/zlib), [`src/helpers`](/src/helpers) | допоміжні компоненти (див. секцію [Допоміжні компоненти](/doc/sections/uk_UA/4-7-3-supporting-components.md)) |
 

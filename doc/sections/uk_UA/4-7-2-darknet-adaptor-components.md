@@ -4,7 +4,8 @@
 [`src/darknet-adaptor`](/src/darknet-adaptor), завантажувачі нейромереж простору
 імен `darknet_adaptor::loaders` - під [`src/NetworksLoaders`](/src/NetworksLoaders)).
 Вони утворюють місток між чистою
-інфраструктурою C++ програми і оригінальним кодом Darknet на C/C++, тому решта
+інфраструктурою C++ програми і оригінальним кодом Darknet на C/C++ (під
+[`src/detector-cmake-adaptor`](/src/detector-cmake-adaptor)), тому решта
 програми не залежить безпосередньо від оригінальних структур.
 
 Окремий вихідний файл діаграми нижче -

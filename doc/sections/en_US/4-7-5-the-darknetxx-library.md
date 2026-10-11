@@ -209,6 +209,7 @@ private to the library:
 | [`src/training`](/src/training) | the `BackgroundTrainer`, the `ATrainingProject`, the `Yolo4Folder` and the `DxxwjzProject` of the dxxwjz2p and the dxxwjz3p project files |
 | [`src/recognition`](/src/recognition) | the `NetworkRecognizer` of the inference network of the `OrigDefaultLoader`, which recognizes by the `ObjectsDetection` or by the `ImageClassification` (the `IRecognitionMethod` ones) and boxes the objects by the `RecognitionPainter` |
 | [`src/darknet-adaptor`](/src/darknet-adaptor) | the bridge to the original Darknet code (see the [Darknet adaptor components](/doc/sections/en_US/4-7-2-darknet-adaptor-components.md) section) |
+| [`src/detector-cmake-adaptor`](/src/detector-cmake-adaptor) | the original Darknet C/C++ code of the `darknet` directory, which the darknet adaptor includes and builds with the Darknet includes and the OpenCV definitions |
 | [`src/NetworksLoaders`](/src/NetworksLoaders) | the network loaders and the network weights files, which the darknet adaptor includes and builds with the Darknet includes (see the [Network weights files](/doc/sections/en_US/4-7-4-network-weights-files.md) section) |
 | [`src/OMP`](/src/OMP), [`src/zlib`](/src/zlib), [`src/helpers`](/src/helpers) | the supporting components (see the [Supporting components](/doc/sections/en_US/4-7-3-supporting-components.md) section) |
 
