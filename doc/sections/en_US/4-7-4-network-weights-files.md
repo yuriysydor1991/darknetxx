@@ -729,10 +729,7 @@ The dxxwjz3 file is the dxxwjz2 document (see above) of nothing but the JSON dat
     {"type": "maxpool", "options": {"size": 2, "stride": 2}},
     {"type": "route", "options": {"layers": [-1,-3]}},
     {"type": "yolo", "options": {"mask": [0,1,2], "anchors": [12,16,19,36,40,28], "classes": 2, "num": 3, "jitter": 0.3}}
-  ], "classes": [
-    {"index": 0, "name": "cat"},
-    {"index": 1, "name": "dog"}
-  ]},
+  ], "classes": ["cat", "dog"]},
   "training": {"seconds": 3725,
     "loss": [812.5,790.25,701],
     "avg_loss": [812.5,810.275,799.3475],
@@ -750,7 +747,7 @@ The keys of the document beside the dxxwjz2 ones (the header is the dxxwjz2 one,
 | --- | --- | --- |
 | `format` | the `"dxxwjz3"` string | yes |
 | `version` | the `3` integer, the readers refuse the other versions | yes |
-| `network` | the network description: the `net` object of the options of the `[net]` section of the cfg (the `[network]` one), the `layers` array of the layer sections in the order of the cfg with the arrays of their layers, both required, and the `classes` array of the dxxwjz2 one | yes |
+| `network` | the network description: the `net` object of the options of the `[net]` section of the cfg (the `[network]` one), the `layers` array of the layer sections in the order of the cfg with the arrays of their layers, both required, and the `classes` array of the class name strings, the name of an index is the one of the class of the index | yes |
 | `training` | the dxxwjz2 training record of no `iteration` column: the losses of an index are the ones of the iteration of the index + 1, so the `loss` of the 1000th iteration is the `loss[999]` (the NaN losses of the iterations of no record) | no |
 | `trailing` | the bytes the original weights file keeps after the arrays: the array of the integers from 0 to 255 | no |
 
@@ -777,8 +774,8 @@ The dxxwjz3 file is the dxxwjz2 one for everything else: the training and the de
 - **`Dxxwjz3CfgJson`** - the JSON text of the cfg text, which it reads the darknet way (the `CfgSection::read_cfg()` of the `OrigDefaultLoader`): the members of the `[net]` options, the `type` and the `options` members of every layer section and the layer types of the sections.
 - **`Dxxwjz3Bytes`** - the JSON array of the trailing bytes: the text of the bytes, the bytes of the SAX events of the array a value at a time (no JSON tree of the megabytes of the bytes of the original weights file of another network is made).
 - **`Dxxwjz3Losses`** - the loss columns of the losses of an iteration at the index of the iteration - 1, the NaN ones of the iterations of none.
-- **`Dxxwjz3JsonEmitter`** - the `Dxxwjz2JsonEmitter` of the network member of the JSON of the network cfg, which writes every layer object with the arrays of its `layer()` (the layers of none of no arrays) and the members after the network one by its `members()` before the header, of the trailing bytes (it's `trailing()`) and of the loss columns of the `Dxxwjz3Losses` (it's `losses()`).
-- **`Dxxwjz3MetadataReader`** - the `Dxxwjz2MetadataReader` of the cfg text of the network tree, which it checks the way the rest of the members are checked, of the arrays of a layer object (it's `arrays()`, which moves them out of the tree into the layer of the document of the index of the object and the type of its section) and of the training tree of no iteration column.
+- **`Dxxwjz3JsonEmitter`** - the `Dxxwjz2JsonEmitter` of the network member of the JSON of the network cfg, which writes every layer object with the arrays of its `layer()` (the layers of none of no arrays) and the members after the network one by its `members()` before the header, of the array of the class names, of the trailing bytes (it's `trailing()`) and of the loss columns of the `Dxxwjz3Losses` (it's `losses()`).
+- **`Dxxwjz3MetadataReader`** - the `Dxxwjz2MetadataReader` of the cfg text of the network tree, which it checks the way the rest of the members are checked, of the arrays of a layer object (it's `arrays()`, which moves them out of the tree into the layer of the document of the index of the object and the type of its section), of the class names array and of the training tree of no iteration column.
 - **`Dxxwjz3NetworkBuilder`** - the `Dxxwjz2SubtreeBuilder` of the network value, which hands every layer object over to the `arrays()` of the `Dxxwjz3MetadataReader` once the object is complete (it's `closed()`), so the tree keeps the weights of a layer at a time.
 - **`Dxxwjz3SaxHandler`** - the `Dxxwjz2SaxHandler` of the dxxwjz3 format name and version, which builds the network tree by the `Dxxwjz3NetworkBuilder` (it's `builder()`), reads it by the `Dxxwjz3MetadataReader` (it's `metadata()`) and the trailing bytes by the `Dxxwjz3Bytes` (it's `trailing()`) and skips the layers key of the document (it's `layers_member()`).
 - **`Dxxwjz3Parser`**, **`Dxxwjz3Reader`**, **`Dxxwjz3Writer`**, **`Dxxwjz3Validator`**, **`Dxxwjz3FileFormat`** - the dxxwjz2 ones of the dxxwjz3 handler and emitter; the writer refuses the cfg text the JSON can't keep and the layers which aren't the ones of the cfg sections of their indexes (it's `keeps()`).
@@ -792,10 +789,7 @@ The dxxwjz3p file is the dxxwjz2p project (see above) of the dxxwjz3 document, s
   "format": "dxxwjz3p",
   "version": 1,
   "generator": "darknetxx 0.11.0",
-  "network": {"net": {"batch": 64, "width": 416, ...}, "layers": [...], "classes": [
-    {"index": 0, "name": "cat"},
-    {"index": 1, "name": "dog"}
-  ]},
+  "network": {"net": {"batch": 64, "width": 416, ...}, "layers": [...], "classes": ["cat", "dog"]},
   "training": {"seconds": 3725, "loss": [812.5,790.25,701], ...},
   "annotations": {"ImagesAnnotator": {"version": "0.12.0"}, "annotations": [
     {"db": {"path": "images"}, "annotations": [

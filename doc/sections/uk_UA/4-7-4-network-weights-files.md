@@ -729,10 +729,7 @@ TrainingJournal ..> WeightsFileFormats : updates the dxxwjz2p and the dxxwjz3p p
     {"type": "maxpool", "options": {"size": 2, "stride": 2}},
     {"type": "route", "options": {"layers": [-1,-3]}},
     {"type": "yolo", "options": {"mask": [0,1,2], "anchors": [12,16,19,36,40,28], "classes": 2, "num": 3, "jitter": 0.3}}
-  ], "classes": [
-    {"index": 0, "name": "cat"},
-    {"index": 1, "name": "dog"}
-  ]},
+  ], "classes": ["cat", "dog"]},
   "training": {"seconds": 3725,
     "loss": [812.5,790.25,701],
     "avg_loss": [812.5,810.275,799.3475],
@@ -750,7 +747,7 @@ TrainingJournal ..> WeightsFileFormats : updates the dxxwjz2p and the dxxwjz3p p
 | --- | --- | --- |
 | `format` | рядок `"dxxwjz3"` | так |
 | `version` | ціле число `3`, інші версії відхиляються | так |
-| `network` | опис нейромережі: об'єкт `net` опцій секції `[net]` cfg (секції `[network]`), масив `layers` секцій шарів у порядку cfg з масивами їхніх шарів, обидва обов'язкові, і масив `classes` формату dxxwjz2 | так |
+| `network` | опис нейромережі: об'єкт `net` опцій секції `[net]` cfg (секції `[network]`), масив `layers` секцій шарів у порядку cfg з масивами їхніх шарів, обидва обов'язкові, і масив `classes` рядків назв класів, назва з індексом - це назва класу з цим індексом | так |
 | `training` | запис навчання dxxwjz2 без стовпця `iteration`: втрати індексу - це втрати ітерації індекс + 1, тож `loss` 1000-ї ітерації - це `loss[999]` (втрати NaN ітерацій без запису) | ні |
 | `trailing` | байти, які оригінальний файл ваг містить після масивів: масив цілих чисел від 0 до 255 | ні |
 
@@ -777,8 +774,8 @@ TrainingJournal ..> WeightsFileFormats : updates the dxxwjz2p and the dxxwjz3p p
 - **`Dxxwjz3CfgJson`** - текст JSON тексту cfg, який він читає так, як darknet (методом `CfgSection::read_cfg()` класу `OrigDefaultLoader`): члени опцій `[net]`, члени `type` і `options` кожної секції шару і типи шарів секцій.
 - **`Dxxwjz3Bytes`** - масив JSON хвостових байтів: текст байтів і байти з подій SAX масиву по одному значенню (дерево JSON з мегабайтів байтів оригінального файлу ваг іншої нейромережі не будується).
 - **`Dxxwjz3Losses`** - стовпці втрат з втратами ітерації за індексом ітерація - 1, втратами NaN ітерацій без них.
-- **`Dxxwjz3JsonEmitter`** - `Dxxwjz2JsonEmitter` з членом network з JSON cfg нейромережі, який записує кожен об'єкт шару з масивами свого методу `layer()` (шари без нього - без масивів), а члени після network - своїм методом `members()` перед header, з хвостовими байтами (його метод `trailing()`) і стовпцями втрат `Dxxwjz3Losses` (його метод `losses()`).
-- **`Dxxwjz3MetadataReader`** - `Dxxwjz2MetadataReader` тексту cfg з дерева network, яке він перевіряє так само, як перевіряються решта членів, масивів об'єкта шару (його метод `arrays()`, який переносить їх з дерева у шар документа з індексом об'єкта і типом його секції) і дерева training без стовпця ітерацій.
+- **`Dxxwjz3JsonEmitter`** - `Dxxwjz2JsonEmitter` з членом network з JSON cfg нейромережі, який записує кожен об'єкт шару з масивами свого методу `layer()` (шари без нього - без масивів), а члени після network - своїм методом `members()` перед header, з масивом назв класів, з хвостовими байтами (його метод `trailing()`) і стовпцями втрат `Dxxwjz3Losses` (його метод `losses()`).
+- **`Dxxwjz3MetadataReader`** - `Dxxwjz2MetadataReader` тексту cfg з дерева network, яке він перевіряє так само, як перевіряються решта членів, масивів об'єкта шару (його метод `arrays()`, який переносить їх з дерева у шар документа з індексом об'єкта і типом його секції), масиву назв класів і дерева training без стовпця ітерацій.
 - **`Dxxwjz3NetworkBuilder`** - `Dxxwjz2SubtreeBuilder` значення network, який передає кожен об'єкт шару методу `arrays()` класу `Dxxwjz3MetadataReader`, щойно об'єкт завершено (його метод `closed()`), тож дерево зберігає ваги лише одного шару.
 - **`Dxxwjz3SaxHandler`** - `Dxxwjz2SaxHandler` з назвою і версією формату dxxwjz3, який будує дерево network класом `Dxxwjz3NetworkBuilder` (його метод `builder()`), читає його класом `Dxxwjz3MetadataReader` (його метод `metadata()`), хвостові байти - класом `Dxxwjz3Bytes` (його метод `trailing()`) і пропускає ключ документа layers (його метод `layers_member()`).
 - **`Dxxwjz3Parser`**, **`Dxxwjz3Reader`**, **`Dxxwjz3Writer`**, **`Dxxwjz3Validator`**, **`Dxxwjz3FileFormat`** - відповідні класи dxxwjz2 з обробником і класом запису JSON dxxwjz3; клас запису відхиляє текст cfg, якого JSON не може зберегти, і шари, які не є шарами секцій cfg своїх індексів (його метод `keeps()`).
@@ -792,10 +789,7 @@ TrainingJournal ..> WeightsFileFormats : updates the dxxwjz2p and the dxxwjz3p p
   "format": "dxxwjz3p",
   "version": 1,
   "generator": "darknetxx 0.11.0",
-  "network": {"net": {"batch": 64, "width": 416, ...}, "layers": [...], "classes": [
-    {"index": 0, "name": "cat"},
-    {"index": 1, "name": "dog"}
-  ]},
+  "network": {"net": {"batch": 64, "width": 416, ...}, "layers": [...], "classes": ["cat", "dog"]},
   "training": {"seconds": 3725, "loss": [812.5,790.25,701], ...},
   "annotations": {"ImagesAnnotator": {"version": "0.12.0"}, "annotations": [
     {"db": {"path": "images"}, "annotations": [
