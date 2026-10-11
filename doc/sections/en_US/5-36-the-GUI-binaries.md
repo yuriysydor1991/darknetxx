@@ -18,12 +18,14 @@ windows the way the user does.
 
 ### The darknetxx-train-gui binary
 
-It trains the network of a training project: the YOLO4 folder, the one the
-[ImagesAnnotator](https://github.com/yuriysydor1991/ImagesAnnotator) exports,
-or the dxxwjz2p project file, the one of everything of the YOLO4 folder but the
-images (see the [The dxxwjz2p project file format](/doc/sections/en_US/4-7-4-network-weights-files.md#the-dxxwjz2p-project-file-format)
+It trains the network of a training project: the YOLO4 folder, or the dxxwjz2p
+project file, the one of everything of the YOLO4 folder but the images (see the
+[The dxxwjz2p project file format](/doc/sections/en_US/4-7-4-network-weights-files.md#the-dxxwjz2p-project-file-format)
 section), or the dxxwjz3p one of the JSON data alone (see the
 [The dxxwjz3p project file format](/doc/sections/en_US/4-7-4-network-weights-files.md#the-dxxwjz3p-project-file-format)
+section), the ones the
+[ImagesAnnotator](https://github.com/yuriysydor1991/ImagesAnnotator) exports
+(see the [The files of the ImagesAnnotator](/doc/sections/en_US/4-7-4-network-weights-files.md#the-files-of-the-imagesannotator)
 section), and resumes the training the project holds the weights of.
 
 ```

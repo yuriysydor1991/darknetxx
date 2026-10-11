@@ -12,6 +12,8 @@
 
 Для того щоб навчити мережу на власному наборі даних знадобляться анотовані зображення з мітками обмежувальних рамок у форматі Darknet/YOLO. Рекомендується готувати такі анотації за допомогою інструмента `ImagesAnnotator` що доступний за адресою [https://github.com/yuriysydor1991/ImagesAnnotator](https://github.com/yuriysydor1991/ImagesAnnotator).
 
+`ImagesAnnotator` також генерує файли найновіших форматів darknetxx: підменю `DarknetXX` його меню експорту записує проект навчання dxxwjz3p з анотованими зображеннями і теку навчання YOLO4 з нейромережею dxxwjz3, яку треба навчити (а також файли dxxwjz2p і dxxwjz2), які `darknetxx --train-cfg` і `darknetxx-train-gui` навчають без жодного конвертування, а його меню імпорту читає їх назад, включно з проектами, в які навчання зберегло ваги. Див. секцію [Файли ImagesAnnotator](/doc/sections/uk_UA/4-7-4-network-weights-files.md#файли-imagesannotator).
+
 # Компоненти
 
 Діаграма нижче показує усі компоненти директорії [`src`](/src), виконувані

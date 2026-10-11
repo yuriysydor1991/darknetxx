@@ -12,6 +12,8 @@ See more at the [kytok.org.ua](http://www.kytok.org.ua/)
 
 In order to train the network on your own data set you'll need annotated images with the bounding box labels in the Darknet/YOLO format. It's recommended to prepare such annotations with the `ImagesAnnotator` tool available at [https://github.com/yuriysydor1991/ImagesAnnotator](https://github.com/yuriysydor1991/ImagesAnnotator).
 
+The `ImagesAnnotator` generates the files of the most recent darknetxx formats as well: the `DarknetXX` submenu of its export menu writes the dxxwjz3p training project of the annotated images and the YOLO4 training folder with the dxxwjz3 network to train (the dxxwjz2p and the dxxwjz2 ones too), which `darknetxx --train-cfg` and the `darknetxx-train-gui` train with no conversion, and its import menu reads them back, the projects the training has saved the weights into included. See the [The files of the ImagesAnnotator](/doc/sections/en_US/4-7-4-network-weights-files.md#the-files-of-the-imagesannotator) section.
+
 # Components
 
 The diagram below shows all the components of the [`src`](/src) directory, the

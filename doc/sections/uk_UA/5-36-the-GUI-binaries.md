@@ -17,12 +17,14 @@
 
 ### Бінарний файл darknetxx-train-gui
 
-Він навчає нейромережу проекту навчання: теки YOLO4, тієї, яку експортує
-[ImagesAnnotator](https://github.com/yuriysydor1991/ImagesAnnotator), або
-файлу проекту dxxwjz2p, який містить усе, що й тека YOLO4, окрім зображень
+Він навчає нейромережу проекту навчання: теки YOLO4, або файлу проекту
+dxxwjz2p, який містить усе, що й тека YOLO4, окрім зображень
 (див. секцію [Формат файлу проекту dxxwjz2p](/doc/sections/uk_UA/4-7-4-network-weights-files.md#формат-файлу-проекту-dxxwjz2p)),
 або файлу проекту dxxwjz3p лише з даних JSON (див. секцію
 [Формат файлу проекту dxxwjz3p](/doc/sections/uk_UA/4-7-4-network-weights-files.md#формат-файлу-проекту-dxxwjz3p)),
+тих, які експортує
+[ImagesAnnotator](https://github.com/yuriysydor1991/ImagesAnnotator) (див.
+секцію [Файли ImagesAnnotator](/doc/sections/uk_UA/4-7-4-network-weights-files.md#файли-imagesannotator)),
 і продовжує навчання, ваги якого проект вже містить.
 
 ```
