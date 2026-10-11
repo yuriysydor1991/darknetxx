@@ -7,9 +7,9 @@
 #include <vector>
 
 #include "image_opencv.h"
-#include "src/darknet-adaptor/adaptors/NetworksLoaders/OrigDefaultLoader/CfgSection.h"
-#include "src/darknet-adaptor/adaptors/NetworksLoaders/weights-formats/NetworkSource.h"
-#include "src/darknet-adaptor/adaptors/NetworksLoaders/weights-formats/WeightsFileFormats.h"
+#include "src/NetworksLoaders/OrigDefaultLoader/CfgSection.h"
+#include "src/NetworksLoaders/weights-formats/NetworkSource.h"
+#include "src/NetworksLoaders/weights-formats/WeightsFileFormats.h"
 #include "src/log/log.h"
 
 namespace darknet_adaptor::adaptors

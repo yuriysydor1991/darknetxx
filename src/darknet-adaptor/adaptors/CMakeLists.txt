@@ -20,7 +20,14 @@ add_subdirectory(ADetector)
 add_subdirectory(ALayerAdaptor)
 add_subdirectory(ANetworkAdaptor)
 add_subdirectory(Layers)
-add_subdirectory(NetworksLoaders)
+
+# the src/NetworksLoaders component, built with the darknet includes and the
+# OpenCV definitions of the adaptors
+add_subdirectory(
+  ${PROJECT_SOURCE_DIR}/src/NetworksLoaders
+  ${PROJECT_BINARY_DIR}/src/NetworksLoaders
+)
+
 add_subdirectory(NetworksCApi)
 add_subdirectory(TrainingData)
 add_subdirectory(TrainingJournal)

@@ -17,10 +17,10 @@
 #include "NetworkChecks.h"
 #include "WeightsNetSpec.h"
 #include "WeightsVariants.h"
+#include "src/NetworksLoaders/OrigDefaultLoader/OrigDefaultLoader.h"
 #include "src/darknet-adaptor/adaptors/ALayerAdaptor/ALayerAdaptor.h"
 #include "src/darknet-adaptor/adaptors/ANetworkAdaptor/ANetworkAdaptor.h"
 #include "src/darknet-adaptor/adaptors/NetworkError.h"
-#include "src/darknet-adaptor/adaptors/NetworksLoaders/OrigDefaultLoader/OrigDefaultLoader.h"
 
 using namespace testing;
 using namespace weights_factory;

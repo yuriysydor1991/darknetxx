@@ -16,7 +16,7 @@ endif()
 set(ITEST_CONVERTER_GENERATED_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated")
 set(
   ITEST_CONVERTER_REFERENCE_DIR
-  "${PROJECT_SOURCE_DIR}/src/darknet-adaptor/adaptors/NetworksLoaders/OrigDefaultLoader/tests/component/OrigDefaultLoader/data"
+  "${PROJECT_SOURCE_DIR}/src/NetworksLoaders/OrigDefaultLoader/tests/component/OrigDefaultLoader/data"
 )
 
 configure_file(

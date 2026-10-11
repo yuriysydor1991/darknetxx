@@ -22,11 +22,11 @@
 #include <new>
 #include <string>
 
+#include "src/NetworksLoaders/OrigDefaultLoader/OrigDefaultLoader.h"
+#include "src/NetworksLoaders/weights-formats/WeightsFileFormats.h"
 #include "src/darknet-adaptor/adaptors/ANetworkAdaptor/ANetworkAdaptor.h"
 #include "src/darknet-adaptor/adaptors/NetworkError.h"
 #include "src/darknet-adaptor/adaptors/NetworksCApi/NetworksRegistry.h"
-#include "src/darknet-adaptor/adaptors/NetworksLoaders/OrigDefaultLoader/OrigDefaultLoader.h"
-#include "src/darknet-adaptor/adaptors/NetworksLoaders/weights-formats/WeightsFileFormats.h"
 #include "src/darknet-adaptor/adaptors/orig-includes.h"
 
 namespace

@@ -10,9 +10,9 @@
 #include "WeightsFile.h"
 #include "WeightsNetSpec.h"
 #include "WeightsWorkspace.h"
-#include "src/darknet-adaptor/adaptors/NetworksLoaders/dxxwjz2/v2/Dxxwjz2Reader.h"
-#include "src/darknet-adaptor/adaptors/NetworksLoaders/original-weights/OrigWeightsReader.h"
-#include "src/darknet-adaptor/adaptors/NetworksLoaders/weights-formats/WeightsFileFormats.h"
+#include "src/NetworksLoaders/dxxwjz/dxxwjz2/Dxxwjz2Reader.h"
+#include "src/NetworksLoaders/original-weights/OrigWeightsReader.h"
+#include "src/NetworksLoaders/weights-formats/WeightsFileFormats.h"
 #include "src/darknet-adaptor/adaptors/TrainingJournal/TrainingJournal.h"
 #include "src/log/default-logger/DefaultLogger.h"
 

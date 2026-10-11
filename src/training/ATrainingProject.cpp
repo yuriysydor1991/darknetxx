@@ -4,7 +4,7 @@
 #include <system_error>
 #include <utility>
 
-#include "src/darknet-adaptor/adaptors/NetworksLoaders/weights-formats/NetworkSource.h"
+#include "src/NetworksLoaders/weights-formats/NetworkSource.h"
 #include "src/log/log.h"
 
 namespace darknetxx011

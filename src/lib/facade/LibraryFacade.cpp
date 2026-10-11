@@ -4,10 +4,10 @@
 #include <memory>
 
 #include "Yolo4Folder.h"
-#include "src/darknet-adaptor/adaptors/NetworksLoaders/dxxwjz2p/v1/Dxxwjz2pFormat.h"
-#include "src/darknet-adaptor/adaptors/NetworksLoaders/dxxwjz3p/v1/Dxxwjz3pFormat.h"
-#include "src/darknet-adaptor/adaptors/NetworksLoaders/weights-formats/NetworkSource.h"
-#include "src/darknet-adaptor/adaptors/NetworksLoaders/weights-formats/WeightsFileFormats.h"
+#include "src/NetworksLoaders/dxxwjz/dxxwjz2p/Dxxwjz2pFormat.h"
+#include "src/NetworksLoaders/dxxwjz/dxxwjz3p/Dxxwjz3pFormat.h"
+#include "src/NetworksLoaders/weights-formats/NetworkSource.h"
+#include "src/NetworksLoaders/weights-formats/WeightsFileFormats.h"
 #include "src/darknet-adaptor/adaptors/TrainingChart/TrainingChart.h"
 #include "src/lib/libmain/LibFactory.h"
 #include "src/log/log.h"

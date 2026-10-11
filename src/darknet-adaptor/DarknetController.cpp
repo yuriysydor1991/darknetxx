@@ -3,12 +3,12 @@
 #include <cassert>
 #include <memory>
 
+#include "src/NetworksLoaders/weights-formats/NetworkSource.h"
+#include "src/NetworksLoaders/weights-formats/WeightsFileFormats.h"
+#include "src/NetworksLoaders/weights-model/WeightsDocument.h"
 #include "src/darknet-adaptor/DarknetStrings.h"
 #include "src/darknet-adaptor/adaptors/ADetector/ADetector.h"
 #include "src/darknet-adaptor/adaptors/ADetectorTrainer/ADetectorTrainer.h"
-#include "src/darknet-adaptor/adaptors/NetworksLoaders/weights-formats/NetworkSource.h"
-#include "src/darknet-adaptor/adaptors/NetworksLoaders/weights-formats/WeightsFileFormats.h"
-#include "src/darknet-adaptor/adaptors/NetworksLoaders/weights-model/WeightsDocument.h"
 #include "src/lib/facade/public/LibraryContext.h"
 #include "src/log/log.h"
 

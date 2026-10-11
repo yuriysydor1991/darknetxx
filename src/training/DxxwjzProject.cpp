@@ -1,6 +1,6 @@
 #include "src/training/DxxwjzProject.h"
 
-#include "src/darknet-adaptor/adaptors/NetworksLoaders/weights-formats/WeightsFileFormats.h"
+#include "src/NetworksLoaders/weights-formats/WeightsFileFormats.h"
 
 namespace darknetxx_impl
 {

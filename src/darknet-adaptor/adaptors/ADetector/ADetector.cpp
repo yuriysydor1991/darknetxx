@@ -3,8 +3,8 @@
 #include <cassert>
 #include <memory>
 
+#include "src/NetworksLoaders/OrigDefaultLoader/OrigDefaultLoader.h"
 #include "src/darknet-adaptor/adaptors/IDarknetAdaptor.h"
-#include "src/darknet-adaptor/adaptors/NetworksLoaders/OrigDefaultLoader/OrigDefaultLoader.h"
 #include "src/detector/subs/tester/test_detector_ctx.h"
 #include "src/log/log.h"
 

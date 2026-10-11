@@ -13,9 +13,9 @@
 #include <vector>
 
 #include "darknet.h"
+#include "src/NetworksLoaders/OrigDefaultLoader/OrigDefaultLoader.h"
 #include "src/darknet-adaptor/adaptors/ANetworkAdaptor/ANetworkAdaptor.h"
 #include "src/darknet-adaptor/adaptors/NetworksCApi/NetworksRegistry.h"
-#include "src/darknet-adaptor/adaptors/NetworksLoaders/OrigDefaultLoader/OrigDefaultLoader.h"
 #include "src/parser.h"
 
 using namespace testing;

@@ -6,8 +6,8 @@
 #include <thread>
 #include <vector>
 
+#include "src/NetworksLoaders/weights-model/Yolo4Annotations.h"
 #include "src/darknet-adaptor/DarknetStrings.h"
-#include "src/darknet-adaptor/adaptors/NetworksLoaders/weights-model/Yolo4Annotations.h"
 #include "src/detector/detector_context.h"
 #include "src/lib/facade/public/LibraryContext.h"
 

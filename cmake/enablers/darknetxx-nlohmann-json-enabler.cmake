@@ -34,5 +34,5 @@ endif()
 #   target_link_libraries(${DARKNETXX_BINARY_NAME} nlohmann_json::nlohmann_json)
 #
 # The darknetxx links it into the dxxwjz1 network weights files reader and
-# writer (see the src/darknet-adaptor/adaptors/NetworksLoaders/dxxwjz1
+# writer (see the src/NetworksLoaders/dxxwjz/dxxwjz1
 # directory).

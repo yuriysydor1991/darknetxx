@@ -15,10 +15,10 @@
 #include "ITEST_converter_provider.h"
 #include "NetworkChecks.h"
 #include "WeightsFile.h"
-#include "src/darknet-adaptor/adaptors/NetworksLoaders/dxxwjz1/v1/Dxxwjz1Reader.h"
-#include "src/darknet-adaptor/adaptors/NetworksLoaders/dxxwjz2/v2/Dxxwjz2Reader.h"
-#include "src/darknet-adaptor/adaptors/NetworksLoaders/original-weights/OrigWeightsReader.h"
-#include "src/darknet-adaptor/adaptors/NetworksLoaders/original-weights/OrigWeightsWriter.h"
+#include "src/NetworksLoaders/dxxwjz/dxxwjz1/Dxxwjz1Reader.h"
+#include "src/NetworksLoaders/dxxwjz/dxxwjz2/Dxxwjz2Reader.h"
+#include "src/NetworksLoaders/original-weights/OrigWeightsReader.h"
+#include "src/NetworksLoaders/original-weights/OrigWeightsWriter.h"
 
 namespace converter_test
 {

@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-#include "src/darknet-adaptor/adaptors/NetworksLoaders/weights-model/WeightsDocument.h"
+#include "src/NetworksLoaders/weights-model/WeightsDocument.h"
 
 namespace darknet_adaptor::adaptors
 {

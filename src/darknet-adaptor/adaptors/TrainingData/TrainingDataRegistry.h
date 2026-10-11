@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-#include "src/darknet-adaptor/adaptors/NetworksLoaders/weights-model/Yolo4Annotations.h"
+#include "src/NetworksLoaders/weights-model/Yolo4Annotations.h"
 
 namespace darknet_adaptor::adaptors
 {

@@ -10,7 +10,7 @@
 #include <utility>
 #include <vector>
 
-#include "src/darknet-adaptor/adaptors/NetworksLoaders/OrigDefaultLoader/OrigDefaultLoader.h"
+#include "src/NetworksLoaders/OrigDefaultLoader/OrigDefaultLoader.h"
 
 namespace weights_factory
 {

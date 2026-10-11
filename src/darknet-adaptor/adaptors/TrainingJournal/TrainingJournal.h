@@ -5,8 +5,8 @@
 #include <memory>
 #include <string>
 
-#include "src/darknet-adaptor/adaptors/NetworksLoaders/IWeightsFileFormat.h"
-#include "src/darknet-adaptor/adaptors/NetworksLoaders/weights-model/WeightsDocument.h"
+#include "src/NetworksLoaders/IWeightsFileFormat.h"
+#include "src/NetworksLoaders/weights-model/WeightsDocument.h"
 #include "src/darknet.h"
 
 namespace darknet_adaptor::adaptors

@@ -3,7 +3,7 @@
 
 #include "ILib.h"
 #include "LibraryContext.h"
-#include "src/darknet-adaptor/adaptors/NetworksLoaders/weights-converter/WeightsConverter.h"
+#include "src/NetworksLoaders/weights-converter/WeightsConverter.h"
 
 namespace darknetxx_impl
 {

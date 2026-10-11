@@ -7,9 +7,9 @@
 #include <opencv2/imgproc.hpp>
 
 #include "image_opencv.h"
+#include "src/NetworksLoaders/OrigDefaultLoader/OrigDefaultLoader.h"
+#include "src/NetworksLoaders/weights-formats/NetworkSource.h"
 #include "src/OMP/OMPController.h"
-#include "src/darknet-adaptor/adaptors/NetworksLoaders/OrigDefaultLoader/OrigDefaultLoader.h"
-#include "src/darknet-adaptor/adaptors/NetworksLoaders/weights-formats/NetworkSource.h"
 #include "src/log/log.h"
 #include "src/recognition/ImageClassification.h"
 #include "src/recognition/ObjectsDetection.h"

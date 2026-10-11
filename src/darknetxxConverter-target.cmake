@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.13)
 # ---------------------------------------------------------------------------
 # The converter only binary: the network weights files format conversion of
 # the library (the original darknet weights files, the dxxwjz1 and the dxxwjz2
-# ones, see the src/darknet-adaptor/adaptors/NetworksLoaders directory)
+# ones, see the src/NetworksLoaders directory)
 # alone.
 #
 # It is built out of the very same src/app component and the very same

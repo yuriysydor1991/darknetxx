@@ -3,9 +3,9 @@
 
 #include <memory>
 
+#include "src/NetworksLoaders/INetworkLoader.h"
 #include "src/darknet-adaptor/DarknetContext.h"
 #include "src/darknet-adaptor/adaptors/IDarknetAdaptor.h"
-#include "src/darknet-adaptor/adaptors/NetworksLoaders/INetworkLoader.h"
 
 namespace darknet_adaptor::adaptors
 {

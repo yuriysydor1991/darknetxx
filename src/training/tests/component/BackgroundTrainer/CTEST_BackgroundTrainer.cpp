@@ -12,12 +12,12 @@
 #include "ITrainingListener.h"
 #include "LibraryFacade.h"
 #include "Yolo4Folder.h"
-#include "src/darknet-adaptor/adaptors/NetworksLoaders/dxxwjz2p/v1/Dxxwjz2pReader.h"
-#include "src/darknet-adaptor/adaptors/NetworksLoaders/dxxwjz3/v3/Dxxwjz3Reader.h"
-#include "src/darknet-adaptor/adaptors/NetworksLoaders/weights-converter/WeightsConverter.h"
-#include "src/darknet-adaptor/adaptors/NetworksLoaders/weights-formats/WeightsFileFormats.h"
-#include "src/darknet-adaptor/adaptors/NetworksLoaders/weights-model/NetworkFiles.h"
-#include "src/darknet-adaptor/adaptors/NetworksLoaders/weights-model/WeightsDocument.h"
+#include "src/NetworksLoaders/dxxwjz/dxxwjz2p/Dxxwjz2pReader.h"
+#include "src/NetworksLoaders/dxxwjz/dxxwjz3/Dxxwjz3Reader.h"
+#include "src/NetworksLoaders/weights-converter/WeightsConverter.h"
+#include "src/NetworksLoaders/weights-formats/WeightsFileFormats.h"
+#include "src/NetworksLoaders/weights-model/NetworkFiles.h"
+#include "src/NetworksLoaders/weights-model/WeightsDocument.h"
 #include "src/darknet-adaptor/adaptors/TrainingData/TrainingDataRegistry.h"
 
 using darknet_adaptor::adaptors::TrainingDataRegistry;

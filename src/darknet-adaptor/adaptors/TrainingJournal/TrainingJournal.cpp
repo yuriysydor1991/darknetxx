@@ -8,7 +8,7 @@
 #include <utility>
 #include <vector>
 
-#include "src/darknet-adaptor/adaptors/NetworksLoaders/weights-formats/WeightsFileFormats.h"
+#include "src/NetworksLoaders/weights-formats/WeightsFileFormats.h"
 #include "src/log/log.h"
 
 namespace darknet_adaptor::adaptors

@@ -1,6 +1,6 @@
 #include "Yolo4Folder.h"
 
-#include "src/darknet-adaptor/adaptors/NetworksLoaders/yolo4-folder/Yolo4FolderLayout.h"
+#include "src/NetworksLoaders/yolo4-folder/Yolo4FolderLayout.h"
 
 namespace darknetxx011
 {

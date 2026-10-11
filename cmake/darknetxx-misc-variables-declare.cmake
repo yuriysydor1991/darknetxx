@@ -163,7 +163,7 @@ option(
 # The main one trains and runs the networks; the second one, named after it,
 # carries the network weights files format conversion alone (the original
 # darknet weights, the dxxwjz1 and the dxxwjz2 ones, see the
-# src/darknet-adaptor/adaptors/NetworksLoaders directory). It is the very same
+# src/NetworksLoaders directory). It is the very same
 # src/app component compiled with the DARKNETXX_CONVERTER_ONLY definition,
 # which leaves the app::Application class (and with it the training and the
 # detection the class starts) out. The conversion stays available through the
@@ -277,7 +277,7 @@ option(
 
 set(
   PROFILED_RUN_ARGS
-  "--detect-cfg;${PROJECT_SOURCE_DIR}/src/darknet-adaptor/adaptors/NetworksLoaders/OrigDefaultLoader/tests/component/OrigDefaultLoader/data/1.cfg;--weights;${PROJECT_SOURCE_DIR}/src/darknet-adaptor/adaptors/NetworksLoaders/OrigDefaultLoader/tests/component/OrigDefaultLoader/data/1.weights;--names;${PROJECT_SOURCE_DIR}/src/darknet-adaptor/adaptors/NetworksLoaders/OrigDefaultLoader/tests/component/OrigDefaultLoader/data/1.names;--image;${PROJECT_SOURCE_DIR}/misc/data/dog.jpg;--dont-show"
+  "--detect-cfg;${PROJECT_SOURCE_DIR}/src/NetworksLoaders/OrigDefaultLoader/tests/component/OrigDefaultLoader/data/1.cfg;--weights;${PROJECT_SOURCE_DIR}/src/NetworksLoaders/OrigDefaultLoader/tests/component/OrigDefaultLoader/data/1.weights;--names;${PROJECT_SOURCE_DIR}/src/NetworksLoaders/OrigDefaultLoader/tests/component/OrigDefaultLoader/data/1.names;--image;${PROJECT_SOURCE_DIR}/misc/data/dog.jpg;--dont-show"
   CACHE STRING
   "The darknetxx command line arguments (a semicolon separated list) of the valgrind, callgrind and gprof-analyze target runs, a short detection on the bundled test data by default"
 )
