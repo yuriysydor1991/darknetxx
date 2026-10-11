@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 3.13)
 
-add_subdirectory(detector-cmake-adaptor)
+# the src/detector-cmake-adaptor component, the original darknet code built
+# with the darknet includes and the OpenCV definitions of the adaptors
+add_subdirectory(
+  ${PROJECT_SOURCE_DIR}/src/detector-cmake-adaptor
+  ${PROJECT_BINARY_DIR}/src/detector-cmake-adaptor
+)
 
 add_library(
   DarknetCXXAAdaptorsGeneralOBJ OBJECT

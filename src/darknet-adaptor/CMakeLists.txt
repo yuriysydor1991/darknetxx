@@ -27,7 +27,7 @@ add_compile_definitions(${OPENCV_DECL})
 
 set(
   MOD_DARKNET_SRC_ROOT
-  "${CMAKE_CURRENT_SOURCE_DIR}/adaptors/detector-cmake-adaptor/darknet"
+  "${PROJECT_SOURCE_DIR}/src/detector-cmake-adaptor/darknet"
 )
 
 set(

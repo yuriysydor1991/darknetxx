@@ -218,7 +218,7 @@ set(DARKNETXX_RECOGNITION_APPLICATION_ID "${DARKNETXX_APPLICATION_ID}.recognitio
 # their shortcuts on the MS Windows and of the MSI package.
 set(
   DARKNETXX_LOGO_ICO
-  "${PROJECT_SOURCE_DIR}/src/darknet-adaptor/adaptors/detector-cmake-adaptor/darknet/src/darknet.ico"
+  "${PROJECT_SOURCE_DIR}/src/detector-cmake-adaptor/darknet/src/darknet.ico"
 )
 
 option(
