@@ -15,8 +15,8 @@
  *   "format": "dxxwjz3p",
  *   "version": 1,
  *   "generator": "darknetxx 0.11.0",
- *   "network": {"net": {"batch": 64, ...}, "layers": [...], "classes": [
- *     {"index": 0, "name": "cat"}, {"index": 1, "name": "dog"}]},
+ *   "network": {"net": {"batch": 64, ...}, "layers": [...],
+ *     "classes": ["cat", "dog"]},
  *   "training": {...},
  *   "annotations": {"ImagesAnnotator": {"version": "0.12.0"}, "annotations": [
  *     {"db": {"path": "data"}, "annotations": [

@@ -18,8 +18,10 @@ namespace darknet_adaptor::loaders::dxxwjz3::v3
  * document (see the arrays()). Checks the structure the way the
  * Dxxwjz2MetadataReader does: the option keys and values the darknet reads,
  * the types of the sections, the names of the sub-layers and of the arrays,
- * the floats, skips the unknown keys with a warning. The training member has
- * no iteration column, the losses are the ones of their indexes.
+ * the floats, skips the unknown keys with a warning. The classes are the
+ * array of their names, the name of an index is the one of the class of the
+ * index. The training member has no iteration column, the losses are the
+ * ones of their indexes.
  */
 class Dxxwjz3MetadataReader : public dxxwjz2::v2::Dxxwjz2MetadataReader
 {
@@ -45,6 +47,9 @@ class Dxxwjz3MetadataReader : public dxxwjz2::v2::Dxxwjz2MetadataReader
 
  private:
   bool layer(const json& value, const std::string& path, std::string& cfg);
+
+  /// @brief The class names of the classes array of the network.
+  bool names_of(const json& value, std::vector<std::string>& names);
 
   /// @brief Appends the cfg section of the type and of the options object.
   bool section(const std::string& type, const json& options,

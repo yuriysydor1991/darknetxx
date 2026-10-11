@@ -28,9 +28,7 @@
  *       ...
  *     }},
  *     {"type": "yolo", "options": {"mask": [0,1,2], "jitter": 0.3}}
- *   ], "classes": [
- *     {"index": 0, "name": "person"}
- *   ]},
+ *   ], "classes": ["person", "bicycle"]},
  *   "training": {"seconds": 3725,
  *     "loss": [812.5, 790.25, 701],
  *     "avg_loss": [812.5, 810.27, 799.34],
@@ -56,6 +54,8 @@
  *   the layer object, of the type the darknet parses the section into. The
  *   layer of no arrays keeps no weights (the layers of no weights and the
  *   ones beyond the cutoff of the save).
+ * - The classes array keeps the class names, the name of an index is the
+ *   one of the class of the index.
  * - The training is the dxxwjz2 one of no iteration column: the losses of
  *   an index are the ones of the iteration of the index + 1, the NaN ones of
  *   the iterations of none (see the Dxxwjz3Losses).

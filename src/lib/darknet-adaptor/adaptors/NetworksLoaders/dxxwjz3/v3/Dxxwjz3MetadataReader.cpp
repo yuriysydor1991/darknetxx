@@ -61,7 +61,7 @@ bool Dxxwjz3MetadataReader::network(const json& value,
   }
 
   if (value.contains(Dxxwjz2Format::CLASSES_KEY) &&
-      !classes(value.at(Dxxwjz2Format::CLASSES_KEY), names)) {
+      !names_of(value.at(Dxxwjz2Format::CLASSES_KEY), names)) {
     return false;
   }
 
@@ -170,6 +170,28 @@ bool Dxxwjz3MetadataReader::layer(const json& value, const std::string& path,
                      ? value.at(Dxxwjz3Format::OPTIONS_KEY)
                      : json::object(),
                  member(path, Dxxwjz3Format::OPTIONS_KEY), cfg);
+}
+
+bool Dxxwjz3MetadataReader::names_of(const json& value,
+                                     std::vector<std::string>& names)
+{
+  const std::string path =
+      member(Dxxwjz2Format::NETWORK_KEY, Dxxwjz2Format::CLASSES_KEY);
+
+  if (!value.is_array()) {
+    return fail(path + " isn't an array");
+  }
+
+  for (const json& name : value) {
+    if (!name.is_string()) {
+      return fail(path + "[" + std::to_string(names.size()) +
+                  "] isn't a string");
+    }
+
+    names.push_back(name.get<std::string>());
+  }
+
+  return true;
 }
 
 bool Dxxwjz3MetadataReader::section(const std::string& type,

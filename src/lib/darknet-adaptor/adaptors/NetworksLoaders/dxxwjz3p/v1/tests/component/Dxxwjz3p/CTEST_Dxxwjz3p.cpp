@@ -37,7 +37,7 @@ namespace
 {
 
 const std::string NETWORK_MEMBER =
-    R"("network": {"net": {"width": 8}, "layers": [{"type": "convolutional", "arrays": {"biases": [0.5, -1]}}, {"type": "maxpool"}], "classes": [{"index": 0, "name": "cat"}, {"index": 1, "name": "dog"}]})";
+    R"("network": {"net": {"width": 8}, "layers": [{"type": "convolutional", "arrays": {"biases": [0.5, -1]}}, {"type": "maxpool"}], "classes": ["cat", "dog"]})";
 
 const std::string ANNOTATIONS_MEMBER =
     R"("annotations": {"ImagesAnnotator": {"version": "0.12.0"}, "annotations": [{"db": {"path": "data"}, "annotations": [

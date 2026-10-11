@@ -232,14 +232,7 @@ class ITEST_digits_dxxwjz3 : public ITEST_digits
 
   static std::vector<std::string> classes_of(const json& document)
   {
-    std::vector<std::string> classes;
-
-    for (const json& entry : document["network"]["classes"]) {
-      EXPECT_EQ(entry["index"].get<size_t>(), classes.size());
-      classes.push_back(entry["name"].get<std::string>());
-    }
-
-    return classes;
+    return document["network"]["classes"].get<std::vector<std::string>>();
   }
 
   static std::vector<std::string> charts_of(const std::filesystem::path& dir)

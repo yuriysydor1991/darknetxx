@@ -257,6 +257,10 @@ TEST_F(CTEST_Dxxwjz3, cfg_is_the_json_structure_of_the_network)
                       "\"leaky\"}},\n    {\"type\": \"maxpool\"},\n"),
             std::string::npos)
       << text;
+  // the classes of no indexes
+  EXPECT_NE(text.find("\n  ], \"classes\": [\"cat\", \"dog\"]},\n"),
+            std::string::npos)
+      << text;
 
   ASSERT_TRUE(Dxxwjz3Reader{}.read(path, nullptr, read));
 
@@ -591,6 +595,11 @@ TEST_F(CTEST_Dxxwjz3, wrong_networks_are_rejected)
        {"isn't a cfg option value"}},
       {document_text(R"({"net": {"steps": [[1]]}, "layers": []})"),
        {"isn't a cfg option value"}},
+      {document_text(R"({"net": {}, "layers": [], "classes": {}})"),
+       {"network.\"classes\"", "isn't an array"}},
+      {document_text(
+           R"({"net": {}, "layers": [], "classes": ["cat", {"index": 1, "name": "dog"}]})"),
+       {"network.\"classes\"[1]", "isn't a string"}},
       {R"({"format": "dxxwjz2", "version": 2, "network": {"cfg": "[net]\n"}})",
        {"dxxwjz2"}}};
 

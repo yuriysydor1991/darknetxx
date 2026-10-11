@@ -17,7 +17,8 @@ namespace darknet_adaptor::loaders::dxxwjz3::v3
  * @brief Writes the JSON text of the dxxwjz3 document (see the
  * Dxxwjz3Format): the dxxwjz2 one of the network member of the JSON of the
  * cfg (see the Dxxwjz3CfgJson), every layer object of it's arrays, of the
- * array of the trailing bytes. The layers of no layer() keep no arrays.
+ * array of the class names and of the array of the trailing bytes. The
+ * layers of no layer() keep no arrays.
  */
 class Dxxwjz3JsonEmitter : public dxxwjz2::v2::Dxxwjz2JsonEmitter
 {
@@ -62,7 +63,11 @@ class Dxxwjz3JsonEmitter : public dxxwjz2::v2::Dxxwjz2JsonEmitter
   /// @brief The layers of no arrays up to the index.
   void layers_before(std::size_t index);
 
+  /// @brief The classes member: the array of the names at their indexes.
+  void class_names();
+
   const Dxxwjz3CfgJson mcfg;
+  const std::vector<std::string>& mclasses;
   WeightsHeader mheader;
   bool mweights{true};
   /// the count of the layers written
