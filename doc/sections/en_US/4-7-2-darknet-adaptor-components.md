@@ -180,6 +180,30 @@ DarknetContext --> "app::ApplicationContext" : built from
 - **`NetworksRegistry`** / **NetworksCApi** ([`src/darknet-adaptor/adaptors/NetworksCApi`](/src/darknet-adaptor/adaptors/NetworksCApi)) - the Darknet C API functions the original C code keeps calling (`parse_network_cfg()`, `load_weights()`, `save_weights()`, `resize_network()`, `set_batch_network()`, `free_network()` and the like), implemented on top of the adaptors. The C code passes the network struct by value, so the registry finds the network of a struct copy by it's layers array. The errors end the process the way the original functions did.
 - **`StructAdaptorHelper`** ([`StructAdaptorHelper.h`](/src/darknet-adaptor/adaptors/StructAdaptorHelper.h)) - the helper of the adaptors, which gives the struct fields the pointers of the containers.
 
+## The classifier
+
+The network of the `[softmax]` layer at it's end and of no detection layer (the
+`[yolo]`, the `[Gaussian_yolo]`, the `[region]` or the `[detection]` one) is the
+classifier of the whole image (the `network_classifier_layer()` of the
+`network.c`): every output of the softmax is a class of it, and it detects the
+classes more probable than the threshold in the box of the whole image. So the
+detection of the `--image` (the JSON of the `--out` and the labels drawn
+included) and the mAP calculation of the `--map` training take the classifier
+the way they take the detector. The training loads the images and their boxes
+the way the `[yolo]` layer of no jitter does and trains the classes of the
+boxes, every box of an image giving it's class the equal share of the image
+(the `classes_of_boxes()` of the `data.c`). The boxes of the whole images (a
+project annotated so, the YOLO4 folder of the `<class> 0.5 0.5 1 1` labels)
+match the box of the classifier every time, so it's mAP measures the
+probabilities of the classes alone. The `ImageClassification` of the library
+scales the whole image to the network input the way the training does.
+
+The parser gives the `[connected]` layer of the training network the train flag
+the original `make_connected_layer()` never set, so the training updates it's
+weights and clears it's delta every batch (the `update_network()` and the
+`forward_network()` of the `network.c` skip the layers of no train flag): the
+dense layer of the classifier trains.
+
 ## Network memory
 
 The original Darknet C code of the project only computes: it never allocates,
