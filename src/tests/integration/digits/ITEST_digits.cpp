@@ -469,6 +469,62 @@ TEST_F(ITEST_digits_dxxwjz3, chart_of_the_file_is_drawn)
   EXPECT_FALSE(std::filesystem::exists(dir / "never.png"));
 }
 
+TEST_F(ITEST_digits_dxxwjz3, classifier_is_trained_and_classifies)
+{
+  const auto dir = work_dir("classifier");
+  const std::string cfg =
+      cfg_with({{"max_batches", "200"},
+                {"backup", (dir / "backup").string()},
+                {"train", std::string{TRAIN_LIST} + "\nvalid=" + TRAIN_LIST}});
+
+  // the detector of the [connected] and the [softmax] layers instead of the
+  // [yolo] one classifies the whole image
+  std::ofstream{dir / "classifier.cfg"}
+      << cfg.substr(0U, cfg.find("# (classes + 5)"))
+      << "[connected]\noutput=10\nactivation=linear\n\n[softmax]\n";
+
+  ASSERT_EQ(run(dir, "--train-cfg classifier.cfg --dont-show --map"), 0)
+      << "see the " << dir / "output.log";
+
+  const json trained = document_of(dir / "backup" / "classifier_final.dxxwjz3");
+  const json& layers = trained["network"]["layers"];
+
+  ASSERT_TRUE(trained.is_object());
+  EXPECT_EQ(layers[layers.size() - 2U]["type"], "connected");
+  EXPECT_EQ(layers.back()["type"], "softmax");
+  EXPECT_EQ(trained["training"]["map_iteration"].back(), 200);
+  // the mAP of the boxes of the whole images
+  EXPECT_GE(trained["training"]["map"].back().get<double>(), 0.9);
+
+  for (int digit = 0; digit < 10; ++digit) {
+    const auto glyph = std::filesystem::path{DATA_DIR} /
+                       ("digit_" + std::to_string(digit) + "_" +
+                        std::to_string(GLYPH_SIZES / 2) + ".png");
+    const auto classes = dir / (std::to_string(digit) + ".json");
+
+    SCOPED_TRACE(glyph.string());
+
+    ASSERT_EQ(run(dir, "--weights backup/classifier_final.dxxwjz3 --image " +
+                           quote(glyph.string()) + " --dont-show --out " +
+                           quote(classes.string())),
+              0);
+
+    const auto objects = read_objects(classes);
+
+    ASSERT_FALSE(objects.empty());
+    EXPECT_EQ(std::max_element(objects.begin(), objects.end(),
+                               [](const auto& a, const auto& b) {
+                                 return a.confidence < b.confidence;
+                               })
+                  ->class_id,
+              digit);
+    EXPECT_NE(
+        text_of(classes).find(
+            R"("center_x":0.500000, "center_y":0.500000, "width":1.000000, "height":1.000000)"),
+        std::string::npos);
+  }
+}
+
 TEST_F(ITEST_digits_dxxwjz3, network_of_no_weights_is_trained)
 {
   const auto dir = work_dir("project");

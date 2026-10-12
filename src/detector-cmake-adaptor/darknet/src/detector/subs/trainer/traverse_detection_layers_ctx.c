@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <stdio.h>
 
+#include "network.h"
 #include "src/clog/clog.h"
 
 void traverse_detection_layers_ctx(struct detector_context* ctx)
@@ -22,6 +23,10 @@ void traverse_detection_layers_ctx(struct detector_context* ctx)
       ctx->l = lk;
       CLOGI(" Detection layer: %d - type = %d", k, ctx->l.type);
     }
+  }
+
+  if (network_classifier_layer(&ctx->net)) {
+    CLOGI(" Classifier layer: %d - the box of the whole image", ctx->net.n - 1);
   }
 
   ctx->classes = ctx->l.classes;

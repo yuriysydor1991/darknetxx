@@ -12,6 +12,12 @@ extern "C" {
 void softmax_array(float *input, int n, float temp, float *output);
 void forward_softmax_layer(const softmax_layer l, network_state state);
 void backward_softmax_layer(const softmax_layer l, network_state state);
+// The detection of the classifier the layer ends (see the
+// network_classifier_layer()): the box of the whole image of the classes more
+// probable than the thresh. The box of the image of the w and the h pixels for
+// no relative one.
+int get_softmax_detections(const softmax_layer l, int w, int h, float thresh,
+                           int relative, detection *dets);
 
 #ifdef GPU
 void pull_softmax_layer_output(const softmax_layer l);

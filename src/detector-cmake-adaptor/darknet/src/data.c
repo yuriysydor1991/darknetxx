@@ -919,6 +919,27 @@ data load_data_swag(char **paths, int n, int classes, float jitter)
   return d;
 }
 
+matrix classes_of_boxes(matrix boxes, int truth_size, int classes)
+{
+  matrix shares = make_matrix(boxes.rows, classes);
+
+  for (int i = 0; i < boxes.rows; ++i) {
+    const float *truth = boxes.vals[i];
+    int count = 0;
+
+    // the boxes go first, a box of no x ends them
+    while (count < boxes.cols / truth_size && truth[count * truth_size]) {
+      ++count;
+    }
+
+    for (int t = 0; t < count; ++t) {
+      shares.vals[i][(int)truth[t * truth_size + 4]] += 1.f / (float)count;
+    }
+  }
+
+  return shares;
+}
+
 void blend_truth(float *new_truth, int boxes, int truth_size, float *old_truth)
 {
   int count_new_truth = 0;

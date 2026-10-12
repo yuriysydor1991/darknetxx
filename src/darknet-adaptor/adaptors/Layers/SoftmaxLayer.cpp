@@ -30,6 +30,9 @@ ALayerAdaptorPtr SoftmaxLayer::make(int batch, int inputs, int groups)
   l.groups = groups;
   l.inputs = inputs;
   l.outputs = inputs;
+  // every output is a class of the classifier (see the
+  // network_classifier_layer())
+  l.classes = inputs;
   adaptor->loss(buffers::floats(buffers::count(inputs, batch)));
   adaptor->output(buffers::floats(buffers::count(inputs, batch)));
   adaptor->delta(buffers::floats(buffers::count(inputs, batch)));

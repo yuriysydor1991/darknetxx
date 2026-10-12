@@ -9,17 +9,11 @@ ImageClassification::Objects ImageClassification::recognize(
     network& net, const image& im, const float thresh,
     const ClassNames& names) const
 {
-  image resized = resize_min(im, net.w);
-  image cropped = crop_image(resized, (resized.w - net.w) / 2,
-                             (resized.h - net.h) / 2, net.w, net.h);
-  float* predictions = network_predict(net, cropped.data);
+  image sized = net.letter_box ? letterbox_image(im, net.w, net.h)
+                               : resize_image(im, net.w, net.h);
+  float* predictions = network_predict(net, sized.data);
 
-  // the image of the network width already is no copy
-  if (resized.data != im.data) {
-    free_image(resized);
-  }
-
-  free_image(cropped);
+  free_image(sized);
 
   if (net.hierarchy != nullptr) {
     hierarchy_predictions(predictions, net.outputs, net.hierarchy, 0);

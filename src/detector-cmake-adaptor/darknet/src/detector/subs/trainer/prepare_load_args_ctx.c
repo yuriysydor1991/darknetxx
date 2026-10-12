@@ -30,6 +30,16 @@ void prepare_load_args_ctx(struct detector_context* ctx)
   ctx->args.num_boxes = ctx->l.max_boxes;
   ctx->args.truth_size = ctx->l.truth_size;
   ctx->net.num_boxes = ctx->args.num_boxes;
+
+  // The classifier (see the network_classifier_layer()) loads the boxes the
+  // way the [yolo] layer of the defaults and no jitter does, the
+  // take_train_data_ctx() turns them into the classes it trains.
+  if (ctx->l.type == SOFTMAX) {
+    ctx->args.resize = 1;
+    ctx->args.num_boxes = 200;
+    ctx->args.truth_size = 4 + 2;
+  }
+
   ctx->net.train_images_num = ctx->train_images_num;
   ctx->args.d = &ctx->buffer;
   ctx->args.type = DETECTION_DATA;

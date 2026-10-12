@@ -111,6 +111,9 @@ int is_ema_initialized(network net);
 void ema_update(network net, float ema_alpha);
 void ema_apply(network net);
 void reject_similar_weights(network net, float sim_threshold);
+// The [softmax] layer ending the network of no detection layers, NULL for none:
+// the classifier, which detects its classes in the box of the whole image.
+layer *network_classifier_layer(network *net);
 int num_detections(network *net, float thresh);
 
 #ifdef __cplusplus

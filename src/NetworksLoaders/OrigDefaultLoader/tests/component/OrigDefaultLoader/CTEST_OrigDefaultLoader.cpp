@@ -501,6 +501,27 @@ TEST_F(CTEST_OrigDefaultLoader, connected_layer_of_the_training_trains)
   EXPECT_EQ(parse(content, false)->get()->layers[0].train, 0);
 }
 
+TEST_F(CTEST_OrigDefaultLoader, softmax_of_no_detection_layer_classifies)
+{
+  const ANetworkAdaptorPtr net =
+      parse(std::string{NET_HEADER} + "[connected]\noutput=4\n[softmax]\n");
+  network& view = *net->get();
+
+  // every output of the [softmax] is a class of the classifier
+  EXPECT_EQ(view.layers[1].classes, 4);
+  EXPECT_EQ(network_classifier_layer(&view), &view.layers[1]);
+
+  // the softmax of a detection layer classifies no image
+  EXPECT_EQ(network_classifier_layer(
+                parse(std::string{NET_HEADER} +
+                      "[convolutional]\nfilters=7\nsize=1\nactivation=linear\n"
+                      "[yolo]\nmask=0\nanchors=16,16\nclasses=2\nnum=1\n"
+                      "[softmax]\n")
+                    ->get()
+                    .get()),
+            nullptr);
+}
+
 TEST_F(CTEST_OrigDefaultLoader, cfg_reader_semantics)
 {
   // the whitespaces anywhere are removed, the comments skipped, the first

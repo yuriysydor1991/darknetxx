@@ -48,6 +48,15 @@ void take_train_data_ctx(struct detector_context* ctx)
 
   free_data(ctx->train);
   ctx->train = ctx->buffer;
+
+  // the classifier trains the classes of the boxes (see the
+  // prepare_load_args_ctx()), the next load replaces the buffer anyway
+  if (ctx->l.type == SOFTMAX) {
+    const matrix boxes = ctx->train.y;
+
+    ctx->train.y = classes_of_boxes(boxes, ctx->args.truth_size, ctx->classes);
+    free_matrix(boxes);
+  }
 }
 
 void drop_train_data_load_ctx(struct detector_context* ctx)

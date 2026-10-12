@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 
+#include <algorithm>
 #include <cstdlib>
 #include <string>
 #include <vector>
@@ -108,6 +109,40 @@ TEST_F(CTEST_TrainingData, darknet_reads_the_published_lists_and_labels)
   EXPECT_EQ(get_training_data_paths(TrainingDataRegistry::TRAIN_LIST.c_str()),
             nullptr);
   EXPECT_EQ(read_training_data_boxes("/data/a.txt", &count), nullptr);
+}
+
+TEST_F(CTEST_TrainingData, classifier_trains_the_shares_of_the_boxes_classes)
+{
+  // the x, the y, the w, the h, the class and the track id of the boxes of the
+  // fill_truth_detection() of the 3 images: of the 3 boxes, of 1 and of none
+  const std::vector<std::vector<float>> truths{
+      {.5f, .5f, 1, 1, 2, 0,       // the class 2
+       .2f, .2f, .1f, .1f, 0, 1,   // the 0
+       .7f, .7f, .1f, .1f, 2, 2},  // the 2 again
+      {.5f, .5f, 1, 1, 1, 0},
+      {}};
+  matrix boxes = make_matrix(3, 3 * 6);
+
+  for (int row = 0; row < boxes.rows; ++row) {
+    std::copy(truths[static_cast<size_t>(row)].begin(),
+              truths[static_cast<size_t>(row)].end(), boxes.vals[row]);
+  }
+
+  matrix classes = classes_of_boxes(boxes, 6, 3);
+  const std::vector<std::vector<float>> shares{
+      {1.f / 3, 0, 2.f / 3}, {0, 1, 0}, {0, 0, 0}};
+
+  ASSERT_EQ(classes.rows, 3);
+  ASSERT_EQ(classes.cols, 3);
+
+  for (int row = 0; row < classes.rows; ++row) {
+    EXPECT_EQ(std::vector<float>(classes.vals[row], classes.vals[row] + 3),
+              shares[static_cast<size_t>(row)])
+        << row;
+  }
+
+  free_matrix(boxes);
+  free_matrix(classes);
 }
 
 TEST_F(CTEST_TrainingData, validation_list_is_the_training_one_for_none)

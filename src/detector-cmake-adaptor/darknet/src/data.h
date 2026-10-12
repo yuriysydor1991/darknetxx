@@ -139,6 +139,10 @@ data concat_datas(data *d, int n);
 void fill_truth(char *path, char **labels, int k, float *truth);
 void fill_truth_smooth(char *path, char **labels, int k, float *truth,
                        float label_smooth_eps);
+// The classifier truth of the box truths of the truth_size floats each (the
+// fill_truth_detection() ones): every box of an image gives its class the
+// equal share of the image.
+matrix classes_of_boxes(matrix boxes, int truth_size, int classes);
 
 // The image lists and the labels of the training of a dxxwjz2p project, which
 // the C++ training data keeps in the memory instead of the list and the label

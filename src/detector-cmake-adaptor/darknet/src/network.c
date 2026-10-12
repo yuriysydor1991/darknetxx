@@ -519,8 +519,27 @@ float *network_predict_gl_texture(network *net, uint32_t texture_id)
 }
 #endif  // CUDA_OPENGL_INTEGRATION
 
+layer *network_classifier_layer(network *net)
+{
+  for (int i = 0; i < net->n; ++i) {
+    const LAYER_TYPE type = net->layers[i].type;
+
+    if (type == YOLO || type == GAUSSIAN_YOLO || type == REGION ||
+        type == DETECTION) {
+      return NULL;
+    }
+  }
+
+  return net->n > 0 && net->layers[net->n - 1].type == SOFTMAX
+             ? &net->layers[net->n - 1]
+             : NULL;
+}
+
 int num_detections(network *net, float thresh)
 {
+  // the classifier detects the box of the whole image
+  if (network_classifier_layer(net)) return 1;
+
   int i;
   int s = 0;
   for (i = 0; i < net->n; ++i) {
@@ -700,6 +719,12 @@ void fill_network_boxes(network *net, int w, int h, float thresh, float hier,
       get_detection_detections(l, w, h, thresh, dets);
       dets += l.w * l.h * l.n;
     }
+  }
+
+  const layer *classifier = network_classifier_layer(net);
+
+  if (classifier) {
+    get_softmax_detections(*classifier, w, h, thresh, relative, dets);
   }
 }
 

@@ -5,10 +5,12 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "blas.h"
 #include "dark_cuda.h"
 #include "src/clog/clog.h"
+#include "tree.h"
 #include "utils.h"
 
 #define SECRET_NUM -1234
@@ -54,6 +56,27 @@ void forward_softmax_layer(const softmax_layer l, network_state net)
 void backward_softmax_layer(const softmax_layer l, network_state net)
 {
   axpy_cpu(l.inputs * l.batch, 1, l.delta, 1, net.delta, 1);
+}
+
+int get_softmax_detections(const softmax_layer l, int w, int h, float thresh,
+                           int relative, detection *dets)
+{
+  dets->bbox = relative ? (box){.5f, .5f, 1.f, 1.f}
+                        : (box){(float)w / 2, (float)h / 2, (float)w, (float)h};
+  dets->objectness = 1;
+  dets->classes = l.classes;
+
+  memcpy(dets->prob, l.output, (size_t)l.classes * sizeof(float));
+
+  if (l.softmax_tree) {
+    hierarchy_predictions(dets->prob, l.classes, l.softmax_tree, 0);
+  }
+
+  for (int j = 0; j < l.classes; ++j) {
+    dets->prob[j] = dets->prob[j] > thresh ? dets->prob[j] : 0;
+  }
+
+  return 1;
 }
 
 #ifdef GPU

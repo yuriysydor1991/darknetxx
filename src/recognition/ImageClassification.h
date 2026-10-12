@@ -8,8 +8,9 @@ namespace darknetxx_impl
 
 /**
  * @brief The classification of the whole image by the network of no
- * detection layers: the classes of it's output, of the center of the image
- * scaled to the network width, the darknet predict_classifier() way.
+ * detection layers: the classes of it's output, of the image scaled to the
+ * network input the way the darknetxx trains the classifier (see the
+ * network_classifier_layer()), the ObjectsDetection way.
  */
 class ImageClassification : public IRecognitionMethod
 {
