@@ -491,6 +491,16 @@ TEST_F(CTEST_OrigDefaultLoader, networks_without_2d_layers_parse)
   }
 }
 
+TEST_F(CTEST_OrigDefaultLoader, connected_layer_of_the_training_trains)
+{
+  const std::string content =
+      std::string{NET_HEADER} + "[connected]\noutput=4\n[softmax]\n";
+
+  // the training updates the [connected] layer and clears it's delta
+  EXPECT_EQ(parse(content, true)->get()->layers[0].train, 1);
+  EXPECT_EQ(parse(content, false)->get()->layers[0].train, 0);
+}
+
 TEST_F(CTEST_OrigDefaultLoader, cfg_reader_semantics)
 {
   // the whitespaces anywhere are removed, the comments skipped, the first

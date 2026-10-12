@@ -1287,9 +1287,15 @@ ALayerAdaptorPtr OrigDefaultLoader::parse_connected(CfgSection& options,
   const char* activation_s = options.find_str("activation", "logistic");
   const ACTIVATION activation = activation_of(activation_s);
   const int batch_normalize = options.find_int_quiet("batch_normalize", 0);
+  ALayerAdaptorPtr adaptor = layers::ConnectedLayer::make(
+      params.batch, 1, params.inputs, output, activation, batch_normalize);
 
-  return layers::ConnectedLayer::make(params.batch, 1, params.inputs, output,
-                                      activation, batch_normalize);
+  // the training updates the weights and clears the delta of every batch of
+  // the layer of the train flag only (see the forward_network() and the
+  // update_network()), which the make_connected_layer() never set
+  adaptor->train(params.train);
+
+  return adaptor;
 }
 
 ALayerAdaptorPtr OrigDefaultLoader::parse_softmax(CfgSection& options,
