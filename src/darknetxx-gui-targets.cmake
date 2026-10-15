@@ -4,16 +4,17 @@ cmake_minimum_required(VERSION 3.13)
 # The GUI binaries: the works of the darknetxx library behind the windows of
 # the src/gui component, the training of the YOLO4 folder chosen in the
 # window of the training one, the recognition of the image chosen in the
-# window of the recognition one and the network of the dxxwjz3p project the
-# network editor edits (all of them of the GTKmm 4).
+# window of the recognition one (both of the GTKmm 4) and the network of the
+# dxxwjz3p project the network editors edit (the GTKmm 4 and the Qt 6 ones).
 #
 # Each is built out of the very same components as the main binary plus the
 # src/gui one, and their app::TrainGuiApplication,
-# app::RecognitionGuiApplication and app::NetEditorGuiApplication classes show
-# the windows instead of starting the work the command line names. The
-# DARKNETXX_TRAIN_GUI, the DARKNETXX_RECOGNITION_GUI and the
-# DARKNETXX_NET_EDITOR_GUI definitions below tell the app::ApplicationFactory
-# which one to create and the help and the version
+# app::RecognitionGuiApplication, app::NetEditorGuiApplication and
+# app::NetEditorQtGuiApplication classes show the windows instead of starting
+# the work the command line names. The DARKNETXX_TRAIN_GUI, the
+# DARKNETXX_RECOGNITION_GUI, the DARKNETXX_NET_EDITOR_GUI and the
+# DARKNETXX_NET_EDITOR_QT_GUI definitions below tell the
+# app::ApplicationFactory which one to create and the help and the version
 # printers which binary to name. The cmake/darknetxx-gui-binaries.cmake tells
 # the binaries of the build (the DARKNETXX_GTKMM_GUIS and the
 # DARKNETXX_QT_GUIS lists).

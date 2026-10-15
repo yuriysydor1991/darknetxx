@@ -11,6 +11,8 @@ const std::string PROJECT_CONVERTER_NAME = "darknetxxConverter";
 const std::string PROJECT_TRAIN_GUI_NAME = "darknetxx-train-gui";
 const std::string PROJECT_RECOGNITION_GUI_NAME = "darknetxx-recognition-gui";
 const std::string PROJECT_NET_EDITOR_GUI_NAME = "darknetxx-net-editor-gui";
+const std::string PROJECT_NET_EDITOR_QT_GUI_NAME =
+    "darknetxx-net-editor-qt-gui";
 const std::string PROJECT_BUILD_VERSION = "0.2.0";
 const std::string PROJECT_BUILD_COMMIT =
     "848bea167db708811563e941cefb6b7787879599";

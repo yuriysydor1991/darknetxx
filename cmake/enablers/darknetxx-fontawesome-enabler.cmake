@@ -4,7 +4,8 @@ cmake_minimum_required(VERSION 3.13)
 # The Font Awesome Free icons of the controls of the network editors (the
 # appFontAwesome branch of the cpp-app-template): the shallow single tag
 # checkout of the whole icon set kept intact, the icons of interest of which
-# the editors embed (see the darknetxx_fontawesome_write_gresource() below). The editors show the icons of the
+# the editors embed (see the darknetxx_fontawesome_write_gresource() and the
+# darknetxx_fontawesome_write_qrc() below). The editors show the icons of the
 # icon theme for the option turned OFF.
 #
 #   -DDARKNETXX_FONTAWESOME_DIR=/opt/Font-Awesome  -> the checkout to reuse,
@@ -114,4 +115,20 @@ function(darknetxx_fontawesome_write_gresource outputFile prefix)
   darknetxx_fontawesome_write_manifest(
     "${outputFile}"
     "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<gresources>\n  <gresource prefix=\"${prefix}/scalable/actions\">\n${entries}  </gresource>\n</gresources>\n")
+endfunction()
+
+# @brief Writes the Qt resource manifest (the .qrc) of the editor icons: the
+# solid/<name>.svg of the prefix.
+function(darknetxx_fontawesome_write_qrc outputFile prefix)
+  set(entries "")
+
+  foreach(icon IN LISTS DARKNETXX_FONTAWESOME_ICONS)
+    string(APPEND entries
+      "    <file alias=\"solid/${icon}.svg\">"
+      "${DARKNETXX_FONTAWESOME_SVGS_DIR}/${icon}.svg</file>\n")
+  endforeach()
+
+  darknetxx_fontawesome_write_manifest(
+    "${outputFile}"
+    "<!DOCTYPE RCC><RCC version=\"1.0\">\n  <qresource prefix=\"${prefix}\">\n${entries}  </qresource>\n</RCC>\n")
 endfunction()

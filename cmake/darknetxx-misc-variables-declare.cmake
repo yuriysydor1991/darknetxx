@@ -211,7 +211,9 @@ set(
 # ---------------------------------------------------------------------------
 # The network editor binaries: the windows of the network of the dxxwjz3p
 # project, which create the new network or edit the one of the project, the
-# GTKmm 4 one (with the ENABLE_DARKNETXX_GUI).
+# GTKmm 4 one (with the ENABLE_DARKNETXX_GUI) and the Qt 6 one (see the
+# cmake/enablers/darknetxx-Qt6-enabler.cmake, which declares it's
+# ENABLE_DARKNETXX_NET_EDITOR_QT option, ON once the Qt 6 is found).
 #
 #   -DENABLE_DARKNETXX_NET_EDITOR=OFF      -> no network editor binaries
 #   -DDARKNETXX_NET_EDITOR_ONLY=ON         -> the network editor binaries
@@ -219,7 +221,7 @@ set(
 # ---------------------------------------------------------------------------
 option(
   ENABLE_DARKNETXX_NET_EDITOR
-  "Build the network editor binaries of the dxxwjz3p projects beside the main application one: the GTKmm 4 one with the ENABLE_DARKNETXX_GUI"
+  "Build the network editor binaries of the dxxwjz3p projects beside the main application one: the GTKmm 4 one with the ENABLE_DARKNETXX_GUI, the Qt 6 one with the ENABLE_DARKNETXX_NET_EDITOR_QT"
   ON
 )
 
@@ -234,12 +236,18 @@ set(
   CACHE STRING "The GTKmm 4 network editor binary name and target"
 )
 
+set(
+  DARKNETXX_NET_EDITOR_QT_GUI_BINARY_NAME "${DARKNETXX_BINARY_NAME}-net-editor-qt-gui"
+  CACHE STRING "The Qt 6 network editor binary name and target"
+)
+
 # The application ids of the GUI binaries: their D-Bus names and the names of
 # their desktop entries and icons, the training one is the flatpak package id
 # as well.
 set(DARKNETXX_APPLICATION_ID "ua.org.kytok.template.${DARKNETXX_BINARY_NAME}")
 set(DARKNETXX_RECOGNITION_APPLICATION_ID "${DARKNETXX_APPLICATION_ID}.recognition")
 set(DARKNETXX_NET_EDITOR_APPLICATION_ID "${DARKNETXX_APPLICATION_ID}.neteditor")
+set(DARKNETXX_NET_EDITOR_QT_APPLICATION_ID "${DARKNETXX_APPLICATION_ID}.neteditorqt")
 
 # The Darknet logo of the Darknet sources, the icon of the GUI binaries and of
 # their shortcuts on the MS Windows and of the MSI package.

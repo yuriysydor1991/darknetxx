@@ -7,8 +7,8 @@ cmake_minimum_required(VERSION 3.13)
 #   bash no-gui-toolkit-in-the-other-binaries.sh <darknetxx> [<darknetxxConverter>]
 #
 # and reporting their verdict through the exit status. The windows themselves
-# are tested by the CTEST_TrainWindow, the CTEST_RecognitionWindow and the
-# CTEST_NetEditorWindow tests.
+# are tested by the CTEST_TrainWindow, the CTEST_RecognitionWindow, the
+# CTEST_NetEditorWindow and the CTEST_NetEditorQtWindow tests.
 if(NOT DARKNETXX_GUI_TARGETS)
   message(STATUS
     "The ITEST_gui_bash tests are skipped, the binaries they drive are not "

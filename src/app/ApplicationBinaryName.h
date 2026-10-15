@@ -18,8 +18,8 @@ namespace app
  * message - asks here instead of assuming the project name.
  *
  * The DARKNETXX_CONVERTER_ONLY, the DARKNETXX_TRAIN_GUI, the
- * DARKNETXX_RECOGNITION_GUI and the DARKNETXX_NET_EDITOR_GUI definitions this
- * branches on are given to the
+ * DARKNETXX_RECOGNITION_GUI, the DARKNETXX_NET_EDITOR_GUI and the
+ * DARKNETXX_NET_EDITOR_QT_GUI definitions this branches on are given to the
  * converter and to the GUI targets alone (see the
  * src/darknetxxConverter-target.cmake and the src/darknetxx-gui-targets.cmake),
  * and only the sources of the app component are compiled once per application
@@ -39,6 +39,8 @@ inline const std::string& application_binary_name()
   return project_decls::PROJECT_RECOGNITION_GUI_NAME;
 #elif defined(DARKNETXX_NET_EDITOR_GUI)
   return project_decls::PROJECT_NET_EDITOR_GUI_NAME;
+#elif defined(DARKNETXX_NET_EDITOR_QT_GUI)
+  return project_decls::PROJECT_NET_EDITOR_QT_GUI_NAME;
 #else
   return project_decls::PROJECT_NAME;
 #endif

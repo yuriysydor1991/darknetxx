@@ -6,6 +6,7 @@ add_executable(
   ${PROJECT_SOURCE_DIR}/src/app/applications/Application.cpp
   ${PROJECT_SOURCE_DIR}/src/app/applications/GuiApplication.cpp
   ${PROJECT_SOURCE_DIR}/src/app/applications/NetEditorGuiApplication.cpp
+  ${PROJECT_SOURCE_DIR}/src/app/applications/NetEditorQtGuiApplication.cpp
   ${PROJECT_SOURCE_DIR}/src/app/applications/RecognitionGuiApplication.cpp
   ${PROJECT_SOURCE_DIR}/src/app/applications/TrainGuiApplication.cpp
   ${PROJECT_SOURCE_DIR}/src/lib/facade/LibraryContext.cpp
@@ -20,6 +21,7 @@ target_include_directories(
     ${APP_MOCKS_ROOT}/LibraryFacade
     ${APPLICATIONS_MOCKS_ROOT}/ApplicationContext2LibraryContext
     ${APPLICATIONS_MOCKS_ROOT}/GtkmmIniters
+    ${APPLICATIONS_MOCKS_ROOT}/QtIniters
     ${GENERAL_MOCKS_ROOT}/project-global-decls
     ${GENERAL_MOCKS_ROOT}/log
     ${PROJECT_SOURCE_DIR}

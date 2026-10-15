@@ -1,11 +1,12 @@
 cmake_minimum_required(VERSION 3.13)
 
 # The ApplicationFactory of the GUI binaries: the very same source compiled
-# with the DARKNETXX_TRAIN_GUI, the DARKNETXX_RECOGNITION_GUI and the
-# DARKNETXX_NET_EDITOR_GUI definitions, which create the
-# app::TrainGuiApplication, the app::RecognitionGuiApplication and the
-# app::NetEditorGuiApplication.
-foreach(GUI Train:TRAIN Recognition:RECOGNITION NetEditor:NET_EDITOR)
+# with the DARKNETXX_TRAIN_GUI, the DARKNETXX_RECOGNITION_GUI, the
+# DARKNETXX_NET_EDITOR_GUI and the DARKNETXX_NET_EDITOR_QT_GUI definitions,
+# which create the app::TrainGuiApplication, the
+# app::RecognitionGuiApplication, the app::NetEditorGuiApplication and the
+# app::NetEditorQtGuiApplication.
+foreach(GUI Train:TRAIN Recognition:RECOGNITION NetEditor:NET_EDITOR NetEditorQt:NET_EDITOR_QT)
   string(REPLACE ":" ";" GUI "${GUI}")
   list(GET GUI 1 GUI_ID)
   list(GET GUI 0 GUI)

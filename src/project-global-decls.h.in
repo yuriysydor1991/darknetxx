@@ -16,12 +16,16 @@ const std::string PROJECT_TRAIN_GUI_NAME = "${DARKNETXX_TRAIN_GUI_BINARY_NAME}" 
 const std::string PROJECT_RECOGNITION_GUI_NAME = "${DARKNETXX_RECOGNITION_GUI_BINARY_NAME}" ;
 /// @brief Global project' GTKmm 4 network editor binary name
 const std::string PROJECT_NET_EDITOR_GUI_NAME = "${DARKNETXX_NET_EDITOR_GUI_BINARY_NAME}" ;
+/// @brief Global project' Qt 6 network editor binary name
+const std::string PROJECT_NET_EDITOR_QT_GUI_NAME = "${DARKNETXX_NET_EDITOR_QT_GUI_BINARY_NAME}" ;
 /// @brief Global project' GUI training application id
 const std::string PROJECT_APPLICATION_ID = "${DARKNETXX_APPLICATION_ID}" ;
 /// @brief Global project' GUI recognition application id
 const std::string PROJECT_RECOGNITION_APPLICATION_ID = "${DARKNETXX_RECOGNITION_APPLICATION_ID}" ;
 /// @brief Global project' GTKmm 4 network editor application id
 const std::string PROJECT_NET_EDITOR_APPLICATION_ID = "${DARKNETXX_NET_EDITOR_APPLICATION_ID}" ;
+/// @brief Global project' Qt 6 network editor application id
+const std::string PROJECT_NET_EDITOR_QT_APPLICATION_ID = "${DARKNETXX_NET_EDITOR_QT_APPLICATION_ID}" ;
 /// @brief Global project' build version
 const std::string PROJECT_BUILD_VERSION = "${PROJECT_VERSION}" ;
 /// @brief Global project' configure git commit hash
