@@ -23,6 +23,8 @@
 #include "src/app/applications/TrainGuiApplication.h"
 #elif defined(DARKNETXX_RECOGNITION_GUI)
 #include "src/app/applications/RecognitionGuiApplication.h"
+#elif defined(DARKNETXX_NET_EDITOR_GUI)
+#include "src/app/applications/NetEditorGuiApplication.h"
 #endif
 
 namespace app
@@ -92,6 +94,8 @@ std::shared_ptr<IApplication> ApplicationFactory::create_default_application()
   return std::make_shared<TrainGuiApplication>();
 #elif defined(DARKNETXX_RECOGNITION_GUI)
   return std::make_shared<RecognitionGuiApplication>();
+#elif defined(DARKNETXX_NET_EDITOR_GUI)
+  return std::make_shared<NetEditorGuiApplication>();
 #else
   return create_library_application();
 #endif

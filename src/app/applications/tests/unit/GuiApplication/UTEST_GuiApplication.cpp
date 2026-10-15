@@ -5,8 +5,10 @@
 #include <functional>
 
 #include "LibraryFacade.h"
+#include "src/app/applications/NetEditorGuiApplication.h"
 #include "src/app/applications/RecognitionGuiApplication.h"
 #include "src/app/applications/TrainGuiApplication.h"
+#include "src/gui/gtkmm4/net-editor-window/NetEditorGtkmmIniter.h"
 #include "src/gui/gtkmm4/recognition-window/RecognitionGtkmmIniter.h"
 #include "src/gui/gtkmm4/train-window/TrainGtkmmIniter.h"
 
@@ -130,5 +132,9 @@ TEST_F(UTEST_GuiApplication, every_gui_binary_shows_it_s_own_window)
   EXPECT_NE(
       std::dynamic_pointer_cast<darknetxxGtkmm4::RecognitionGtkmmIniter>(
           OpenGuiApplication<RecognitionGuiApplication>{}.create_gui_initer()),
+      nullptr);
+  EXPECT_NE(
+      std::dynamic_pointer_cast<darknetxxGtkmm4::NetEditorGtkmmIniter>(
+          OpenGuiApplication<NetEditorGuiApplication>{}.create_gui_initer()),
       nullptr);
 }

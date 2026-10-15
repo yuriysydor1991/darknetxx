@@ -34,16 +34,21 @@ configure_file(
 )
 
 # The executables over the library: the main one and the network weights
-# files converter only and the GUI training and recognition ones beside it,
-# which add themselves to the list. They are declared before the components below, since the components
-# hand their sources to them.
+# files converter only and the GUI training, recognition and network editor
+# ones beside it (the network editors alone for the
+# DARKNETXX_NET_EDITOR_ONLY), which add themselves to the list. They are
+# declared before the components below, since the components hand their
+# sources to them.
 set(DARKNETXX_APP_TARGETS "")
 
 if(ENABLE_DARKNETXX_EXECUTABLES)
-  darknetxx_add_app_target(${DARKNETXX_BINARY_NAME})
-  list(APPEND DARKNETXX_APP_TARGETS ${DARKNETXX_BINARY_NAME})
+  if(NOT DARKNETXX_NET_EDITOR_ONLY)
+    darknetxx_add_app_target(${DARKNETXX_BINARY_NAME})
+    list(APPEND DARKNETXX_APP_TARGETS ${DARKNETXX_BINARY_NAME})
 
-  include(${CMAKE_CURRENT_SOURCE_DIR}/darknetxxConverter-target.cmake)
+    include(${CMAKE_CURRENT_SOURCE_DIR}/darknetxxConverter-target.cmake)
+  endif()
+
   include(${CMAKE_CURRENT_SOURCE_DIR}/darknetxx-gui-targets.cmake)
 endif()
 
@@ -61,7 +66,7 @@ if(ENABLE_DARKNETXX_EXECUTABLES)
   add_subdirectory(scripts)
 endif()
 
-if(TARGET ${DARKNETXX_TRAIN_GUI_BINARY_NAME})
+if(DARKNETXX_GUI_TARGETS)
   add_subdirectory(gui)
 endif()
 

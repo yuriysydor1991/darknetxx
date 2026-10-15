@@ -22,7 +22,7 @@ target_link_libraries(
   PRIVATE PkgConfig::GTKMM
 )
 
-foreach(GUI_BINARY_NAME ${DARKNETXX_TRAIN_GUI_BINARY_NAME} ${DARKNETXX_RECOGNITION_GUI_BINARY_NAME})
+foreach(GUI_BINARY_NAME IN LISTS DARKNETXX_GTKMM_GUI_TARGETS)
   target_link_libraries(
     ${GUI_BINARY_NAME}
     DarknetXXGtkmm4OBJ
@@ -36,6 +36,15 @@ set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
 add_subdirectory(ui)
-add_subdirectory(train-window)
-add_subdirectory(recognition-window)
+
+# the windows of the binaries of the build
+if(TARGET ${DARKNETXX_TRAIN_GUI_BINARY_NAME})
+  add_subdirectory(train-window)
+  add_subdirectory(recognition-window)
+endif()
+
+if(TARGET ${DARKNETXX_NET_EDITOR_GUI_BINARY_NAME})
+  add_subdirectory(net-editor-window)
+endif()
+
 add_subdirectory(tests)

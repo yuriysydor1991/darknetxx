@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.13)
 
 # the run of the darknetxx executable is what is checked here
-if(NOT ENABLE_DARKNETXX_EXECUTABLES)
+if(NOT ENABLE_DARKNETXX_EXECUTABLES OR DARKNETXX_NET_EDITOR_ONLY)
   message(STATUS "The callgrind target is skipped, the ${DARKNETXX_BINARY_NAME} executable is not being built")
   return()
 endif()

@@ -12,13 +12,14 @@ namespace app
  * @brief The name of the binary being run.
  *
  * The project builds one and the same app component into the main application
- * and into the network weights files converter only and the GUI training and
- * recognition binaries beside it, so whatever names the running program - the
- * usage line of the help message and the version message - asks here instead
- * of assuming the project name.
+ * and into the network weights files converter only and the GUI training,
+ * recognition and network editor binaries beside it, so whatever names the
+ * running program - the usage line of the help message and the version
+ * message - asks here instead of assuming the project name.
  *
- * The DARKNETXX_CONVERTER_ONLY, the DARKNETXX_TRAIN_GUI and the
- * DARKNETXX_RECOGNITION_GUI definitions this branches on are given to the
+ * The DARKNETXX_CONVERTER_ONLY, the DARKNETXX_TRAIN_GUI, the
+ * DARKNETXX_RECOGNITION_GUI and the DARKNETXX_NET_EDITOR_GUI definitions this
+ * branches on are given to the
  * converter and to the GUI targets alone (see the
  * src/darknetxxConverter-target.cmake and the src/darknetxx-gui-targets.cmake),
  * and only the sources of the app component are compiled once per application
@@ -36,6 +37,8 @@ inline const std::string& application_binary_name()
   return project_decls::PROJECT_TRAIN_GUI_NAME;
 #elif defined(DARKNETXX_RECOGNITION_GUI)
   return project_decls::PROJECT_RECOGNITION_GUI_NAME;
+#elif defined(DARKNETXX_NET_EDITOR_GUI)
+  return project_decls::PROJECT_NET_EDITOR_GUI_NAME;
 #else
   return project_decls::PROJECT_NAME;
 #endif

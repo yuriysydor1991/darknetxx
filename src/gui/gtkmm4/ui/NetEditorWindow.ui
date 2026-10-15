@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <object class="GtkWindow" id="main_window">
+    <property name="default-width">1150</property>
+    <property name="default-height">850</property>
+    <child>
+      <object class="GtkBox">
+        <property name="orientation">vertical</property>
+        <child>
+          <object class="GtkBox">
+            <property name="spacing">6</property>
+            <property name="margin-start">8</property>
+            <property name="margin-end">8</property>
+            <property name="margin-top">6</property>
+            <property name="margin-bottom">6</property>
+            <child>
+              <object class="GtkButton" id="new_button">
+                <property name="tooltip-text">Start a new network</property>
+                <child>
+                  <object class="GtkBox">
+                    <property name="spacing">6</property>
+                    <child>
+                      <object class="GtkImage" id="new_image"/>
+                    </child>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="label">_New</property>
+                        <property name="use-underline">true</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton" id="open_button">
+                <property name="tooltip-text">Open the network of a dxxwjz3p project or of another darknetxx file keeping one</property>
+                <child>
+                  <object class="GtkBox">
+                    <property name="spacing">6</property>
+                    <child>
+                      <object class="GtkImage" id="open_image"/>
+                    </child>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="label">_Open…</property>
+                        <property name="use-underline">true</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton" id="save_button">
+                <property name="tooltip-text">Save the network into the opened file, ask for the file of the new one</property>
+                <child>
+                  <object class="GtkBox">
+                    <property name="spacing">6</property>
+                    <child>
+                      <object class="GtkImage" id="save_image"/>
+                    </child>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="label">_Save</property>
+                        <property name="use-underline">true</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton" id="save_as_button">
+                <property name="tooltip-text">Save the network into another file</property>
+                <child>
+                  <object class="GtkBox">
+                    <property name="spacing">6</property>
+                    <child>
+                      <object class="GtkImage" id="save_as_image"/>
+                    </child>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="label">Save _as…</property>
+                        <property name="use-underline">true</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLabel" id="file_label">
+                <property name="hexpand">true</property>
+                <property name="xalign">1</property>
+                <property name="ellipsize">start</property>
+                <style>
+                  <class name="dim-label"/>
+                </style>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkSeparator"/>
+        </child>
+        <child>
+          <object class="GtkScrolledWindow">
+            <property name="vexpand">true</property>
+            <property name="hscrollbar-policy">never</property>
+            <property name="child">
+              <object class="GtkBox">
+                <property name="orientation">vertical</property>
+                <property name="spacing">8</property>
+                <property name="margin-start">12</property>
+                <property name="margin-end">12</property>
+                <property name="margin-top">12</property>
+                <property name="margin-bottom">12</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="label">Network</property>
+                    <property name="xalign">0</property>
+                    <style>
+                      <class name="title-3"/>
+                    </style>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkGrid" id="net_grid">
+                    <property name="row-spacing">4</property>
+                    <property name="column-spacing">12</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="label">Classes</property>
+                    <property name="xalign">0</property>
+                    <property name="margin-top">12</property>
+                    <style>
+                      <class name="title-3"/>
+                    </style>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="label">The names of the classes the network detects, a name on a line: the classes= of the detection layers is their count</property>
+                    <property name="xalign">0</property>
+                    <property name="wrap">true</property>
+                    <style>
+                      <class name="dim-label"/>
+                    </style>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkFrame">
+                    <property name="child">
+                      <object class="GtkTextView" id="classes_view">
+                        <property name="monospace">true</property>
+                        <property name="top-margin">4</property>
+                        <property name="bottom-margin">4</property>
+                        <property name="left-margin">6</property>
+                        <property name="right-margin">6</property>
+                      </object>
+                    </property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="label">Layers</property>
+                    <property name="xalign">0</property>
+                    <property name="margin-top">12</property>
+                    <style>
+                      <class name="title-3"/>
+                    </style>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="label">Drag a layer by it's handle to move it, the references of the [route] and the [shortcut] layers follow the moved layers</property>
+                    <property name="xalign">0</property>
+                    <property name="wrap">true</property>
+                    <style>
+                      <class name="dim-label"/>
+                    </style>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkBox" id="layers_box">
+                    <property name="orientation">vertical</property>
+                    <property name="spacing">2</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkBox">
+                    <property name="spacing">8</property>
+                    <property name="margin-top">6</property>
+                    <child>
+                      <object class="GtkDropDown" id="layer_type_dropdown">
+                        <property name="tooltip-text">The type of the layer to add</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="add_layer_button">
+                        <property name="tooltip-text">Add the layer of the type at the bottom of the layers</property>
+                        <child>
+                          <object class="GtkImage" id="add_layer_image"/>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="layer_type_label">
+                        <property name="hexpand">true</property>
+                        <property name="xalign">0</property>
+                        <property name="wrap">true</property>
+                        <style>
+                          <class name="dim-label"/>
+                        </style>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkSeparator"/>
+        </child>
+        <child>
+          <object class="GtkLabel" id="status_label">
+            <property name="xalign">0</property>
+            <property name="wrap">true</property>
+            <property name="selectable">true</property>
+            <property name="margin-start">8</property>
+            <property name="margin-end">8</property>
+            <property name="margin-top">4</property>
+            <property name="margin-bottom">4</property>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>

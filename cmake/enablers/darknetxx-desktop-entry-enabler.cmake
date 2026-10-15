@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.13)
 # a white disc), which the desktops and the packages show them with. They are
 # named after the application ids of the binaries, as the Wayland compositors
 # and the flatpak require.
-if(NOT ENABLE_DARKNETXX_GUI OR NOT ENABLE_DARKNETXX_EXECUTABLES)
+if(NOT DARKNETXX_GTKMM_GUIS AND NOT DARKNETXX_QT_GUIS)
   return()
 endif()
 
@@ -35,13 +35,10 @@ function(darknetxx_desktop_entry GUI_BINARY_NAME GUI_APPLICATION_ID
   )
 endfunction()
 
-darknetxx_desktop_entry(
-  ${DARKNETXX_TRAIN_GUI_BINARY_NAME} ${DARKNETXX_APPLICATION_ID}
-  "Neural network training" "Trains the network of a YOLO4 folder"
-)
-
-darknetxx_desktop_entry(
-  ${DARKNETXX_RECOGNITION_GUI_BINARY_NAME} ${DARKNETXX_RECOGNITION_APPLICATION_ID}
-  "Neural network recognition"
-  "Detects the objects in the images or classifies them by the network of a weights file"
-)
+# the GUI binaries of the build (see the darknetxx-gui-binaries module)
+foreach(GUI IN LISTS DARKNETXX_GTKMM_GUIS DARKNETXX_QT_GUIS)
+  darknetxx_desktop_entry(
+    ${DARKNETXX_GUI_${GUI}_BINARY} ${DARKNETXX_GUI_${GUI}_ID}
+    "${DARKNETXX_GUI_${GUI}_GENERIC}" "${DARKNETXX_GUI_${GUI}_COMMENT}"
+  )
+endforeach()

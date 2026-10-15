@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gresources>
   <gresource prefix="/ua/org/kytok/darknetxx/gui">
+    <file>NetEditorWindow.ui</file>
     <file>RecognitionWindow.ui</file>
     <file>TrainWindow.ui</file>
   </gresource>

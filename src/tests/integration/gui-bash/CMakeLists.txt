@@ -7,8 +7,9 @@ cmake_minimum_required(VERSION 3.13)
 #   bash no-gui-toolkit-in-the-other-binaries.sh <darknetxx> [<darknetxxConverter>]
 #
 # and reporting their verdict through the exit status. The windows themselves
-# are tested by the CTEST_TrainWindow and the CTEST_RecognitionWindow tests.
-if(NOT TARGET ${DARKNETXX_TRAIN_GUI_BINARY_NAME})
+# are tested by the CTEST_TrainWindow, the CTEST_RecognitionWindow and the
+# CTEST_NetEditorWindow tests.
+if(NOT DARKNETXX_GUI_TARGETS)
   message(STATUS
     "The ITEST_gui_bash tests are skipped, the binaries they drive are not "
     "being built")
@@ -17,7 +18,7 @@ endif()
 
 find_program(BASH_EXEC bash REQUIRED)
 
-foreach(GUI_BINARY_NAME ${DARKNETXX_TRAIN_GUI_BINARY_NAME} ${DARKNETXX_RECOGNITION_GUI_BINARY_NAME})
+foreach(GUI_BINARY_NAME IN LISTS DARKNETXX_GUI_TARGETS)
   string(REPLACE "-" "_" ITEST_BINARY_NAME "${GUI_BINARY_NAME}")
 
   add_test(
@@ -33,6 +34,11 @@ foreach(GUI_BINARY_NAME ${DARKNETXX_TRAIN_GUI_BINARY_NAME} ${DARKNETXX_RECOGNITI
     PROPERTIES TIMEOUT 600
   )
 endforeach()
+
+# the main binaries of no network editor only build
+if(NOT TARGET ${DARKNETXX_BINARY_NAME})
+  return()
+endif()
 
 set(ITEST_OTHER_BINARIES "$<TARGET_FILE:${DARKNETXX_BINARY_NAME}>")
 

@@ -5,6 +5,7 @@ add_executable(
   UTEST_GuiApplication.cpp
   ${PROJECT_SOURCE_DIR}/src/app/applications/Application.cpp
   ${PROJECT_SOURCE_DIR}/src/app/applications/GuiApplication.cpp
+  ${PROJECT_SOURCE_DIR}/src/app/applications/NetEditorGuiApplication.cpp
   ${PROJECT_SOURCE_DIR}/src/app/applications/RecognitionGuiApplication.cpp
   ${PROJECT_SOURCE_DIR}/src/app/applications/TrainGuiApplication.cpp
   ${PROJECT_SOURCE_DIR}/src/lib/facade/LibraryContext.cpp

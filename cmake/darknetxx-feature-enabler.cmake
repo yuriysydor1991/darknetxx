@@ -70,7 +70,10 @@ endforeach()
 # when disabled, so they are included unconditionally.
 include(darknetxx-zlib-enabler)
 include(darknetxx-nlohmann-json-enabler)
+# the GUI binaries of the toolkits found, which the rest take
+include(darknetxx-gui-binaries)
 include(darknetxx-Gtkmm4-enabler)
+include(darknetxx-fontawesome-enabler)
 include(darknetxx-desktop-entry-enabler)
 
 # The packagers come after the libraries above, since the packages build them

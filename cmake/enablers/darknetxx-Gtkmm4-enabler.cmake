@@ -1,14 +1,14 @@
 cmake_minimum_required(VERSION 3.13)
 
 # ---------------------------------------------------------------------------
-# The GTKmm 4 toolkit of the GUI binary (see the src/gui directory), probed
+# The GTKmm 4 toolkit of the GUI binaries (see the src/gui directory), probed
 # once at the project scope for the GUI sources and their tests.
 #
 # The imported PkgConfig::GTKMM target hands it's include directories to the
 # targets linking it as the system ones, so the strict warnings of the project
 # stay quiet about the toolkit headers.
 # ---------------------------------------------------------------------------
-if(NOT ENABLE_DARKNETXX_GUI OR NOT ENABLE_DARKNETXX_EXECUTABLES)
+if(NOT DARKNETXX_GTKMM_GUIS)
   return()
 endif()
 
