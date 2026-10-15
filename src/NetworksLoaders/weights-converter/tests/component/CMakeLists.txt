@@ -4,4 +4,5 @@ if (NOT ENABLE_COMPONENT_TESTS)
   return()
 endif()
 
+add_subdirectory(NetworkRewriter)
 add_subdirectory(WeightsConverter)

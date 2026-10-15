@@ -58,6 +58,17 @@ class WeightsConverter
    */
   virtual bool convert(const WeightsConversion& conversion);
 
+  /**
+   * @brief Writes the document into the destination of the conversion
+   * through the temporary file of its directory, which replaces the
+   * destination once complete.
+   *
+   * @return False on any failure (logged), which leaves the destination
+   * untouched.
+   */
+  static bool write_destination(const WeightsConversion& conversion,
+                                const WeightsDocument& document);
+
  protected:
   /// @brief The network of the cfg file, throws on the failure.
   virtual adaptors::ANetworkAdaptorPtr create_network(const std::string& cfg);
@@ -82,11 +93,6 @@ class WeightsConverter
   static std::string names_of(const WeightsConversion& conversion,
                               const adaptors::ANetworkAdaptorPtr& net,
                               const WeightsDocument& document);
-
-  /// @brief Writes the document into the destination through the temporary
-  /// file.
-  bool write_destination(const WeightsConversion& conversion,
-                         const WeightsDocument& document);
 };
 
 using WeightsConverterPtr = WeightsConverter::WeightsConverterPtr;

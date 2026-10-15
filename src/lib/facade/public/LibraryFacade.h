@@ -78,6 +78,41 @@ class DARKNETXX_LIB_API LibraryFacade
   static std::string network_cfg(const std::string& weights);
 
   /**
+   * @brief The network description the file keeps (the dxxwjz2, the
+   * dxxwjz2p, the dxxwjz3 and the dxxwjz3p ones): the network_cfg() text and
+   * the class names, the name of a class at the class index.
+   *
+   * @return False for the file of no network description or unable to be
+   * read.
+   */
+  static bool network_description(const std::string& weights, std::string& cfg,
+                                  std::vector<std::string>& classes);
+
+  /**
+   * @brief Saves the edited network into the file of the format of it's file
+   * name extension (the dxxwjz3p project, for example) through the temporary
+   * file: the annotations, the training record and the weights of the
+   * source go on, but the weights of the layers the edit changed, which are
+   * dropped (the network to train of the weights kept).
+   *
+   * @param source The file the rest comes of, empty for none (the network
+   * to train of no annotations).
+   * @param destination The file to write, the source one included.
+   * @param cfg The darknet cfg text of the network, which the darknet builds
+   * the network of.
+   * @param classes The class names, the name of a class at the class index.
+   * @param message Out: the reason of the failure, or the weights the save
+   * dropped, empty for none.
+   *
+   * @return False on any failure, which leaves the destination untouched.
+   */
+  static bool save_network(const std::string& source,
+                           const std::string& destination,
+                           const std::string& cfg,
+                           const std::vector<std::string>& classes,
+                           std::string& message);
+
+  /**
    * @brief Hands the logger of the library user over to the library, which
    * logs into it then. Call it before the other library calls.
    */

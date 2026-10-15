@@ -6,6 +6,7 @@
 #include "Yolo4Folder.h"
 #include "src/NetworksLoaders/dxxwjz/dxxwjz2p/Dxxwjz2pFormat.h"
 #include "src/NetworksLoaders/dxxwjz/dxxwjz3p/Dxxwjz3pFormat.h"
+#include "src/NetworksLoaders/weights-converter/NetworkRewriter.h"
 #include "src/NetworksLoaders/weights-formats/NetworkSource.h"
 #include "src/NetworksLoaders/weights-formats/WeightsFileFormats.h"
 #include "src/darknet-adaptor/adaptors/TrainingChart/TrainingChart.h"
@@ -93,15 +94,41 @@ std::vector<unsigned char> LibraryFacade::training_chart(
 
 std::string LibraryFacade::network_cfg(const std::string& weights)
 {
+  std::string cfg;
+  std::vector<std::string> classes;
+
+  return network_description(weights, cfg, classes) ? cfg : std::string{};
+}
+
+bool LibraryFacade::network_description(const std::string& weights,
+                                        std::string& cfg,
+                                        std::vector<std::string>& classes)
+{
   using darknet_adaptor::loaders::NetworkSource;
 
   darknet_adaptor::loaders::NetworkDescription description;
 
   // the read of the other files takes their whole text for the cfg one
-  return NetworkSource::describes(weights) &&
-                 NetworkSource::read(weights, description)
-             ? description.cfg()
-             : std::string{};
+  if (!NetworkSource::describes(weights) ||
+      !NetworkSource::read(weights, description)) {
+    return false;
+  }
+
+  cfg = description.cfg();
+  classes = description.classes();
+
+  return true;
+}
+
+bool LibraryFacade::save_network(const std::string& source,
+                                 const std::string& destination,
+                                 const std::string& cfg,
+                                 const std::vector<std::string>& classes,
+                                 std::string& message)
+{
+  return darknet_adaptor::loaders::NetworkRewriter::rewrite(
+      source, destination,
+      darknet_adaptor::loaders::NetworkDescription{cfg, classes}, message);
 }
 
 void LibraryFacade::init_logger(const logger::ILoggerPtr& appLogger)
