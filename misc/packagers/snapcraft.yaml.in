@@ -29,8 +29,10 @@ parts:
       - -DENABLE_SSE_AND_AVX_FLAGS=OFF
       # the converter binary the apps above name (or not)
       - -DENABLE_DARKNETXX_CONVERTER=${ENABLE_DARKNETXX_CONVERTER}
-      # the GUI binary the apps above name (or not)
+      # the GUI binaries the apps above name (or not), the GTKmm 4 ones
       - -DENABLE_DARKNETXX_GUI=${ENABLE_DARKNETXX_GUI}
+      - -DENABLE_DARKNETXX_NET_EDITOR=${ENABLE_DARKNETXX_NET_EDITOR}
+      - -DENABLE_DARKNETXX_NET_EDITOR_QT=OFF
     build-packages:
       - libopencv-dev
       # the dxxwjz1 network weights files are the gzip compressed JSON

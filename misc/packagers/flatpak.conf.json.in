@@ -84,7 +84,9 @@
       "buildsystem": "cmake",
       "config-opts": [
         "-DCMAKE_BUILD_TYPE=Release",
-        "-DENABLE_SSE_AND_AVX_FLAGS=OFF"
+        "-DENABLE_SSE_AND_AVX_FLAGS=OFF",
+        "-DENABLE_DARKNETXX_NET_EDITOR_QT=OFF",
+        "-DENABLE_FONTAWESOME=OFF"
       ],
       "sources": [
         {
