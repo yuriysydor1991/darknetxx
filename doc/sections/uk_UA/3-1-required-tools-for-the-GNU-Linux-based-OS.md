@@ -12,6 +12,12 @@ sudo apt install -y git g++ cmake libopencv-dev zlib1g-dev nlohmann-json3-dev
 sudo apt install -y libgtkmm-4.0-dev
 ```
 
+[Бінарний файл редактора нейромереж](/doc/sections/uk_UA/5-38-the-network-editor-binaries.md) Qt 6 будується, щойно знайдено файли розробки Qt 6 Widgets і Svg:
+
+```
+sudo apt install -y qt6-base-dev qt6-svg-dev
+```
+
 Директорія [scripts/packages](/scripts/packages) містить скрипти, які встановлюють мінімальний набір пакетів, потрібних для побудови і запуску проекту локально, включно з фреймворком GTest для тестів:
 
 | Скрипт | Встановлює пакети для |

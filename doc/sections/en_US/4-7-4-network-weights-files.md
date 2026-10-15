@@ -31,7 +31,7 @@ The components of the files live in the `darknet_adaptor::loaders` namespace und
 | [`dxxwjz/dxxwjz3p`](/src/NetworksLoaders/dxxwjz/dxxwjz3p) | the dxxwjz3p project file of the first version: the `Dxxwjz3pReader`, the `Dxxwjz3pWriter`, the `Dxxwjz3pValidator` and the `Dxxwjz3pFileFormat` with the support classes of theirs (the `dxxwjz3p::v1` namespace), which extend the dxxwjz2p ones of the dxxwjz3 members |
 | [`yolo4-folder`](/src/NetworksLoaders/yolo4-folder) | the YOLO4 training folder of the conversion: the `Yolo4FolderReader`, the `Yolo4FolderWriter` and the `Yolo4FolderFormat` with the `Yolo4FolderLayout` of the files of the folder (the `yolo4` namespace) |
 | [`weights-formats`](/src/NetworksLoaders/weights-formats) | the formats of their names and file name extensions and the ones of the conversion (`WeightsFileFormats`) and the files networks are made of: the cfg, the dxxwjz2, the dxxwjz2p, the dxxwjz3 and the dxxwjz3p ones (`NetworkSource`) |
-| [`weights-converter`](/src/NetworksLoaders/weights-converter) | the `WeightsConverter` of the files between the formats and the `WeightsConversion` it performs |
+| [`weights-converter`](/src/NetworksLoaders/weights-converter) | the `WeightsConverter` of the files between the formats and the `WeightsConversion` it performs, the `NetworkRewriter` of the edited network (see the [Saving the edited network](#saving-the-edited-network) section) |
 
 The journal of the training, the `TrainingJournal` of the [`TrainingJournal`](/src/darknet-adaptor/adaptors/TrainingJournal) directory, keeps the network description and the training record the weights files of the training keep, the `TrainingChart` of the [`TrainingChart`](/src/darknet-adaptor/adaptors/TrainingChart) directory draws the chart of the record (see the [Training with the formats](#training-with-the-formats) section), the `TrainingDataRegistry` of the [`TrainingData`](/src/darknet-adaptor/adaptors/TrainingData) directory hands the image lists and the labels of the dxxwjz2p and the dxxwjz3p projects over to the darknet C training code (see the [Training the dxxwjz2p project](#training-the-dxxwjz2p-project) section).
 
@@ -332,7 +332,11 @@ package "weights-converter" {
   }
   class WeightsConverter {
     +convert(conversion) : bool
+    +{static} write_destination(conversion, document) : bool
     #create_network(cfg) : ANetworkAdaptorPtr
+  }
+  class NetworkRewriter {
+    +{static} rewrite(src, dst, network, message) : bool
   }
 }
 
@@ -476,6 +480,8 @@ WeightsConverter ..> WeightsConversion
 WeightsConverter ..> IWeightsFileFormat : reads the source, writes the destination by
 WeightsConverter ..> NetworkSource : the cfg the destination keeps
 WeightsConverter ..> "OrigDefaultLoader" : parses the network cfg
+NetworkRewriter ..> "OrigDefaultLoader" : builds the edited network
+NetworkRewriter ..> WeightsConverter : writes the destination by
 TrainingJournal ..> IWeightsFileFormat : saves the training weights by
 TrainingChart ..> TrainingRecord : draws the chart of
 TrainingChart ..> WeightsFileFormats : peeks the dxxwjz2 files by
@@ -896,6 +902,18 @@ The dxxwjz2 and the dxxwjz3 destinations keep the network description: the cfg t
 The dxxwjz2p and the dxxwjz3p destinations keep the annotations of the dxxwjz2p, the dxxwjz3p or the YOLO4 folder source, of none of the rest: the project converted into the dxxwjz2 or the dxxwjz3 file is the weights file of the project of no annotations, the one of the inference. The YOLO4 folder source is the network, the latest weights and the annotations of the folder, the YOLO4 folder destination is the new folder of the copies of the images of the document (see the [The YOLO4 training folder](#the-yolo4-training-folder) section).
 
 The conversion of no source file makes the network to train of the cfg file: the dxxwjz2 or the dxxwjz3 file of the network description alone (the cfg text and the class names, the way above), of no layers. Such file converted into the formats of the weights alone would keep nothing but a header, so that conversion fails, while the weights files of the networks of no weights arrays convert back and forth as the rest.
+
+## Saving the edited network
+
+The **`NetworkRewriter`** ([`NetworkRewriter.h`](/src/NetworksLoaders/weights-converter/NetworkRewriter.h)) writes the edited network description (the cfg text and the class names, the ones the network editors edit, see the [The network editor binaries](/doc/sections/en_US/5-38-the-network-editor-binaries.md) section) into the file of a format keeping it (the dxxwjz3p project, for example, of the file name extension of the destination) through the temporary file the way the conversion does, the `LibraryFacade::save_network()` of the library. The source file (the project opened, the file of the save as or none for the new network) goes on into the destination: the annotations, the training record, the header and the weights, the source and the destination may be the same file.
+
+The darknet builds the network of the cfg first (the single image inference network, the `OrigDefaultLoader::parse_network_text()`), so the cfg the darknet refuses is no save, nor is the network the training can't run: the `[route]` layer of the input layers of the different sizes (which the parse warns of and the first resize of the training refuses) and the layer of no outputs. The weights of a layer go on while every layer up to it keeps it's cfg section (the type and the options of the source cfg) and it's arrays are of the sizes of the arrays of the built network (the `WeightsLayout`, which the `[net]` channels, width and height size too): so the edit of the `[net]` options alone keeps every weight, the training record and the seen images, while the edit of a layer drops the weights of the layer and of the ones after it. The document of the dropped weights is the network to train of the weights kept, the transfer learning one (the darknet `partial` and the `-clear` way): of no seen images, no training record and no trailing bytes, the one of no weights at all is the network to train from scratch. The save tells the dropped weights:
+
+```
+The weights of the layer 11 and of the ones after it were dropped, the network changed them
+```
+
+The images of the annotations are the absolute paths of the source in the memory, so the project saved into another folder goes on referring to the images of the source one (the folders below the one of the destination are written relative to it).
 
 ## Training with the formats
 

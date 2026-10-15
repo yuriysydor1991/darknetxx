@@ -8,7 +8,8 @@ files - is the shared `darknetxx-0.11` library the
 components beside it, laid out the way the
 [cpp-app-template](https://github.com/yuriysydor1991/cpp-app-template) `applib`
 branch lays out it's library. The executables of the project (`darknetxx`,
-`darknetxxConverter`, `darknetxx-train-gui` and `darknetxx-recognition-gui`)
+`darknetxxConverter`, `darknetxx-train-gui`, `darknetxx-recognition-gui` and
+the network editor ones)
 use the library through it's facade alone, the very same way any other program does (see the
 [Using the darknetxx library](/doc/sections/en_US/5-37-using-the-darknetxx-library.md)
 section).
@@ -30,6 +31,8 @@ package "darknetxx011 (the installed facade/public headers)" {
     +{static} weights_extensions() : string list
     +{static} training_chart(weights) : PNG bytes
     +{static} network_cfg(weights) : string
+    +{static} network_description(weights, cfg, classes) : bool
+    +{static} save_network(source, destination, cfg, classes, message) : bool
     +{static} init_logger(logger)
   }
 
@@ -153,7 +156,11 @@ project name and it's major and minor version):
   files formats the conversion accepts, draws the PNG image of the training
   chart the record of a dxxwjz2 file keeps (`training_chart`), gives the
   network cfg text a dxxwjz2, dxxwjz2p, dxxwjz3 or dxxwjz3p file keeps
-  (`network_cfg`) and adopts the logger of the library user, opens the
+  (`network_cfg`, the class names beside it by the `network_description`),
+  saves the edited network into such a file, the rest of the source file and
+  the weights of the layers the edit kept going on (`save_network`, see the
+  [Saving the edited network](/doc/sections/en_US/4-7-4-network-weights-files.md#saving-the-edited-network)
+  section) and adopts the logger of the library user, opens the
   training projects of their paths (`open_training_project`) and lists the
   file name extensions of the weights files of every format
   (`weights_extensions`).

@@ -11,6 +11,11 @@ very same library works behind the GTK 4 windows:
   (see the [The darknetxx-recognition-gui binary](#the-darknetxx-recognition-gui-binary)
   section).
 
+The network editor binaries of the GTK 4 and of the Qt 6 beside them create
+and edit the networks of the dxxwjz3p projects (see the
+[The network editor binaries](/doc/sections/en_US/5-38-the-network-editor-binaries.md)
+section).
+
 Both accept the very same command line the main binary does (see the
 [Available command line parameters](/doc/sections/en_US/6-2-3-available-command-line-parameters.md)
 section). An OS stop signal (a SIGINT or a SIGTERM, for example) closes their
@@ -160,7 +165,7 @@ section).
 
 | CMake option | Default | Effect |
 | --- | --- | --- |
-| `ENABLE_DARKNETXX_GUI` | `ON` | Builds both GUI binaries, their desktop entries and icons. Set it to `OFF` to build without the GTKmm 4. |
+| `ENABLE_DARKNETXX_GUI` | `ON` | Builds both GUI binaries and the GTK 4 network editor one, their desktop entries and icons. Set it to `OFF` to build without the GTKmm 4. |
 | `DARKNETXX_TRAIN_GUI_BINARY_NAME` | `<project binary name>-train-gui` | The name of the GUI training binary and of it's CMake target. |
 | `DARKNETXX_RECOGNITION_GUI_BINARY_NAME` | `<project binary name>-recognition-gui` | The name of the GUI recognition binary and of it's CMake target. |
 
@@ -186,8 +191,8 @@ the MS Windows they carry the `darknet.ico` one.
 | Package or container | What shows the windows |
 | --- | --- |
 | DEB | the GTKmm 4 runtime library dependency, which the package computes of the binaries |
-| snap | the `darknetxx-train-gui` and the `darknetxx-recognition-gui` apps of the GNOME extension, which brings the GTK 4 runtime and the desktop, the wayland, the x11 and the opengl plugs |
-| flatpak | the GNOME runtime with the GTKmm 4 module, the `darknetxx-train-gui` command (the desktop entry of the recognition binary starts the other one) and the Wayland, the X11, the IPC and the DRI permissions |
+| snap | the `darknetxx-train-gui`, the `darknetxx-recognition-gui` and the `darknetxx-net-editor-gui` apps of the GNOME extension, which brings the GTK 4 runtime and the desktop, the wayland, the x11 and the opengl plugs |
+| flatpak | the GNOME runtime with the GTKmm 4 module, the `darknetxx-train-gui` command (the desktop entries of the recognition and the network editor binaries start the other ones) and the Wayland, the X11, the IPC and the DRI permissions |
 | Docker | the `docker-single-run-darknetxx-cpu-train-gui` and the `docker-single-run-darknetxx-gpu-train-gui` targets of the training binary |
 
 Every package carries the desktop entries and the icons as well: the DEB, the

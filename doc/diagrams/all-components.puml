@@ -10,6 +10,8 @@ package "executables (src/main.cpp, src/*-target.cmake)" as exes {
   artifact "darknetxxConverter" as bin_conv
   artifact "darknetxx-train-gui" as bin_tgui
   artifact "darknetxx-recognition-gui" as bin_rgui
+  artifact "darknetxx-net-editor-gui" as bin_egui
+  artifact "darknetxx-net-editor-qt-gui" as bin_qgui
   [main()] as main
 }
 
@@ -30,7 +32,7 @@ package "src/app" {
   package "applications" {
     [IApplication] as iapp
     [Application] as application
-    [GuiApplication\n(+ TrainGuiApplication,\nRecognitionGuiApplication)] as guiapp
+    [GuiApplication\n(+ TrainGuiApplication,\nRecognitionGuiApplication,\nNetEditorGuiApplication,\nNetEditorQtGuiApplication)] as guiapp
     [ApplicationHelpPrinter,\nApplicationVersionPrinter,\nNetworkCfgPrinter] as printers
   }
 
@@ -48,7 +50,16 @@ package "src/gui/gtkmm4" {
   [window parts\n(AWindowLoader, GtkmmIniter, ...)] as guicore
   [train-window] as trainwin
   [recognition-window] as recwin
+  [net-editor-window] as editwin
   [ui (GResource)] as guiui
+}
+
+package "src/gui/net-editor" {
+  [NetworkModel, SectionSchemas,\nOptionPresenter, NetworkProject] as editmodel
+}
+
+package "src/gui/qt6" {
+  [NetEditorMainWindow,\nNetEditorQtIniter] as qtwin
 }
 
 package "src/lib (the darknetxx-0.11 shared library)" as libpkg {
@@ -144,6 +155,8 @@ bin_main ..> main : built of
 bin_conv ..> main : built of
 bin_tgui ..> main : built of
 bin_rgui ..> main : built of
+bin_egui ..> main : built of
+bin_qgui ..> main : built of
 itests ..> exes : drive
 itests ..> testsdata
 scripts ..> bin_main : start
@@ -166,9 +179,15 @@ guiapp --> trainwin : shows
 guiapp --> recwin : shows
 trainwin --> guicore
 recwin --> guicore
+editwin --> guicore
 guicore --> guiui
 trainwin --> facade : trains
 recwin --> facade : recognizes
+guiapp --> editwin : shows
+guiapp --> qtwin : shows
+editwin --> editmodel
+qtwin --> editmodel
+editmodel --> facade : opens, saves\nthe networks
 
 facade --> libfactory : creates the works
 facade --> projects : opens
@@ -183,6 +202,7 @@ projects --> formats
 lmain --> omp
 lmain --> dctrl : trains, detects
 convlib --> converter : converts
+facade --> converter : saves the\nedited network
 recognizer --> recmethods
 recognizer --> cfgloader : loads the network
 recognizer --> darknetc : computes

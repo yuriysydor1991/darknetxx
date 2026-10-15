@@ -44,7 +44,12 @@ while the GUI ones, the `darknetxx-train-gui` and the
 `darknetxx-recognition-gui`, add the `src/gui` component, which trains in the
 GTK 4 window of the one by the background trainer of the library and
 recognizes the images in the window of the other by the recognizer of the
-library (see [The GUI binaries](/doc/sections/en_US/5-36-the-GUI-binaries.md)).
+library (see [The GUI binaries](/doc/sections/en_US/5-36-the-GUI-binaries.md)),
+and the network editor ones, the `darknetxx-net-editor-gui` and the
+`darknetxx-net-editor-qt-gui`, edit the network of the dxxwjz3p project in the
+GTK 4 and the Qt 6 windows of one and the same model of the `src/gui/net-editor`
+component, which saves it by the facade of the library (see
+[The network editor binaries](/doc/sections/en_US/5-38-the-network-editor-binaries.md)).
 
 The standalone source of the diagram below is
 [`doc/diagrams/components-overview.puml`](/doc/diagrams/components-overview.puml).
@@ -61,7 +66,7 @@ package "app (application infrastructure)" {
   [ApplicationFactory] as factory
   [CommandLineParser] as parser
   [ApplicationContext] as ctx
-  [IApplication\n(+ Application,\nTrain/Recognition\nGuiApplication,\nHelpPrinter,\nVersionPrinter)] as iapp
+  [IApplication\n(+ Application,\nTrain/Recognition/\nNetEditor(Qt)\nGuiApplication,\nHelpPrinter,\nVersionPrinter)] as iapp
   [ISignalsHandler\n(+ SignalsHandler,\nStop/Pause/Continue/\nReload/User/Ignored)] as signals
 }
 
@@ -69,8 +74,9 @@ package "converters" {
   [ApplicationContext2LibraryContext] as conv
 }
 
-package "gui (darknetxx-train-gui,\ndarknetxx-recognition-gui)" {
+package "gui (darknetxx-train-gui,\ndarknetxx-recognition-gui,\ndarknetxx-net-editor-gui,\ndarknetxx-net-editor-qt-gui)" {
   [Train/Recognition\nGtkmmIniter and windows] as gui
+  [net-editor model,\nGTKmm 4 and Qt 6\nnetwork editor windows] as editor
 }
 
 package "lib (darknetxx library)" {
@@ -110,6 +116,9 @@ iapp --> facade : creates the work
 iapp --> gui : the GUI app shows
 gui --> trainer : trains a YOLO4 folder or a dxxwjz2p/dxxwjz3p project
 gui --> recognizer : recognizes the images
+iapp --> editor : the network editor app shows
+editor --> facade : opens and saves\nthe networks of the projects
+facade --> weights : saves the edited network
 facade --> ilib : creates
 facade --> trainer : creates
 facade --> recognizer : creates

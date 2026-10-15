@@ -31,7 +31,7 @@
 | [`dxxwjz/dxxwjz3p`](/src/NetworksLoaders/dxxwjz/dxxwjz3p) | файл проекту dxxwjz3p першої версії: `Dxxwjz3pReader`, `Dxxwjz3pWriter`, `Dxxwjz3pValidator` і `Dxxwjz3pFileFormat` з їхніми допоміжними класами (простір імен `dxxwjz3p::v1`), які розширюють класи dxxwjz2p членами dxxwjz3 |
 | [`yolo4-folder`](/src/NetworksLoaders/yolo4-folder) | теку навчання YOLO4 для конвертування: `Yolo4FolderReader`, `Yolo4FolderWriter` і `Yolo4FolderFormat` з `Yolo4FolderLayout` файлів теки (простір імен `yolo4`) |
 | [`weights-formats`](/src/NetworksLoaders/weights-formats) | формати за їхніми назвами і розширеннями назв файлів, а також формати конвертування (`WeightsFileFormats`) і файли, з яких будуються нейромережі: файли cfg, dxxwjz2, dxxwjz2p, dxxwjz3 і dxxwjz3p (`NetworkSource`) |
-| [`weights-converter`](/src/NetworksLoaders/weights-converter) | `WeightsConverter` - конвертер файлів між форматами - і конвертування `WeightsConversion`, яке він виконує |
+| [`weights-converter`](/src/NetworksLoaders/weights-converter) | `WeightsConverter` - конвертер файлів між форматами - і конвертування `WeightsConversion`, яке він виконує, `NetworkRewriter` зміненої нейромережі (див. секцію [Збереження зміненої нейромережі](#збереження-зміненої-нейромережі)) |
 
 Журнал навчання, `TrainingJournal` директорії [`TrainingJournal`](/src/darknet-adaptor/adaptors/TrainingJournal), тримає опис нейромережі і запис навчання, які зберігають файли ваг навчання, `TrainingChart` директорії [`TrainingChart`](/src/darknet-adaptor/adaptors/TrainingChart) малює графік цього запису (див. секцію [Навчання і формати](#навчання-і-формати)), а `TrainingDataRegistry` директорії [`TrainingData`](/src/darknet-adaptor/adaptors/TrainingData) передає списки зображень і мітки проектів dxxwjz2p і dxxwjz3p коду навчання darknet мовою C (див. секцію [Навчання проекту dxxwjz2p](#навчання-проекту-dxxwjz2p)).
 
@@ -332,7 +332,11 @@ package "weights-converter" {
   }
   class WeightsConverter {
     +convert(conversion) : bool
+    +{static} write_destination(conversion, document) : bool
     #create_network(cfg) : ANetworkAdaptorPtr
+  }
+  class NetworkRewriter {
+    +{static} rewrite(src, dst, network, message) : bool
   }
 }
 
@@ -476,6 +480,8 @@ WeightsConverter ..> WeightsConversion
 WeightsConverter ..> IWeightsFileFormat : reads the source, writes the destination by
 WeightsConverter ..> NetworkSource : the cfg the destination keeps
 WeightsConverter ..> "OrigDefaultLoader" : parses the network cfg
+NetworkRewriter ..> "OrigDefaultLoader" : builds the edited network
+NetworkRewriter ..> WeightsConverter : writes the destination by
 TrainingJournal ..> IWeightsFileFormat : saves the training weights by
 TrainingChart ..> TrainingRecord : draws the chart of
 TrainingChart ..> WeightsFileFormats : peeks the dxxwjz2 files by
@@ -896,6 +902,18 @@ ImagesAnnotatorConverter \
 Файли призначення dxxwjz2p і dxxwjz3p зберігають анотації джерела dxxwjz2p, dxxwjz3p чи теки-джерела YOLO4 і жодного іншого джерела: проект, конвертований у файл dxxwjz2 чи dxxwjz3, - це файл ваг проекту без анотацій, файл для розпізнавання. Тека-джерело YOLO4 - це нейромережа, найновіші ваги й анотації теки, а тека призначення YOLO4 - це нова тека з копіями зображень документа (див. секцію [Тека навчання YOLO4](#тека-навчання-yolo4)).
 
 Конвертування без файлу-джерела створює з файлу cfg нейромережу, яку треба навчити: файл dxxwjz2 чи dxxwjz3 лише з описом нейромережі (текстом cfg і назвами класів, як описано вище), без шарів. Такий файл, конвертований у формати лише ваг, не зберігав би нічого, крім заголовка, тож таке конвертування не вдається, тоді як файли ваг нейромереж без масивів ваг конвертуються в обидва боки, як і решта.
+
+## Збереження зміненої нейромережі
+
+**`NetworkRewriter`** ([`NetworkRewriter.h`](/src/NetworksLoaders/weights-converter/NetworkRewriter.h)) записує змінений опис нейромережі (текст cfg і назви класів, які редагують редактори нейромереж, див. секцію [Бінарні файли редактора нейромереж](/doc/sections/uk_UA/5-38-the-network-editor-binaries.md)) у файл формату, що його зберігає (наприклад, проект dxxwjz3p, за розширенням назви файлу призначення), через тимчасовий файл так само, як це робить конвертування, - функція `LibraryFacade::save_network()` бібліотеки. Вихідний файл (відкритий проект, файл, з якого зберігають як інший, чи жоден для нової нейромережі) переходить у файл призначення: анотації, запис навчання, заголовок і ваги; вихідний файл і файл призначення можуть бути одним файлом.
+
+Спершу darknet будує нейромережу cfg (нейромережу виявлення одного зображення, `OrigDefaultLoader::parse_network_text()`), тож cfg, яку darknet відкидає, не зберігається, як і нейромережа, якої навчання не виконає: шар `[route]` вхідних шарів різних розмірів (про який розбір попереджає, а перша зміна розміру під час навчання відкидає) і шар без виходів. Ваги шару лишаються, доки кожен шар до нього зберігає свою секцію cfg (тип і параметри вихідної cfg), а його масиви мають розміри масивів побудованої нейромережі (`WeightsLayout`, розміри якого задають і `channels`, `width` та `height` секції `[net]`): тож зміна лише параметрів `[net]` зберігає всі ваги, запис навчання і побачені зображення, а зміна шару відкидає ваги цього шару і всіх наступних. Документ з відкинутими вагами - це нейромережа для навчання зі збереженими вагами, для перенавчання (як `partial` і `-clear` darknet): без побачених зображень, запису навчання і хвостових байтів, а без жодних ваг - нейромережа для навчання з нуля. Збереження повідомляє про відкинуті ваги:
+
+```
+The weights of the layer 11 and of the ones after it were dropped, the network changed them
+```
+
+Зображення анотацій у пам'яті - це абсолютні шляхи вихідного файлу, тож проект, збережений в іншу теку, і далі посилається на зображення вихідної теки (теки під текою файлу призначення записуються відносно неї).
 
 ## Навчання і формати
 

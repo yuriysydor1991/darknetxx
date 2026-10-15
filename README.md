@@ -103,6 +103,7 @@ The very same sections are also available in Ukrainian under [doc/README.uk_UA.m
         1. [The darknetxx-train-gui binary](/doc/sections/en_US/5-36-the-GUI-binaries.md#the-darknetxx-train-gui-binary)
         1. [The darknetxx-recognition-gui binary](/doc/sections/en_US/5-36-the-GUI-binaries.md#the-darknetxx-recognition-gui-binary)
     1. [Using the darknetxx library](/doc/sections/en_US/5-37-using-the-darknetxx-library.md)
+    1. [The network editor binaries](/doc/sections/en_US/5-38-the-network-editor-binaries.md)
 1. [Run the executable](/doc/sections/en_US/6-run-the-executable.md)
     1. [IDE run](/doc/sections/en_US/6-1-IDE-run.md)
     1. Command line run

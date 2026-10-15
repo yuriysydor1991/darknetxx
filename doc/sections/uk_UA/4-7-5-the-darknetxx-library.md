@@ -8,7 +8,8 @@ dxxwjz2p і dxxwjz3p і розпізнавання зображень нейро
 так, як гілка `applib` проекту
 [cpp-app-template](https://github.com/yuriysydor1991/cpp-app-template)
 впорядковує свою бібліотеку. Виконувані файли проекту (`darknetxx`,
-`darknetxxConverter`, `darknetxx-train-gui` і `darknetxx-recognition-gui`)
+`darknetxxConverter`, `darknetxx-train-gui`, `darknetxx-recognition-gui` і
+бінарні файли редактора нейромереж)
 користуються бібліотекою лише через її фасад, так само як будь-яка інша
 програма (див. секцію
 [Використання бібліотеки darknetxx](/doc/sections/uk_UA/5-37-using-the-darknetxx-library.md)).
@@ -30,6 +31,8 @@ package "darknetxx011 (the installed facade/public headers)" {
     +{static} weights_extensions() : string list
     +{static} training_chart(weights) : PNG bytes
     +{static} network_cfg(weights) : string
+    +{static} network_description(weights, cfg, classes) : bool
+    +{static} save_network(source, destination, cfg, classes, message) : bool
     +{static} init_logger(logger)
   }
 
@@ -152,7 +155,11 @@ LibraryFacade ..> ILogger : adopts
   формати файлів ваг нейромереж, які приймає конвертування, малює зображення
   PNG графіка навчання, запис якого зберігає файл dxxwjz2 (`training_chart`),
   повертає текст cfg нейромережі, який зберігає файл dxxwjz2, dxxwjz2p, dxxwjz3
-  чи dxxwjz3p (`network_cfg`), переймає журнал користувача бібліотеки,
+  чи dxxwjz3p (`network_cfg`, а разом з назвами класів - `network_description`),
+  зберігає змінену нейромережу в такий файл, де далі лишаються решта вихідного
+  файлу і ваги шарів, які зміна не зачепила (`save_network`, див. секцію
+  [Збереження зміненої нейромережі](/doc/sections/uk_UA/4-7-4-network-weights-files.md#збереження-зміненої-нейромережі)),
+  переймає журнал користувача бібліотеки,
   відкриває проекти навчання за їхніми шляхами (`open_training_project`) і
   перелічує розширення назв файлів ваг кожного формату (`weights_extensions`).
 - **`LibraryContext`** - параметри роботи бібліотеки, названі так само, як

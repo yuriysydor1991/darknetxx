@@ -10,6 +10,10 @@
   класифікує все зображення нейромережею файлу ваг будь-якого формату (див.
   секцію [Бінарний файл darknetxx-recognition-gui](#бінарний-файл-darknetxx-recognition-gui)).
 
+Поруч з ними бінарні файли редактора нейромереж на GTK 4 і на Qt 6 створюють
+і редагують нейромережі проектів dxxwjz3p (див. секцію
+[Бінарні файли редактора нейромереж](/doc/sections/uk_UA/5-38-the-network-editor-binaries.md)).
+
 Обидва приймають той самий командний рядок, що й головний бінарний файл (див.
 секцію [Доступні параметри командного рядка](/doc/sections/uk_UA/6-2-3-available-command-line-parameters.md)).
 Сигнал зупинки ОС (SIGINT чи SIGTERM, наприклад) закриває їхні вікна так
@@ -152,7 +156,7 @@ dxxwjz2p, який містить усе, що й тека YOLO4, окрім з�
 
 | Параметр CMake | За замовчуванням | Дія |
 | --- | --- | --- |
-| `ENABLE_DARKNETXX_GUI` | `ON` | Будує обидва бінарні файли GUI, їхні ярлики робочого столу і піктограми. Значення `OFF` будує проект без GTKmm 4. |
+| `ENABLE_DARKNETXX_GUI` | `ON` | Будує обидва бінарні файли GUI і бінарний файл редактора нейромереж на GTK 4, їхні ярлики робочого столу і піктограми. Значення `OFF` будує проект без GTKmm 4. |
 | `DARKNETXX_TRAIN_GUI_BINARY_NAME` | `<назва головного бінарного файлу>-train-gui` | Назва бінарного файлу навчання з GUI і його цілі CMake. |
 | `DARKNETXX_RECOGNITION_GUI_BINARY_NAME` | `<назва головного бінарного файлу>-recognition-gui` | Назва бінарного файлу розпізнавання з GUI і його цілі CMake. |
 
@@ -178,8 +182,8 @@ MS Windows вони містять логотип `darknet.ico`.
 | Пакет чи контейнер | Що показує вікна |
 | --- | --- |
 | DEB | залежність від бібліотеки GTKmm 4, яку пакет обчислює за бінарними файлами |
-| snap | програми `darknetxx-train-gui` і `darknetxx-recognition-gui` з розширенням GNOME, яке додає середовище GTK 4 і підключення desktop, wayland, x11 та opengl |
-| flatpak | середовище GNOME з модулем GTKmm 4, команда `darknetxx-train-gui` (ярлик робочого столу бінарного файлу розпізнавання запускає інший бінарний файл) і дозволи Wayland, X11, IPC та DRI |
+| snap | програми `darknetxx-train-gui`, `darknetxx-recognition-gui` і `darknetxx-net-editor-gui` з розширенням GNOME, яке додає середовище GTK 4 і підключення desktop, wayland, x11 та opengl |
+| flatpak | середовище GNOME з модулем GTKmm 4, команда `darknetxx-train-gui` (ярлики робочого столу бінарних файлів розпізнавання і редактора нейромереж запускають інші бінарні файли) і дозволи Wayland, X11, IPC та DRI |
 | Docker | цілі `docker-single-run-darknetxx-cpu-train-gui` і `docker-single-run-darknetxx-gpu-train-gui` бінарного файлу навчання |
 
 Кожен пакет також містить ярлики робочого столу і піктограми: пакети DEB, RPM

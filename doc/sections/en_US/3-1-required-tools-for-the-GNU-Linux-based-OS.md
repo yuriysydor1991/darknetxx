@@ -12,6 +12,12 @@ The [GUI binaries](/doc/sections/en_US/5-36-the-GUI-binaries.md) require the GTK
 sudo apt install -y libgtkmm-4.0-dev
 ```
 
+The Qt 6 [network editor binary](/doc/sections/en_US/5-38-the-network-editor-binaries.md) is built as soon as the Qt 6 Widgets and Svg development files are found:
+
+```
+sudo apt install -y qt6-base-dev qt6-svg-dev
+```
+
 The [scripts/packages](/scripts/packages) directory holds the scripts which install the minimal set of packages required to build and run the project locally, the GTest framework of the tests included:
 
 | Script | Installs the packages of |

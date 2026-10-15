@@ -295,7 +295,11 @@ package "weights-converter" {
   }
   class WeightsConverter {
     +convert(conversion) : bool
+    +{static} write_destination(conversion, document) : bool
     #create_network(cfg) : ANetworkAdaptorPtr
+  }
+  class NetworkRewriter {
+    +{static} rewrite(src, dst, network, message) : bool
   }
 }
 
@@ -439,6 +443,8 @@ WeightsConverter ..> WeightsConversion
 WeightsConverter ..> IWeightsFileFormat : reads the source, writes the destination by
 WeightsConverter ..> NetworkSource : the cfg the destination keeps
 WeightsConverter ..> "OrigDefaultLoader" : parses the network cfg
+NetworkRewriter ..> "OrigDefaultLoader" : builds the edited network
+NetworkRewriter ..> WeightsConverter : writes the destination by
 TrainingJournal ..> IWeightsFileFormat : saves the training weights by
 TrainingChart ..> TrainingRecord : draws the chart of
 TrainingChart ..> WeightsFileFormats : peeks the dxxwjz2 files by

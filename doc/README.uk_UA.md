@@ -106,6 +106,7 @@
         1. [Бінарний файл darknetxx-train-gui](/doc/sections/uk_UA/5-36-the-GUI-binaries.md#бінарний-файл-darknetxx-train-gui)
         1. [Бінарний файл darknetxx-recognition-gui](/doc/sections/uk_UA/5-36-the-GUI-binaries.md#бінарний-файл-darknetxx-recognition-gui)
     1. [Використання бібліотеки darknetxx](/doc/sections/uk_UA/5-37-using-the-darknetxx-library.md)
+    1. [Бінарні файли редактора нейромереж](/doc/sections/uk_UA/5-38-the-network-editor-binaries.md)
 1. [Запуск головного виконуваного файлу](/doc/sections/uk_UA/6-run-the-executable.md)
     1. [Запуск через IDE](/doc/sections/uk_UA/6-1-IDE-run.md)
     1. Запуск з терміналу

@@ -45,7 +45,12 @@
 додають компонент `src/gui`, який у вікні GTK 4 першого навчає за допомогою
 фонового тренера бібліотеки, а у вікні другого розпізнає зображення за
 допомогою розпізнавача бібліотеки (див.
-[Бінарні файли GUI](/doc/sections/uk_UA/5-36-the-GUI-binaries.md)).
+[Бінарні файли GUI](/doc/sections/uk_UA/5-36-the-GUI-binaries.md)), а бінарні
+файли редактора нейромереж, `darknetxx-net-editor-gui` і
+`darknetxx-net-editor-qt-gui`, редагують нейромережу проекту dxxwjz3p у вікнах
+GTK 4 і Qt 6 однієї й тієї самої моделі компонента `src/gui/net-editor`, яка
+зберігає її фасадом бібліотеки (див.
+[Бінарні файли редактора нейромереж](/doc/sections/uk_UA/5-38-the-network-editor-binaries.md)).
 
 Окремий вихідний файл діаграми нижче -
 [`doc/diagrams/components-overview.puml`](/doc/diagrams/components-overview.puml).
@@ -62,7 +67,7 @@ package "app (application infrastructure)" {
   [ApplicationFactory] as factory
   [CommandLineParser] as parser
   [ApplicationContext] as ctx
-  [IApplication\n(+ Application,\nTrain/Recognition\nGuiApplication,\nHelpPrinter,\nVersionPrinter)] as iapp
+  [IApplication\n(+ Application,\nTrain/Recognition/\nNetEditor(Qt)\nGuiApplication,\nHelpPrinter,\nVersionPrinter)] as iapp
   [ISignalsHandler\n(+ SignalsHandler,\nStop/Pause/Continue/\nReload/User/Ignored)] as signals
 }
 
@@ -70,8 +75,9 @@ package "converters" {
   [ApplicationContext2LibraryContext] as conv
 }
 
-package "gui (darknetxx-train-gui,\ndarknetxx-recognition-gui)" {
+package "gui (darknetxx-train-gui,\ndarknetxx-recognition-gui,\ndarknetxx-net-editor-gui,\ndarknetxx-net-editor-qt-gui)" {
   [Train/Recognition\nGtkmmIniter and windows] as gui
+  [net-editor model,\nGTKmm 4 and Qt 6\nnetwork editor windows] as editor
 }
 
 package "lib (darknetxx library)" {
@@ -111,6 +117,9 @@ iapp --> facade : creates the work
 iapp --> gui : the GUI app shows
 gui --> trainer : trains a YOLO4 folder or a dxxwjz2p/dxxwjz3p project
 gui --> recognizer : recognizes the images
+iapp --> editor : the network editor app shows
+editor --> facade : opens and saves\nthe networks of the projects
+facade --> weights : saves the edited network
 facade --> ilib : creates
 facade --> trainer : creates
 facade --> recognizer : creates

@@ -31,6 +31,14 @@ class RecognitionGuiApplication {
   #create_gui_initer() : IGUIIniter
 }
 
+class NetEditorGuiApplication {
+  #create_gui_initer() : IGUIIniter
+}
+
+class NetEditorQtGuiApplication {
+  #create_gui_initer() : IGUIIniter
+}
+
 class "converters::ApplicationContext2LibraryContext" as ApplicationContext2LibraryContext {
   +convert(appctx, libctx) : bool
 }
@@ -115,6 +123,8 @@ IApplication <|.. NetworkCfgPrinter
 Application <|-- GuiApplication
 GuiApplication <|-- TrainGuiApplication
 GuiApplication <|-- RecognitionGuiApplication
+GuiApplication <|-- NetEditorGuiApplication
+GuiApplication <|-- NetEditorQtGuiApplication
 ISignalsHandler <|.. SignalsHandler
 
 ApplicationFactory ..> IApplication : creates
