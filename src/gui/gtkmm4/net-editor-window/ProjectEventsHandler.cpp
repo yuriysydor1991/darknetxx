@@ -21,11 +21,13 @@ Glib::RefPtr<Gtk::FileFilter> networks_filter(bool every)
 {
   auto filter = Gtk::FileFilter::create();
 
-  filter->set_name(every ? "Network files" : "The dxxwjz3p projects");
+  filter->set_name(every ? "Network files"
+                         : "The dxxwjz3p and dxxwjz4p projects");
   filter->add_suffix("dxxwjz3p");
+  filter->add_suffix("dxxwjz4p");
 
   if (every) {
-    for (const char* suffix : {"dxxwjz3", "dxxwjz2p", "dxxwjz2"}) {
+    for (const char* suffix : {"dxxwjz4", "dxxwjz3", "dxxwjz2p", "dxxwjz2"}) {
       filter->add_suffix(suffix);
     }
   }

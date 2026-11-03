@@ -65,7 +65,7 @@
             <child>
               <object class="GtkEntry" id="cfg_entry">
                 <property name="hexpand">true</property>
-                <property name="placeholder-text">The cfg file of the network, none for the dxxwjz2 or dxxwjz3 weights file, which keeps it</property>
+                <property name="placeholder-text">The cfg file of the network, none for the dxxwjz2, dxxwjz3 or dxxwjz4 weights file, which keeps it</property>
                 <layout>
                   <property name="column">1</property>
                   <property name="row">1</property>

@@ -73,7 +73,7 @@ void TrainingEventsHandler::train()
   if (!project->valid()) {
     status->set_text("No network to train found in " + path +
                      ": neither the YOLO4 folder of a cfg/*.cfg network file "
-                     "nor a dxxwjz2p or dxxwjz3p project file");
+                     "nor a dxxwjz2p, dxxwjz3p or dxxwjz4p project file");
     return;
   }
 

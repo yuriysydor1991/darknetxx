@@ -23,7 +23,7 @@
             <child>
               <object class="GtkEntry" id="project_entry">
                 <property name="hexpand">true</property>
-                <property name="placeholder-text">The YOLO4 folder of the cfg, data and backup subfolders or the dxxwjz2p or dxxwjz3p project file, Enter opens it</property>
+                <property name="placeholder-text">The YOLO4 folder of the cfg, data and backup subfolders or the dxxwjz2p, dxxwjz3p or dxxwjz4p project file, Enter opens it</property>
               </object>
             </child>
             <child>
@@ -44,7 +44,7 @@
           <object class="GtkLabel" id="status_label">
             <property name="xalign">0</property>
             <property name="wrap">true</property>
-            <property name="label">Choose the YOLO4 folder or the dxxwjz2p or dxxwjz3p project file to train</property>
+            <property name="label">Choose the YOLO4 folder or the dxxwjz2p, dxxwjz3p or dxxwjz4p project file to train</property>
           </object>
         </child>
         <child>

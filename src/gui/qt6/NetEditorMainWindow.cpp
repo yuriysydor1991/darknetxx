@@ -47,11 +47,13 @@ QLabel* dim(const QString& text)
 
 /// @brief The network files the editor opens.
 const QString NETWORKS_FILTER{
-    "Network files (*.dxxwjz3p *.dxxwjz3 *.dxxwjz2p *.dxxwjz2);;All files (*)"};
+    "Network files (*.dxxwjz4p *.dxxwjz3p *.dxxwjz4 *.dxxwjz3 *.dxxwjz2p "
+    "*.dxxwjz2);;All files (*)"};
 
 /// @brief The projects the editor saves.
 const QString PROJECTS_FILTER{
-    "The dxxwjz3p projects (*.dxxwjz3p);;All files (*)"};
+    "The dxxwjz3p and dxxwjz4p projects (*.dxxwjz3p *.dxxwjz4p);;All files "
+    "(*)"};
 
 }  // namespace
 

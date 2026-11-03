@@ -58,21 +58,21 @@ RecognitionWindowContext::Handlers RecognitionWindowContext::create_handlers()
         std::move(filter));
   };
 
-  return {
-      std::make_shared<RecognitionEventsHandler>(shared_from_this()),
-      chooser(wloader.weights_entry(), wloader.weights_button(),
-              "Choose the weights file of the network",
-              files_filter("Network weights files", formats)),
-      chooser(wloader.cfg_entry(), wloader.cfg_button(),
-              "Choose the cfg file of the network",
-              files_filter("Network cfg files", {"cfg", "dxxwjz2", "dxxwjz2p",
-                                                 "dxxwjz3", "dxxwjz3p"})),
-      chooser(wloader.names_entry(), wloader.names_button(),
-              "Choose the class names file",
-              files_filter("Class names files", {"names", "txt"})),
-      chooser(wloader.image_entry(), wloader.image_button(),
-              "Choose the image to recognize", images),
-      std::make_shared<StopSignalEventsHandler>(actx, window)};
+  return {std::make_shared<RecognitionEventsHandler>(shared_from_this()),
+          chooser(wloader.weights_entry(), wloader.weights_button(),
+                  "Choose the weights file of the network",
+                  files_filter("Network weights files", formats)),
+          chooser(wloader.cfg_entry(), wloader.cfg_button(),
+                  "Choose the cfg file of the network",
+                  files_filter("Network cfg files",
+                               {"cfg", "dxxwjz2", "dxxwjz2p", "dxxwjz3",
+                                "dxxwjz3p", "dxxwjz4", "dxxwjz4p"})),
+          chooser(wloader.names_entry(), wloader.names_button(),
+                  "Choose the class names file",
+                  files_filter("Class names files", {"names", "txt"})),
+          chooser(wloader.image_entry(), wloader.image_button(),
+                  "Choose the image to recognize", images),
+          std::make_shared<StopSignalEventsHandler>(actx, window)};
 }
 
 }  // namespace darknetxxGtkmm4

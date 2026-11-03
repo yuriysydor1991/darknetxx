@@ -36,9 +36,10 @@ TrainWindowContext::Handlers TrainWindowContext::create_handlers()
 
   auto projects = Gtk::FileFilter::create();
 
-  projects->set_name("dxxwjz2p and dxxwjz3p project files");
+  projects->set_name("dxxwjz2p, dxxwjz3p and dxxwjz4p project files");
   projects->add_suffix("dxxwjz2p");
   projects->add_suffix("dxxwjz3p");
+  projects->add_suffix("dxxwjz4p");
 
   return {
       std::make_shared<TrainingEventsHandler>(shared_from_this()),
@@ -48,7 +49,7 @@ TrainWindowContext::Handlers TrainWindowContext::create_handlers()
       std::make_shared<ChooserEventsHandler>(
           *wloader.window(), *wloader.project_entry(),
           *wloader.project_button(),
-          "Choose the dxxwjz2p or dxxwjz3p project file",
+          "Choose the dxxwjz2p, dxxwjz3p or dxxwjz4p project file",
           Gtk::FileChooser::Action::OPEN, projects),
       std::make_shared<WindowSystemEventsHandler>(shared_from_this()),
       std::make_shared<StopSignalEventsHandler>(actx, *wloader.window())};
