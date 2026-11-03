@@ -567,3 +567,89 @@ TEST_F(ITEST_digits_dxxwjz3, network_of_no_weights_is_trained)
   EXPECT_EQ(trained["training"]["loss"].size(), 12U);
   EXPECT_TRUE(trained["network"]["layers"][0].contains("arrays"));
 }
+
+TEST_F(ITEST_digits_dxxwjz3, dxxwjz4p_project_trains_into_the_dxxwjz4_beside)
+{
+  namespace fs = std::filesystem;
+
+  const auto dir = work_dir("project4p");
+  const fs::path folder = dir / "yolo4";
+  const fs::path project = dir / "digits.dxxwjz4p";
+  const fs::path elsewhere = dir / "elsewhere";
+  const fs::path temporary = dir / "tmp";
+  const std::string description =
+      "The digit glyphs of every size.\nThe 'quotes' and the \"quotes\" too.";
+
+  // the YOLO4 folder of the images of the training list
+  fs::create_directories(folder / "cfg");
+  fs::create_directories(folder / "data");
+  fs::create_directories(elsewhere);
+  fs::create_directories(temporary);
+
+  std::ofstream{folder / "cfg" / "digits.cfg"} << cfg_with(
+      {{"max_batches", "12"}, {"backup", (dir / "backup").string()}});
+
+  {
+    std::ofstream file{folder / "data" / "obj.names"};
+
+    for (const std::string& word : WORDS) {
+      file << word << "\n";
+    }
+  }
+
+  // the whole project of the images in one file
+  ASSERT_EQ(run(dir,
+                "--convert-from yolo4 --convert-src yolo4 --convert-to "
+                "dxxwjz4p --convert-dst digits.dxxwjz4p "
+                "--convert-description " +
+                    quote(description)),
+            0)
+      << "see the " << dir / "output.log";
+
+  fs::remove_all(folder);
+
+  const std::string packed = text_of(project);
+
+  // the training of the project of another working directory
+  const std::string command = "cd " + quote(elsewhere.string()) +
+                              " && TMPDIR=" + quote(temporary.string()) + " " +
+                              quote(DARKNETXX) + " --train-cfg " +
+                              quote(project.string()) + " --dont-show > " +
+                              quote((dir / "train.log").string()) + " 2>&1";
+
+  ASSERT_EQ(std::system(command.c_str()), 0) << "see the " << dir / "train.log";
+
+  const std::string log = text_of(dir / "train.log");
+
+  // the project is unpacked into the temporary directory and trained there,
+  // the folder is removed at the end
+  EXPECT_NE(log.find("is unpacked into " +
+                     (temporary / "darknetxx-dxxwjz4p-digits-").string()),
+            std::string::npos)
+      << "see the " << dir / "train.log";
+  EXPECT_TRUE(fs::is_empty(temporary));
+
+  // the network of the training is the dxxwjz4 file beside the project, the
+  // project stays as it was
+  const json trained = document_of(dir / "digits.dxxwjz4");
+
+  ASSERT_TRUE(trained.is_object()) << "see the " << dir / "train.log";
+  EXPECT_EQ(trained["format"], "dxxwjz4");
+  EXPECT_EQ(trained["description"], description);
+  EXPECT_EQ(classes_of(trained), WORDS);
+  EXPECT_EQ(trained["training"]["loss"].size(), 12U);
+  EXPECT_TRUE(trained.contains("header"));
+  EXPECT_FALSE(trained.contains("annotations"));
+  EXPECT_EQ(text_of(project), packed);
+
+  // the chart is beside them too
+  EXPECT_EQ(charts_of(dir).size(), 1U);
+  EXPECT_TRUE(charts_of(elsewhere).empty());
+
+  // the dxxwjz4 file detects with it's class names alone
+  ASSERT_EQ(run(dir, "--weights digits.dxxwjz4 --image " +
+                         quote(std::string{DATA_DIR} + "/digit_3_7.png") +
+                         " --dont-show"),
+            0)
+      << "see the " << dir / "output.log";
+}

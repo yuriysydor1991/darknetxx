@@ -4,6 +4,7 @@
 #include <condition_variable>
 #include <filesystem>
 #include <fstream>
+#include <iterator>
 #include <memory>
 #include <mutex>
 #include <numeric>
@@ -14,6 +15,7 @@
 #include "Yolo4Folder.h"
 #include "src/NetworksLoaders/dxxwjz/dxxwjz2p/Dxxwjz2pReader.h"
 #include "src/NetworksLoaders/dxxwjz/dxxwjz3/Dxxwjz3Reader.h"
+#include "src/NetworksLoaders/dxxwjz/dxxwjz4/Dxxwjz4Reader.h"
 #include "src/NetworksLoaders/weights-converter/WeightsConverter.h"
 #include "src/NetworksLoaders/weights-formats/WeightsFileFormats.h"
 #include "src/NetworksLoaders/weights-model/NetworkFiles.h"
@@ -28,6 +30,7 @@ using darknet_adaptor::loaders::WeightsDocument;
 using darknet_adaptor::loaders::WeightsFileFormats;
 using darknet_adaptor::loaders::dxxwjz2p::v1::Dxxwjz2pReader;
 using darknet_adaptor::loaders::dxxwjz3::v3::Dxxwjz3Reader;
+using darknet_adaptor::loaders::dxxwjz4::v4::Dxxwjz4Reader;
 using darknetxx011::ITrainer;
 using darknetxx011::LibraryContext;
 using darknetxx011::LibraryFacade;
@@ -289,6 +292,66 @@ TEST_F(CTEST_BackgroundTrainer, trains_the_dxxwjz2p_project_of_the_folder)
       LibraryFacade::open_training_project(project.string())->latest_weights(),
       project.string());
   EXPECT_FALSE(TrainingDataRegistry::has(TrainingDataRegistry::TRAIN_LIST));
+}
+
+TEST_F(CTEST_BackgroundTrainer, trains_the_dxxwjz4p_project_into_the_dxxwjz4)
+{
+  const fs::path project = folder / "project" / "digits.dxxwjz4p";
+  const fs::path trained = folder / "project" / "digits.dxxwjz4";
+  WeightsConversion conversion;
+  std::string cfg;
+
+  ASSERT_TRUE(
+      NetworkFiles::read_text((folder / "cfg" / "digits.cfg").string(), cfg));
+  cfg.replace(cfg.find("max_batches=400"), 15, "max_batches=3");
+  std::ofstream{folder / "cfg" / "digits.cfg"} << cfg;
+
+  conversion.from =
+      WeightsFileFormats::named("yolo4", WeightsFileFormats::convertible());
+  conversion.src = folder.string();
+  conversion.to = WeightsFileFormats::named("dxxwjz4p");
+  conversion.dst = project.string();
+  conversion.description = "the digits of every glyph size";
+
+  ASSERT_TRUE(WeightsConverter{}.convert(conversion));
+
+  // the project keeps the images themselves
+  fs::remove_all(folder / "data");
+
+  const auto bytes_of = [](const fs::path& path) {
+    std::ifstream file{path, std::ios::binary};
+    return std::string{std::istreambuf_iterator<char>{file},
+                       std::istreambuf_iterator<char>{}};
+  };
+  const std::string packed = bytes_of(project);
+  const darknetxx011::ATrainingProjectPtr opened =
+      LibraryFacade::open_training_project(project.string());
+
+  ASSERT_TRUE(opened->valid());
+  EXPECT_EQ(opened->path(), folder / "project");
+  EXPECT_TRUE(opened->latest_weights().empty());
+
+  ASSERT_TRUE(trainer->train(*opened));
+  ASSERT_TRUE(listener->wait_finished());
+  EXPECT_TRUE(listener->succeeded);
+  EXPECT_EQ(listener->last, 3);
+
+  // the network trained is the dxxwjz4 file beside the project, which stays
+  WeightsDocument rest;
+  bool weights = false;
+
+  ASSERT_TRUE(Dxxwjz4Reader{}.peek(trained.string(), rest, weights));
+  EXPECT_TRUE(weights);
+  EXPECT_EQ(rest.description, "the digits of every glyph size");
+  EXPECT_EQ(rest.training.size(), 3U);
+  EXPECT_TRUE(rest.annotations.empty());
+  EXPECT_EQ(bytes_of(project), packed);
+  EXPECT_FALSE(TrainingDataRegistry::has(TrainingDataRegistry::TRAIN_LIST));
+
+  // the next training resumes from it
+  EXPECT_EQ(
+      LibraryFacade::open_training_project(project.string())->latest_weights(),
+      trained.string());
 }
 
 TEST_F(CTEST_BackgroundTrainer, projects_of_the_paths)

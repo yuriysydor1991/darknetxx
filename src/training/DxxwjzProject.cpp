@@ -1,9 +1,12 @@
 #include "src/training/DxxwjzProject.h"
 
+#include "src/NetworksLoaders/weights-formats/NetworkSource.h"
 #include "src/NetworksLoaders/weights-formats/WeightsFileFormats.h"
 
 namespace darknetxx_impl
 {
+
+using darknet_adaptor::loaders::NetworkSource;
 
 DxxwjzProject::DxxwjzProject(const std::string& npath)
     : ATrainingProject{absolute_of(npath).parent_path()}
@@ -16,8 +19,11 @@ DxxwjzProject::DxxwjzProject(const std::string& npath)
           ->create_reader()
           ->peek(npath, rest, weights)) {
     const std::string project = absolute_of(npath).string();
+    // the dxxwjz4 file of the latest weights of the dxxwjz4p project
+    const std::string resumed = NetworkSource::resumed_of(project);
 
-    train(project, weights ? project : std::string{});
+    train(project,
+          resumed != project ? resumed : (weights ? project : std::string{}));
   }
 }
 

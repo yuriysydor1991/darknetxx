@@ -12,6 +12,7 @@
 #include <memory>
 #include <sstream>
 #include <string>
+#include <system_error>
 #include <utility>
 #include <vector>
 
@@ -274,6 +275,11 @@ bool OrigDefaultLoader::load_train_networks(const DarknetContextPtr& dctx)
   rest.network = NetworkDescription{description.cfg(), names};
   rest.annotations = source.annotations;
 
+  // the description of the project over the one of the weights it resumes
+  if (!source.description.empty()) {
+    rest.description = source.description;
+  }
+
   dctx->set_class_names(names);
   dctx->set_training_base(NetworkSource::base_of(cfg, iteration));
 
@@ -287,9 +293,22 @@ bool OrigDefaultLoader::load_train_networks(const DarknetContextPtr& dctx)
     dctx->set_training_annotations(source.annotations);
   }
 
-  // the project is the latest weights of it's training, the backups aside
+  // the project is the latest weights of it's training, the backups aside;
+  // the dxxwjz4p one keeps the images, so the dxxwjz4 file beside it is
+  const std::string trained =
+      annotated ? NetworkSource::trained_of(cfg) : std::string{};
+
+  if (NetworkSource::keeps_images(cfg)) {
+    std::error_code error;
+    const std::filesystem::path project = std::filesystem::absolute(cfg, error);
+
+    LOGI("The network of the " << cfg << " project is saved into " << trained
+                               << ", the charts beside it");
+    dctx->set_training_charts(project.parent_path().string());
+  }
+
   dctx->set_training_journal(std::make_shared<adaptors::TrainingJournal>(
-      format, std::move(rest), annotated ? cfg : std::string{}));
+      format, std::move(rest), trained));
 
   return true;
 }

@@ -6,6 +6,7 @@
 #include "Yolo4Folder.h"
 #include "src/NetworksLoaders/dxxwjz/dxxwjz2p/Dxxwjz2pFormat.h"
 #include "src/NetworksLoaders/dxxwjz/dxxwjz3p/Dxxwjz3pFormat.h"
+#include "src/NetworksLoaders/dxxwjz/dxxwjz4p/Dxxwjz4pFormat.h"
 #include "src/NetworksLoaders/weights-converter/NetworkRewriter.h"
 #include "src/NetworksLoaders/weights-formats/NetworkSource.h"
 #include "src/NetworksLoaders/weights-formats/WeightsFileFormats.h"
@@ -37,12 +38,14 @@ ATrainingProjectPtr LibraryFacade::open_training_project(
 {
   using darknet_adaptor::loaders::dxxwjz2p::v1::Dxxwjz2pFormat;
   using darknet_adaptor::loaders::dxxwjz3p::v1::Dxxwjz3pFormat;
+  using darknet_adaptor::loaders::dxxwjz4p::v1::Dxxwjz4pFormat;
 
   const std::filesystem::path extension =
       std::filesystem::path{path}.extension();
 
   if (extension == Dxxwjz2pFormat::EXTENSION ||
-      extension == Dxxwjz3pFormat::EXTENSION) {
+      extension == Dxxwjz3pFormat::EXTENSION ||
+      extension == Dxxwjz4pFormat::EXTENSION) {
     return std::make_shared<darknetxx_impl::DxxwjzProject>(path);
   }
 

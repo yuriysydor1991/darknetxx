@@ -192,6 +192,10 @@ struct detector_context
   // the base name of the files of the training, NULL for the one of the cfg
   // file; owned by the C++ network infrastructure
   char *base_name;
+
+  // the folder the charts of the training are saved into, NULL for the
+  // working directory; owned by the C++ network infrastructure
+  char *chart_directory;
 };
 
 /// @brief Tells if the computation is asked to stop. Thread safe.

@@ -43,8 +43,13 @@ void draw_train_chart_ctx(struct detector_context* ctx)
   char started[32];
 
   training_start_text(started, sizeof(started));
-  snprintf(ctx->windows_name, sizeof(ctx->windows_name), "chart_%s_%s.png",
-           ctx->base, started);
+  if (ctx->chart_directory != NULL) {
+    snprintf(ctx->windows_name, sizeof(ctx->windows_name),
+             "%s/chart_%s_%s.png", ctx->chart_directory, ctx->base, started);
+  } else {
+    snprintf(ctx->windows_name, sizeof(ctx->windows_name), "chart_%s_%s.png",
+             ctx->base, started);
+  }
 
   CLOGI("The training chart: %s", ctx->windows_name);
 

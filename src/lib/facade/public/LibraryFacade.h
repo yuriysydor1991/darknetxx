@@ -42,8 +42,8 @@ class DARKNETXX_LIB_API LibraryFacade
   /// @brief The trainer of the training projects into the context.
   static ITrainerPtr create_trainer(LibraryContextPtr ctx);
 
-  /// @brief The training project of the path: the one of the dxxwjz2p or
-  /// the dxxwjz3p project file, the YOLO4 folder one of the rest.
+  /// @brief The training project of the path: the one of the dxxwjz2p, the
+  /// dxxwjz3p or the dxxwjz4p project file, the YOLO4 folder one of the rest.
   static ATrainingProjectPtr open_training_project(const std::string& path);
 
   /// @brief The recognizer of the images by the networks of the weights files.

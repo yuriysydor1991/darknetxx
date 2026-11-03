@@ -192,6 +192,10 @@ class DarknetContext
   /// computation borrows; empty for the one of the cfg file.
   void set_training_base(std::string nbase);
 
+  /// @brief The folder of the charts of the training, which the computation
+  /// borrows; empty for the working directory.
+  void set_training_charts(std::string ndirectory);
+
   /// @brief The class names of the work, which the computation borrows.
   void set_class_names(std::vector<std::string> nnames);
 
@@ -319,6 +323,7 @@ class DarknetContext
 
   TrainingJournalPtr journal;
   std::string training_base;
+  std::string training_charts;
   /// @brief The training data of the annotations is published.
   bool annotated{false};
 

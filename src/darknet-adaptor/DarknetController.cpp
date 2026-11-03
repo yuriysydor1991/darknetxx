@@ -115,6 +115,8 @@ DarknetController::create_network_file_worker(DarknetContextPtr dctx)
 
   LOGI("The " << weights << " file holds no weights, training it's network");
   dctx->set_Train_cfg(weights);
+  // the dxxwjz4p project of no weights resumes from the dxxwjz4 file beside it
+  dctx->set_Latest_weights(loaders::NetworkSource::resumed_of(weights));
 
   return adaptors::ADetectorTrainer::create();
 }
@@ -125,9 +127,13 @@ void DarknetController::take_network_file_weights(const DarknetContextPtr& dctx)
                                ? dctx->get_Train_cfg()
                                : dctx->get_Detect_cfg();
 
+  // the training of the dxxwjz4p project resumes from the dxxwjz4 file of
+  // it's latest weights beside it
   if (dctx->get_Latest_weights().empty() &&
       loaders::NetworkSource::describes(cfg)) {
-    dctx->set_Latest_weights(cfg);
+    dctx->set_Latest_weights(dctx->get_Detect_cfg().empty()
+                                 ? loaders::NetworkSource::resumed_of(cfg)
+                                 : cfg);
   }
 }
 

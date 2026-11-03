@@ -14,6 +14,10 @@ namespace darknetxx_impl
  * annotations of the images in one file, which the training resumes from and
  * updates by it's latest weights. The folder of the file is the one of the
  * training.
+ *
+ * The dxxwjz4p project (see the Dxxwjz4pFormat) keeps the images too, so
+ * the training saves it's latest weights into the dxxwjz4 file of the name of
+ * the project beside it and resumes from that file once it's there.
  */
 class DxxwjzProject : public darknetxx011::ATrainingProject
 {

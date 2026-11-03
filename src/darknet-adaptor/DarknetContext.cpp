@@ -216,6 +216,15 @@ void DarknetContext::set_training_base(std::string nbase)
   internal->base_name = training_base.empty() ? nullptr : training_base.data();
 }
 
+void DarknetContext::set_training_charts(std::string ndirectory)
+{
+  assert(internal != nullptr);
+
+  training_charts = std::move(ndirectory);
+  internal->chart_directory =
+      training_charts.empty() ? nullptr : training_charts.data();
+}
+
 const DarknetContext::TrainingJournalPtr& DarknetContext::get_training_journal()
     const
 {

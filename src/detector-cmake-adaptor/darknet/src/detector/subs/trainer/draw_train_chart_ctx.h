@@ -8,8 +8,9 @@ extern "C" {
 #endif
 
 /// @brief Starts and saves the chart_<base>_<the start date and time>.png
-/// chart of the training: the whole record of the resumed training redrawn,
-/// the chart_path image continued for none.
+/// chart of the training (of the chart_directory folder, of the working one
+/// for none): the whole record of the resumed training redrawn, the
+/// chart_path image continued for none.
 void draw_train_chart_ctx(struct detector_context* ctx);
 
 /// @brief Saves the chart of the training, if any.
