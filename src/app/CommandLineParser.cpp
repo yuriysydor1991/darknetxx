@@ -141,6 +141,9 @@ bool check_conversion(const std::shared_ptr<ApplicationContext>& ctx)
   } else if (!requested && !ctx->convert_names.empty()) {
     error = "The " + CMDParamNames::convert_namesw +
             " parameter goes with the conversion ones alone";
+  } else if (!requested && !ctx->convert_description.empty()) {
+    error = "The " + CMDParamNames::convert_descriptionw +
+            " parameter goes with the conversion ones alone";
   } else if (requested &&
              (!ctx->train_cfg.empty() || !ctx->detect_cfg.empty())) {
     error = "The conversion can't be combined with the " +
@@ -470,6 +473,10 @@ bool CommandLineParser::parse_known_arg(std::shared_ptr<ApplicationContext> ctx,
     ctx->convert_names = nextParam;
     LOGD(
         "Found the class names file of the conversion: " << ctx->convert_names);
+  } else if (param == CMDParamNames::convert_descriptionw) {
+    ctx->convert_description = nextParam;
+    LOGD("Found the description text of the conversion of "
+         << ctx->convert_description.size() << " bytes");
   } else if (param == CMDParamNames::dump_cfgw) {
     ctx->dump_cfg = nextParam;
     LOGD("Found the weights file of the network cfg to print: "
@@ -529,6 +536,7 @@ const std::set<std::string>& CommandLineParser::get_params_requiring_data()
       CMDParamNames::convert_dstw,
       CMDParamNames::convert_cfgw,
       CMDParamNames::convert_namesw,
+      CMDParamNames::convert_descriptionw,
       CMDParamNames::dump_cfgw};
 
   return requireNext;

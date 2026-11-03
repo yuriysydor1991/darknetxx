@@ -109,6 +109,9 @@ class DARKNETXX_LIB_API LibraryContext
   /// @brief The class names file the formats of the network description
   /// keep, over the names= key of the cfg [net] section.
   std::string convert_names;
+  /// @brief The description text the dxxwjz4 and the dxxwjz4p files keep,
+  /// over the one of the source; empty for the one of the source.
+  std::string convert_description;
 
  private:
   std::atomic_bool mstop{false};

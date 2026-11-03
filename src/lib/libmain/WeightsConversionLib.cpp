@@ -55,6 +55,7 @@ bool WeightsConversionLib::libcall(LibraryContextPtr ctx)
   conversion.dst = ctx->convert_dst;
   conversion.cfg = ctx->convert_cfg;
   conversion.names = ctx->convert_names;
+  conversion.description = ctx->convert_description;
   // the stop request ends the conversion between it's steps, the destination
   // is written by the complete conversion alone
   conversion.stop_requested = [ctx]() { return ctx->stop_requested(); };

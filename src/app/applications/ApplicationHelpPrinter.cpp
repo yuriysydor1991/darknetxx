@@ -79,6 +79,10 @@ void print_conversion_options(std::ostream& out)
   print_option(out, CMDParamNames::convert_namesw, "<FILE>",
                "the class names file the dxxwjz2, dxxwjz3 and dxxwjz4 FORMATs "
                "keep (overrides the cfg [net] names= key)");
+  print_option(out, CMDParamNames::convert_descriptionw, "<TEXT>",
+               "the comments and the description of the network and of it's "
+               "data of any length the dxxwjz4 and dxxwjz4p FORMATs keep "
+               "(overrides the one of the source)");
   print_option(out, CMDParamNames::dump_cfgw, "<FILE>",
                "print the YOLO4 network cfg the dxxwjz2, dxxwjz2p, dxxwjz3, "
                "dxxwjz3p, dxxwjz4 or dxxwjz4p FILE keeps into the stdout, "

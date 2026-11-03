@@ -83,6 +83,7 @@ void ApplicationContext2LibraryContext::convert_conversion_params(
   libctx.convert_dst = appctx.convert_dst;
   libctx.convert_cfg = appctx.convert_cfg;
   libctx.convert_names = appctx.convert_names;
+  libctx.convert_description = appctx.convert_description;
 }
 
 }  // namespace converters

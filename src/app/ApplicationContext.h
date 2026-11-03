@@ -182,6 +182,10 @@ struct ApplicationContext
   /// @brief The class names file of the converted weights, given after the
   /// --convert-names command line flag.
   std::string convert_names;
+  /// @brief The description text the dxxwjz4 and the dxxwjz4p files of the
+  /// conversion keep, given after the --convert-description command line
+  /// flag; empty for the one of the source.
+  std::string convert_description;
   /// @brief The weights file the network cfg of which is printed into the
   /// standard output, given after the --dump-cfg command line flag.
   std::string dump_cfg;

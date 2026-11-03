@@ -90,6 +90,7 @@ struct ApplicationContext
   std::string convert_dst;
   std::string convert_cfg;
   std::string convert_names;
+  std::string convert_description;
   std::string dump_cfg;
 
   bool conversion_requested() const;

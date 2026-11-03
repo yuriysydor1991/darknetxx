@@ -26,6 +26,7 @@ class UTEST_WeightsConversionLib : public Test
     ctx->convert_dst = "net.dxxwjz1";
     ctx->convert_cfg = "net.cfg";
     ctx->convert_names = "net.names";
+    ctx->convert_description = "the notes\nof the net";
   }
 
   ~UTEST_WeightsConversionLib() { WeightsConverter::onMockCreate = nullptr; }
@@ -64,6 +65,7 @@ TEST_F(UTEST_WeightsConversionLib, conversion_of_the_command_line)
                 EXPECT_EQ(conversion.dst, "net.dxxwjz1");
                 EXPECT_EQ(conversion.cfg, "net.cfg");
                 EXPECT_EQ(conversion.names, "net.names");
+                EXPECT_EQ(conversion.description, "the notes\nof the net");
                 return result;
               }));
         }));

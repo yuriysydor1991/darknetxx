@@ -20,6 +20,7 @@ struct WeightsConversion
   std::string dst;
   std::string cfg;
   std::string names;
+  std::string description;
   std::function<bool()> stop_requested;
 };
 
