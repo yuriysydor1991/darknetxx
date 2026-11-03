@@ -61,13 +61,16 @@ class WeightsConverter
   /**
    * @brief Writes the document into the destination of the conversion
    * through the temporary file of its directory, which replaces the
-   * destination once complete.
+   * destination once complete. The images of the unpacked dxxwjz4p source
+   * are copied beside the destination of the image paths (the dxxwjz3p and
+   * the dxxwjz2p ones) first, so the document refers to the copies (see the
+   * Dxxwjz4pWorkspace::export_images()).
    *
    * @return False on any failure (logged), which leaves the destination
    * untouched.
    */
   static bool write_destination(const WeightsConversion& conversion,
-                                const WeightsDocument& document);
+                                WeightsDocument& document);
 
  protected:
   /// @brief The network of the cfg file, throws on the failure.

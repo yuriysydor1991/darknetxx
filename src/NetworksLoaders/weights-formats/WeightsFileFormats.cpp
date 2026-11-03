@@ -11,6 +11,8 @@
 #include "src/NetworksLoaders/dxxwjz/dxxwjz2p/Dxxwjz2pFileFormat.h"
 #include "src/NetworksLoaders/dxxwjz/dxxwjz3/Dxxwjz3FileFormat.h"
 #include "src/NetworksLoaders/dxxwjz/dxxwjz3p/Dxxwjz3pFileFormat.h"
+#include "src/NetworksLoaders/dxxwjz/dxxwjz4/Dxxwjz4FileFormat.h"
+#include "src/NetworksLoaders/dxxwjz/dxxwjz4p/Dxxwjz4pFileFormat.h"
 #include "src/NetworksLoaders/original-weights/OrigWeightsFileFormat.h"
 #include "src/NetworksLoaders/yolo4-folder/Yolo4FolderFormat.h"
 
@@ -25,7 +27,9 @@ const std::vector<IWeightsFileFormatPtr>& WeightsFileFormats::all()
       std::make_shared<dxxwjz2::v2::Dxxwjz2FileFormat>(),
       std::make_shared<dxxwjz2p::v1::Dxxwjz2pFileFormat>(),
       std::make_shared<dxxwjz3::v3::Dxxwjz3FileFormat>(),
-      std::make_shared<dxxwjz3p::v1::Dxxwjz3pFileFormat>()};
+      std::make_shared<dxxwjz3p::v1::Dxxwjz3pFileFormat>(),
+      std::make_shared<dxxwjz4::v4::Dxxwjz4FileFormat>(),
+      std::make_shared<dxxwjz4p::v1::Dxxwjz4pFileFormat>()};
 
   return formats;
 }

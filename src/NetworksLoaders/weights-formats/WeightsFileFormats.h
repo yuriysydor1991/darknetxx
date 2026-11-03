@@ -14,8 +14,8 @@ class WeightsFileFormats
 {
  public:
   /// @brief Every format in the order of the help messages: the original
-  /// weights, the dxxwjz1, the dxxwjz2, the dxxwjz2p, the dxxwjz3 and the
-  /// dxxwjz3p one.
+  /// weights, the dxxwjz1, the dxxwjz2, the dxxwjz2p, the dxxwjz3, the
+  /// dxxwjz3p, the dxxwjz4 and the dxxwjz4p one.
   static const std::vector<IWeightsFileFormatPtr>& all();
 
   /// @brief The formats of the conversion: every one and the YOLO4 folder,

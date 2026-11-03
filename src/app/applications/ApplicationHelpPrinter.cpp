@@ -74,14 +74,15 @@ void print_conversion_options(std::ostream& out)
                "of the yolo4 FORMAT");
   print_option(out, CMDParamNames::convert_cfgw, "<FILE>",
                "the network cfg file of the weights: required to read the "
-               "weights FORMAT, validates the rest, the dxxwjz2 and dxxwjz3 "
-               "ones keep it");
+               "weights FORMAT, validates the rest, the dxxwjz2, dxxwjz3 and "
+               "dxxwjz4 ones keep it");
   print_option(out, CMDParamNames::convert_namesw, "<FILE>",
-               "the class names file the dxxwjz2 and dxxwjz3 FORMATs keep "
-               "(overrides the cfg [net] names= key)");
+               "the class names file the dxxwjz2, dxxwjz3 and dxxwjz4 FORMATs "
+               "keep (overrides the cfg [net] names= key)");
   print_option(out, CMDParamNames::dump_cfgw, "<FILE>",
-               "print the YOLO4 network cfg the dxxwjz2, dxxwjz2p, dxxwjz3 or "
-               "dxxwjz3p FILE keeps into the stdout, nothing else");
+               "print the YOLO4 network cfg the dxxwjz2, dxxwjz2p, dxxwjz3, "
+               "dxxwjz3p, dxxwjz4 or dxxwjz4p FILE keeps into the stdout, "
+               "nothing else");
 
   out << "\n  Where FORMAT is one of:\n";
 

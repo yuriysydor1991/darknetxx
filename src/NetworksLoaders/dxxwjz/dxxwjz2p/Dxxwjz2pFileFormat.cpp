@@ -34,6 +34,8 @@ bool Dxxwjz2pFileFormat::keeps_structure() const { return true; }
 
 bool Dxxwjz2pFileFormat::keeps_network() const { return true; }
 
+bool Dxxwjz2pFileFormat::keeps_annotations() const { return true; }
+
 IWeightsReaderPtr Dxxwjz2pFileFormat::create_reader() const
 {
   return Dxxwjz2pReader::create();

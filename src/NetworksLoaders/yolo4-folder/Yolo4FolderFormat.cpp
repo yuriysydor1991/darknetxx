@@ -35,6 +35,10 @@ bool Yolo4FolderFormat::keeps_structure() const { return true; }
 
 bool Yolo4FolderFormat::keeps_network() const { return true; }
 
+bool Yolo4FolderFormat::keeps_annotations() const { return true; }
+
+bool Yolo4FolderFormat::keeps_images() const { return true; }
+
 IWeightsReaderPtr Yolo4FolderFormat::create_reader() const
 {
   return std::make_shared<Yolo4FolderReader>();

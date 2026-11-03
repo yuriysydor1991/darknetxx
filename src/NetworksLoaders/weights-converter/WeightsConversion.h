@@ -34,6 +34,10 @@ class WeightsConversion
   /// @brief The class names file the formats of the network description
   /// keep, empty for none.
   std::string names;
+  /// @brief The description text the formats of the description keep (the
+  /// dxxwjz4 and the dxxwjz4p ones) over the one of the source, empty for
+  /// the one of the source.
+  std::string description;
   /// @brief Asked between the steps of the conversion, true stops it (the
   /// stop request of the application, for example). Empty for none.
   std::function<bool()> stop_requested;

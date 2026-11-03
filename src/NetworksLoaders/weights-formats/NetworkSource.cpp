@@ -5,8 +5,10 @@
 #include <regex>
 #include <sstream>
 #include <string>
+#include <system_error>
 
 #include "src/NetworksLoaders/OrigDefaultLoader/CfgSection.h"
+#include "src/NetworksLoaders/dxxwjz/dxxwjz4/Dxxwjz4Format.h"
 #include "src/NetworksLoaders/weights-formats/WeightsFileFormats.h"
 #include "src/NetworksLoaders/weights-model/NetworkFiles.h"
 #include "src/NetworksLoaders/weights-model/WeightsDocument.h"
@@ -68,6 +70,32 @@ std::string NetworkSource::base_of(const std::string& path, const int iteration)
                                                                : stem;
 
   return base.substr(0, base.find('.'));
+}
+
+std::string NetworkSource::trained_of(const std::string& path)
+{
+  if (!keeps_images(path)) {
+    return path;
+  }
+
+  return std::filesystem::path{path}
+      .replace_extension(dxxwjz4::v4::Dxxwjz4Format::EXTENSION)
+      .string();
+}
+
+std::string NetworkSource::resumed_of(const std::string& path)
+{
+  const std::string trained = trained_of(path);
+  std::error_code error;
+
+  return trained != path && std::filesystem::is_regular_file(trained, error)
+             ? trained
+             : path;
+}
+
+bool NetworkSource::keeps_images(const std::string& path)
+{
+  return WeightsFileFormats::of_file(path)->keeps_images();
 }
 
 std::string NetworkSource::option_of(const std::string& path,

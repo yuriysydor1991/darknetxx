@@ -26,8 +26,8 @@ int NetworkCfgPrinter::run(std::shared_ptr<ApplicationContext> ctx)
   if (cfg.empty()) {
     LOGE("No network cfg of the "
          << ctx->dump_cfg
-         << " file to print, the dxxwjz2, the dxxwjz2p, the dxxwjz3 and the "
-            "dxxwjz3p files keep it");
+         << " file to print, the dxxwjz2, the dxxwjz2p, the dxxwjz3, the "
+            "dxxwjz3p, the dxxwjz4 and the dxxwjz4p files keep it");
     return INVALID;
   }
 

@@ -86,9 +86,10 @@ struct WeightsLayer
  * than the network one is the truncated one.
  *
  * The network description and the training record are kept by the formats
- * which keep them alone (the dxxwjz2 and the dxxwjz3 ones), the rest leaves
- * them out, the YOLO4 annotations of the training project by the dxxwjz2p
- * and the dxxwjz3p formats alone.
+ * which keep them alone (the dxxwjz2, the dxxwjz3 and the dxxwjz4 ones), the
+ * rest leaves them out, the YOLO4 annotations of the training project by the
+ * dxxwjz2p, the dxxwjz3p and the dxxwjz4p formats alone, the description
+ * text by the dxxwjz4 and the dxxwjz4p ones alone.
  */
 struct WeightsDocument
 {
@@ -101,6 +102,9 @@ struct WeightsDocument
   NetworkDescription network;
   TrainingRecord training;
   Yolo4Annotations annotations;
+  /// the free text of the comments and the description of the network and
+  /// it's data of any length, empty for none
+  std::string description;
 
   /// @brief The layer of the index, nullptr for none.
   const WeightsLayer* find(int index) const;

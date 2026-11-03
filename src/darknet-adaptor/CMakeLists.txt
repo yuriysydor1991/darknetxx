@@ -97,6 +97,8 @@ target_sources(
     $<TARGET_OBJECTS:DarknetCXXDxxwjz2pV1OBJ>
     $<TARGET_OBJECTS:DarknetCXXDxxwjz3V3OBJ>
     $<TARGET_OBJECTS:DarknetCXXDxxwjz3pV1OBJ>
+    $<TARGET_OBJECTS:DarknetCXXDxxwjz4V4OBJ>
+    $<TARGET_OBJECTS:DarknetCXXDxxwjz4pV1OBJ>
     $<TARGET_OBJECTS:DarknetCXXYolo4FolderOBJ>
     $<TARGET_OBJECTS:DarknetCXXWeightsFormatsOBJ>
     $<TARGET_OBJECTS:DarknetCXXWeightsConverterOBJ>

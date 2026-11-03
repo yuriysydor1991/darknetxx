@@ -19,9 +19,9 @@ TEST(CTEST_WeightsFileFormats, formats_are_of_the_help_message_order)
     names.push_back(format->name());
   }
 
-  EXPECT_EQ(names,
-            (std::vector<std::string>{"weights", "dxxwjz1", "dxxwjz2",
-                                      "dxxwjz2p", "dxxwjz3", "dxxwjz3p"}));
+  EXPECT_EQ(names, (std::vector<std::string>{"weights", "dxxwjz1", "dxxwjz2",
+                                             "dxxwjz2p", "dxxwjz3", "dxxwjz3p",
+                                             "dxxwjz4", "dxxwjz4p"}));
 }
 
 TEST(CTEST_WeightsFileFormats, conversion_adds_the_yolo4_folder)
@@ -50,7 +50,7 @@ TEST(CTEST_WeightsFileFormats, names_find_the_formats)
   }
 
   for (const std::string& name : std::vector<std::string>{
-           "", "Weights", "dxxwjz", "dxxwjz4", " dxxwjz2", "json"}) {
+           "", "Weights", "dxxwjz", "dxxwjz5", " dxxwjz2", "json"}) {
     EXPECT_EQ(WeightsFileFormats::named(name), nullptr) << name;
   }
 }
@@ -64,6 +64,9 @@ TEST(CTEST_WeightsFileFormats, extensions_tell_the_formats_of_the_files)
   EXPECT_EQ(WeightsFileFormats::of_file("dir/net.dxxwjz3")->name(), "dxxwjz3");
   EXPECT_EQ(WeightsFileFormats::of_file("project.dxxwjz3p")->name(),
             "dxxwjz3p");
+  EXPECT_EQ(WeightsFileFormats::of_file("dir/net.dxxwjz4")->name(), "dxxwjz4");
+  EXPECT_EQ(WeightsFileFormats::of_file("project.dxxwjz4p")->name(),
+            "dxxwjz4p");
   EXPECT_EQ(WeightsFileFormats::of_file("yolo.weights")->name(), "weights");
 
   // the original darknet names it's files of any extension

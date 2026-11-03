@@ -11,8 +11,8 @@ namespace darknet_adaptor::loaders
 
 /**
  * @brief The file a network is made of: the network cfg file or the weights
- * file of the format which keeps the network description (the dxxwjz2 and
- * the dxxwjz3 ones and their projects, see the
+ * file of the format which keeps the network description (the dxxwjz2, the
+ * dxxwjz3 and the dxxwjz4 ones and their projects, see the
  * IWeightsFileFormat::keeps_network()).
  */
 class NetworkSource
@@ -45,6 +45,25 @@ class NetworkSource
    * trainings, of the iteration of its weights).
    */
   static std::string base_of(const std::string& path, int iteration);
+
+  /**
+   * @brief The file the training of the project file saves it's latest
+   * weights into: the <name>.dxxwjz4 file beside the <name>.dxxwjz4p
+   * project (the project keeps the images, so it isn't rewritten by every
+   * save), the project file itself for the rest (the dxxwjz2p and the
+   * dxxwjz3p ones).
+   */
+  static std::string trained_of(const std::string& path);
+
+  /**
+   * @brief The weights file the training of the network file resumes from:
+   * the trained_of() dxxwjz4 file of the dxxwjz4p project once it exists, the
+   * file itself otherwise.
+   */
+  static std::string resumed_of(const std::string& path);
+
+  /// @brief Tells the project file keeps the images, the dxxwjz4p one.
+  static bool keeps_images(const std::string& path);
 
   /// @brief The value of the key of the [net] section of the network of the
   /// file, the default for none.

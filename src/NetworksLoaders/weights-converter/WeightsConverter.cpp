@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "src/NetworksLoaders/OrigDefaultLoader/OrigDefaultLoader.h"
+#include "src/NetworksLoaders/dxxwjz/dxxwjz4p/Dxxwjz4pWorkspace.h"
 #include "src/NetworksLoaders/original-weights/OrigWeightsValidator.h"
 #include "src/NetworksLoaders/weights-formats/NetworkSource.h"
 #include "src/NetworksLoaders/weights-model/NetworkFiles.h"
@@ -207,6 +208,16 @@ bool WeightsConverter::describe(const WeightsConversion& conversion,
                                 const adaptors::ANetworkAdaptorPtr& net,
                                 WeightsDocument& document)
 {
+  if (!conversion.description.empty()) {
+    document.description = conversion.description;
+  }
+
+  if (!conversion.to->keeps_description() && !document.description.empty()) {
+    LOGW("The " << conversion.to->name()
+                << " file keeps no description text, the dxxwjz4 and the "
+                   "dxxwjz4p files do");
+  }
+
   if (!conversion.to->keeps_network()) {
     if (!conversion.names.empty()) {
       LOGW("The " << conversion.to->name() << " file keeps no class names, "
@@ -278,7 +289,7 @@ std::string WeightsConverter::names_of(const WeightsConversion& conversion,
 }
 
 bool WeightsConverter::write_destination(const WeightsConversion& conversion,
-                                         const WeightsDocument& document)
+                                         WeightsDocument& document)
 {
   const std::filesystem::path dst{conversion.dst};
   std::error_code error;
@@ -290,6 +301,20 @@ bool WeightsConverter::write_destination(const WeightsConversion& conversion,
     if (error) {
       LOGE("Fail to create the destination directory "
            << dst.parent_path().string() << ": " << error.message());
+      return false;
+    }
+  }
+
+  // the images of the dxxwjz4p source are the ones of it's temporary folder,
+  // the project of the image paths refers to the copies beside it
+  if (conversion.to->keeps_annotations() && !conversion.to->keeps_images()) {
+    std::string failure;
+
+    if (!dxxwjz4p::v1::Dxxwjz4pWorkspace::export_images(
+            document.annotations,
+            std::filesystem::absolute(dst, error).parent_path(), failure)) {
+      LOGE("Fail to copy the images of the project beside " << conversion.dst
+                                                            << ": " << failure);
       return false;
     }
   }

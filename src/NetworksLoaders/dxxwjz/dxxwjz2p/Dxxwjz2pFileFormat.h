@@ -21,6 +21,7 @@ class Dxxwjz2pFileFormat : public IWeightsFileFormat
   virtual const std::string& description() const override;
   virtual bool keeps_structure() const override;
   virtual bool keeps_network() const override;
+  virtual bool keeps_annotations() const override;
   virtual IWeightsReaderPtr create_reader() const override;
   virtual IWeightsWriterPtr create_writer() const override;
 };

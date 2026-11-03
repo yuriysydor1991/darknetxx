@@ -38,6 +38,19 @@ class IWeightsFileFormat
   /// record beside the weights.
   virtual bool keeps_network() const = 0;
 
+  /// @brief Tells the files keep the YOLO4 annotations of the images of the
+  /// training project, false by default.
+  virtual bool keeps_annotations() const { return false; }
+
+  /// @brief Tells the files keep the images of their annotations themselves
+  /// (the copies of them), not the paths to the images alone; false by
+  /// default.
+  virtual bool keeps_images() const { return false; }
+
+  /// @brief Tells the files keep the description text of the document (see
+  /// the WeightsDocument::description), false by default.
+  virtual bool keeps_description() const { return false; }
+
   virtual IWeightsReaderPtr create_reader() const = 0;
   virtual IWeightsWriterPtr create_writer() const = 0;
 };
