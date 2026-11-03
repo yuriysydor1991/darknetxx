@@ -14,6 +14,8 @@ In order to train the network on your own data set you'll need annotated images 
 
 The `ImagesAnnotator` generates the files of the most recent darknetxx formats as well: the `DarknetXX` submenu of its export menu writes the dxxwjz3p training project of the annotated images and the YOLO4 training folder with the dxxwjz3 network to train (the dxxwjz2p and the dxxwjz2 ones too), which `darknetxx --train-cfg` and the `darknetxx-train-gui` train with no conversion, and its import menu reads them back, the projects the training has saved the weights into included. See the [The files of the ImagesAnnotator](/doc/sections/en_US/4-7-4-network-weights-files.md#the-files-of-the-imagesannotator) section.
 
+The darknetxx converter packs any such project into the dxxwjz4p one, the whole training project in one file: the ZIP archive of the single JSON document (the network, the annotations and the description text of any length) and of the images themselves in it's `data/` folder, which any zip tool unpacks for a look and `darknetxx --train-cfg project.dxxwjz4p` unpacks into the temporary directory and trains into the `project.dxxwjz4` file beside it. See the [The dxxwjz4p project file format](/doc/sections/en_US/4-7-4-network-weights-files.md#the-dxxwjz4p-project-file-format) section.
+
 # Components
 
 The diagram below shows all the components of the [`src`](/src) directory, the

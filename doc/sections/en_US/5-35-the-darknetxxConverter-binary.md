@@ -3,10 +3,10 @@
 Beside the `darknetxx` application the project builds a second binary,
 `darknetxxConverter`, which converts the network weights files between the
 original darknet weights format, the dxxwjz1, the dxxwjz2, the dxxwjz2p, the
-dxxwjz3 and the dxxwjz3p ones, the YOLO4 training folders into the dxxwjz2p and
-the dxxwjz3p projects and back, prints the YOLO4 network cfg the dxxwjz2,
-dxxwjz2p, dxxwjz3 and dxxwjz3p files keep, and does
-nothing else. It
+dxxwjz3, the dxxwjz3p, the dxxwjz4 and the dxxwjz4p ones, the YOLO4 training
+folders into the dxxwjz2p, the dxxwjz3p and the dxxwjz4p projects and back,
+prints the YOLO4 network cfg the dxxwjz2, dxxwjz2p, dxxwjz3, dxxwjz3p, dxxwjz4
+and dxxwjz4p files keep, and does nothing else. It
 is the very same conversion the main binary offers through its own [command
 line](/doc/sections/en_US/6-2-4-converting-the-network-weights-files.md) -
 the flags, the formats and the behaviour are one and the same, because the
@@ -74,8 +74,10 @@ the install step.
 cmake -B build -S . -DENABLE_DARKNETXX_CONVERTER=OFF
 ```
 
-The dxxwjz1, the dxxwjz2, the dxxwjz2p, the dxxwjz3 and the dxxwjz3p files are
-the gzip compressed JSON documents, so both binaries
+The dxxwjz1, the dxxwjz2, the dxxwjz2p, the dxxwjz3, the dxxwjz3p and the
+dxxwjz4 files are the gzip compressed JSON documents, the dxxwjz4p one is the
+ZIP archive of the deflated JSON document and images, so both
+binaries
 require the [zlib](/doc/sections/en_US/5-23-enabling-the-zlib-library.md) and
 the [nlohmann JSON](/doc/sections/en_US/5-18-enabling-the-nlohmann-json-library.md)
 libraries, the system ones or the ones the configure fetches.

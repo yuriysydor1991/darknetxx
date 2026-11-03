@@ -98,12 +98,12 @@ The `train_cfg` context of the very same `create_library` call trains the
 network and the `detect_cfg` one detects, while the
 `LibraryFacade::create_trainer` trains the training project the
 `LibraryFacade::open_training_project` opens of a path (a YOLO4 folder, a
-dxxwjz2p or a dxxwjz3p project file) in the background and reports the iterations to the
+dxxwjz2p, a dxxwjz3p or a dxxwjz4p project file) in the background and reports the iterations to the
 `training_listener` of the context, and the
 `LibraryFacade::training_chart` gives the PNG image of the training chart of a
-dxxwjz2 or dxxwjz3 weights file (the empty one for a file of no training record), the
+dxxwjz2, dxxwjz3 or dxxwjz4 weights file (the empty one for a file of no training record), the
 `LibraryFacade::network_cfg` the darknet cfg text of the network a dxxwjz2,
-dxxwjz2p, dxxwjz3 or dxxwjz3p file keeps (the empty one for the rest), the
+dxxwjz2p, dxxwjz3, dxxwjz3p, dxxwjz4 or dxxwjz4p file keeps (the empty one for the rest), the
 `LibraryFacade::network_description` the cfg text with the class names and the
 `LibraryFacade::save_network` saves the edited cfg text and class names into
 such a file (the network editor binaries save by it). A program

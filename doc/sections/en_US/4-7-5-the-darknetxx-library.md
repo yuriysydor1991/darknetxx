@@ -2,7 +2,7 @@
 
 The whole functionality of the project - the darknet training and detection,
 the network weights files conversion, the background training of the YOLO4
-folders and of the dxxwjz2p and dxxwjz3p projects and the recognition of the images by the networks of the weights
+folders and of the dxxwjz2p, dxxwjz3p and dxxwjz4p projects and the recognition of the images by the networks of the weights
 files - is the shared `darknetxx-0.11` library the
 [`src/lib`](/src/lib) directory builds of the facade, the `libmain` and the
 components beside it, laid out the way the
@@ -155,7 +155,7 @@ project name and it's major and minor version):
   images, lists the network weights
   files formats the conversion accepts, draws the PNG image of the training
   chart the record of a dxxwjz2 file keeps (`training_chart`), gives the
-  network cfg text a dxxwjz2, dxxwjz2p, dxxwjz3 or dxxwjz3p file keeps
+  network cfg text a dxxwjz2, dxxwjz2p, dxxwjz3, dxxwjz3p, dxxwjz4 or dxxwjz4p file keeps
   (`network_cfg`, the class names beside it by the `network_description`),
   saves the edited network into such a file, the rest of the source file and
   the weights of the layers the edit kept going on (`save_network`, see the
@@ -179,8 +179,8 @@ project name and it's major and minor version):
   of a training project (see the
   [The darknetxx-train-gui binary](/doc/sections/en_US/5-36-the-GUI-binaries.md#the-darknetxx-train-gui-binary)
   section) in a thread of it's own, resumed from the latest weights of the
-  project: of the YOLO4 folder, the `Yolo4Folder`, or of the dxxwjz2p or the
-  dxxwjz3p project file, the `LibraryFacade::open_training_project()` opens
+  project: of the YOLO4 folder, the `Yolo4Folder`, or of the dxxwjz2p, the
+  dxxwjz3p or the dxxwjz4p project file, the `LibraryFacade::open_training_project()` opens
   all of their paths.
 - **`IRecognizer`**, **`Recognition`** and **`RecognizedObject`** - the
   recognition of an image file by the network of a weights file of any format,
@@ -213,7 +213,7 @@ private to the library:
 | Directory | Holds |
 | --- | --- |
 | [`src/lib/libmain`](/src/lib/libmain) | the `darknetxx_impl::LibFactory` of the works the facade gives out, the `LibMain` (the training and the detection by the `DarknetController`, after the OpenMP threads adjust) and the `WeightsConversionLib` (the network weights files conversion) |
-| [`src/training`](/src/training) | the `BackgroundTrainer`, the `ATrainingProject`, the `Yolo4Folder` and the `DxxwjzProject` of the dxxwjz2p and the dxxwjz3p project files |
+| [`src/training`](/src/training) | the `BackgroundTrainer`, the `ATrainingProject`, the `Yolo4Folder` and the `DxxwjzProject` of the dxxwjz2p, the dxxwjz3p and the dxxwjz4p project files (the dxxwjz4p one of the dxxwjz4 file of the latest weights beside it) |
 | [`src/recognition`](/src/recognition) | the `NetworkRecognizer` of the inference network of the `OrigDefaultLoader`, which recognizes by the `ObjectsDetection` or by the `ImageClassification` (the `IRecognitionMethod` ones) and boxes the objects by the `RecognitionPainter` |
 | [`src/darknet-adaptor`](/src/darknet-adaptor) | the bridge to the original Darknet code (see the [Darknet adaptor components](/doc/sections/en_US/4-7-2-darknet-adaptor-components.md) section) |
 | [`src/detector-cmake-adaptor`](/src/detector-cmake-adaptor) | the original Darknet C/C++ code of the `darknet` directory, which the darknet adaptor includes and builds with the Darknet includes and the OpenCV definitions |

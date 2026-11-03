@@ -98,11 +98,11 @@ int main()
 нейромережу, а з `detect_cfg` - розпізнає, тоді як
 `LibraryFacade::create_trainer` навчає у фоні проект навчання, який
 `LibraryFacade::open_training_project` відкриває за шляхом (теку YOLO4 чи файл
-проекту dxxwjz2p або dxxwjz3p), і повідомляє про ітерації `training_listener` контексту, а
+проекту dxxwjz2p, dxxwjz3p або dxxwjz4p), і повідомляє про ітерації `training_listener` контексту, а
 `LibraryFacade::training_chart`
-повертає зображення PNG графіка навчання файлу ваг dxxwjz2 чи dxxwjz3 (порожнє для файлу
+повертає зображення PNG графіка навчання файлу ваг dxxwjz2, dxxwjz3 чи dxxwjz4 (порожнє для файлу
 без запису навчання), а `LibraryFacade::network_cfg` - текст cfg darknet
-нейромережі, який зберігає файл dxxwjz2, dxxwjz2p, dxxwjz3 чи dxxwjz3p (порожній
+нейромережі, який зберігає файл dxxwjz2, dxxwjz2p, dxxwjz3, dxxwjz3p, dxxwjz4 чи dxxwjz4p (порожній
 для решти), `LibraryFacade::network_description` - текст cfg разом з назвами
 класів, а `LibraryFacade::save_network` зберігає змінені текст cfg і назви
 класів у такий файл (ним зберігають бінарні файли редактора нейромереж).

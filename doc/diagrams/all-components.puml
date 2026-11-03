@@ -128,6 +128,8 @@ package "src/NetworksLoaders" {
     [dxxwjz2p] as dxxwjz2p
     [dxxwjz3] as dxxwjz3
     [dxxwjz3p] as dxxwjz3p
+    [dxxwjz4] as dxxwjz4
+    [dxxwjz4p] as dxxwjz4p
   }
 }
 
@@ -237,6 +239,10 @@ dxxwjz2p --> dxxwjz2 : extends
 dxxwjz3 --> dxxwjz2 : extends
 dxxwjz3p --> dxxwjz3 : extends
 dxxwjz3p --> dxxwjz2p
+dxxwjz4 --> dxxwjz3 : extends
+dxxwjz4p --> dxxwjz3p : extends
+dxxwjz4p --> dxxwjz4
+dxxwjz4p --> zlib : the staged JSON document
 origweights --> model
 dxxwjz1 --> model
 yolo4folder --> model

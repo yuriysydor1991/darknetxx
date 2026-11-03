@@ -17,7 +17,7 @@
 1. [Компоненти виконання програми](/doc/sections/uk_UA/4-7-1-application-runtime-components.md) - інфраструктура, яка розбирає параметри командного рядка, будує контекст виконання і обирає програму для запуску, яка використовує бібліотеку darknetxx (простір імен `app`).
 1. [Компоненти адаптера Darknet](/doc/sections/uk_UA/4-7-2-darknet-adaptor-components.md) - місток, який керує оригінальним кодом Darknet для навчання чи розпізнавання (простір імен `darknet_adaptor`).
 1. [Допоміжні компоненти](/doc/sections/uk_UA/4-7-3-supporting-components.md) - контролер OpenMP, підсистема журналювання, контролер стиснення zlib і допоміжні утиліти.
-1. [Файли ваг нейромереж](/doc/sections/uk_UA/4-7-4-network-weights-files.md) - оригінальні файли ваг darknet, файли dxxwjz1 (стиснені gzip документи JSON з вагами), файли dxxwjz2 (опис нейромережі і запис навчання поряд з вагами) і файли dxxwjz3 (те саме лише з даних JSON, включно з cfg нейромережі) з їхніми проектами, класи їх читання, запису і перевірки та конвертер між ними (простір імен `darknet_adaptor::loaders`).
+1. [Файли ваг нейромереж](/doc/sections/uk_UA/4-7-4-network-weights-files.md) - оригінальні файли ваг darknet, файли dxxwjz1 (стиснені gzip документи JSON з вагами), файли dxxwjz2 (опис нейромережі і запис навчання поряд з вагами) файли dxxwjz3 (те саме лише з даних JSON, включно з cfg нейромережі) і файли dxxwjz4 (те саме з текстом опису) з їхніми проектами (проект dxxwjz4p містить ще й зображення, тобто весь проект навчання в одному файлі), класи їх читання, запису і перевірки та конвертер між ними (простір імен `darknet_adaptor::loaders`).
 1. [Бібліотека darknetxx](/doc/sections/uk_UA/4-7-5-the-darknetxx-library.md) - спільна бібліотека, до якої будуються три рівні вище, її встановлюваний фасад (простір імен `darknetxx011`) і її реалізація (простір імен `darknetxx_impl`).
 
 Сигнали операційної системи, на які реагує уся програма, охоплює підкомпонент `src/app/signals-handlers` рівня `app`, описаний у секції [Обробка сигналів операційної системи](/doc/sections/uk_UA/4-8-handling-the-OS-signals.md).
@@ -93,7 +93,7 @@ package "darknet-adaptor (Darknet bridge)" {
   [DarknetContext] as dctx
   [IDarknetAdaptor\n(+ ADetector,\nADetectorTrainer)] as adaptor
   [Network infrastructure\n(NetworksLoaders, Layers,\nALayer/ANetwork adaptors,\nNetworksCApi)] as netinfra
-  [Weights files\n(original, dxxwjz1, dxxwjz2,\ndxxwjz2p, dxxwjz3, dxxwjz3p,\nYOLO4 folder, WeightsConverter)] as weights
+  [Weights files\n(original, dxxwjz1, dxxwjz2,\ndxxwjz2p, dxxwjz3, dxxwjz3p,\ndxxwjz4, dxxwjz4p,\nYOLO4 folder, WeightsConverter)] as weights
   [Original Darknet\nC computation] as darknetc
 }
 
@@ -115,7 +115,7 @@ iapp --> conv : converts ctx
 conv --> lctx : fills
 iapp --> facade : creates the work
 iapp --> gui : the GUI app shows
-gui --> trainer : trains a YOLO4 folder or a dxxwjz2p/dxxwjz3p project
+gui --> trainer : trains a YOLO4 folder or a dxxwjz2p/dxxwjz3p/dxxwjz4p project
 gui --> recognizer : recognizes the images
 iapp --> editor : the network editor app shows
 editor --> facade : opens and saves\nthe networks of the projects

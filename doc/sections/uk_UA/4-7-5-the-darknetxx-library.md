@@ -2,7 +2,7 @@
 
 Уся функціональність проекту - навчання і розпізнавання darknet,
 конвертування файлів ваг нейромереж, фонове навчання тек YOLO4 та проектів
-dxxwjz2p і dxxwjz3p і розпізнавання зображень нейромережами файлів ваг - це спільна
+dxxwjz2p, dxxwjz3p і dxxwjz4p і розпізнавання зображень нейромережами файлів ваг - це спільна
 бібліотека `darknetxx-0.11`, яку директорія [`src/lib`](/src/lib) будує з
 фасаду, `libmain` і компонентів поруч з нею, впорядкована
 так, як гілка `applib` проекту
@@ -154,8 +154,8 @@ LibraryFacade ..> ILogger : adopts
   яку просить контекст, фоновий тренер, розпізнавач зображень, перелічує
   формати файлів ваг нейромереж, які приймає конвертування, малює зображення
   PNG графіка навчання, запис якого зберігає файл dxxwjz2 (`training_chart`),
-  повертає текст cfg нейромережі, який зберігає файл dxxwjz2, dxxwjz2p, dxxwjz3
-  чи dxxwjz3p (`network_cfg`, а разом з назвами класів - `network_description`),
+  повертає текст cfg нейромережі, який зберігає файл dxxwjz2, dxxwjz2p, dxxwjz3,
+  dxxwjz3p, dxxwjz4 чи dxxwjz4p (`network_cfg`, а разом з назвами класів - `network_description`),
   зберігає змінену нейромережу в такий файл, де далі лишаються решта вихідного
   файлу і ваги шарів, які зміна не зачепила (`save_network`, див. секцію
   [Збереження зміненої нейромережі](/doc/sections/uk_UA/4-7-4-network-weights-files.md#збереження-зміненої-нейромережі)),
@@ -177,7 +177,7 @@ LibraryFacade ..> ILogger : adopts
   проекту навчання (див. секцію
   [Бінарний файл darknetxx-train-gui](/doc/sections/uk_UA/5-36-the-GUI-binaries.md#бінарний-файл-darknetxx-train-gui))
   у власному потоці, продовжене від найновіших ваг проекту: теки YOLO4
-  (`Yolo4Folder`) чи файлу проекту dxxwjz2p або dxxwjz3p; усі за їхніми
+  (`Yolo4Folder`) чи файлу проекту dxxwjz2p, dxxwjz3p або dxxwjz4p; усі за їхніми
   шляхами відкриває `LibraryFacade::open_training_project()`.
 - **`IRecognizer`**, **`Recognition`** і **`RecognizedObject`** -
   розпізнавання файлу зображення нейромережею файлу ваг будь-якого формату, з
@@ -209,7 +209,7 @@ LibraryFacade ..> ILogger : adopts
 | Директорія | Містить |
 | --- | --- |
 | [`src/lib/libmain`](/src/lib/libmain) | `darknetxx_impl::LibFactory` робіт, які видає фасад, `LibMain` (навчання і розпізнавання за допомогою `DarknetController` після налаштування потоків OpenMP) і `WeightsConversionLib` (конвертування файлів ваг нейромереж) |
-| [`src/training`](/src/training) | `BackgroundTrainer`, `ATrainingProject`, `Yolo4Folder` і `DxxwjzProject` файлів проектів dxxwjz2p і dxxwjz3p |
+| [`src/training`](/src/training) | `BackgroundTrainer`, `ATrainingProject`, `Yolo4Folder` і `DxxwjzProject` файлів проектів dxxwjz2p, dxxwjz3p і dxxwjz4p (для dxxwjz4p - з файлом dxxwjz4 найновіших ваг поряд з ним) |
 | [`src/recognition`](/src/recognition) | `NetworkRecognizer`, який розпізнає нейромережею для розпізнавання, створеною `OrigDefaultLoader`, за допомогою `ObjectsDetection` чи `ImageClassification` (реалізацій `IRecognitionMethod`) і обводить об'єкти рамками за допомогою `RecognitionPainter` |
 | [`src/darknet-adaptor`](/src/darknet-adaptor) | міст до оригінального коду Darknet (див. секцію [Компоненти адаптера Darknet](/doc/sections/uk_UA/4-7-2-darknet-adaptor-components.md)) |
 | [`src/detector-cmake-adaptor`](/src/detector-cmake-adaptor) | оригінальний код Darknet на C/C++ директорії `darknet`, який підключає і будує з заголовками Darknet і визначеннями OpenCV адаптер Darknet |

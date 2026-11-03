@@ -11,8 +11,8 @@ of two toolkits:
 Each one creates the network of the new dxxwjz3p project or edits the network
 of the dxxwjz3p project (see the
 [The dxxwjz3p project file format](/doc/sections/en_US/4-7-4-network-weights-files.md#the-dxxwjz3p-project-file-format)
-section) or of another darknetxx file keeping the network (the dxxwjz3, the
-dxxwjz2p and the dxxwjz2 ones): the options of the `[net]` section, the class
+section) or of another darknetxx file keeping the network (the dxxwjz4p, the
+dxxwjz4, the dxxwjz3, the dxxwjz2p and the dxxwjz2 ones): the options of the `[net]` section, the class
 names and the layers, which it adds, removes and reorders.
 
 ```
@@ -112,7 +112,10 @@ description tells wrong.
 
 The `Save` button saves the network into the file it was opened of, the new
 network asks for the file to save into first (the `Save as…` file chooser of
-the dxxwjz3p projects, the `.dxxwjz3p` extension added to the name of none).
+the dxxwjz3p and the dxxwjz4p projects, the `.dxxwjz3p` extension added to the
+name of none). The dxxwjz4p project saved packs the images of it's annotations
+again, the ones of the project the editor opened (of it's folder unpacked into
+the temporary directory) included.
 The `Save as…` one saves into another file, which is the file of the network
 then.
 

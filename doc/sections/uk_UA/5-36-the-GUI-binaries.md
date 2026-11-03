@@ -4,7 +4,7 @@
 самі роботи бібліотеки у вікнах GTK 4:
 
 * `darknetxx-train-gui`, який навчає нейромережу теки YOLO4 чи файлу проекту
-  dxxwjz2p або dxxwjz3p (див. секцію
+  dxxwjz2p, dxxwjz3p або dxxwjz4p (див. секцію
   [Бінарний файл darknetxx-train-gui](#бінарний-файл-darknetxx-train-gui));
 * `darknetxx-recognition-gui`, який виявляє об'єкти на зображенні або
   класифікує все зображення нейромережею файлу ваг будь-якого формату (див.
@@ -26,6 +26,9 @@ dxxwjz2p, який містить усе, що й тека YOLO4, окрім з�
 (див. секцію [Формат файлу проекту dxxwjz2p](/doc/sections/uk_UA/4-7-4-network-weights-files.md#формат-файлу-проекту-dxxwjz2p)),
 або файлу проекту dxxwjz3p лише з даних JSON (див. секцію
 [Формат файлу проекту dxxwjz3p](/doc/sections/uk_UA/4-7-4-network-weights-files.md#формат-файлу-проекту-dxxwjz3p)),
+або файлу проекту dxxwjz4p, який містить ще й зображення, тобто весь проект в
+одному файлі (див. секцію
+[Формат файлу проекту dxxwjz4p](/doc/sections/uk_UA/4-7-4-network-weights-files.md#формат-файлу-проекту-dxxwjz4p)),
 тих, які експортує
 [ImagesAnnotator](https://github.com/yuriysydor1991/ImagesAnnotator) (див.
 секцію [Файли ImagesAnnotator](/doc/sections/uk_UA/4-7-4-network-weights-files.md#файли-imagesannotator)),
@@ -39,7 +42,7 @@ dxxwjz2p, який містить усе, що й тека YOLO4, окрім з�
 
 Вікно відкривається з полем проекту навчання, заповненим поточною робочою
 директорією, кнопкою `Folder…` діалогу вибору теки YOLO4 і кнопкою `Project…`
-діалогу вибору файлу dxxwjz2p чи dxxwjz3p. Вибрана тека чи вибраний файл, або шлях, який
+діалогу вибору файлу dxxwjz2p, dxxwjz3p чи dxxwjz4p. Вибрана тека чи вибраний файл, або шлях, який
 поле називає при натисканні клавіші `Enter`, одразу навчається:
 
 * індикатор прогресу показує виконані і всі ітерації навчання та відсоток виконаних, наприклад `1200 / 6000 iterations (20.0%)`;
@@ -92,6 +95,19 @@ dxxwjz2p, який містить усе, що й тека YOLO4, окрім з�
 проектом. Тека YOLO4 конвертується у проект і назад конвертером (див. секцію
 [Конвертування файлів ваг нейромереж](/doc/sections/uk_UA/6-2-4-converting-the-network-weights-files.md)).
 
+#### Проект dxxwjz4p
+
+Файл проекту dxxwjz4p зберігає ще й зображення анотацій, тож він навчається на
+будь-якому комп'ютері без тек зі зображеннями. Вікно розпаковує проект у теку
+`darknetxx-dxxwjz4p-<name>-<random>` тимчасової директорії (`/tmp`) на
+початку навчання і навчає на зображеннях звідти, а тека видаляється, щойно
+програма завершується. Файл проекту залишається без змін: навчання зберігає
+нейромережу, яку воно навчає, у файл `<name>.dxxwjz4` поряд з проектом
+(найновіші ваги, запис навчання і опис проекту) і продовжує з нього наступне
+навчання, графіки запусків навчання теж зберігаються поряд з проектом, а
+найновіший з них показує вікно (див. секцію
+[Навчання проекту dxxwjz4p](/doc/sections/uk_UA/4-7-4-network-weights-files.md#навчання-проекту-dxxwjz4p)).
+
 ### Бінарний файл darknetxx-recognition-gui
 
 Він розпізнає зображення нейромережею файлу ваг так, як це робить сама
@@ -111,9 +127,9 @@ dxxwjz2p, який містить усе, що й тека YOLO4, окрім з�
 
 | Поле | Файл |
 | --- | --- |
-| `Weights file` | ваги нейромережі: оригінальний файл darknet `*.weights`, файл `*.dxxwjz1`, `*.dxxwjz2`, `*.dxxwjz2p`, `*.dxxwjz3` чи `*.dxxwjz3p` (див. секцію [Файли ваг нейромереж](/doc/sections/uk_UA/4-7-4-network-weights-files.md)) |
-| `Network cfg` | конфігурація нейромережі, не потрібна для файлів ваг `*.dxxwjz2`, `*.dxxwjz2p`, `*.dxxwjz3` і `*.dxxwjz3p`, які зберігають свою нейромережу (такі файли зберігають навчання `darknetxx-train-gui`) |
-| `Class names` | назви класів, не потрібні, якщо їх містить файл ваг `*.dxxwjz2`, `*.dxxwjz2p`, `*.dxxwjz3` чи `*.dxxwjz3p` або називає ключ `names=` секції `[net]` файлу cfg; класи без назви називаються `class <індекс>` |
+| `Weights file` | ваги нейромережі: оригінальний файл darknet `*.weights`, файл `*.dxxwjz1`, `*.dxxwjz2`, `*.dxxwjz2p`, `*.dxxwjz3`, `*.dxxwjz3p`, `*.dxxwjz4` чи `*.dxxwjz4p` (див. секцію [Файли ваг нейромереж](/doc/sections/uk_UA/4-7-4-network-weights-files.md)) |
+| `Network cfg` | конфігурація нейромережі, не потрібна для файлів ваг `*.dxxwjz2`, `*.dxxwjz2p`, `*.dxxwjz3`, `*.dxxwjz3p`, `*.dxxwjz4` і `*.dxxwjz4p`, які зберігають свою нейромережу (такі файли зберігають навчання `darknetxx-train-gui`) |
+| `Class names` | назви класів, не потрібні, якщо їх містить файл ваг `*.dxxwjz2`, `*.dxxwjz2p`, `*.dxxwjz3`, `*.dxxwjz3p`, `*.dxxwjz4` чи `*.dxxwjz4p` або називає ключ `names=` секції `[net]` файлу cfg; класи без назви називаються `class <індекс>` |
 | `Image` | зображення для розпізнавання будь-якого формату, який читає OpenCV |
 
 Вибраний файл, натискання клавіші `Enter` у полі, кнопка `Recognize` і
@@ -240,8 +256,8 @@ scripts/docker/cpu-train-gui.sh /path/to/the/yolo4/folder -DDOCKER_GUI_TRAINING_
 
 Вікно навчання навчає `darknetxx011::ATrainingProject`, який
 `LibraryFacade::open_training_project()` відкриває за шляхом поля
-(`darknetxx011::Yolo4Folder` для теки, проект для файлу `*.dxxwjz2p` чи
-`*.dxxwjz3p`), за допомогою `darknetxx011::ITrainer`, якого створює
+(`darknetxx011::Yolo4Folder` для теки, проект для файлу `*.dxxwjz2p`,
+`*.dxxwjz3p` чи `*.dxxwjz4p`), за допомогою `darknetxx011::ITrainer`, якого створює
 `darknetxx011::LibraryFacade` бібліотеки darknetxx (див. секцію
 [Бібліотека darknetxx](/doc/sections/uk_UA/4-7-5-the-darknetxx-library.md)).
 Тренер запускає навчання бібліотеки у власному потоці і зупиняє його запитом

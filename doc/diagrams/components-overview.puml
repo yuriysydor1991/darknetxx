@@ -38,7 +38,7 @@ package "darknet-adaptor (Darknet bridge)" {
   [DarknetContext] as dctx
   [IDarknetAdaptor\n(+ ADetector,\nADetectorTrainer)] as adaptor
   [Network infrastructure\n(NetworksLoaders, Layers,\nALayer/ANetwork adaptors,\nNetworksCApi)] as netinfra
-  [Weights files\n(original, dxxwjz1, dxxwjz2,\ndxxwjz2p, dxxwjz3, dxxwjz3p,\nYOLO4 folder, WeightsConverter)] as weights
+  [Weights files\n(original, dxxwjz1, dxxwjz2,\ndxxwjz2p, dxxwjz3, dxxwjz3p,\ndxxwjz4, dxxwjz4p,\nYOLO4 folder, WeightsConverter)] as weights
   [Original Darknet\nC computation] as darknetc
 }
 
@@ -60,7 +60,7 @@ iapp --> conv : converts ctx
 conv --> lctx : fills
 iapp --> facade : creates the work
 iapp --> gui : the GUI app shows
-gui --> trainer : trains a YOLO4 folder or a dxxwjz2p/dxxwjz3p project
+gui --> trainer : trains a YOLO4 folder or a dxxwjz2p/dxxwjz3p/dxxwjz4p project
 gui --> recognizer : recognizes the images
 iapp --> editor : the network editor app shows
 editor --> facade : opens and saves\nthe networks of the projects

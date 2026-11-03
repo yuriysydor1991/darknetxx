@@ -21,10 +21,10 @@ The options are grouped below by their purpose. The options with a value placeho
 
 | Option | Value | Description |
 | --- | --- | --- |
-| `--train-cfg` | `<FILE>` | training network configuration (`*.cfg`, `*.dxxwjz2` or `*.dxxwjz3`) file, or the `*.dxxwjz2p` or `*.dxxwjz3p` project file, the training of which trains the images of it's annotations and updates it |
-| `--detect-cfg` | `<FILE>` | detection network configuration (`*.cfg`, `*.dxxwjz2`, `*.dxxwjz2p`, `*.dxxwjz3` or `*.dxxwjz3p`) file |
-| `--names` | `<FILE>` | class names file (overrides the classes of the dxxwjz2 and dxxwjz3 files and the cfg `[net]` `names=` key) |
-| `--weights` | `<FILE>` | network weights file to load, of any format (see the [Network weights files](/doc/sections/en_US/4-7-4-network-weights-files.md) section); the `*.dxxwjz2`, the `*.dxxwjz2p`, the `*.dxxwjz3` and the `*.dxxwjz3p` files alone are the network the detection runs with, or the network to train for the file of no weights |
+| `--train-cfg` | `<FILE>` | training network configuration (`*.cfg`, `*.dxxwjz2`, `*.dxxwjz3` or `*.dxxwjz4`) file, or the `*.dxxwjz2p` or `*.dxxwjz3p` project file, the training of which trains the images of it's annotations and updates it, or the `*.dxxwjz4p` project file, the training of which unpacks it into the temporary directory, trains the images of it and saves the `*.dxxwjz4` file of the network beside it |
+| `--detect-cfg` | `<FILE>` | detection network configuration (`*.cfg`, `*.dxxwjz2`, `*.dxxwjz2p`, `*.dxxwjz3`, `*.dxxwjz3p`, `*.dxxwjz4` or `*.dxxwjz4p`) file |
+| `--names` | `<FILE>` | class names file (overrides the classes of the dxxwjz2, dxxwjz3 and dxxwjz4 files and the cfg `[net]` `names=` key) |
+| `--weights` | `<FILE>` | network weights file to load, of any format (see the [Network weights files](/doc/sections/en_US/4-7-4-network-weights-files.md) section); the `*.dxxwjz2`, the `*.dxxwjz2p`, the `*.dxxwjz3`, the `*.dxxwjz3p`, the `*.dxxwjz4` and the `*.dxxwjz4p` files alone are the network the detection runs with, or the network to train for the file of no weights |
 | `--image` | `<FILE>` | image file to run the detection on |
 | `--gpus` | `<LIST>` | comma separated list of GPU indexes to use |
 | `--threads` | `<N>` | number of worker threads to use |
@@ -35,13 +35,14 @@ The four first options go together and convert the network weights file with no 
 
 | Option | Value | Description |
 | --- | --- | --- |
-| `--convert-from` | `<FORMAT>` | the network weights file format to read: `weights`, `dxxwjz1`, `dxxwjz2`, `dxxwjz2p`, `dxxwjz3`, `dxxwjz3p` or `yolo4` (the YOLO4 training folder) |
+| `--convert-from` | `<FORMAT>` | the network weights file format to read: `weights`, `dxxwjz1`, `dxxwjz2`, `dxxwjz2p`, `dxxwjz3`, `dxxwjz3p`, `dxxwjz4`, `dxxwjz4p` or `yolo4` (the YOLO4 training folder) |
 | `--convert-src` | `<FILE>` | the network weights file to read, the folder of the `yolo4` format |
-| `--convert-to` | `<FORMAT>` | the network weights file format to write: `weights`, `dxxwjz1`, `dxxwjz2`, `dxxwjz2p`, `dxxwjz3`, `dxxwjz3p` or `yolo4` |
+| `--convert-to` | `<FORMAT>` | the network weights file format to write: `weights`, `dxxwjz1`, `dxxwjz2`, `dxxwjz2p`, `dxxwjz3`, `dxxwjz3p`, `dxxwjz4`, `dxxwjz4p` or `yolo4` |
 | `--convert-dst` | `<FILE>` | the network weights file to write (replaced), the new folder of the `yolo4` format |
-| `--convert-cfg` | `<FILE>` | the network cfg file of the weights: required to read the `weights` format, validates the rest, the `dxxwjz2` and the `dxxwjz3` ones keep it |
-| `--convert-names` | `<FILE>` | the class names file the `dxxwjz2` and the `dxxwjz3` formats keep (overrides the cfg `[net]` `names=` key) |
-| `--dump-cfg` | `<FILE>` | print the YOLO4 network cfg the `*.dxxwjz2`, `*.dxxwjz2p`, `*.dxxwjz3` or `*.dxxwjz3p` file keeps into the standard output, nothing else (see [Printing the network cfg of the file](/doc/sections/en_US/6-2-4-converting-the-network-weights-files.md#printing-the-network-cfg-of-the-file)) |
+| `--convert-cfg` | `<FILE>` | the network cfg file of the weights: required to read the `weights` format, validates the rest, the `dxxwjz2`, the `dxxwjz3` and the `dxxwjz4` ones keep it |
+| `--convert-names` | `<FILE>` | the class names file the `dxxwjz2`, the `dxxwjz3` and the `dxxwjz4` formats keep (overrides the cfg `[net]` `names=` key) |
+| `--convert-description` | `<TEXT>` | the comments and the description of the network and of it's data of any length the `dxxwjz4` and the `dxxwjz4p` formats keep (overrides the description of the source) |
+| `--dump-cfg` | `<FILE>` | print the YOLO4 network cfg the `*.dxxwjz2`, `*.dxxwjz2p`, `*.dxxwjz3`, `*.dxxwjz3p`, `*.dxxwjz4` or `*.dxxwjz4p` file keeps into the standard output, nothing else (see [Printing the network cfg of the file](/doc/sections/en_US/6-2-4-converting-the-network-weights-files.md#printing-the-network-cfg-of-the-file)) |
 
 ## Training options
 
@@ -55,7 +56,7 @@ The four first options go together and convert the network weights file with no 
 | `--data-reload-nth` | `<N>` | load a new training batch every Nth iteration only, reusing it in between (takes precedence over the flag below) |
 | `--dont-reload-data-every-iteration` | | keep training on the loaded batch instead of loading a new one every iteration (a network resize still reloads it) |
 | `--stop-less-avg-loss` | `<VALUE>` | stop the training once the average loss reaches the given value or less |
-| `--save-format` | `<FORMAT>` | the network weights file format the training saves: `weights`, `dxxwjz1`, `dxxwjz2`, `dxxwjz2p`, `dxxwjz3` (the default) or `dxxwjz3p` |
+| `--save-format` | `<FORMAT>` | the network weights file format the training saves: `weights`, `dxxwjz1`, `dxxwjz2`, `dxxwjz2p`, `dxxwjz3` (the default), `dxxwjz3p`, `dxxwjz4` or `dxxwjz4p` |
 | `--chart-path` | `<FILE>` | the chart image the training chart continues for the weights of no training record (the training record of the dxxwjz2 and dxxwjz3 weights redraws the whole chart instead); the chart of every training start is saved as the new `chart_<base>_<YYYY-MM-DD--HH-MM-SS>.png` file of the start date and time |
 | `--draw-chart` | `<FILE>` | draw the training chart of the record of the dxxwjz2 or dxxwjz3 `--weights` file into the PNG file, with no training nor detection |
 | `--save-charts-every-iter` | | save the training chart on every iteration, not every 100 (the cfg `savechart=` key overrides both, see below) |

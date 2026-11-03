@@ -4,7 +4,7 @@ Beside the `darknetxx` application the project builds two binaries of the
 very same library works behind the GTK 4 windows:
 
 * the `darknetxx-train-gui`, which trains the network of a YOLO4 folder or of
-  a dxxwjz2p or dxxwjz3p project file (see the
+  a dxxwjz2p, dxxwjz3p or dxxwjz4p project file (see the
   [The darknetxx-train-gui binary](#the-darknetxx-train-gui-binary) section);
 * the `darknetxx-recognition-gui`, which detects the objects in an image or
   classifies the whole image by the network of a weights file of any format
@@ -28,6 +28,9 @@ project file, the one of everything of the YOLO4 folder but the images (see the
 [The dxxwjz2p project file format](/doc/sections/en_US/4-7-4-network-weights-files.md#the-dxxwjz2p-project-file-format)
 section), or the dxxwjz3p one of the JSON data alone (see the
 [The dxxwjz3p project file format](/doc/sections/en_US/4-7-4-network-weights-files.md#the-dxxwjz3p-project-file-format)
+section), or the dxxwjz4p one of the images too, the whole project in one file
+(see the
+[The dxxwjz4p project file format](/doc/sections/en_US/4-7-4-network-weights-files.md#the-dxxwjz4p-project-file-format)
 section), the ones the
 [ImagesAnnotator](https://github.com/yuriysydor1991/ImagesAnnotator) exports
 (see the [The files of the ImagesAnnotator](/doc/sections/en_US/4-7-4-network-weights-files.md#the-files-of-the-imagesannotator)
@@ -41,7 +44,7 @@ section), and resumes the training the project holds the weights of.
 
 The window starts with the entry of the training project, filled with the
 current working directory, the `Folder…` button of the YOLO4 folder chooser
-dialog and the `Project…` button of the dxxwjz2p and dxxwjz3p file chooser one. The chosen
+dialog and the `Project…` button of the dxxwjz2p, dxxwjz3p and dxxwjz4p file chooser one. The chosen
 folder or file, or the one the entry names on the `Enter` key press, is
 trained right away:
 
@@ -100,6 +103,21 @@ back with the converter (see the
 [Converting the network weights files](/doc/sections/en_US/6-2-4-converting-the-network-weights-files.md)
 section).
 
+#### The dxxwjz4p project
+
+The dxxwjz4p project file keeps the images of the annotations too, so it's
+trained on any machine of no folders of the images. The window unpacks the
+project into the `darknetxx-dxxwjz4p-<name>-<random>` folder of the temporary
+directory (the `/tmp`) as the training starts and trains the images of there,
+the folder is removed once the application ends. The project file stays as it
+is: the training saves the network it trains into the `<name>.dxxwjz4` file
+beside the project (the latest weights, the training record and the
+description of the project) and resumes the next training from it, the charts
+of the training starts are saved beside the project too, the newest of which
+the window shows (see the
+[Training the dxxwjz4p project](/doc/sections/en_US/4-7-4-network-weights-files.md#training-the-dxxwjz4p-project)
+section).
+
 ### The darknetxx-recognition-gui binary
 
 It recognizes the images by the network of a weights file the way the network
@@ -119,9 +137,9 @@ The window has the entries of the files of the recognition, each one with the
 
 | Entry | File |
 | --- | --- |
-| `Weights file` | the weights of the network: the original darknet `*.weights` file, the `*.dxxwjz1`, the `*.dxxwjz2`, the `*.dxxwjz2p`, the `*.dxxwjz3` or the `*.dxxwjz3p` one (see the [Network weights files](/doc/sections/en_US/4-7-4-network-weights-files.md) section) |
-| `Network cfg` | the network configuration, none for the `*.dxxwjz2`, the `*.dxxwjz2p`, the `*.dxxwjz3` and the `*.dxxwjz3p` weights files, which keep their network, the trainings of the `darknetxx-train-gui` save those |
-| `Class names` | the class names, none for the ones of the `*.dxxwjz2`, the `*.dxxwjz2p`, the `*.dxxwjz3` and the `*.dxxwjz3p` weights files or of the `names=` key of the cfg `[net]` section; the classes of no name are named `class <index>` |
+| `Weights file` | the weights of the network: the original darknet `*.weights` file, the `*.dxxwjz1`, the `*.dxxwjz2`, the `*.dxxwjz2p`, the `*.dxxwjz3`, the `*.dxxwjz3p`, the `*.dxxwjz4` or the `*.dxxwjz4p` one (see the [Network weights files](/doc/sections/en_US/4-7-4-network-weights-files.md) section) |
+| `Network cfg` | the network configuration, none for the `*.dxxwjz2`, the `*.dxxwjz2p`, the `*.dxxwjz3`, the `*.dxxwjz3p`, the `*.dxxwjz4` and the `*.dxxwjz4p` weights files, which keep their network, the trainings of the `darknetxx-train-gui` save those |
+| `Class names` | the class names, none for the ones of the `*.dxxwjz2`, the `*.dxxwjz2p`, the `*.dxxwjz3`, the `*.dxxwjz3p`, the `*.dxxwjz4` and the `*.dxxwjz4p` weights files or of the `names=` key of the cfg `[net]` section; the classes of no name are named `class <index>` |
 | `Image` | the image to recognize, of any format the OpenCV reads |
 
 The chosen file, the `Enter` key press of an entry, the `Recognize` button and
@@ -255,8 +273,8 @@ them.
 
 The training window trains the `darknetxx011::ATrainingProject` the
 `LibraryFacade::open_training_project()` opens of the entry path (the
-`darknetxx011::Yolo4Folder` of a folder, the project of a `*.dxxwjz2p` or a
-`*.dxxwjz3p` file) by the `darknetxx011::ITrainer` the
+`darknetxx011::Yolo4Folder` of a folder, the project of a `*.dxxwjz2p`, a
+`*.dxxwjz3p` or a `*.dxxwjz4p` file) by the `darknetxx011::ITrainer` the
 `darknetxx011::LibraryFacade` of the darknetxx library creates (see the
 [The darknetxx library](/doc/sections/en_US/4-7-5-the-darknetxx-library.md)
 section), which runs the training of the library in a thread of it's own and
