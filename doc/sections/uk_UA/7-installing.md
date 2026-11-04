@@ -28,6 +28,10 @@ sudo cmake --install . --prefix "/usr/bin"
 
 Необхідно переглянути значення змінної середовища `PATH` для обрання найбільш підходящої директорії для встановлення у поточній цільовій ОС (необхідно виконати команду `echo $PATH` у терміналі). Як альтернатива, будь-який шлях може бути вказаний.
 
+## Бібліотека darknetxx-datadrivers
+
+Встановлені бінарні файли і встановлена бібліотека проекту під час виконання завантажують спільну бібліотеку проекту [darknetxx-datadrivers](https://github.com/yuriysydor1991/darknetxx-datadrivers) (`libDarknetxxDataDrivers-0.12.so.0`), яку крок встановлення проекту встановлює лише для побудови пакета `deb` (опції `ENABLE_DEB` і `ENABLE_DEB_DARKNETXX_DATA_DRIVERS`, див. секцію [Вмикання підтримки генерування DEB-пакетів з cpack](/doc/sections/uk_UA/5-10-enabling-DEB-package-generation-with-cpack.md)). Тримай бібліотеку встановленою там, де її знаходить завантажувач: у префіксі `/usr` чи `/usr/local` скрипта [misc/ci/install-darknetxx-datadrivers.sh](/misc/ci/install-darknetxx-datadrivers.sh) або в іншому префіксі з `LD_LIBRARY_PATH` (див. секцію [Вмикання бібліотеки darknetxx-datadrivers](/doc/sections/uk_UA/5-39-enabling-the-darknetxx-datadrivers-library.md)).
+
 ## Встановлення документації
 
 Якщо проект був сконфігурований для підтримки встановлення згенерованої документації командою, яка може виглядати наступним чином:

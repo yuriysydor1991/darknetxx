@@ -8,13 +8,27 @@
 
 Більше за адресою [kytok.org.ua](http://www.kytok.org.ua/)
 
+# Бібліотека darknetxx-datadrivers
+
+Формати файлів ваг нейромереж і проектів навчання проекту - оригінальні файли ваг darknet, файли dxxwjz1, dxxwjz2, dxxwjz2p, dxxwjz3, dxxwjz3p, dxxwjz4 і dxxwjz4p, а також теки навчання YOLO4 для конвертування, - їхні класи читання, запису і перевірки, конвертер між ними і бінарний файл `darknetxxConverter`, який виконує лише конвертування, належать окремій бібліотеці [darknetxx-datadrivers](https://github.com/yuriysydor1991/darknetxx-datadrivers), з якою будується проект. Бібліотека не є пакетом дистрибутива, і конфігурація проекту її не завантажує, тож спершу побудуй і встанови її - скрипт проекту робить це однією командою - і вкажи конфігурації її префікс, якщо він не типовий:
+
+```
+# в середині кореневої директорії проекту
+
+misc/ci/install-darknetxx-datadrivers.sh /opt/darknetxx
+
+cmake -B build -S . -DCMAKE_PREFIX_PATH=/opt/darknetxx && cmake --build build
+```
+
+Бінарний файл `darknetxx` зберігає командний рядок конвертування файлів (`--convert-from`, `--convert-to` та інші, `--dump-cfg`), яке він виконує за допомогою бібліотеки і нейромережі darknet з файлу cfg. Див. секції [Вмикання бібліотеки darknetxx-datadrivers](/doc/sections/uk_UA/5-39-enabling-the-darknetxx-datadrivers-library.md), [Бінарний файл darknetxxConverter](/doc/sections/uk_UA/5-35-the-darknetxxConverter-binary.md) і [Файли ваг нейромереж](/doc/sections/uk_UA/4-7-4-network-weights-files.md).
+
 # Рекомендований анотатор зображень
 
 Для того щоб навчити мережу на власному наборі даних знадобляться анотовані зображення з мітками обмежувальних рамок у форматі Darknet/YOLO. Рекомендується готувати такі анотації за допомогою інструмента `ImagesAnnotator` що доступний за адресою [https://github.com/yuriysydor1991/ImagesAnnotator](https://github.com/yuriysydor1991/ImagesAnnotator).
 
 `ImagesAnnotator` також генерує файли найновіших форматів darknetxx: підменю `DarknetXX` його меню експорту записує проект навчання dxxwjz3p з анотованими зображеннями і теку навчання YOLO4 з нейромережею dxxwjz3, яку треба навчити (а також файли dxxwjz2p і dxxwjz2), які `darknetxx --train-cfg` і `darknetxx-train-gui` навчають без жодного конвертування, а його меню імпорту читає їх назад, включно з проектами, в які навчання зберегло ваги. Див. секцію [Файли ImagesAnnotator](/doc/sections/uk_UA/4-7-4-network-weights-files.md#файли-imagesannotator).
 
-Конвертер darknetxx пакує будь-який такий проект у проект dxxwjz4p, увесь проект навчання в одному файлі: архів ZIP єдиного документа JSON (мережа, анотації й текст опису будь-якої довжини) і самих зображень у його теці `data/`, який розпаковує для перегляду будь-який інструмент zip, а `darknetxx --train-cfg project.dxxwjz4p` розпаковує у тимчасовий каталог і навчає у файл `project.dxxwjz4` поруч із ним. Дивіться розділ [Формат файлу проекту dxxwjz4p](/doc/sections/uk_UA/4-7-4-network-weights-files.md#формат-файлу-проекту-dxxwjz4p).
+Конвертування `darknetxx` (а так само і бінарний файл `darknetxxConverter` бібліотеки darknetxx-datadrivers) пакує будь-який такий проект у проект dxxwjz4p, увесь проект навчання в одному файлі: архів ZIP єдиного документа JSON (мережа, анотації й текст опису будь-якої довжини) і самих зображень у його теці `data/`, який розпаковує для перегляду будь-який інструмент zip, а `darknetxx --train-cfg project.dxxwjz4p` розпаковує у тимчасовий каталог і навчає у файл `project.dxxwjz4` поруч із ним. Дивіться розділ [Формат файлу проекту dxxwjz4p](/doc/sections/uk_UA/4-7-4-network-weights-files.md#формат-файлу-проекту-dxxwjz4p).
 
 # Компоненти
 
@@ -91,7 +105,7 @@
     1. [Вмикання підтримки генерування пакунків FreeBSD pkg з cpack](/doc/sections/uk_UA/5-20-enabling-FreeBSD-pkg-package-generation-with-cpack.md)
     1. [Вмикання підтримки генерування WIX MSI-пакетів з cpack](/doc/sections/uk_UA/5-21-enabling-WIX-MSI-package-generation-with-cpack.md)
     1. [Вмикання підтримки генерування RPM-пакунків з cpack](/doc/sections/uk_UA/5-22-enabling-RPM-package-generation-with-cpack.md)
-    1. [Вмикання інтеграції zlib](/doc/sections/uk_UA/5-23-enabling-the-zlib-library.md)
+    1. [Бібліотека zlib](/doc/sections/uk_UA/5-23-enabling-the-zlib-library.md)
     1. [Вмикання інтеграції libpng](/doc/sections/uk_UA/5-24-enabling-the-libpng-library.md)
     1. [Вмикання інтеграції libjpeg](/doc/sections/uk_UA/5-25-enabling-the-libjpeg-library.md)
     1. [Вмикання інтеграції libwebp](/doc/sections/uk_UA/5-26-enabling-the-libwebp-library.md)
@@ -109,6 +123,7 @@
         1. [Бінарний файл darknetxx-recognition-gui](/doc/sections/uk_UA/5-36-the-GUI-binaries.md#бінарний-файл-darknetxx-recognition-gui)
     1. [Використання бібліотеки darknetxx](/doc/sections/uk_UA/5-37-using-the-darknetxx-library.md)
     1. [Бінарні файли редактора нейромереж](/doc/sections/uk_UA/5-38-the-network-editor-binaries.md)
+    1. [Вмикання бібліотеки darknetxx-datadrivers](/doc/sections/uk_UA/5-39-enabling-the-darknetxx-datadrivers-library.md)
 1. [Запуск головного виконуваного файлу](/doc/sections/uk_UA/6-run-the-executable.md)
     1. [Запуск через IDE](/doc/sections/uk_UA/6-1-IDE-run.md)
     1. Запуск з терміналу

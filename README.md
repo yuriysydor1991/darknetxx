@@ -8,13 +8,27 @@ Some parts of the repository taken from the C++ template project located at [htt
 
 See more at the [kytok.org.ua](http://www.kytok.org.ua/)
 
+# The darknetxx-datadrivers library
+
+The network weights files and the training projects formats of the project - the original darknet weights files, the dxxwjz1, the dxxwjz2, the dxxwjz2p, the dxxwjz3, the dxxwjz3p, the dxxwjz4 and the dxxwjz4p ones and the YOLO4 training folders of the conversion - their readers, writers and validators, the converter between them and the `darknetxxConverter` binary of the conversion alone live in the standalone [darknetxx-datadrivers](https://github.com/yuriysydor1991/darknetxx-datadrivers) library, which the project is built against. The library is no distribution package and the configure of the project doesn't fetch it, so build and install it first - the shipped script does it in one command - and point the configure at it's prefix when it isn't a default one:
+
+```
+# inside the project root directory
+
+misc/ci/install-darknetxx-datadrivers.sh /opt/darknetxx
+
+cmake -B build -S . -DCMAKE_PREFIX_PATH=/opt/darknetxx && cmake --build build
+```
+
+The `darknetxx` binary keeps the conversion command line of the files (`--convert-from`, `--convert-to` and the rest, `--dump-cfg`), which it performs by the library and by the darknet network of the cfg file. See the [Enabling the darknetxx-datadrivers library](/doc/sections/en_US/5-39-enabling-the-darknetxx-datadrivers-library.md), the [The darknetxxConverter binary](/doc/sections/en_US/5-35-the-darknetxxConverter-binary.md) and the [Network weights files](/doc/sections/en_US/4-7-4-network-weights-files.md) sections.
+
 # Recommended images annotator
 
 In order to train the network on your own data set you'll need annotated images with the bounding box labels in the Darknet/YOLO format. It's recommended to prepare such annotations with the `ImagesAnnotator` tool available at [https://github.com/yuriysydor1991/ImagesAnnotator](https://github.com/yuriysydor1991/ImagesAnnotator).
 
 The `ImagesAnnotator` generates the files of the most recent darknetxx formats as well: the `DarknetXX` submenu of its export menu writes the dxxwjz3p training project of the annotated images and the YOLO4 training folder with the dxxwjz3 network to train (the dxxwjz2p and the dxxwjz2 ones too), which `darknetxx --train-cfg` and the `darknetxx-train-gui` train with no conversion, and its import menu reads them back, the projects the training has saved the weights into included. See the [The files of the ImagesAnnotator](/doc/sections/en_US/4-7-4-network-weights-files.md#the-files-of-the-imagesannotator) section.
 
-The darknetxx converter packs any such project into the dxxwjz4p one, the whole training project in one file: the ZIP archive of the single JSON document (the network, the annotations and the description text of any length) and of the images themselves in it's `data/` folder, which any zip tool unpacks for a look and `darknetxx --train-cfg project.dxxwjz4p` unpacks into the temporary directory and trains into the `project.dxxwjz4` file beside it. See the [The dxxwjz4p project file format](/doc/sections/en_US/4-7-4-network-weights-files.md#the-dxxwjz4p-project-file-format) section.
+The conversion of the `darknetxx` (and the `darknetxxConverter` binary of the darknetxx-datadrivers library alike) packs any such project into the dxxwjz4p one, the whole training project in one file: the ZIP archive of the single JSON document (the network, the annotations and the description text of any length) and of the images themselves in it's `data/` folder, which any zip tool unpacks for a look and `darknetxx --train-cfg project.dxxwjz4p` unpacks into the temporary directory and trains into the `project.dxxwjz4` file beside it. See the [The dxxwjz4p project file format](/doc/sections/en_US/4-7-4-network-weights-files.md#the-dxxwjz4p-project-file-format) section.
 
 # Components
 
@@ -88,7 +102,7 @@ The very same sections are also available in Ukrainian under [doc/README.uk_UA.m
     1. [Enabling FreeBSD pkg package generation with cpack](/doc/sections/en_US/5-20-enabling-FreeBSD-pkg-package-generation-with-cpack.md)
     1. [Enabling WIX MSI package generation with cpack](/doc/sections/en_US/5-21-enabling-WIX-MSI-package-generation-with-cpack.md)
     1. [Enabling RPM package generation with cpack](/doc/sections/en_US/5-22-enabling-RPM-package-generation-with-cpack.md)
-    1. [Enabling the zlib library](/doc/sections/en_US/5-23-enabling-the-zlib-library.md)
+    1. [The zlib library](/doc/sections/en_US/5-23-enabling-the-zlib-library.md)
     1. [Enabling the libpng library](/doc/sections/en_US/5-24-enabling-the-libpng-library.md)
     1. [Enabling the libjpeg library](/doc/sections/en_US/5-25-enabling-the-libjpeg-library.md)
     1. [Enabling the libwebp library](/doc/sections/en_US/5-26-enabling-the-libwebp-library.md)
@@ -106,6 +120,7 @@ The very same sections are also available in Ukrainian under [doc/README.uk_UA.m
         1. [The darknetxx-recognition-gui binary](/doc/sections/en_US/5-36-the-GUI-binaries.md#the-darknetxx-recognition-gui-binary)
     1. [Using the darknetxx library](/doc/sections/en_US/5-37-using-the-darknetxx-library.md)
     1. [The network editor binaries](/doc/sections/en_US/5-38-the-network-editor-binaries.md)
+    1. [Enabling the darknetxx-datadrivers library](/doc/sections/en_US/5-39-enabling-the-darknetxx-datadrivers-library.md)
 1. [Run the executable](/doc/sections/en_US/6-run-the-executable.md)
     1. [IDE run](/doc/sections/en_US/6-1-IDE-run.md)
     1. Command line run

@@ -44,6 +44,8 @@ This may also be found at: /var/jenkins_home/secrets/initialAdminPassword
 
 Файл за відносним шляхом cmake/dockerers/darknetxx-docker-Jenkins-pipeline-runner-target.cmake містить рецепти побудови Docker контейнера для конвеєрів перевірки [Jenkins](https://www.jenkins.io/) що за замовчуванням перезапустить попередньо побудований контейнер для конвеєрів перевірки.
 
+Проект будується з бібліотекою [darknetxx-datadrivers](https://github.com/yuriysydor1991/darknetxx-datadrivers) форматів файлів ваг нейромереж (див. секцію [Вмикання бібліотеки darknetxx-datadrivers](/doc/sections/uk_UA/5-39-enabling-the-darknetxx-datadrivers-library.md)), яку не будує жоден етап конвеєра: образ [Dockerfile.Jenkins.pipeline.in](/misc/Dockerfiles/Dockerfile.Jenkins.pipeline.in) будує бібліотеку з репозиторію `DARKNETXX_DXXDD_GIT` на гілці чи тегу `DARKNETXX_DXXDD_GIT_TAG` і встановлює її у свій префікс `/usr` (див. секцію [Вмикання підтримки запуску Docker-контейнера](/doc/sections/uk_UA/5-12-enabling-the-docker-container-build-and-run.md)), тож кожен етап конфігурації [misc/Jenkinsfile](/misc/Jenkinsfile) її знаходить. Агент на іншій машині надає бібліотеку ще до запуску конвеєра, скрипт [misc/ci/install-darknetxx-datadrivers.sh](/misc/ci/install-darknetxx-datadrivers.sh) будує і встановлює її однією командою. Бінарний файл `darknetxxConverter` належить бібліотеці, тож його тести - це тести конвеєрів бібліотеки, а етап конвертера цього конвеєра запускає тести конвертування бінарного файлу `darknetxx`.
+
 ### Скрипти запуску
 
 Директорія [scripts/docker](/scripts/docker) містить скорочення, які виконують обидві наведені вище команди, отож увесь запуск виконується однією командою:

@@ -6,11 +6,22 @@
 доступну через FetchContent чи встановлену і знайдену командою
 `find_package`.
 
+В обох випадках бібліотека будується зі встановленою бібліотекою
+[darknetxx-datadrivers](https://github.com/yuriysydor1991/darknetxx-datadrivers)
+форматів файлів ваг нейромереж, яку ніщо не завантажує: спершу встанови її і
+вкажи конфігурації її префікс змінною `CMAKE_PREFIX_PATH` (див. секцію
+[Вмикання бібліотеки darknetxx-datadrivers](/doc/sections/uk_UA/5-39-enabling-the-darknetxx-datadrivers-library.md)).
+Бібліотека `libdarknetxx-0.12.so` під час виконання завантажує бібліотеку
+`libDarknetxxDataDrivers-0.12.so.0`, тож завантажувач має знаходити обидві,
+тоді як жоден публічний заголовний файл бібліотеки darknetxx не називає
+жодного типу бібліотеки darknetxx-datadrivers, тож програма бібліотеки
+darknetxx не підключає жодного її заголовного файлу.
+
 ### Параметри
 
 | Параметр CMake | За замовчуванням | Дія |
 | --- | --- | --- |
-| `ENABLE_DARKNETXX_EXECUTABLES` | `ON` для проекту верхнього рівня, `OFF` для проекту іншого | Будує і встановлює виконувані файли `darknetxx`, `darknetxxConverter`, `darknetxx-train-gui` і `darknetxx-recognition-gui`. `OFF` будує і встановлює лише бібліотеку. |
+| `ENABLE_DARKNETXX_EXECUTABLES` | `ON` для проекту верхнього рівня, `OFF` для проекту іншого | Будує і встановлює виконуваний файл `darknetxx` і виконувані файли GUI (`darknetxx-train-gui`, `darknetxx-recognition-gui` і файли редактора нейромереж). `OFF` будує і встановлює лише бібліотеку. |
 | `DARKNETXX_LIB_INSTALL_DEV_FILES` | `ON` | Встановлює публічні заголовки, файли пакету CMake і посилання `libdarknetxx-0.12.so` разом з бібліотекою. `OFF` встановлює лише бібліотеку виконання. |
 | `DARKNETXX_LIBRARY_NAME` | `darknetxx-<основна>.<додаткова>` | Назва бібліотеки, її цілі, директорії заголовків і пакету CMake. |
 
@@ -57,6 +68,12 @@ FetchContent_MakeAvailable(darknetxx)
 
 add_executable(my-trainer main.cpp)
 target_link_libraries(my-trainer darknetxx-0.12::darknetxx-0.12)
+```
+
+```
+# конфігурація проекту з FetchContent вище
+
+cmake -S . -B build -DCMAKE_PREFIX_PATH=/opt/darknetxx
 ```
 
 ### find_package

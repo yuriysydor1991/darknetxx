@@ -12,6 +12,16 @@ mkdir -vp build && cd build && cmake ../ && cmake --build . --target all
 
 Яка у свою чергу створить директорію `build` (директорія вже додана до файлу `.gitignore`), конфігурує проект використовуючи доступну у ОС версію системи побудови CMake (детальніше у секції [Вимоги](/doc/sections/uk_UA/3-requirements.md) даного документу), і на кінець, будує усі цілі доступні у проекті-шаблоні.
 
+Конфігурація потребує заздалегідь встановленої бібліотеки [darknetxx-datadrivers](https://github.com/yuriysydor1991/darknetxx-datadrivers) форматів файлів ваг нейромереж, а без неї зупиняється з помилкою. Скрипт [misc/ci/install-darknetxx-datadrivers.sh](/misc/ci/install-darknetxx-datadrivers.sh) будує і встановлює її, а `CMAKE_PREFIX_PATH` вказує конфігурації префікс бібліотеки поза типовими (див. секцію [Вмикання бібліотеки darknetxx-datadrivers](/doc/sections/uk_UA/5-39-enabling-the-darknetxx-datadrivers-library.md)):
+
+```
+# всередині кореневої директорії проекту
+
+misc/ci/install-darknetxx-datadrivers.sh /opt/darknetxx
+
+cmake -B build -S . -DCMAKE_PREFIX_PATH=/opt/darknetxx && cmake --build build
+```
+
 Без явно вказаного `CMAKE_BUILD_TYPE` проект конфігурується як оптимізована побудова типу `Release`, оскільки обчислення Darknet без оптимізації виконуються на порядок повільніше. Для налагоджувальної побудови слід передати `-DCMAKE_BUILD_TYPE=Debug` команді конфігурації.
 
 Оптимізовані побудови компіляторами GCC та Clang для x86 також компілюють AVX та FMA ядра обчислень Darknet (опція CMake `ENABLE_SSE_AND_AVX_FLAGS`, яка там увімкнена за замовчуванням), тож отриманий виконуваний файл потребує процесора з підтримкою AVX2. Для побудови виконуваного файлу (або пакета) для старіших процесорів слід передати `-DENABLE_SSE_AND_AVX_FLAGS=OFF` команді конфігурації. Рецепти пакетів snap і flatpak проекту вже передають цю опцію, оскільки ці пакети запускаються на інших машинах.

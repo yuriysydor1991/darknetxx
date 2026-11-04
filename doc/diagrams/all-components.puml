@@ -5,9 +5,8 @@ skinparam componentStyle rectangle
 skinparam shadowing false
 skinparam packageStyle folder
 
-package "executables (src/main.cpp, src/*-target.cmake)" as exes {
+package "executables (src/main.cpp, src/darknetxx-gui-targets.cmake)" as exes {
   artifact "darknetxx" as bin_main
-  artifact "darknetxxConverter" as bin_conv
   artifact "darknetxx-train-gui" as bin_tgui
   artifact "darknetxx-recognition-gui" as bin_rgui
   artifact "darknetxx-net-editor-gui" as bin_egui
@@ -16,7 +15,7 @@ package "executables (src/main.cpp, src/*-target.cmake)" as exes {
 }
 
 package "src/tests" {
-  [component\n(weights-factory, bias-networks)] as testsdata
+  [component\n(weights-factory, bias-networks,\nformats-access)] as testsdata
   [integration\n(digits, converter, gui-bash, ...)] as itests
 }
 
@@ -80,7 +79,8 @@ note right of libpkg
   The src/lib/CMakeLists.txt builds the
   src/darknet-adaptor (with the src/detector-cmake-adaptor
   and the src/NetworksLoaders), src/training, src/recognition,
-  src/OMP, src/zlib and src/helpers components into the library.
+  src/OMP and src/helpers components into the library, which
+  is linked against the darknetxx-datadrivers one.
 end note
 
 package "src/training" {
@@ -114,31 +114,22 @@ package "src/detector-cmake-adaptor" {
 }
 
 package "src/NetworksLoaders" {
-  [INetworkLoader, IWeightsFileFormat,\nIWeightsReader, IWeightsWriter] as loaderapi
+  [INetworkLoader] as loaderapi
   [OrigDefaultLoader] as cfgloader
-  [weights-formats] as formats
-  [weights-converter] as converter
-  [weights-model] as model
-  [original-weights] as origweights
-  [yolo4-folder] as yolo4folder
+  [DataDriversAliases.h\n(the dxxdd alias)] as aliases
+  [network-weights\n(NetworkWeights,\nNetworkWeightsConverter)] as netweights
+  [network-rewriter\n(NetworkRewriter)] as rewriter
+}
 
-  package "dxxwjz" as dxxwjzpkg {
-    [dxxwjz1] as dxxwjz1
-    [dxxwjz2] as dxxwjz2
-    [dxxwjz2p] as dxxwjz2p
-    [dxxwjz3] as dxxwjz3
-    [dxxwjz3p] as dxxwjz3p
-    [dxxwjz4] as dxxwjz4
-    [dxxwjz4p] as dxxwjz4p
-  }
+package "darknetxx-datadrivers (the installed DarknetxxDataDrivers-0.12 library)" as dxxddpkg {
+  [WeightsFileFormats, NetworkSource,\nWeightsDocument, WeightsConverter,\nCfgSection, CfgNetworkStructure,\nINetworkWeights] as dxxddapi
+  [the formats\n(original weights, dxxwjz1 ... dxxwjz4p,\nYOLO4 folder)] as dxxddformats
+  [ZlibController] as zlib
+  artifact "darknetxxConverter" as bin_conv
 }
 
 package "src/OMP" {
   [OMPController] as omp
-}
-
-package "src/zlib" {
-  [ZlibController,\nGzipFileStreams] as zlib
 }
 
 package "src/helpers" {
@@ -154,7 +145,6 @@ note bottom of logpkg
 end note
 
 bin_main ..> main : built of
-bin_conv ..> main : built of
 bin_tgui ..> main : built of
 bin_rgui ..> main : built of
 bin_egui ..> main : built of
@@ -200,11 +190,12 @@ libfactory --> bgtrainer
 libfactory --> recognizer
 bgtrainer --> lmain : trains in a thread
 bgtrainer --> projects
-projects --> formats
+projects --> dxxddapi
 lmain --> omp
 lmain --> dctrl : trains, detects
-convlib --> converter : converts
-facade --> converter : saves the\nedited network
+convlib --> netweights : converts
+facade --> rewriter : saves the\nedited network
+facade ..> dxxddapi : hands the logger over
 recognizer --> recmethods
 recognizer --> cfgloader : loads the network
 recognizer --> darknetc : computes
@@ -220,35 +211,29 @@ workers --> cfgloader : loads the networks
 darknetc --> capi : parses, resizes,\nreads and writes the weights
 darknetc --> trainingdata : reads the images
 capi --> cfgloader
-capi --> formats
+capi --> netweights : reads and writes\nthe weights through
 capi --> netadaptor
 cfgloader --> netadaptor
 cfgloader --> layers
 netadaptor --> layers
 layers --> layeradaptor
-journal --> formats : saves the weights
-chart --> formats
+journal --> netweights : saves the weights through
+chart --> dxxddapi : peeks the files by
 
 cfgloader ..|> loaderapi
-formats --> origweights
-formats --> dxxwjzpkg : reads, writes
-formats --> yolo4folder
-converter --> formats
-dxxwjz2 --> dxxwjz1 : extends
-dxxwjz2p --> dxxwjz2 : extends
-dxxwjz3 --> dxxwjz2 : extends
-dxxwjz3p --> dxxwjz3 : extends
-dxxwjz3p --> dxxwjz2p
-dxxwjz4 --> dxxwjz3 : extends
-dxxwjz4p --> dxxwjz3p : extends
-dxxwjz4p --> dxxwjz4
-dxxwjz4p --> zlib : the staged JSON document
-origweights --> model
-dxxwjz1 --> model
-yolo4folder --> model
-dxxwjz1 --> zlib : gzip streams
+cfgloader --> dxxddapi : the cfg sections,\nthe weights files
+cfgloader --> netweights : loads the weights into
+netweights --> dxxddapi : the darknet networks of
+netweights --> cfgloader : builds the network\nof the cfg
+rewriter --> cfgloader : builds the edited network
+rewriter --> netweights
+rewriter --> dxxddapi : writes the files by
+aliases ..> dxxddapi : includes
+dxxddapi --> dxxddformats : reads, writes
+dxxddformats --> zlib : gzip streams,\nZIP archives
+bin_conv ..> dxxddapi : converts by
 
 ' keeps the log of every component beside the other supporting ones
-model -[hidden]-> log
+rewriter -[hidden]-> log
 
 @enduml

@@ -8,11 +8,16 @@ dxxwjz2p, dxxwjz3p і dxxwjz4p і розпізнавання зображень 
 так, як гілка `applib` проекту
 [cpp-app-template](https://github.com/yuriysydor1991/cpp-app-template)
 впорядковує свою бібліотеку. Виконувані файли проекту (`darknetxx`,
-`darknetxxConverter`, `darknetxx-train-gui`, `darknetxx-recognition-gui` і
-бінарні файли редактора нейромереж)
-користуються бібліотекою лише через її фасад, так само як будь-яка інша
-програма (див. секцію
+`darknetxx-train-gui`, `darknetxx-recognition-gui` і бінарні файли редактора
+нейромереж) користуються бібліотекою лише через її фасад, так само як
+будь-яка інша програма (див. секцію
 [Використання бібліотеки darknetxx](/doc/sections/uk_UA/5-37-using-the-darknetxx-library.md)).
+Сама бібліотека будується зі спільною бібліотекою проекту
+[darknetxx-datadrivers](https://github.com/yuriysydor1991/darknetxx-datadrivers),
+`DarknetxxDataDrivers-0.12`, з форматами файлів ваг нейромереж і проектів
+навчання (див. секцію
+[Вмикання бібліотеки darknetxx-datadrivers](/doc/sections/uk_UA/5-39-enabling-the-darknetxx-datadrivers-library.md)),
+яку не називає жоден з її публічних заголовних файлів.
 
 Окремий вихідний файл діаграми нижче -
 [`doc/diagrams/library-classes.puml`](/doc/diagrams/library-classes.puml).
@@ -134,7 +139,7 @@ NetworkRecognizer ..> Recognition : gives
 Recognition --> RecognizedObject
 BackgroundTrainer --> LibMain : runs in it's thread
 LibMain ..> "darknet_adaptor::DarknetController" : performs by
-WeightsConversionLib ..> "darknet_adaptor::loaders::WeightsConverter" : converts by
+WeightsConversionLib ..> "darknet_adaptor::loaders::NetworkWeightsConverter" : converts by
 LibraryContext --> ITrainingListener : reports to
 ITrainingListener ..> TrainingProgress
 ATrainingProject <|-- Yolo4Folder
@@ -142,6 +147,8 @@ ATrainingProject <|-- DxxwjzProject
 LibraryFacade ..> ATrainingProject : opens of the folder or the project file
 BackgroundTrainer ..> ATrainingProject : trains
 LibraryFacade ..> ILogger : adopts
+LibraryFacade ..> "dxxdd::DxxDataDriversFacade" : hands the logger over to
+LibraryFacade ..> "darknet_adaptor::loaders::NetworkRewriter" : saves the edited network by
 @enduml
 
 ## Фасад
@@ -191,8 +198,9 @@ LibraryFacade ..> ILogger : adopts
 - **`ITrainingListener`** і **`TrainingProgress`** - ітерації і завершення
   навчання, про які повідомляє потік, у якому навчання виконується.
 - **`ILogger`** - журнал користувача бібліотеки, який
-  `LibraryFacade::init_logger` передає бібліотеці, щоб уся програма вела
-  журнал в одне місце. Це домовленість журналювання кожної бібліотеки,
+  `LibraryFacade::init_logger` передає бібліотеці і бібліотеці
+  darknetxx-datadrivers під нею (`dxxdd::DxxDataDriversFacade::init_logger`),
+  щоб уся програма вела журнал в одне місце. Це домовленість журналювання кожної бібліотеки,
   похідної від cpp-app-template, тому він не має ані простору імен, ані
   захисту включення бібліотеки.
 - **`LibraryAPI.h`** - макрос `DARKNETXX_LIB_API` експортованих класів:
@@ -208,13 +216,13 @@ LibraryFacade ..> ILogger : adopts
 
 | Директорія | Містить |
 | --- | --- |
-| [`src/lib/libmain`](/src/lib/libmain) | `darknetxx_impl::LibFactory` робіт, які видає фасад, `LibMain` (навчання і розпізнавання за допомогою `DarknetController` після налаштування потоків OpenMP) і `WeightsConversionLib` (конвертування файлів ваг нейромереж) |
+| [`src/lib/libmain`](/src/lib/libmain) | `darknetxx_impl::LibFactory` робіт, які видає фасад, `LibMain` (навчання і розпізнавання за допомогою `DarknetController` після налаштування потоків OpenMP) і `WeightsConversionLib` (конвертування файлів ваг нейромереж за допомогою `NetworkWeightsConverter` - конвертера бібліотеки darknetxx-datadrivers, який читає файли за нейромережею darknet з cfg) |
 | [`src/training`](/src/training) | `BackgroundTrainer`, `ATrainingProject`, `Yolo4Folder` і `DxxwjzProject` файлів проектів dxxwjz2p, dxxwjz3p і dxxwjz4p (для dxxwjz4p - з файлом dxxwjz4 найновіших ваг поряд з ним) |
 | [`src/recognition`](/src/recognition) | `NetworkRecognizer`, який розпізнає нейромережею для розпізнавання, створеною `OrigDefaultLoader`, за допомогою `ObjectsDetection` чи `ImageClassification` (реалізацій `IRecognitionMethod`) і обводить об'єкти рамками за допомогою `RecognitionPainter` |
 | [`src/darknet-adaptor`](/src/darknet-adaptor) | міст до оригінального коду Darknet (див. секцію [Компоненти адаптера Darknet](/doc/sections/uk_UA/4-7-2-darknet-adaptor-components.md)) |
 | [`src/detector-cmake-adaptor`](/src/detector-cmake-adaptor) | оригінальний код Darknet на C/C++ директорії `darknet`, який підключає і будує з заголовками Darknet і визначеннями OpenCV адаптер Darknet |
-| [`src/NetworksLoaders`](/src/NetworksLoaders) | завантажувачі нейромереж і файли ваг нейромереж, які підключає і будує з заголовками Darknet адаптер Darknet (див. секцію [Файли ваг нейромереж](/doc/sections/uk_UA/4-7-4-network-weights-files.md)) |
-| [`src/OMP`](/src/OMP), [`src/zlib`](/src/zlib), [`src/helpers`](/src/helpers) | допоміжні компоненти (див. секцію [Допоміжні компоненти](/doc/sections/uk_UA/4-7-3-supporting-components.md)) |
+| [`src/NetworksLoaders`](/src/NetworksLoaders) | завантажувачі нейромереж і нейромережі darknet для форматів файлів ваг бібліотеки darknetxx-datadrivers: подання `NetworkWeights` бібліотеки над нейромережею darknet, `NetworkWeightsConverter` і `NetworkRewriter`, які підключає і будує з заголовками Darknet адаптер Darknet (див. секцію [Файли ваг нейромереж](/doc/sections/uk_UA/4-7-4-network-weights-files.md)) |
+| [`src/OMP`](/src/OMP), [`src/helpers`](/src/helpers) | допоміжні компоненти (див. секцію [Допоміжні компоненти](/doc/sections/uk_UA/4-7-3-supporting-components.md)) |
 
 Бібліотека має власну копію підсистеми журналювання
 [`src/log`](/src/log), як і кожен виконуваний файл проекту: проксі
@@ -222,7 +230,13 @@ LibraryFacade ..> ILogger : adopts
 `logger::ILogger`, який він тримає, власному
 `default_logger::RealDefaultLogger` чи перейнятому. Виконувані файли
 передають свій журнал бібліотеці одразу після ініціалізації свого
-журналювання, у методі `app::ApplicationFactory::run`.
+журналювання, у методі `app::ApplicationFactory::run`, а
+`LibraryFacade::init_logger` передає той самий журнал бібліотеці
+darknetxx-datadrivers, яка теж має власну копію підсистеми журналювання:
+бібліотека викликає лише методи `log()` перейнятого журналу, які обидва
+визначення `logger::ILogger` (цього проекту і cpp-app-template, з якого
+зроблено бібліотеку) тримають в одних і тих самих позиціях таблиці
+віртуальних функцій.
 
 Компонентні тести внутрішніх частин бібліотеки підключають ціль
 `DarknetXXLibraryObjects` об'єктів, з яких складається бібліотека, а спільну

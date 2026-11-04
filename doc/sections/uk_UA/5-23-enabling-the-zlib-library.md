@@ -1,11 +1,7 @@
-## Вмикання інтеграції zlib
+## Бібліотека zlib
 
-Бібліотека стиснення [zlib](https://www.zlib.net/) (deflate, gzip, zip) стискає файли ваг нейромереж dxxwjz1 (див. секцію [Файли ваг нейромереж](/doc/sections/uk_UA/4-7-4-network-weights-files.md)) за допомогою `zlibi::ZlibController` (див. секцію [Допоміжні компоненти](/doc/sections/uk_UA/4-7-3-supporting-components.md)), тому проект її потребує, і CMake змінна `ENABLE_ZLIB` за замовчуванням має значення `ON`. Якщо встановлену системну бібліотеку знайдено (пакет `zlib1g-dev` у Debian і Ubuntu), використовується вона, інакше під час конфігурації з мережі завантажується і будується її випуск `v1.3.1`. Вимкнути змінну неможливо: конфігурація повертає їй значення `ON` з попередженням.
+Бібліотека стиснення [zlib](https://www.zlib.net/) більше не є опцією цього проекту. CMake опція `ENABLE_ZLIB`, змінні кешу `DARKNETXX_ZLIB_GIT` і `DARKNETXX_ZLIB_GIT_TAG`, модуль `cmake/enablers/compression/darknetxx-zlib-enabler.cmake` і `zlibi::ZlibController` директорії `src/zlib`, який стискав файли ваг нейромереж dxxwjz1, переїхали в бібліотеку [darknetxx-datadrivers](https://github.com/yuriysydor1991/darknetxx-datadrivers) разом з форматами файлів ваг нейромереж (див. секцію [Вмикання бібліотеки darknetxx-datadrivers](/doc/sections/uk_UA/5-39-enabling-the-darknetxx-datadrivers-library.md)), тож `-DENABLE_ZLIB=...` попередніх командних рядків нічого не налаштовує.
 
-```
-# в середині кореневої директорії проекту
+Бібліотека стискає документи JSON файлів dxxwjz1, dxxwjz2, dxxwjz2p, dxxwjz3, dxxwjz3p і dxxwjz4, стиснені gzip, і архіви ZIP проектів dxxwjz4p власним контролером і лінкує zlib приватно: zlib - це залежність побудови самої бібліотеки (встановлена системна бібліотека, пакет `zlib1g-dev` у Debian і Ubuntu, або випуск `v1.3.1`, який її конфігурація завантажує через наявне з'єднання, див. документацію бібліотеки), а не жодного з публічних заголовних файлів, які вона встановлює, тож бібліотеки і виконувані файли цього проекту не лінкують власної zlib.
 
-cmake -S . -B build -DENABLE_ZLIB=ON
-```
-
-Дивись модуль `cmake/enablers/compression/darknetxx-zlib-enabler.cmake` щодо цілі `ZLIB::ZLIB`, яку слід прилінкувати до твоїх цільових об'єктів: це ціль системної бібліотеки або псевдонім статичної бібліотеки, побудованої через FetchContent.
+Виняток - тести цього проекту: компонентні та інтеграційні тести файлів ваг нейромереж самі читають стиснені gzip документи JSON, які записує бібліотека, тож конфігурація тестів шукає системну zlib (їхній `find_package(ZLIB REQUIRED)`, без завантаження), і тести потребують файлів розробки zlib (див. секцію [Необов'язкові пакети для тестів](/doc/sections/uk_UA/3-3-optional-for-the-tests.md)).

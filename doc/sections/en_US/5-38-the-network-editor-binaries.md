@@ -179,7 +179,7 @@ Widgets and Svg development files are found (the `qt6-base-dev` and the
 | --- | --- | --- |
 | `ENABLE_DARKNETXX_NET_EDITOR` | `ON` | Builds the network editor binaries. Set it to `OFF` to build none of them. |
 | `ENABLE_DARKNETXX_NET_EDITOR_QT` | `ON` of the Qt 6 found | Builds the Qt 6 one. `ON` requires the Qt 6, `OFF` builds the GTK one alone. |
-| `DARKNETXX_NET_EDITOR_ONLY` | `OFF` | Builds the network editor binaries alone (and the library they save the networks by): no `darknetxx`, `darknetxxConverter`, `darknetxx-train-gui` and `darknetxx-recognition-gui` binaries. |
+| `DARKNETXX_NET_EDITOR_ONLY` | `OFF` | Builds the network editor binaries alone (and the library they save the networks by): no `darknetxx`, `darknetxx-train-gui` and `darknetxx-recognition-gui` binaries. |
 | `DARKNETXX_NET_EDITOR_GUI_BINARY_NAME` | `<project binary name>-net-editor-gui` | The name of the GTK 4 binary and of it's CMake target. |
 | `DARKNETXX_NET_EDITOR_QT_GUI_BINARY_NAME` | `<project binary name>-net-editor-qt-gui` | The name of the Qt 6 binary and of it's CMake target. |
 

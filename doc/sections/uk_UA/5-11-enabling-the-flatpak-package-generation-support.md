@@ -20,6 +20,15 @@ cmake --build . --target flatpak
 
 У разі успішної побудови цілі буде створено файл під назвою `darknetxx-0.9.0.flatpak` у кореневій директорії побудови проекту шаблону. Для того щоб преглянути або/і змінити ціль побудови пакету flatpak необхідно відвідати файли `cmake/darknetxx-flatpak-target.cmake` або `misc/packagers/flatpak.conf.json.in`.
 
+Проект усередині ізольованого середовища `flatpak-builder` будується з бібліотекою [darknetxx-datadrivers](https://github.com/yuriysydor1991/darknetxx-datadrivers) форматів файлів ваг нейромереж (див. секцію [Вмикання бібліотеки darknetxx-datadrivers](/doc/sections/uk_UA/5-39-enabling-the-darknetxx-datadrivers-library.md)), якої немає у середовищі виконання GNOME, тож маніфест спершу будує і встановлює бібліотеку: модуль `darknetxx-datadrivers` файлу [misc/packagers/flatpak.conf.json.in](/misc/packagers/flatpak.conf.json.in) клонує репозиторій змінної кешу `DARKNETXX_DXXDD_GIT` на гілці змінної `DARKNETXX_DXXDD_GIT_TAG` (за замовчуванням гілка `main` репозиторію бібліотеки) і виконує її побудову `Release` після модуля `nlohmann-json`, з яким будується бібліотека, і перед модулем проекту, який знаходить її у префіксі `/app` ізольованого середовища. Пакет містить бібліотеку і її бінарний файл `darknetxxConverter` поряд з бінарними файлами проекту.
+
+```
+# в середині кореневої директорії проекту
+
+# flatpak з іншою ревізією бібліотеки
+cmake -B build -S . -DENABLE_FLATPAK=ON -DDARKNETXX_DXXDD_GIT_TAG=my-branch
+```
+
 Необхідно звернутися до документації програми flatpak для того щоб дізнитись як встановлювати або запускати програми котрі розповсюджуються у вигляді пакету flatpak. Для не змінених паарметрів поточного проекту вони можуть виглядати наступним чином:
 
 ```

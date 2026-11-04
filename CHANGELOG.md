@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+- Extracting the network weights files and the training projects formats (the weights-model, original-weights, dxxwjz, yolo4-folder, weights-formats and weights-converter components of the src/NetworksLoaders, the IWeightsReader, IWeightsWriter and IWeightsFileFormat interfaces and the CfgSection of the cfg files) and the ZlibController of the src/zlib into the standalone darknetxx-datadrivers library (https://github.com/yuriysydor1991/darknetxx-datadrivers): the DarknetxxDataDrivers-0.12 shared library and CMake package, the include/DarknetxxDataDrivers-0.12 headers of the DarknetxxDataDrivers012 namespace
+- Moving the darknetxxConverter binary into the darknetxx-datadrivers library, which installs it beside itself with the same command line and reads the original weights files by the CfgNetworkStructure of the cfg; the darknetxx binary keeps the --convert-* and the --dump-cfg flags
+- Introducing the darknetxx-DarknetxxDataDrivers-enabler CMake module of the ENABLE_DARKNETXX_DATA_DRIVERS option and the DARKNETXX_DXXDD_PACKAGE, DARKNETXX_DXXDD_GIT and DARKNETXX_DXXDD_GIT_TAG cache variables, which finds the installed library (-DCMAKE_PREFIX_PATH=<prefix>) and fails the configure without it
+- Introducing the misc/ci/install-darknetxx-datadrivers.sh script, which builds and installs the library into the prefix of its argument
+- Introducing the src/NetworksLoaders/DataDriversAliases.h, the single include of the library and the dxxdd alias of its namespace
+- Introducing the NetworkWeights view of the library over the darknet network of the src/NetworksLoaders/network-weights (the layout walk of the network moved there as the NetworkWeights::layout_of, the layer types and the weights files version checked against the darknet ones at the compile time) and the NetworkWeightsConverter of the files by the darknet network of the cfg, which the conversion flags of the darknetxx binary convert by
+- Moving the NetworkRewriter of the edited network into the src/NetworksLoaders/network-rewriter over the library API
+- Introducing the CTEST_NetworkWeights test of the CfgNetworkStructure of the library being the layout of the darknet network of the cfg files of the misc/examples/cfg and of the network loader tests
+- Handing the logger of the application over to the library by the LibraryFacade::init_logger
+- Building and installing the library before the project in the Dockerfiles, the flatpak manifest (the darknetxx-datadrivers module) and the snap recipe (the darknetxx-datadrivers part and the darknetxxConverter app of it)
+- Introducing the ENABLE_DEB_DARKNETXX_DATA_DRIVERS option, which packs the shared object of the library into the deb package
+- Erasing the ENABLE_DARKNETXX_CONVERTER option, the DARKNETXX_CONVERTER_BINARY_NAME cache variable, the DARKNETXX_CONVERTER_ONLY code paths, the zlib enabler of the ENABLE_ZLIB option and the src/zlib directory; the nlohmann json library serves the tests alone
+- Documenting the darknetxx-datadrivers library in the READMEs and the doc sections
+
 ## [app0.9.0] - 2025-03-20
 
 - cb89b27 Erasing redundant suppression that causes cppcheck to fail

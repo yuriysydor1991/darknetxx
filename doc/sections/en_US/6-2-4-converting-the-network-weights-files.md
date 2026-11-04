@@ -16,9 +16,15 @@ file: the ZIP archive of the single JSON document and of the images of the
 annotations in it's `data/` folder), and of the YOLO4 training folders into the
 dxxwjz2p, the dxxwjz3p and the dxxwjz4p projects and back (see the
 [Network weights files](/doc/sections/en_US/4-7-4-network-weights-files.md)
-section). It is asked for by the four command line flags, and it starts no
-training nor detection: the application tells what it is converting through the
-log messages alone, so it fits a script and a build pipeline.
+section). The formats and the converter are the ones of the
+[darknetxx-datadrivers](https://github.com/yuriysydor1991/darknetxx-datadrivers)
+library the project is built against (see the
+[Enabling the darknetxx-datadrivers library](/doc/sections/en_US/5-39-enabling-the-darknetxx-datadrivers-library.md)
+section), the executable hands them the darknet network of the cfg file the
+files of no structure of their own are read by. It is asked for by the four
+command line flags, and it starts no training nor detection: the application
+tells what it is converting through the log messages alone, so it fits a
+script and a build pipeline.
 
 ```
 # from the build dir
@@ -76,9 +82,11 @@ log messages alone, so it fits a script and a build pipeline.
   --convert-dst ./cars-yolo4
 ```
 
-The project also builds a second binary, `darknetxxConverter`, which carries
-this very conversion and no training nor detection at all - the same flags,
-the same formats, the same behaviour. See [The darknetxxConverter
+The darknetxx-datadrivers library installs the `darknetxxConverter` binary
+beside itself, which carries this very conversion and no training nor
+detection at all - the same flags, the same formats, the same behaviour, so
+every command of this section runs with the `darknetxxConverter` in place of
+the `./src/darknetxx` as well. See [The darknetxxConverter
 binary](/doc/sections/en_US/5-35-the-darknetxxConverter-binary.md).
 
 | Option | Value | Description |
@@ -252,10 +260,10 @@ examined, compared with another one or trained anew with no conversion:
 # from the build dir
 
 # the network cfg the dxxwjz3 file keeps
-./src/darknetxxConverter --dump-cfg ./yolov4.dxxwjz3
+./src/darknetxx --dump-cfg ./yolov4.dxxwjz3
 
-# into the cfg file of the very same network
-./src/darknetxxConverter --dump-cfg ./yolov4.dxxwjz3 > ./yolov4.cfg
+# into the cfg file of the very same network, by the binary of the library
+darknetxxConverter --dump-cfg ./yolov4.dxxwjz3 > ./yolov4.cfg
 ```
 
 The standard output gets the cfg alone - the log messages of the errors go into
@@ -274,5 +282,5 @@ The flag goes alone: it's combination with the conversion flags, the
 `--train-cfg`, the `--detect-cfg` or the `--weights` one is an error. The
 original weights and the dxxwjz1 files keep no network cfg, so their print, as
 the print of a file unable to be read, prints nothing and ends with a non zero
-exit status. The `darknetxx` binary and the GUI ones print the cfg the very
-same way.
+exit status. The `darknetxx` binary, the GUI ones and the `darknetxxConverter`
+one of the library print the cfg the very same way.

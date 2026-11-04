@@ -6,11 +6,23 @@ section) and the executables over it. Another CMake project uses the library
 made available by the FetchContent or installed and found by the
 `find_package`.
 
+Either way the library is built against the installed
+[darknetxx-datadrivers](https://github.com/yuriysydor1991/darknetxx-datadrivers)
+library of the network weights files formats, which nothing fetches: install
+it first and point the configure at it's prefix by the `CMAKE_PREFIX_PATH`
+(see the
+[Enabling the darknetxx-datadrivers library](/doc/sections/en_US/5-39-enabling-the-darknetxx-datadrivers-library.md)
+section). The `libdarknetxx-0.12.so` library loads the
+`libDarknetxxDataDrivers-0.12.so.0` one at the run time, so the loader has to
+find both of them, while no public header of the darknetxx library names a
+type of the darknetxx-datadrivers one, so the program of the darknetxx
+library includes no header of it.
+
 ### The options
 
 | CMake option | Default | Effect |
 | --- | --- | --- |
-| `ENABLE_DARKNETXX_EXECUTABLES` | `ON` for the top level project, `OFF` for the project of another one | Builds and installs the `darknetxx`, the `darknetxxConverter`, the `darknetxx-train-gui` and the `darknetxx-recognition-gui` executables. `OFF` builds and installs the library alone. |
+| `ENABLE_DARKNETXX_EXECUTABLES` | `ON` for the top level project, `OFF` for the project of another one | Builds and installs the `darknetxx` executable and the GUI ones (the `darknetxx-train-gui`, the `darknetxx-recognition-gui` and the network editor ones). `OFF` builds and installs the library alone. |
 | `DARKNETXX_LIB_INSTALL_DEV_FILES` | `ON` | Installs the public headers, the CMake package files and the `libdarknetxx-0.12.so` namelink beside the library. `OFF` installs the library runtime alone. |
 | `DARKNETXX_LIBRARY_NAME` | `darknetxx-<major>.<minor>` | The name of the library, of it's target, of the headers directory and of the CMake package. |
 
@@ -57,6 +69,12 @@ FetchContent_MakeAvailable(darknetxx)
 
 add_executable(my-trainer main.cpp)
 target_link_libraries(my-trainer darknetxx-0.12::darknetxx-0.12)
+```
+
+```
+# the configure of the project of the FetchContent above
+
+cmake -S . -B build -DCMAKE_PREFIX_PATH=/opt/darknetxx
 ```
 
 ### find_package

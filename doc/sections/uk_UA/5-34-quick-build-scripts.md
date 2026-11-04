@@ -35,6 +35,15 @@ scripts/build/release.sh
 
 Скрипти будують увесь проект, включно з долученим первісним кодом Darknet мовою C, тому найперша побудова `Release` свіжої копії триває певний час.
 
+Крок конфігурації кожного скрипта потребує заздалегідь встановленої бібліотеки [darknetxx-datadrivers](https://github.com/yuriysydor1991/darknetxx-datadrivers) (див. секцію [Вмикання бібліотеки darknetxx-datadrivers](/doc/sections/uk_UA/5-39-enabling-the-darknetxx-datadrivers-library.md)), якої не будує жоден зі скриптів: її встановлює скрипт [misc/ci/install-darknetxx-datadrivers.sh](/misc/ci/install-darknetxx-datadrivers.sh), а аргумент скриптів `-DCMAKE_PREFIX_PATH=<prefix>` (див. нижче) задає префікс бібліотеки поза типовими.
+
+```
+# в середині кореневої директорії проекту
+
+misc/ci/install-darknetxx-datadrivers.sh /opt/darknetxx
+scripts/build/release.sh -DCMAKE_PREFIX_PATH=/opt/darknetxx
+```
+
 ### Скрипти пакувальників
 
 Кожен зі скриптів нижче виконує крок конфігурації `Release` з увімкненою однією опцією пакувальника, а потім будує ціль, яка утворює пакунок. Окремого кроку побудови немає: кожна з тих цілей будує те, що їй потрібно, сама, тому нічого зайвого до директорії `build/release` наперед не будується. Вони приймають параметри скриптів повного циклу вище, а утворений пакунок потрапляє туди ж:

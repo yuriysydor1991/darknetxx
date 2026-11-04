@@ -12,4 +12,5 @@
     1. [Компоненти адаптера Darknet](/doc/sections/uk_UA/4-7-2-darknet-adaptor-components.md)
     1. [Допоміжні компоненти](/doc/sections/uk_UA/4-7-3-supporting-components.md)
     1. [Файли ваг нейромереж](/doc/sections/uk_UA/4-7-4-network-weights-files.md)
+    1. [Бібліотека darknetxx](/doc/sections/uk_UA/4-7-5-the-darknetxx-library.md)
 1. [Обробка сигналів операційної системи](/doc/sections/uk_UA/4-8-handling-the-OS-signals.md)

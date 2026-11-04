@@ -16,8 +16,8 @@
 
 1. [Компоненти виконання програми](/doc/sections/uk_UA/4-7-1-application-runtime-components.md) - інфраструктура, яка розбирає параметри командного рядка, будує контекст виконання і обирає програму для запуску, яка використовує бібліотеку darknetxx (простір імен `app`).
 1. [Компоненти адаптера Darknet](/doc/sections/uk_UA/4-7-2-darknet-adaptor-components.md) - місток, який керує оригінальним кодом Darknet для навчання чи розпізнавання (простір імен `darknet_adaptor`).
-1. [Допоміжні компоненти](/doc/sections/uk_UA/4-7-3-supporting-components.md) - контролер OpenMP, підсистема журналювання, контролер стиснення zlib і допоміжні утиліти.
-1. [Файли ваг нейромереж](/doc/sections/uk_UA/4-7-4-network-weights-files.md) - оригінальні файли ваг darknet, файли dxxwjz1 (стиснені gzip документи JSON з вагами), файли dxxwjz2 (опис нейромережі і запис навчання поряд з вагами) файли dxxwjz3 (те саме лише з даних JSON, включно з cfg нейромережі) і файли dxxwjz4 (те саме з текстом опису) з їхніми проектами (проект dxxwjz4p містить ще й зображення, тобто весь проект навчання в одному файлі), класи їх читання, запису і перевірки та конвертер між ними (простір імен `darknet_adaptor::loaders`).
+1. [Допоміжні компоненти](/doc/sections/uk_UA/4-7-3-supporting-components.md) - контролер OpenMP, підсистема журналювання і допоміжні утиліти.
+1. [Файли ваг нейромереж](/doc/sections/uk_UA/4-7-4-network-weights-files.md) - нейромережі darknet для форматів файлів ваг нейромереж (простір імен `darknet_adaptor::loaders`): подання `NetworkWeights` бібліотеки darknetxx-datadrivers над нейромережею darknet, конвертер файлів за нейромережею darknet з cfg і перезапис зміненої нейромережі у файли. Самі формати - оригінальні файли ваг darknet, файли dxxwjz1 (стиснені gzip документи JSON з вагами), файли dxxwjz2 (опис нейромережі і запис навчання поряд з вагами), файли dxxwjz3 (те саме лише з даних JSON, включно з cfg нейромережі) і файли dxxwjz4 (те саме з текстом опису) з їхніми проектами (проект dxxwjz4p містить ще й зображення, тобто весь проект навчання в одному файлі), класи їх читання, запису і перевірки та конвертер між ними - належать бібліотеці [darknetxx-datadrivers](https://github.com/yuriysydor1991/darknetxx-datadrivers), з якою будується проект (простір імен `DarknetxxDataDrivers012`, див. секцію [Вмикання бібліотеки darknetxx-datadrivers](/doc/sections/uk_UA/5-39-enabling-the-darknetxx-datadrivers-library.md)).
 1. [Бібліотека darknetxx](/doc/sections/uk_UA/4-7-5-the-darknetxx-library.md) - спільна бібліотека, до якої будуються три рівні вище, її встановлюваний фасад (простір імен `darknetxx012`) і її реалізація (простір імен `darknetxx_impl`).
 
 Сигнали операційної системи, на які реагує уся програма, охоплює підкомпонент `src/app/signals-handlers` рівня `app`, описаний у секції [Обробка сигналів операційної системи](/doc/sections/uk_UA/4-8-handling-the-OS-signals.md).
@@ -36,12 +36,13 @@
 який обирає і запускає конкретного робітника Darknet (розпізнавач, тренер
 тощо), або конвертування файлів ваг нейромереж, про яке просять прапорці
 конвертування командного рядка, за допомогою
-`darknet_adaptor::loaders::WeightsConverter`. Контролер OpenMP і підсистема
-журналювання підтримують увесь цей процес. Другий бінарний файл проекту,
-`darknetxxConverter`, будується з тих самих компонентів і виконує лише
-конвертування (див.
+`darknet_adaptor::loaders::NetworkWeightsConverter` - конвертера бібліотеки
+darknetxx-datadrivers, який читає файли за нейромережею darknet з cfg.
+Контролер OpenMP і підсистема журналювання підтримують увесь цей процес.
+Бінарний файл `darknetxxConverter`, який виконує лише конвертування, тепер
+належить бібліотеці darknetxx-datadrivers (див.
 [Бінарний файл darknetxxConverter](/doc/sections/uk_UA/5-35-the-darknetxxConverter-binary.md)),
-а бінарні файли GUI, `darknetxx-train-gui` і `darknetxx-recognition-gui`,
+а бінарні файли GUI проекту, `darknetxx-train-gui` і `darknetxx-recognition-gui`,
 додають компонент `src/gui`, який у вікні GTK 4 першого навчає за допомогою
 фонового тренера бібліотеки, а у вікні другого розпізнає зображення за
 допомогою розпізнавача бібліотеки (див.
@@ -93,15 +94,20 @@ package "darknet-adaptor (Darknet bridge)" {
   [DarknetContext] as dctx
   [IDarknetAdaptor\n(+ ADetector,\nADetectorTrainer)] as adaptor
   [Network infrastructure\n(NetworksLoaders, Layers,\nALayer/ANetwork adaptors,\nNetworksCApi)] as netinfra
-  [Weights files\n(original, dxxwjz1, dxxwjz2,\ndxxwjz2p, dxxwjz3, dxxwjz3p,\ndxxwjz4, dxxwjz4p,\nYOLO4 folder, WeightsConverter)] as weights
+  [Network weights views\n(NetworkWeights,\nNetworkWeightsConverter,\nNetworkRewriter)] as weights
   [Original Darknet\nC computation] as darknetc
+}
+
+package "darknetxx-datadrivers\n(the installed DarknetxxDataDrivers-0.12 library)" {
+  [Weights files formats\n(original, dxxwjz1, dxxwjz2,\ndxxwjz2p, dxxwjz3, dxxwjz3p,\ndxxwjz4, dxxwjz4p, YOLO4 folder,\nWeightsConverter, CfgSection)] as formats
+  [ZlibController] as zlib
+  [darknetxxConverter] as dxxconv
 }
 
 package "Supporting components" {
   [ompi::OMPController] as omp
   [log (DefaultLogger /\ncpplog4c)] as log
   [helpers::StringTools] as helpers
-  [zlibi::ZlibController] as zlib
 }
 
 main --> factory
@@ -137,7 +143,11 @@ netinfra --> dctx : hands the networks to
 adaptor --> darknetc : trains / detects
 darknetc --> netinfra : parses, resizes,\nreads and writes weights
 netinfra --> weights : reads and writes
-weights ..> zlib : compresses
+netinfra --> formats : parses the cfg sections of
+weights --> formats : the darknet networks of
+facade ..> formats : hands the logger over
+dxxconv --> formats : converts by
+formats ..> zlib : compresses
 factory ..> log
 ilib ..> log
 dctrl ..> log

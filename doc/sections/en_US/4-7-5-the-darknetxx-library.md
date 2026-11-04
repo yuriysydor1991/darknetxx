@@ -8,11 +8,16 @@ files - is the shared `darknetxx-0.12` library the
 components beside it, laid out the way the
 [cpp-app-template](https://github.com/yuriysydor1991/cpp-app-template) `applib`
 branch lays out it's library. The executables of the project (`darknetxx`,
-`darknetxxConverter`, `darknetxx-train-gui`, `darknetxx-recognition-gui` and
-the network editor ones)
-use the library through it's facade alone, the very same way any other program does (see the
+`darknetxx-train-gui`, `darknetxx-recognition-gui` and the network editor
+ones) use the library through it's facade alone, the very same way any other
+program does (see the
 [Using the darknetxx library](/doc/sections/en_US/5-37-using-the-darknetxx-library.md)
-section).
+section). The library itself is built against the shared library of the
+[darknetxx-datadrivers](https://github.com/yuriysydor1991/darknetxx-datadrivers)
+project, the `DarknetxxDataDrivers-0.12` one of the network weights files and
+the training projects formats (see the
+[Enabling the darknetxx-datadrivers library](/doc/sections/en_US/5-39-enabling-the-darknetxx-datadrivers-library.md)
+section), which none of it's public headers names.
 
 The standalone source of the diagram below is
 [`doc/diagrams/library-classes.puml`](/doc/diagrams/library-classes.puml).
@@ -134,7 +139,7 @@ NetworkRecognizer ..> Recognition : gives
 Recognition --> RecognizedObject
 BackgroundTrainer --> LibMain : runs in it's thread
 LibMain ..> "darknet_adaptor::DarknetController" : performs by
-WeightsConversionLib ..> "darknet_adaptor::loaders::WeightsConverter" : converts by
+WeightsConversionLib ..> "darknet_adaptor::loaders::NetworkWeightsConverter" : converts by
 LibraryContext --> ITrainingListener : reports to
 ITrainingListener ..> TrainingProgress
 ATrainingProject <|-- Yolo4Folder
@@ -142,6 +147,8 @@ ATrainingProject <|-- DxxwjzProject
 LibraryFacade ..> ATrainingProject : opens of the folder or the project file
 BackgroundTrainer ..> ATrainingProject : trains
 LibraryFacade ..> ILogger : adopts
+LibraryFacade ..> "dxxdd::DxxDataDriversFacade" : hands the logger over to
+LibraryFacade ..> "darknet_adaptor::loaders::NetworkRewriter" : saves the edited network by
 @enduml
 
 ## The facade
@@ -194,8 +201,10 @@ project name and it's major and minor version):
 - **`ITrainingListener`** and **`TrainingProgress`** - the iterations and the
   end of a training, reported from the thread the training runs in.
 - **`ILogger`** - the logger of the library user, which the
-  `LibraryFacade::init_logger` hands over to the library, so the whole program
-  logs into one place. It is the logging contract of every cpp-app-template
+  `LibraryFacade::init_logger` hands over to the library and to the
+  darknetxx-datadrivers library beneath it (the
+  `dxxdd::DxxDataDriversFacade::init_logger`), so the whole program logs into
+  one place. It is the logging contract of every cpp-app-template
   derived library, which is why it carries neither the library namespace nor
   the library include guard.
 - **`LibraryAPI.h`** - the `DARKNETXX_LIB_API` macro of the exported classes:
@@ -212,13 +221,13 @@ private to the library:
 
 | Directory | Holds |
 | --- | --- |
-| [`src/lib/libmain`](/src/lib/libmain) | the `darknetxx_impl::LibFactory` of the works the facade gives out, the `LibMain` (the training and the detection by the `DarknetController`, after the OpenMP threads adjust) and the `WeightsConversionLib` (the network weights files conversion) |
+| [`src/lib/libmain`](/src/lib/libmain) | the `darknetxx_impl::LibFactory` of the works the facade gives out, the `LibMain` (the training and the detection by the `DarknetController`, after the OpenMP threads adjust) and the `WeightsConversionLib` (the network weights files conversion by the `NetworkWeightsConverter`, the converter of the darknetxx-datadrivers library which reads the files by the darknet network of the cfg) |
 | [`src/training`](/src/training) | the `BackgroundTrainer`, the `ATrainingProject`, the `Yolo4Folder` and the `DxxwjzProject` of the dxxwjz2p, the dxxwjz3p and the dxxwjz4p project files (the dxxwjz4p one of the dxxwjz4 file of the latest weights beside it) |
 | [`src/recognition`](/src/recognition) | the `NetworkRecognizer` of the inference network of the `OrigDefaultLoader`, which recognizes by the `ObjectsDetection` or by the `ImageClassification` (the `IRecognitionMethod` ones) and boxes the objects by the `RecognitionPainter` |
 | [`src/darknet-adaptor`](/src/darknet-adaptor) | the bridge to the original Darknet code (see the [Darknet adaptor components](/doc/sections/en_US/4-7-2-darknet-adaptor-components.md) section) |
 | [`src/detector-cmake-adaptor`](/src/detector-cmake-adaptor) | the original Darknet C/C++ code of the `darknet` directory, which the darknet adaptor includes and builds with the Darknet includes and the OpenCV definitions |
-| [`src/NetworksLoaders`](/src/NetworksLoaders) | the network loaders and the network weights files, which the darknet adaptor includes and builds with the Darknet includes (see the [Network weights files](/doc/sections/en_US/4-7-4-network-weights-files.md) section) |
-| [`src/OMP`](/src/OMP), [`src/zlib`](/src/zlib), [`src/helpers`](/src/helpers) | the supporting components (see the [Supporting components](/doc/sections/en_US/4-7-3-supporting-components.md) section) |
+| [`src/NetworksLoaders`](/src/NetworksLoaders) | the network loaders and the darknet networks of the network weights files formats of the darknetxx-datadrivers library: the `NetworkWeights` view of the library over the darknet network, the `NetworkWeightsConverter` and the `NetworkRewriter`, which the darknet adaptor includes and builds with the Darknet includes (see the [Network weights files](/doc/sections/en_US/4-7-4-network-weights-files.md) section) |
+| [`src/OMP`](/src/OMP), [`src/helpers`](/src/helpers) | the supporting components (see the [Supporting components](/doc/sections/en_US/4-7-3-supporting-components.md) section) |
 
 The library carries a copy of the [`src/log`](/src/log) logging subsystem of
 it's own, as every executable of the project does: the
@@ -226,7 +235,12 @@ it's own, as every executable of the project does: the
 `logger::ILogger` it holds, the own `default_logger::RealDefaultLogger` or the
 adopted one. The executables hand their logger over to the library right after
 their logging initialization, inside the `app::ApplicationFactory::run`
-method.
+method, and the `LibraryFacade::init_logger` hands the very same logger over
+to the darknetxx-datadrivers library, which carries a copy of the logging
+subsystem of it's own as well: the library calls the `log()` methods of the
+adopted logger alone, which both of the `logger::ILogger` definitions (the one
+of this project and the one of the cpp-app-template the library is made of)
+keep in the very same slots of the virtual table.
 
 The component tests of the library internals link the
 `DarknetXXLibraryObjects` target of the objects the library is made of, while

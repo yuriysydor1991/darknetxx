@@ -35,6 +35,15 @@ scripts/build/release.sh
 
 The scripts build the whole project, the vendored original Darknet C sources included, so the very first `Release` build of a fresh checkout takes a while.
 
+The configure step of every script requires the [darknetxx-datadrivers](https://github.com/yuriysydor1991/darknetxx-datadrivers) library installed beforehand (see the [Enabling the darknetxx-datadrivers library](/doc/sections/en_US/5-39-enabling-the-darknetxx-datadrivers-library.md) section), which none of the scripts builds: the [misc/ci/install-darknetxx-datadrivers.sh](/misc/ci/install-darknetxx-datadrivers.sh) script installs it, the `-DCMAKE_PREFIX_PATH=<prefix>` argument of the scripts (see below) names the prefix of the library outside of the default ones.
+
+```
+# inside the project root directory
+
+misc/ci/install-darknetxx-datadrivers.sh /opt/darknetxx
+scripts/build/release.sh -DCMAKE_PREFIX_PATH=/opt/darknetxx
+```
+
 ### Packager scripts
 
 Each of the scripts below performs the `Release` configure step with a single packager option enabled and then builds the target which produces the package. There is no separate build step: each of those targets builds whatever it needs on its own, so nothing unused is built into the `build/release` directory beforehand. They accept the parameters of the entry point scripts above, and the produced package lands there:

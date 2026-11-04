@@ -6,3 +6,5 @@ Separately each project may be downloaded and installed from different sources (
 - The Git versioning system at [https://git-scm.com/downloads/win](https://git-scm.com/downloads/win)
 - The CMake build system at [https://cmake.org/download/](https://cmake.org/download/)
 - The Windows 10 SDK at [https://developer.microsoft.com/en-us/windows/downloads/windows-sdk/](https://developer.microsoft.com/en-us/windows/downloads/windows-sdk/)
+
+The project is built against the [darknetxx-datadrivers](https://github.com/yuriysydor1991/darknetxx-datadrivers) library on every OS: the configure of the project looks the installed library up and stops with an error when it isn't found (see the [Enabling the darknetxx-datadrivers library](/doc/sections/en_US/5-39-enabling-the-darknetxx-datadrivers-library.md) section).

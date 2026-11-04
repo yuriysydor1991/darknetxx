@@ -2,6 +2,8 @@
 
 This section contains list of required packages and/or tools that must be present in the system in order to build templated project.
 
+Beside the packages of the system the project is built against the [darknetxx-datadrivers](https://github.com/yuriysydor1991/darknetxx-datadrivers) library of the network weights files and the training projects formats, which is no distribution package: build and install it before the project is configured (see the [Required tools for the GNU/Linux based OS](/doc/sections/en_US/3-1-required-tools-for-the-GNU-Linux-based-OS.md) and the [Enabling the darknetxx-datadrivers library](/doc/sections/en_US/5-39-enabling-the-darknetxx-datadrivers-library.md) sections).
+
 1. [Required tools for the GNU/Linux based OS](/doc/sections/en_US/3-1-required-tools-for-the-GNU-Linux-based-OS.md)
 1. [Required tools for the MS Windows based OS](/doc/sections/en_US/3-2-required-tools-for-the-MS-Windows-based-OS.md)
 1. [Optional for the tests](/doc/sections/en_US/3-3-optional-for-the-tests.md)

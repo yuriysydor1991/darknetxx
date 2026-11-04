@@ -18,6 +18,17 @@ cmake --build build --target docker-single-run
 
 Examine the `cmake/dockerers/darknetxx-docker-single-runner-target.cmake` file for the `docker-single-run` target details.
 
+### The darknetxx-datadrivers library of the images
+
+The project is built against the [darknetxx-datadrivers](https://github.com/yuriysydor1991/darknetxx-datadrivers) library of the network weights files formats (see the [Enabling the darknetxx-datadrivers library](/doc/sections/en_US/5-39-enabling-the-darknetxx-datadrivers-library.md) section), which is no distribution package, so every image which builds the project builds and installs the library first: the [Dockerfile.in](/misc/Dockerfiles/Dockerfile.in) of the `docker-single-run` target, the [Dockerfile.Darknetxx-CPU-train.in](/misc/Dockerfiles/Dockerfile.Darknetxx-CPU-train.in), the [Dockerfile.Darknetxx-CPU-predictor.in](/misc/Dockerfiles/Dockerfile.Darknetxx-CPU-predictor.in) and the [Dockerfile.gpu](/misc/Dockerfiles/Dockerfile.gpu) of the training and the prediction images and the [Dockerfile.Jenkins.pipeline.in](/misc/Dockerfiles/Dockerfile.Jenkins.pipeline.in) of the Jenkins pipeline one clone the repository of the `DARKNETXX_DXXDD_GIT` cache variable at the branch or the tag of the `DARKNETXX_DXXDD_GIT_TAG` one, build it's `Release` build, install it into the `/usr` prefix of the image and run the `ldconfig`, before the project is configured, so the configure of the project finds the library and the binaries of the image find it at the run time. The `darknetxxConverter` binary of the library is installed into the image with it.
+
+```
+# inside the project root directory
+
+# the image of another revision of the library
+cmake -S . -B build -DENABLE_DOCKER=ON -DDARKNETXX_DXXDD_GIT_TAG=my-branch
+```
+
 ### Starter scripts
 
 The [scripts/docker](/scripts/docker) directory holds the shortcuts which perform both commands above, so the whole run takes a single command:

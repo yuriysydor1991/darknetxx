@@ -12,4 +12,5 @@
     1. [Darknet adaptor components](/doc/sections/en_US/4-7-2-darknet-adaptor-components.md)
     1. [Supporting components](/doc/sections/en_US/4-7-3-supporting-components.md)
     1. [Network weights files](/doc/sections/en_US/4-7-4-network-weights-files.md)
+    1. [The darknetxx library](/doc/sections/en_US/4-7-5-the-darknetxx-library.md)
 1. [Handling the OS signals](/doc/sections/en_US/4-8-handling-the-OS-signals.md)

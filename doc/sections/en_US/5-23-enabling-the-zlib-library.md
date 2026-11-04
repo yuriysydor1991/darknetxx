@@ -1,11 +1,7 @@
-## Enabling the zlib library
+## The zlib library
 
-The [zlib](https://www.zlib.net/) compression library (deflate, gzip, zip) compresses the dxxwjz1 network weights files (see the [Network weights files](/doc/sections/en_US/4-7-4-network-weights-files.md) section) through the `zlibi::ZlibController` (see the [Supporting components](/doc/sections/en_US/4-7-3-supporting-components.md) section), so the project requires it and the `ENABLE_ZLIB` CMake variable is `ON` by default. The installed system library is used when found (the `zlib1g-dev` package of Debian and Ubuntu), otherwise the configure fetches and builds the `v1.3.1` release of it through the available connection. The variable can't be turned `OFF`: the configure turns it back `ON` with a warning.
+The [zlib](https://www.zlib.net/) compression library is no option of this project any more. The `ENABLE_ZLIB` CMake option, the `DARKNETXX_ZLIB_GIT` and the `DARKNETXX_ZLIB_GIT_TAG` cache variables, the `cmake/enablers/compression/darknetxx-zlib-enabler.cmake` module and the `zlibi::ZlibController` of the `src/zlib` directory, which compressed the dxxwjz1 network weights files, moved into the [darknetxx-datadrivers](https://github.com/yuriysydor1991/darknetxx-datadrivers) library together with the network weights files formats (see the [Enabling the darknetxx-datadrivers library](/doc/sections/en_US/5-39-enabling-the-darknetxx-datadrivers-library.md) section), so the `-DENABLE_ZLIB=...` of the earlier command lines configures nothing.
 
-```
-# Inside the source root directory
+The library compresses the gzip compressed JSON documents of the dxxwjz1, dxxwjz2, dxxwjz2p, dxxwjz3, dxxwjz3p and dxxwjz4 files and the ZIP archives of the dxxwjz4p projects by it's own controller and links the zlib privately: the zlib is the dependency of the build of the library - the installed system one (the `zlib1g-dev` package of Debian and Ubuntu) or the `v1.3.1` release it's configure fetches through the available connection, see the documentation of the library - and of none of the public headers it installs, so the libraries and the executables of this project link no zlib of their own.
 
-cmake -S . -B build -DENABLE_ZLIB=ON
-```
-
-See the `cmake/enablers/compression/darknetxx-zlib-enabler.cmake` module for the `ZLIB::ZLIB` target to link to your targets of interest: the system library one, or the alias of the static library of the FetchContent build.
+The tests of this project are the exception: the component and the integration tests of the network weights files read the gzip compressed JSON documents the library writes on their own, so the configure of the tests looks the system zlib up (the `find_package(ZLIB REQUIRED)` of them, with no fetch) and the tests require the zlib development files (see the [Optional for the tests](/doc/sections/en_US/3-3-optional-for-the-tests.md) section).

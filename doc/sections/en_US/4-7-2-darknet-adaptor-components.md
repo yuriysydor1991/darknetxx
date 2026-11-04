@@ -2,8 +2,13 @@
 
 The Darknet adaptor components live in the `darknet_adaptor` namespace (under
 [`src/darknet-adaptor`](/src/darknet-adaptor), the network loaders of the
-`darknet_adaptor::loaders` one under [`src/NetworksLoaders`](/src/NetworksLoaders)).
-They form the bridge between the
+`darknet_adaptor::loaders` one under [`src/NetworksLoaders`](/src/NetworksLoaders)),
+while the cfg file sections and the network weights files formats they load
+and save the networks by are the ones of the
+[darknetxx-datadrivers](https://github.com/yuriysydor1991/darknetxx-datadrivers)
+library (the `dxxdd` alias of it's `DarknetxxDataDrivers012` namespace, see the
+[Network weights files](/doc/sections/en_US/4-7-4-network-weights-files.md)
+section). They form the bridge between the
 clean C++ application infrastructure and the original Darknet C/C++ code (under
 [`src/detector-cmake-adaptor`](/src/detector-cmake-adaptor)), so the
 rest of the application does not depend on the original structures directly.
@@ -60,29 +65,44 @@ class OrigDefaultLoader {
   +load_network_custom(cfg, weights, clear, batch) : ANetworkAdaptorPtr
 }
 
-class CfgSection {
-  +{static} read_cfg(filename) : CfgSections
-  +find_int/find_float/find_str(key, def)
-  +unused()
+package "darknetxx-datadrivers (the dxxdd namespace alias)" {
+  class CfgSection {
+    +{static} read_cfg(filename) : CfgSections
+    +find_int/find_float/find_str(key, def)
+    +unused()
+  }
+
+  class CfgError
+
+  interface INetworkWeights {
+    +layers() : int
+    +type(layer) : LayerType
+    +layout(options) : WeightsLayoutEntries
+    +seen() / loaded_seen(seen) / saved_seen()
+  }
+
+  interface IWeightsReader {
+    +load(net, filename, cutoff, rest) : bool
+    +read(filename, net, document) : bool
+  }
+
+  interface IWeightsWriter {
+    +save(net, filename, cutoff, save_ema, rest) : bool
+    +write(document, filename) : bool
+  }
+
+  interface IWeightsFileFormat {
+    +create_reader() : IWeightsReaderPtr
+    +create_writer() : IWeightsWriterPtr
+  }
 }
 
-interface IWeightsReader {
-  +load(net, filename, cutoff, rest) : bool
-  +read(filename, net, document) : bool
+class NetworkWeights {
+  +NetworkWeights(net)
+  +NetworkWeights(adaptor)
+  +{static} layout_of(net, options) : WeightsLayoutEntries
+  +{static} type_of(type) : LayerType / LAYER_TYPE
 }
-
-interface IWeightsWriter {
-  +save(net, filename, cutoff, save_ema, rest) : bool
-  +write(document, filename) : bool
-}
-
-interface IWeightsFileFormat {
-  +create_reader() : IWeightsReaderPtr
-  +create_writer() : IWeightsWriterPtr
-}
-
-class OrigWeightsReader
-class OrigWeightsWriter
 
 class TrainingJournal {
   +record(iteration, loss, avg_loss)
@@ -136,8 +156,7 @@ IDarknetAdaptor <|.. ADetectorTrainer
 IDarknetAdaptor <|.. ALayerAdaptor
 IDarknetAdaptor <|.. ANetworkAdaptor
 INetworkLoader <|.. OrigDefaultLoader
-IWeightsReader <|.. OrigWeightsReader
-IWeightsWriter <|.. OrigWeightsWriter
+INetworkWeights <|.. NetworkWeights
 StructAdaptorHelper <|-- ALayerAdaptor
 StructAdaptorHelper <|-- ANetworkAdaptor
 
@@ -147,11 +166,17 @@ IDarknetAdaptor --> DarknetContext : reads/writes
 ADetector ..> INetworkLoader : loads the network
 ADetectorTrainer ..> INetworkLoader : loads the networks
 OrigDefaultLoader ..> CfgSection : reads the cfg
+OrigDefaultLoader ..> CfgError : logs
 OrigDefaultLoader ..> Layers : makes the layers
 OrigDefaultLoader ..> IWeightsFileFormat : loads the weights of any format
+OrigDefaultLoader ..> NetworkWeights : hands the network over as
 OrigDefaultLoader ..> TrainingJournal : starts the journal of the training
 IWeightsFileFormat ..> IWeightsReader : creates
 IWeightsFileFormat ..> IWeightsWriter : creates
+IWeightsReader ..> INetworkWeights : loads the files into
+IWeightsWriter ..> INetworkWeights : saves the files of
+NetworkWeights --> ANetworkAdaptor : views the network of
+TrainingJournal ..> NetworkWeights : saves the weights of
 DarknetContext --> TrainingJournal : records the iterations, saves the weights by
 OrigDefaultLoader --> ANetworkAdaptor : makes
 OrigDefaultLoader ..> DarknetContext : hands the networks to
@@ -161,6 +186,7 @@ DarknetContext --> NetworksRegistry : registers the networks
 NetworksCApi ..> NetworksRegistry : finds the network of the view
 NetworksCApi ..> OrigDefaultLoader : parses
 NetworksCApi ..> IWeightsFileFormat : reads and writes the weights of
+NetworksCApi ..> NetworkWeights : hands the network over as
 DarknetContext --> "app::ApplicationContext" : built from
 @enduml
 
@@ -171,13 +197,13 @@ DarknetContext --> "app::ApplicationContext" : built from
 - **`IDarknetAdaptor`** ([`IDarknetAdaptor.h`](/src/darknet-adaptor/adaptors/IDarknetAdaptor.h)) - the abstract interface of a concrete Darknet worker. It declares the single `perform(dctx)` method so new workers can be added without touching the controller logic.
 - **`ADetector`** / **`ADetectorTrainer`** - the concrete workers that load the networks through their network loader (the `create_loader()` one, the `OrigDefaultLoader` by default), run the detection and the training over the prepared `DarknetContext` and release the networks afterwards.
 - **`INetworkLoader`** ([`INetworkLoader.h`](/src/NetworksLoaders/INetworkLoader.h)) - the interface of the network loaders: the `load(dctx)` method makes the networks the work of the context needs and hands them to the context.
-- **`OrigDefaultLoader`** ([`OrigDefaultLoader.h`](/src/NetworksLoaders/OrigDefaultLoader/OrigDefaultLoader.h)) - the C++ port of the original network cfg parser (the `parse_network_cfg()`, the `load_network()` and the like of the original `parser.c`). It makes the training networks (one per GPU), the mAP calculation network, which computes with the layers of the first training one, and the single image detection network with the batch normalization fused into it's weights. The networks are made of the cfg files or of the dxxwjz2, the dxxwjz2p, the dxxwjz3 and the dxxwjz3p ones, the weights of every format are loaded by the readers of their formats, the image lists of the training of a dxxwjz2p or a dxxwjz3p project are the ones of it's annotations, which the `DarknetContext` publishes in the `TrainingDataRegistry` the darknet C code reads them of, the class names of the detection and of the training (the mAP calculation of it) go into the `DarknetContext` and the training starts it's `TrainingJournal`, which the training saves the weights files by (see the [Network weights files](/doc/sections/en_US/4-7-4-network-weights-files.md) section). The parse errors, which ended the process in the original, throw the `NetworkError` exception the `load` method logs.
-- **`CfgSection`** ([`CfgSection.h`](/src/NetworksLoaders/OrigDefaultLoader/CfgSection.h)) - one `[section]` of the cfg file with it's `key=value` options, the port of the original `read_cfg()` and `option_find*()` functions.
-- **`OrigWeightsReader`** ([`OrigWeightsReader.h`](/src/NetworksLoaders/original-weights/OrigWeightsReader.h)) / **`OrigWeightsWriter`** ([`OrigWeightsWriter.h`](/src/NetworksLoaders/original-weights/OrigWeightsWriter.h)) - the original weights files reader and writer, the ports of the original `load_weights_upto()`, `save_weights_upto()` and the per layer routines, byte to byte compatible with the original files. They implement the `IWeightsReader` and the `IWeightsWriter` interfaces the dxxwjz1 files reader and writer implement as well; the weights files formats, their validators and the converter between them are described by the [Network weights files](/doc/sections/en_US/4-7-4-network-weights-files.md) section.
+- **`OrigDefaultLoader`** ([`OrigDefaultLoader.h`](/src/NetworksLoaders/OrigDefaultLoader/OrigDefaultLoader.h)) - the C++ port of the original network cfg parser (the `parse_network_cfg()`, the `load_network()` and the like of the original `parser.c`). It makes the training networks (one per GPU), the mAP calculation network, which computes with the layers of the first training one, and the single image detection network with the batch normalization fused into it's weights. The networks are made of the cfg files or of the dxxwjz2, the dxxwjz2p, the dxxwjz3 and the dxxwjz3p ones, the weights of every format are loaded by the readers of their formats of the darknetxx-datadrivers library through the `NetworkWeights` view of the network, the image lists of the training of a dxxwjz2p or a dxxwjz3p project are the ones of it's annotations, which the `DarknetContext` publishes in the `TrainingDataRegistry` the darknet C code reads them of, the class names of the detection and of the training (the mAP calculation of it) go into the `DarknetContext` and the training starts it's `TrainingJournal`, which the training saves the weights files by (see the [Network weights files](/doc/sections/en_US/4-7-4-network-weights-files.md) section). The parse errors, which ended the process in the original, throw the `NetworkError` exception the `load` method logs, the way it logs the `dxxdd::CfgError` of the cfg sections of the library.
+- **`CfgSection`** (the `dxxdd::CfgSection` of the darknetxx-datadrivers library) - one `[section]` of the cfg file with it's `key=value` options, the port of the original `read_cfg()` and `option_find*()` functions, which moved into the library together with the formats (the dxxwjz3 documents keep the network cfg of the JSON options of it's sections). It throws the `dxxdd::CfgError` for the cfg file unable to open and for an option before the first section.
+- **`NetworkWeights`** ([`NetworkWeights.h`](/src/NetworksLoaders/network-weights/NetworkWeights.h)) - the view of the darknetxx-datadrivers library over the darknet network struct, the `dxxdd::INetworkWeights` implementation the readers of the library load the weights files of every format into and the writers save the files of. The original weights files reader and writer, the ports of the original `load_weights_upto()`, `save_weights_upto()` and the per layer routines, byte to byte compatible with the original files, are the ones of the library, while the walk of the darknet network layers they read and write the arrays by is the `NetworkWeights::layout_of()` of this project; the weights files formats, their validators and the converter between them are described by the [Network weights files](/doc/sections/en_US/4-7-4-network-weights-files.md) section.
 - **`ANetworkAdaptor`** ([`ANetworkAdaptor.h`](/src/darknet-adaptor/adaptors/ANetworkAdaptor/ANetworkAdaptor.h)) - the owner of the memory of a network: the layers array, the workspace, the counters every copy of the network struct shares and the like. It implements the network routines which allocate the memory: the `resize` (the original `resize_network()`), the `set_batch`, the `fuse_conv_batchnorm`, the `calculate_binary_weights` and the `copy_weights_net` ones.
 - **`ALayerAdaptor`** ([`ALayerAdaptor.h`](/src/darknet-adaptor/adaptors/ALayerAdaptor/ALayerAdaptor.h)) - the owner of the memory of a layer: every buffer is a `std::vector` of the adaptor the layer struct field points at (the `NULL` one for the empty container). The buffers Darknet aliases (the previous layer output of the `[dropout]` layer, the weights of a layer sharing them with another one and the like) are borrowed with the `borrow_*` setters. The network binds the layer struct into it's slot of the layers array, so the Darknet code and the adaptor share the one struct.
 - **The layer classes** ([`src/darknet-adaptor/adaptors/Layers`](/src/darknet-adaptor/adaptors/Layers)) - the `make` and the `resize` routines of every layer kind (`ConvolutionalLayer`, `YoloLayer` and the rest), the ports of the original `make_*_layer()` and `resize_*_layer()` functions.
-- **`NetworksRegistry`** / **NetworksCApi** ([`src/darknet-adaptor/adaptors/NetworksCApi`](/src/darknet-adaptor/adaptors/NetworksCApi)) - the Darknet C API functions the original C code keeps calling (`parse_network_cfg()`, `load_weights()`, `save_weights()`, `resize_network()`, `set_batch_network()`, `free_network()` and the like), implemented on top of the adaptors. The C code passes the network struct by value, so the registry finds the network of a struct copy by it's layers array. The errors end the process the way the original functions did.
+- **`NetworksRegistry`** / **NetworksCApi** ([`src/darknet-adaptor/adaptors/NetworksCApi`](/src/darknet-adaptor/adaptors/NetworksCApi)) - the Darknet C API functions the original C code keeps calling (`parse_network_cfg()`, `load_weights()`, `save_weights()`, `resize_network()`, `set_batch_network()`, `free_network()` and the like), implemented on top of the adaptors, the weights files of every format read and written by the formats of the darknetxx-datadrivers library through the `NetworkWeights` view of the network. The C code passes the network struct by value, so the registry finds the network of a struct copy by it's layers array. The errors end the process the way the original functions did.
 - **`StructAdaptorHelper`** ([`StructAdaptorHelper.h`](/src/darknet-adaptor/adaptors/StructAdaptorHelper.h)) - the helper of the adaptors, which gives the struct fields the pointers of the containers.
 
 ## The classifier

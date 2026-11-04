@@ -38,15 +38,20 @@ package "darknet-adaptor (Darknet bridge)" {
   [DarknetContext] as dctx
   [IDarknetAdaptor\n(+ ADetector,\nADetectorTrainer)] as adaptor
   [Network infrastructure\n(NetworksLoaders, Layers,\nALayer/ANetwork adaptors,\nNetworksCApi)] as netinfra
-  [Weights files\n(original, dxxwjz1, dxxwjz2,\ndxxwjz2p, dxxwjz3, dxxwjz3p,\ndxxwjz4, dxxwjz4p,\nYOLO4 folder, WeightsConverter)] as weights
+  [Network weights views\n(NetworkWeights,\nNetworkWeightsConverter,\nNetworkRewriter)] as weights
   [Original Darknet\nC computation] as darknetc
+}
+
+package "darknetxx-datadrivers\n(the installed DarknetxxDataDrivers-0.12 library)" {
+  [Weights files formats\n(original, dxxwjz1, dxxwjz2,\ndxxwjz2p, dxxwjz3, dxxwjz3p,\ndxxwjz4, dxxwjz4p, YOLO4 folder,\nWeightsConverter, CfgSection)] as formats
+  [ZlibController] as zlib
+  [darknetxxConverter] as dxxconv
 }
 
 package "Supporting components" {
   [ompi::OMPController] as omp
   [log (DefaultLogger /\ncpplog4c)] as log
   [helpers::StringTools] as helpers
-  [zlibi::ZlibController] as zlib
 }
 
 main --> factory
@@ -82,7 +87,11 @@ netinfra --> dctx : hands the networks to
 adaptor --> darknetc : trains / detects
 darknetc --> netinfra : parses, resizes,\nreads and writes weights
 netinfra --> weights : reads and writes
-weights ..> zlib : compresses
+netinfra --> formats : parses the cfg sections of
+weights --> formats : the darknet networks of
+facade ..> formats : hands the logger over
+dxxconv --> formats : converts by
+formats ..> zlib : compresses
 factory ..> log
 ilib ..> log
 dctrl ..> log

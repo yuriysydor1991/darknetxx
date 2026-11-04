@@ -18,6 +18,17 @@ cmake --build build --target docker-single-run
 
 Для деталей CMake-цілі побудови `docker-single-run` слід звернутись до файлу `cmake/dockerers/darknetxx-docker-single-runner-target.cmake`.
 
+### Бібліотека darknetxx-datadrivers в образах
+
+Проект будується з бібліотекою [darknetxx-datadrivers](https://github.com/yuriysydor1991/darknetxx-datadrivers) форматів файлів ваг нейромереж (див. секцію [Вмикання бібліотеки darknetxx-datadrivers](/doc/sections/uk_UA/5-39-enabling-the-darknetxx-datadrivers-library.md)), яка не є пакетом дистрибутива, тож кожен образ, який будує проект, спершу будує і встановлює бібліотеку: [Dockerfile.in](/misc/Dockerfiles/Dockerfile.in) цілі `docker-single-run`, [Dockerfile.Darknetxx-CPU-train.in](/misc/Dockerfiles/Dockerfile.Darknetxx-CPU-train.in), [Dockerfile.Darknetxx-CPU-predictor.in](/misc/Dockerfiles/Dockerfile.Darknetxx-CPU-predictor.in) і [Dockerfile.gpu](/misc/Dockerfiles/Dockerfile.gpu) образів навчання і передбачення та [Dockerfile.Jenkins.pipeline.in](/misc/Dockerfiles/Dockerfile.Jenkins.pipeline.in) образу конвеєра Jenkins клонують репозиторій змінної кешу `DARKNETXX_DXXDD_GIT` на гілці чи тегу змінної `DARKNETXX_DXXDD_GIT_TAG`, виконують її побудову `Release`, встановлюють її у префікс `/usr` образу і запускають `ldconfig` ще до конфігурації проекту, тож конфігурація проекту знаходить бібліотеку, а бінарні файли образу - під час виконання. Разом з нею в образ встановлюється і бінарний файл `darknetxxConverter` бібліотеки.
+
+```
+# в середині кореневої директорії проекту
+
+# образ з іншою ревізією бібліотеки
+cmake -S . -B build -DENABLE_DOCKER=ON -DDARKNETXX_DXXDD_GIT_TAG=my-branch
+```
+
 ### Скрипти запуску
 
 Директорія [scripts/docker](/scripts/docker) містить скорочення, які виконують обидві наведені вище команди, отож увесь запуск виконується однією командою:

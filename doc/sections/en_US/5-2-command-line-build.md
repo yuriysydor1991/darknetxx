@@ -12,6 +12,16 @@ cmake -B build -S . && cmake --build build
 
 Which effectively will create a directory named `build` (it's already added to the `.gitignore` list), configure project using the CMake available in the system (see the [Requirements](/doc/sections/en_US/3-requirements.md) section of this `README.md` file) and finally builds all the targets available in the project.
 
+The configure requires the [darknetxx-datadrivers](https://github.com/yuriysydor1991/darknetxx-datadrivers) library of the network weights files formats installed beforehand, and stops with an error otherwise. The [misc/ci/install-darknetxx-datadrivers.sh](/misc/ci/install-darknetxx-datadrivers.sh) script builds and installs it, the `CMAKE_PREFIX_PATH` points the configure at the prefix of the library outside of the default ones (see the [Enabling the darknetxx-datadrivers library](/doc/sections/en_US/5-39-enabling-the-darknetxx-datadrivers-library.md) section):
+
+```
+# from the project root
+
+misc/ci/install-darknetxx-datadrivers.sh /opt/darknetxx
+
+cmake -B build -S . -DCMAKE_PREFIX_PATH=/opt/darknetxx && cmake --build build
+```
+
 Without an explicit `CMAKE_BUILD_TYPE` the project is configured as an optimized `Release` build, because the Darknet computations run an order of magnitude slower without the optimization. Pass `-DCMAKE_BUILD_TYPE=Debug` to the configure command for a debug build.
 
 The optimized builds of the x86 GCC and Clang compilers also compile the AVX and FMA kernels of the Darknet C core (the `ENABLE_SSE_AND_AVX_FLAGS` CMake option, which is ON by default there), so the resulting binary needs an AVX2 capable CPU. Pass `-DENABLE_SSE_AND_AVX_FLAGS=OFF` to the configure command to build a binary (or a package) for the older CPUs. The snap and the flatpak recipes of the project pass it already, since those packages run on other machines.

@@ -16,8 +16,8 @@ The application is organized into a few cooperating layers:
 
 1. [Application runtime components](/doc/sections/en_US/4-7-1-application-runtime-components.md) - the infrastructure that parses the command line, builds the run context and selects the application to execute, which uses the darknetxx library (the `app` namespace).
 1. [Darknet adaptor components](/doc/sections/en_US/4-7-2-darknet-adaptor-components.md) - the bridge that drives the original Darknet code to train or to detect (the `darknet_adaptor` namespace).
-1. [Supporting components](/doc/sections/en_US/4-7-3-supporting-components.md) - the OpenMP controller, the logging subsystem, the zlib compression controller and the helper utilities.
-1. [Network weights files](/doc/sections/en_US/4-7-4-network-weights-files.md) - the original darknet weights files, the dxxwjz1 ones (the gzip compressed JSON documents of the weights), the dxxwjz2 ones (the network description and the training record beside the weights) the dxxwjz3 ones (the same of nothing but the JSON data, the network cfg included) and the dxxwjz4 ones (the same of the description text) with their projects (the dxxwjz4p one of the images too, the whole training project in one file), their readers, writers and validators and the converter between them (the `darknet_adaptor::loaders` namespace).
+1. [Supporting components](/doc/sections/en_US/4-7-3-supporting-components.md) - the OpenMP controller, the logging subsystem and the helper utilities.
+1. [Network weights files](/doc/sections/en_US/4-7-4-network-weights-files.md) - the darknet networks of the network weights files formats (the `darknet_adaptor::loaders` namespace): the `NetworkWeights` view of the darknetxx-datadrivers library over the darknet network, the converter of the files by the darknet network of the cfg and the rewrite of the edited network into the files. The formats themselves - the original darknet weights files, the dxxwjz1 ones (the gzip compressed JSON documents of the weights), the dxxwjz2 ones (the network description and the training record beside the weights), the dxxwjz3 ones (the same of nothing but the JSON data, the network cfg included) and the dxxwjz4 ones (the same of the description text) with their projects (the dxxwjz4p one of the images too, the whole training project in one file), their readers, writers and validators and the converter between them - are the ones of the [darknetxx-datadrivers](https://github.com/yuriysydor1991/darknetxx-datadrivers) library the project is built against (the `DarknetxxDataDrivers012` namespace, see the [Enabling the darknetxx-datadrivers library](/doc/sections/en_US/5-39-enabling-the-darknetxx-datadrivers-library.md) section).
 1. [The darknetxx library](/doc/sections/en_US/4-7-5-the-darknetxx-library.md) - the shared library the three layers above are built into, it's installable facade (the `darknetxx012` namespace) and it's implementation (the `darknetxx_impl` namespace).
 
 The OS signals the whole application reacts on are covered by the `src/app/signals-handlers` subcomponent of the `app` layer, described by the [Handling the OS signals](/doc/sections/en_US/4-8-handling-the-OS-signals.md) section.
@@ -35,12 +35,13 @@ the `darknetxx012::LibraryContext` of the darknetxx library by the
 the training or the detection by the `darknet_adaptor::DarknetController`,
 which selects and runs the concrete Darknet worker (a detector, a trainer,
 etc.), or the network weights files conversion the conversion command line
-flags ask for by the `darknet_adaptor::loaders::WeightsConverter`. The OpenMP
-controller and the logging subsystem support the whole flow. The second binary
-of the project, the `darknetxxConverter`, is built of the same components and
-performs the conversions alone (see
+flags ask for by the `darknet_adaptor::loaders::NetworkWeightsConverter`, the
+converter of the darknetxx-datadrivers library which reads the files by the
+darknet network of the cfg. The OpenMP controller and the logging subsystem
+support the whole flow. The `darknetxxConverter` binary of the conversions
+alone is the one of the darknetxx-datadrivers library (see
 [The darknetxxConverter binary](/doc/sections/en_US/5-35-the-darknetxxConverter-binary.md)),
-while the GUI ones, the `darknetxx-train-gui` and the
+while the GUI binaries of the project, the `darknetxx-train-gui` and the
 `darknetxx-recognition-gui`, add the `src/gui` component, which trains in the
 GTK 4 window of the one by the background trainer of the library and
 recognizes the images in the window of the other by the recognizer of the
@@ -92,15 +93,20 @@ package "darknet-adaptor (Darknet bridge)" {
   [DarknetContext] as dctx
   [IDarknetAdaptor\n(+ ADetector,\nADetectorTrainer)] as adaptor
   [Network infrastructure\n(NetworksLoaders, Layers,\nALayer/ANetwork adaptors,\nNetworksCApi)] as netinfra
-  [Weights files\n(original, dxxwjz1, dxxwjz2,\ndxxwjz2p, dxxwjz3, dxxwjz3p,\ndxxwjz4, dxxwjz4p,\nYOLO4 folder, WeightsConverter)] as weights
+  [Network weights views\n(NetworkWeights,\nNetworkWeightsConverter,\nNetworkRewriter)] as weights
   [Original Darknet\nC computation] as darknetc
+}
+
+package "darknetxx-datadrivers\n(the installed DarknetxxDataDrivers-0.12 library)" {
+  [Weights files formats\n(original, dxxwjz1, dxxwjz2,\ndxxwjz2p, dxxwjz3, dxxwjz3p,\ndxxwjz4, dxxwjz4p, YOLO4 folder,\nWeightsConverter, CfgSection)] as formats
+  [ZlibController] as zlib
+  [darknetxxConverter] as dxxconv
 }
 
 package "Supporting components" {
   [ompi::OMPController] as omp
   [log (DefaultLogger /\ncpplog4c)] as log
   [helpers::StringTools] as helpers
-  [zlibi::ZlibController] as zlib
 }
 
 main --> factory
@@ -136,7 +142,11 @@ netinfra --> dctx : hands the networks to
 adaptor --> darknetc : trains / detects
 darknetc --> netinfra : parses, resizes,\nreads and writes weights
 netinfra --> weights : reads and writes
-weights ..> zlib : compresses
+netinfra --> formats : parses the cfg sections of
+weights --> formats : the darknet networks of
+facade ..> formats : hands the logger over
+dxxconv --> formats : converts by
+formats ..> zlib : compresses
 factory ..> log
 ilib ..> log
 dctrl ..> log

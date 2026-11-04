@@ -171,7 +171,7 @@ Qt 6 Widgets і Svg (пакети `qt6-base-dev` і `qt6-svg-dev` Debian та Ub
 | --- | --- | --- |
 | `ENABLE_DARKNETXX_NET_EDITOR` | `ON` | Будує бінарні файли редактора нейромереж. `OFF` не будує жодного з них. |
 | `ENABLE_DARKNETXX_NET_EDITOR_QT` | `ON`, якщо знайдено Qt 6 | Будує файл Qt 6. `ON` потребує Qt 6, `OFF` будує лише файл GTK. |
-| `DARKNETXX_NET_EDITOR_ONLY` | `OFF` | Будує лише бінарні файли редактора нейромереж (і бібліотеку, якою вони зберігають нейромережі): без бінарних файлів `darknetxx`, `darknetxxConverter`, `darknetxx-train-gui` і `darknetxx-recognition-gui`. |
+| `DARKNETXX_NET_EDITOR_ONLY` | `OFF` | Будує лише бінарні файли редактора нейромереж (і бібліотеку, якою вони зберігають нейромережі): без бінарних файлів `darknetxx`, `darknetxx-train-gui` і `darknetxx-recognition-gui`. |
 | `DARKNETXX_NET_EDITOR_GUI_BINARY_NAME` | `<назва бінарного файлу проекту>-net-editor-gui` | Назва бінарного файлу GTK 4 і його цілі CMake. |
 | `DARKNETXX_NET_EDITOR_QT_GUI_BINARY_NAME` | `<назва бінарного файлу проекту>-net-editor-qt-gui` | Назва бінарного файлу Qt 6 і його цілі CMake. |
 

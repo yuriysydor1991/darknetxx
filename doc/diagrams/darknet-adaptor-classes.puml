@@ -50,29 +50,44 @@ class OrigDefaultLoader {
   +load_network_custom(cfg, weights, clear, batch) : ANetworkAdaptorPtr
 }
 
-class CfgSection {
-  +{static} read_cfg(filename) : CfgSections
-  +find_int/find_float/find_str(key, def)
-  +unused()
+package "darknetxx-datadrivers (the dxxdd namespace alias)" {
+  class CfgSection {
+    +{static} read_cfg(filename) : CfgSections
+    +find_int/find_float/find_str(key, def)
+    +unused()
+  }
+
+  class CfgError
+
+  interface INetworkWeights {
+    +layers() : int
+    +type(layer) : LayerType
+    +layout(options) : WeightsLayoutEntries
+    +seen() / loaded_seen(seen) / saved_seen()
+  }
+
+  interface IWeightsReader {
+    +load(net, filename, cutoff, rest) : bool
+    +read(filename, net, document) : bool
+  }
+
+  interface IWeightsWriter {
+    +save(net, filename, cutoff, save_ema, rest) : bool
+    +write(document, filename) : bool
+  }
+
+  interface IWeightsFileFormat {
+    +create_reader() : IWeightsReaderPtr
+    +create_writer() : IWeightsWriterPtr
+  }
 }
 
-interface IWeightsReader {
-  +load(net, filename, cutoff, rest) : bool
-  +read(filename, net, document) : bool
+class NetworkWeights {
+  +NetworkWeights(net)
+  +NetworkWeights(adaptor)
+  +{static} layout_of(net, options) : WeightsLayoutEntries
+  +{static} type_of(type) : LayerType / LAYER_TYPE
 }
-
-interface IWeightsWriter {
-  +save(net, filename, cutoff, save_ema, rest) : bool
-  +write(document, filename) : bool
-}
-
-interface IWeightsFileFormat {
-  +create_reader() : IWeightsReaderPtr
-  +create_writer() : IWeightsWriterPtr
-}
-
-class OrigWeightsReader
-class OrigWeightsWriter
 
 class TrainingJournal {
   +record(iteration, loss, avg_loss)
@@ -126,8 +141,7 @@ IDarknetAdaptor <|.. ADetectorTrainer
 IDarknetAdaptor <|.. ALayerAdaptor
 IDarknetAdaptor <|.. ANetworkAdaptor
 INetworkLoader <|.. OrigDefaultLoader
-IWeightsReader <|.. OrigWeightsReader
-IWeightsWriter <|.. OrigWeightsWriter
+INetworkWeights <|.. NetworkWeights
 StructAdaptorHelper <|-- ALayerAdaptor
 StructAdaptorHelper <|-- ANetworkAdaptor
 
@@ -137,11 +151,17 @@ IDarknetAdaptor --> DarknetContext : reads/writes
 ADetector ..> INetworkLoader : loads the network
 ADetectorTrainer ..> INetworkLoader : loads the networks
 OrigDefaultLoader ..> CfgSection : reads the cfg
+OrigDefaultLoader ..> CfgError : logs
 OrigDefaultLoader ..> Layers : makes the layers
 OrigDefaultLoader ..> IWeightsFileFormat : loads the weights of any format
+OrigDefaultLoader ..> NetworkWeights : hands the network over as
 OrigDefaultLoader ..> TrainingJournal : starts the journal of the training
 IWeightsFileFormat ..> IWeightsReader : creates
 IWeightsFileFormat ..> IWeightsWriter : creates
+IWeightsReader ..> INetworkWeights : loads the files into
+IWeightsWriter ..> INetworkWeights : saves the files of
+NetworkWeights --> ANetworkAdaptor : views the network of
+TrainingJournal ..> NetworkWeights : saves the weights of
 DarknetContext --> TrainingJournal : records the iterations, saves the weights by
 OrigDefaultLoader --> ANetworkAdaptor : makes
 OrigDefaultLoader ..> DarknetContext : hands the networks to
@@ -151,6 +171,7 @@ DarknetContext --> NetworksRegistry : registers the networks
 NetworksCApi ..> NetworksRegistry : finds the network of the view
 NetworksCApi ..> OrigDefaultLoader : parses
 NetworksCApi ..> IWeightsFileFormat : reads and writes the weights of
+NetworksCApi ..> NetworkWeights : hands the network over as
 DarknetContext --> "app::ApplicationContext" : built from
 
 @enduml

@@ -2,7 +2,12 @@
 
 Компоненти адаптера Darknet розміщені у просторі імен `darknet_adaptor` (під
 [`src/darknet-adaptor`](/src/darknet-adaptor), завантажувачі нейромереж простору
-імен `darknet_adaptor::loaders` - під [`src/NetworksLoaders`](/src/NetworksLoaders)).
+імен `darknet_adaptor::loaders` - під [`src/NetworksLoaders`](/src/NetworksLoaders)),
+тоді як секції файлу cfg і формати файлів ваг нейромереж, за якими вони
+завантажують і зберігають нейромережі, належать бібліотеці
+[darknetxx-datadrivers](https://github.com/yuriysydor1991/darknetxx-datadrivers)
+(псевдонім `dxxdd` її простору імен `DarknetxxDataDrivers012`, див. секцію
+[Файли ваг нейромереж](/doc/sections/uk_UA/4-7-4-network-weights-files.md)).
 Вони утворюють місток між чистою
 інфраструктурою C++ програми і оригінальним кодом Darknet на C/C++ (під
 [`src/detector-cmake-adaptor`](/src/detector-cmake-adaptor)), тому решта
@@ -60,29 +65,44 @@ class OrigDefaultLoader {
   +load_network_custom(cfg, weights, clear, batch) : ANetworkAdaptorPtr
 }
 
-class CfgSection {
-  +{static} read_cfg(filename) : CfgSections
-  +find_int/find_float/find_str(key, def)
-  +unused()
+package "darknetxx-datadrivers (the dxxdd namespace alias)" {
+  class CfgSection {
+    +{static} read_cfg(filename) : CfgSections
+    +find_int/find_float/find_str(key, def)
+    +unused()
+  }
+
+  class CfgError
+
+  interface INetworkWeights {
+    +layers() : int
+    +type(layer) : LayerType
+    +layout(options) : WeightsLayoutEntries
+    +seen() / loaded_seen(seen) / saved_seen()
+  }
+
+  interface IWeightsReader {
+    +load(net, filename, cutoff, rest) : bool
+    +read(filename, net, document) : bool
+  }
+
+  interface IWeightsWriter {
+    +save(net, filename, cutoff, save_ema, rest) : bool
+    +write(document, filename) : bool
+  }
+
+  interface IWeightsFileFormat {
+    +create_reader() : IWeightsReaderPtr
+    +create_writer() : IWeightsWriterPtr
+  }
 }
 
-interface IWeightsReader {
-  +load(net, filename, cutoff, rest) : bool
-  +read(filename, net, document) : bool
+class NetworkWeights {
+  +NetworkWeights(net)
+  +NetworkWeights(adaptor)
+  +{static} layout_of(net, options) : WeightsLayoutEntries
+  +{static} type_of(type) : LayerType / LAYER_TYPE
 }
-
-interface IWeightsWriter {
-  +save(net, filename, cutoff, save_ema, rest) : bool
-  +write(document, filename) : bool
-}
-
-interface IWeightsFileFormat {
-  +create_reader() : IWeightsReaderPtr
-  +create_writer() : IWeightsWriterPtr
-}
-
-class OrigWeightsReader
-class OrigWeightsWriter
 
 class TrainingJournal {
   +record(iteration, loss, avg_loss)
@@ -136,8 +156,7 @@ IDarknetAdaptor <|.. ADetectorTrainer
 IDarknetAdaptor <|.. ALayerAdaptor
 IDarknetAdaptor <|.. ANetworkAdaptor
 INetworkLoader <|.. OrigDefaultLoader
-IWeightsReader <|.. OrigWeightsReader
-IWeightsWriter <|.. OrigWeightsWriter
+INetworkWeights <|.. NetworkWeights
 StructAdaptorHelper <|-- ALayerAdaptor
 StructAdaptorHelper <|-- ANetworkAdaptor
 
@@ -147,11 +166,17 @@ IDarknetAdaptor --> DarknetContext : reads/writes
 ADetector ..> INetworkLoader : loads the network
 ADetectorTrainer ..> INetworkLoader : loads the networks
 OrigDefaultLoader ..> CfgSection : reads the cfg
+OrigDefaultLoader ..> CfgError : logs
 OrigDefaultLoader ..> Layers : makes the layers
 OrigDefaultLoader ..> IWeightsFileFormat : loads the weights of any format
+OrigDefaultLoader ..> NetworkWeights : hands the network over as
 OrigDefaultLoader ..> TrainingJournal : starts the journal of the training
 IWeightsFileFormat ..> IWeightsReader : creates
 IWeightsFileFormat ..> IWeightsWriter : creates
+IWeightsReader ..> INetworkWeights : loads the files into
+IWeightsWriter ..> INetworkWeights : saves the files of
+NetworkWeights --> ANetworkAdaptor : views the network of
+TrainingJournal ..> NetworkWeights : saves the weights of
 DarknetContext --> TrainingJournal : records the iterations, saves the weights by
 OrigDefaultLoader --> ANetworkAdaptor : makes
 OrigDefaultLoader ..> DarknetContext : hands the networks to
@@ -161,6 +186,7 @@ DarknetContext --> NetworksRegistry : registers the networks
 NetworksCApi ..> NetworksRegistry : finds the network of the view
 NetworksCApi ..> OrigDefaultLoader : parses
 NetworksCApi ..> IWeightsFileFormat : reads and writes the weights of
+NetworksCApi ..> NetworkWeights : hands the network over as
 DarknetContext --> "app::ApplicationContext" : built from
 @enduml
 
@@ -171,13 +197,13 @@ DarknetContext --> "app::ApplicationContext" : built from
 - **`IDarknetAdaptor`** ([`IDarknetAdaptor.h`](/src/darknet-adaptor/adaptors/IDarknetAdaptor.h)) - абстрактний інтерфейс конкретного робітника Darknet. Він оголошує єдиний метод `perform(dctx)`, тому нових робітників можна додавати без зміни логіки контролера.
 - **`ADetector`** / **`ADetectorTrainer`** - конкретні робітники, які завантажують нейромережі своїм завантажувачем (тим, що повертає метод `create_loader()`, за замовчуванням `OrigDefaultLoader`), виконують розпізнавання і навчання над підготованим `DarknetContext` і звільняють нейромережі після роботи.
 - **`INetworkLoader`** ([`INetworkLoader.h`](/src/NetworksLoaders/INetworkLoader.h)) - інтерфейс завантажувачів нейромереж: метод `load(dctx)` створює нейромережі, потрібні для роботи контексту, і передає їх контексту.
-- **`OrigDefaultLoader`** ([`OrigDefaultLoader.h`](/src/NetworksLoaders/OrigDefaultLoader/OrigDefaultLoader.h)) - перенесений на C++ оригінальний аналізатор файлів cfg нейромереж (функції `parse_network_cfg()`, `load_network()` та інші з оригінального `parser.c`). Він створює нейромережі для навчання (по одній на GPU), нейромережу для обчислення mAP, яка обчислює шарами першої нейромережі для навчання, і нейромережу для розпізнавання одного зображення з нормалізацією батчів, об'єднаною з її вагами. Нейромережі будуються з файлів cfg або з файлів dxxwjz2, dxxwjz2p, dxxwjz3 і dxxwjz3p, ваги кожного формату завантажують класи читання їхніх форматів, списки зображень навчання проекту dxxwjz2p чи dxxwjz3p - це списки його анотацій, які `DarknetContext` публікує у `TrainingDataRegistry`, а код darknet мовою C читає їх звідти, назви класів розпізнавання і навчання (його обчислення mAP) потрапляють у `DarknetContext`, а навчання починає свій `TrainingJournal`, через який навчання зберігає файли ваг (див. секцію [Файли ваг нейромереж](/doc/sections/uk_UA/4-7-4-network-weights-files.md)). Помилки аналізу, які в оригіналі завершували процес, кидають виняток `NetworkError`, який метод `load` записує у журнал.
-- **`CfgSection`** ([`CfgSection.h`](/src/NetworksLoaders/OrigDefaultLoader/CfgSection.h)) - одна секція `[section]` файлу cfg з її параметрами `key=value`, перенесені на C++ оригінальні функції `read_cfg()` і `option_find*()`.
-- **`OrigWeightsReader`** ([`OrigWeightsReader.h`](/src/NetworksLoaders/original-weights/OrigWeightsReader.h)) / **`OrigWeightsWriter`** ([`OrigWeightsWriter.h`](/src/NetworksLoaders/original-weights/OrigWeightsWriter.h)) - читання і запис оригінальних файлів ваг, перенесені на C++ оригінальні функції `load_weights_upto()`, `save_weights_upto()` і процедури окремих шарів, байт у байт сумісні з оригінальними файлами. Вони реалізують інтерфейси `IWeightsReader` і `IWeightsWriter`, які так само реалізують класи читання і запису файлів dxxwjz1; формати файлів ваг, їхні валідатори і конвертер між ними описано у секції [Файли ваг нейромереж](/doc/sections/uk_UA/4-7-4-network-weights-files.md).
+- **`OrigDefaultLoader`** ([`OrigDefaultLoader.h`](/src/NetworksLoaders/OrigDefaultLoader/OrigDefaultLoader.h)) - перенесений на C++ оригінальний аналізатор файлів cfg нейромереж (функції `parse_network_cfg()`, `load_network()` та інші з оригінального `parser.c`). Він створює нейромережі для навчання (по одній на GPU), нейромережу для обчислення mAP, яка обчислює шарами першої нейромережі для навчання, і нейромережу для розпізнавання одного зображення з нормалізацією батчів, об'єднаною з її вагами. Нейромережі будуються з файлів cfg або з файлів dxxwjz2, dxxwjz2p, dxxwjz3 і dxxwjz3p, ваги кожного формату завантажують класи читання їхніх форматів бібліотеки darknetxx-datadrivers через подання `NetworkWeights` нейромережі, списки зображень навчання проекту dxxwjz2p чи dxxwjz3p - це списки його анотацій, які `DarknetContext` публікує у `TrainingDataRegistry`, а код darknet мовою C читає їх звідти, назви класів розпізнавання і навчання (його обчислення mAP) потрапляють у `DarknetContext`, а навчання починає свій `TrainingJournal`, через який навчання зберігає файли ваг (див. секцію [Файли ваг нейромереж](/doc/sections/uk_UA/4-7-4-network-weights-files.md)). Помилки аналізу, які в оригіналі завершували процес, кидають виняток `NetworkError`, який метод `load` записує у журнал так само, як і `dxxdd::CfgError` секцій cfg бібліотеки.
+- **`CfgSection`** (`dxxdd::CfgSection` бібліотеки darknetxx-datadrivers) - одна секція `[section]` файлу cfg з її параметрами `key=value`, перенесені на C++ оригінальні функції `read_cfg()` і `option_find*()`, які переїхали в бібліотеку разом з форматами (документи dxxwjz3 зберігають cfg нейромережі як опції JSON її секцій). Вона кидає `dxxdd::CfgError` для файлу cfg, який неможливо відкрити, і для параметра перед першою секцією.
+- **`NetworkWeights`** ([`NetworkWeights.h`](/src/NetworksLoaders/network-weights/NetworkWeights.h)) - подання бібліотеки darknetxx-datadrivers над структурою нейромережі darknet, реалізація `dxxdd::INetworkWeights`, у яку класи читання бібліотеки завантажують файли ваг кожного формату і з якої класи запису зберігають файли. Читання і запис оригінальних файлів ваг, перенесені на C++ оригінальні функції `load_weights_upto()`, `save_weights_upto()` і процедури окремих шарів, байт у байт сумісні з оригінальними файлами, належать бібліотеці, а обхід шарів нейромережі darknet, за яким вони читають і записують масиви, - це `NetworkWeights::layout_of()` цього проекту; формати файлів ваг, їхні валідатори і конвертер між ними описано у секції [Файли ваг нейромереж](/doc/sections/uk_UA/4-7-4-network-weights-files.md).
 - **`ANetworkAdaptor`** ([`ANetworkAdaptor.h`](/src/darknet-adaptor/adaptors/ANetworkAdaptor/ANetworkAdaptor.h)) - власник пам'яті нейромережі: масиву шарів, робочого буфера, лічильників, спільних для всіх копій структури нейромережі тощо. Він реалізує процедури нейромережі, які виділяють пам'ять: `resize` (оригінальна `resize_network()`), `set_batch`, `fuse_conv_batchnorm`, `calculate_binary_weights` і `copy_weights_net`.
 - **`ALayerAdaptor`** ([`ALayerAdaptor.h`](/src/darknet-adaptor/adaptors/ALayerAdaptor/ALayerAdaptor.h)) - власник пам'яті шару: кожен буфер є контейнером `std::vector` адаптера, на який вказує поле структури шару (`NULL` для порожнього контейнера). Буфери, які Darknet використовує спільно (вихід попереднього шару для шару `[dropout]`, ваги шару, що ділить їх з іншим шаром тощо), позичаються сетерами `borrow_*`. Нейромережа прив'язує структуру шару до її комірки у масиві шарів, тож код Darknet і адаптер працюють з однією структурою.
 - **Класи шарів** ([`src/darknet-adaptor/adaptors/Layers`](/src/darknet-adaptor/adaptors/Layers)) - процедури `make` і `resize` кожного виду шарів (`ConvolutionalLayer`, `YoloLayer` та інші), перенесені на C++ оригінальні функції `make_*_layer()` і `resize_*_layer()`.
-- **`NetworksRegistry`** / **NetworksCApi** ([`src/darknet-adaptor/adaptors/NetworksCApi`](/src/darknet-adaptor/adaptors/NetworksCApi)) - функції C API Darknet, які оригінальний код на C продовжує викликати (`parse_network_cfg()`, `load_weights()`, `save_weights()`, `resize_network()`, `set_batch_network()`, `free_network()` та інші), реалізовані на основі адаптерів. Код на C передає структуру нейромережі за значенням, тож реєстр знаходить нейромережу копії структури за її масивом шарів. Помилки завершують процес так само, як це робили оригінальні функції.
+- **`NetworksRegistry`** / **NetworksCApi** ([`src/darknet-adaptor/adaptors/NetworksCApi`](/src/darknet-adaptor/adaptors/NetworksCApi)) - функції C API Darknet, які оригінальний код на C продовжує викликати (`parse_network_cfg()`, `load_weights()`, `save_weights()`, `resize_network()`, `set_batch_network()`, `free_network()` та інші), реалізовані на основі адаптерів, а файли ваг кожного формату читають і записують формати бібліотеки darknetxx-datadrivers через подання `NetworkWeights` нейромережі. Код на C передає структуру нейромережі за значенням, тож реєстр знаходить нейромережу копії структури за її масивом шарів. Помилки завершують процес так само, як це робили оригінальні функції.
 - **`StructAdaptorHelper`** ([`StructAdaptorHelper.h`](/src/darknet-adaptor/adaptors/StructAdaptorHelper.h)) - помічник адаптерів, який надає полям структур вказівники на дані контейнерів.
 
 ## Класифікатор
