@@ -13,18 +13,6 @@ endif()
 set(DARKNETXX_SNAP_GRADE "devel" CACHE STRING "The snap package grade")
 set(DARKNETXX_SNAP_CONFINEMENT "strict" CACHE STRING "The snap package confinement")
 
-# The snap command of the network weights files converter binary, when the
-# project builds one (see the src/darknetxxConverter-target.cmake).
-set(DARKNETXX_SNAP_CONVERTER_APP "")
-if(ENABLE_DARKNETXX_CONVERTER)
-  string(CONCAT DARKNETXX_SNAP_CONVERTER_APP
-    "  ${DARKNETXX_CONVERTER_BINARY_NAME}:\n"
-    "    command: usr/${DARKNETXX_BINARY_INSTALLATION_DIR}/${DARKNETXX_CONVERTER_BINARY_NAME}\n"
-    "    plugs:\n"
-    "      - home\n"
-  )
-endif()
-
 # The snap commands of the GTKmm 4 GUI binaries, when the project builds them
 # (see the cmake/darknetxx-gui-binaries.cmake): the GNOME extension brings the GTK 4
 # runtime and the desktop, the wayland, the x11 and the opengl plugs they show

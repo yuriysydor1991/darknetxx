@@ -80,6 +80,21 @@
       ]
     },
     {
+      "name": "darknetxx-datadrivers",
+      "buildsystem": "cmake-ninja",
+      "builddir": true,
+      "config-opts": [
+        "-DCMAKE_BUILD_TYPE=Release"
+      ],
+      "sources": [
+        {
+          "type": "git",
+          "url": "${DARKNETXX_DXXDD_GIT}",
+          "branch": "${DARKNETXX_DXXDD_GIT_TAG}"
+        }
+      ]
+    },
+    {
       "name": "${PROJECT_NAME}",
       "buildsystem": "cmake",
       "config-opts": [

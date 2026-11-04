@@ -5,6 +5,17 @@ RUN apt install -y libstdc++6 build-essential git cmake g++ libopencv-dev
 # the dxxwjz1 network weights files are the gzip compressed JSON documents
 RUN apt install -y zlib1g-dev nlohmann-json3-dev
 
+# The network weights files and the training projects formats come from the
+# darknetxx-datadrivers library, which is no distribution package: it is built
+# of it's sources and installed into the prefix, where the configure of the
+# project below finds it (and the binaries of the project at the run time).
+RUN git clone --depth 1 --branch ${DARKNETXX_DXXDD_GIT_TAG} ${DARKNETXX_DXXDD_GIT} /src/darknetxx-datadrivers && \
+ cmake -S /src/darknetxx-datadrivers -B /src/darknetxx-datadrivers-build \
+   -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr && \
+ cmake --build /src/darknetxx-datadrivers-build -j$(nproc) && \
+ cmake --install /src/darknetxx-datadrivers-build && \
+ ldconfig
+
 ARG BUILDDIR=/src/${DARKNETXX_BINARY_NAME}-build-docker-singlerun
 
 RUN --mount=from=project,target=/src/${DARKNETXX_BINARY_NAME} \

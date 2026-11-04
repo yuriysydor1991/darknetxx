@@ -14,10 +14,38 @@ apps:
     command: usr/${DARKNETXX_BINARY_INSTALLATION_DIR}/${DARKNETXX_BINARY_NAME}
     plugs:
       - home
-${DARKNETXX_SNAP_CONVERTER_APP}
+  # the network weights files converter the darknetxx-datadrivers part
+  # installs
+  darknetxxConverter:
+    command: usr/bin/darknetxxConverter
+    plugs:
+      - home
 ${DARKNETXX_SNAP_GUI_APP}
 parts:
+  # the network weights files formats of the project, which installs the
+  # darknetxxConverter binary of the apps above beside itself
+  darknetxx-datadrivers:
+    plugin: cmake
+    source: '${DARKNETXX_DXXDD_GIT}'
+    source-type: git
+    source-branch: '${DARKNETXX_DXXDD_GIT_TAG}'
+    cmake-parameters:
+      - -DCMAKE_BUILD_TYPE=Release
+      - -DCMAKE_INSTALL_PREFIX=/usr
+    build-packages:
+      - libopencv-dev
+      # the dxxwjz1 network weights files are the gzip compressed JSON
+      # documents
+      - zlib1g-dev
+      - nlohmann-json3-dev
+    stage-packages:
+      - zlib1g
+      - libopencv-core406t64
+      - libopencv-imgcodecs406t64
+
   ${DARKNETXX_BINARY_NAME}:
+    after:
+      - darknetxx-datadrivers
     plugin: cmake
     source: '${PROJECT_SOURCE_DIR}'
     cmake-generator: '${CMAKE_GENERATOR}'
@@ -27,24 +55,17 @@ parts:
       - -DCMAKE_INSTALL_PREFIX=/usr
       # the package runs on other machines, which may lack the AVX2 and FMA
       - -DENABLE_SSE_AND_AVX_FLAGS=OFF
-      # the converter binary the apps above name (or not)
-      - -DENABLE_DARKNETXX_CONVERTER=${ENABLE_DARKNETXX_CONVERTER}
       # the GUI binaries the apps above name (or not), the GTKmm 4 ones
       - -DENABLE_DARKNETXX_GUI=${ENABLE_DARKNETXX_GUI}
       - -DENABLE_DARKNETXX_NET_EDITOR=${ENABLE_DARKNETXX_NET_EDITOR}
       - -DENABLE_DARKNETXX_NET_EDITOR_QT=OFF
     build-packages:
       - libopencv-dev
-      # the dxxwjz1 network weights files are the gzip compressed JSON
-      # documents
-      - zlib1g-dev
-      - nlohmann-json3-dev
 ${DARKNETXX_SNAP_GUI_BUILD_PACKAGE}
-    # the runtime libraries the project links with: the OpenMP, the zlib and
-    # the OpenCV modules
+    # the runtime libraries the project links with: the OpenMP and the OpenCV
+    # modules (the darknetxx-datadrivers part stages the zlib)
     stage-packages:
       - libgomp1
-      - zlib1g
       - libopencv-core406t64
       - libopencv-imgproc406t64
       - libopencv-imgcodecs406t64

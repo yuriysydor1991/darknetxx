@@ -22,7 +22,8 @@ PACKAGES=(
     libopencv-dev
     libstdc++6
     # the zlib and the nlohmann json are the mandatory dependencies of the
-    # dxxwjz1 network weights files (the gzip compressed JSON documents)
+    # darknetxx-datadrivers library of the network weights files (the gzip
+    # compressed JSON documents), the nlohmann json the one of the tests
     nlohmann-json3-dev
     zlib1g-dev
 )
@@ -40,3 +41,9 @@ ${APT_SUDO} apt-get update
 ${APT_SUDO} apt-get install -y "${PACKAGES[@]}"
 
 log "The required packages are installed"
+
+# The network weights files formats come from the darknetxx-datadrivers
+# library, which is no distribution package: it is built of it's sources and
+# installed by the script of the misc/ci directory.
+log "Build and install the darknetxx-datadrivers library the project is" \
+    "built against with misc/ci/install-darknetxx-datadrivers.sh"

@@ -64,6 +64,17 @@ ENV DOCKER_BUILD_DATE=$CACHEBUST
 
 WORKDIR $srcD
 
+# The network weights files and the training projects formats come from the
+# darknetxx-datadrivers library, which is no distribution package: it is built
+# of it's sources and installed into the prefix, where the configure of the
+# project below finds it (and the binaries of the project at the run time).
+RUN git clone --depth 1 --branch ${DARKNETXX_DXXDD_GIT_TAG} ${DARKNETXX_DXXDD_GIT} $srcD/darknetxx-datadrivers && \
+ cmake -S $srcD/darknetxx-datadrivers -B $srcD/darknetxx-datadrivers-build \
+   -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$installPrefix && \
+ cmake --build $srcD/darknetxx-datadrivers-build -j$(nproc) && \
+ cmake --install $srcD/darknetxx-datadrivers-build && \
+ ldconfig
+
 ARG BUILDDIR=$srcD/${DARKNETXX_BINARY_NAME}-build
 ARG prjD=$srcD/${DARKNETXX_BINARY_NAME}
 
