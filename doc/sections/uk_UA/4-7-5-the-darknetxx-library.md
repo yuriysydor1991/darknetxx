@@ -3,7 +3,7 @@
 Уся функціональність проекту - навчання і розпізнавання darknet,
 конвертування файлів ваг нейромереж, фонове навчання тек YOLO4 та проектів
 dxxwjz2p, dxxwjz3p і dxxwjz4p і розпізнавання зображень нейромережами файлів ваг - це спільна
-бібліотека `darknetxx-0.11`, яку директорія [`src/lib`](/src/lib) будує з
+бібліотека `darknetxx-0.12`, яку директорія [`src/lib`](/src/lib) будує з
 фасаду, `libmain` і компонентів поруч з нею, впорядкована
 так, як гілка `applib` проекту
 [cpp-app-template](https://github.com/yuriysydor1991/cpp-app-template)
@@ -20,7 +20,7 @@ dxxwjz2p, dxxwjz3p і dxxwjz4p і розпізнавання зображень 
 @startuml
 hide empty members
 
-package "darknetxx011 (the installed facade/public headers)" {
+package "darknetxx012 (the installed facade/public headers)" {
   class LibraryFacade {
     +{static} create_library_context() : LibraryContextPtr
     +{static} create_library(ctx) : ILibPtr
@@ -147,7 +147,7 @@ LibraryFacade ..> ILogger : adopts
 ## Фасад
 
 Заголовки [`src/lib/facade/public`](/src/lib/facade/public) - це весь
-встановлюваний інтерфейс бібліотеки у просторі імен `darknetxx011` (назва
+встановлюваний інтерфейс бібліотеки у просторі імен `darknetxx012` (назва
 проекту і його основна та додаткова версії):
 
 - **`LibraryFacade`** - точка входу: створює контекст бібліотеки, роботу, про

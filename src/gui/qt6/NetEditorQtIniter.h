@@ -18,7 +18,7 @@ class NetEditorQtIniter : public gui::IGUIIniter
   NetEditorQtIniter() = default;
 
   virtual bool run(app::AppCtxPtr ctx,
-                   darknetxx011::LibraryContextPtr libctx) override;
+                   darknetxx012::LibraryContextPtr libctx) override;
   virtual void deinit() override;
 
  private:

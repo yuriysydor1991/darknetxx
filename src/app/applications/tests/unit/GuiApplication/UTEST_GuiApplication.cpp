@@ -24,7 +24,7 @@ class MockGUIIniter : public gui::IGUIIniter
 {
  public:
   MOCK_METHOD(bool, run,
-              (AppCtxPtr ctx, darknetxx011::LibraryContextPtr libctx),
+              (AppCtxPtr ctx, darknetxx012::LibraryContextPtr libctx),
               (override));
   MOCK_METHOD(void, deinit, (), (override));
 };
@@ -58,14 +58,14 @@ class UTEST_GuiApplication : public Test
   UTEST_GuiApplication()
   {
     // the window runs the work, the application itself does not
-    darknetxx011::LibraryFacade::on_create_library =
-        [](darknetxx011::LibraryContextPtr) {
+    darknetxx012::LibraryFacade::on_create_library =
+        [](darknetxx012::LibraryContextPtr) {
           ADD_FAILURE() << "The GUI application performed the work itself";
           return nullptr;
         };
   }
 
-  ~UTEST_GuiApplication() override { darknetxx011::LibraryFacade::reset(); }
+  ~UTEST_GuiApplication() override { darknetxx012::LibraryFacade::reset(); }
 
   /// @brief The window run returns the given result, after the given work.
   void expect_window(
@@ -73,7 +73,7 @@ class UTEST_GuiApplication : public Test
   {
     EXPECT_CALL(*app->initer, run(_, _))
         .WillOnce([this, shown, work](AppCtxPtr ctx,
-                                      darknetxx011::LibraryContextPtr libctx) {
+                                      darknetxx012::LibraryContextPtr libctx) {
           work(ctx);
           mlibctx = libctx;
           return shown;
@@ -83,7 +83,7 @@ class UTEST_GuiApplication : public Test
 
   int argc{0};
   char** argv{nullptr};
-  darknetxx011::LibraryContextPtr mlibctx;
+  darknetxx012::LibraryContextPtr mlibctx;
   std::shared_ptr<MockGuiApplication> app{
       std::make_shared<MockGuiApplication>()};
   std::shared_ptr<ApplicationContext> appCtx{

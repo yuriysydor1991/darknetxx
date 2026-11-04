@@ -15,7 +15,7 @@ namespace converters
 class ApplicationContext2LibraryContext
 {
  public:
-  using LibraryContextPtr = darknetxx011::LibraryContextPtr;
+  using LibraryContextPtr = darknetxx012::LibraryContextPtr;
 
   virtual ~ApplicationContext2LibraryContext() = default;
   ApplicationContext2LibraryContext()

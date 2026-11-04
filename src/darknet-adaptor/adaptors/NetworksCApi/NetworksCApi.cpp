@@ -22,8 +22,9 @@
 #include <new>
 #include <string>
 
+#include "src/NetworksLoaders/DataDriversAliases.h"
 #include "src/NetworksLoaders/OrigDefaultLoader/OrigDefaultLoader.h"
-#include "src/NetworksLoaders/weights-formats/WeightsFileFormats.h"
+#include "src/NetworksLoaders/network-weights/NetworkWeights.h"
 #include "src/darknet-adaptor/adaptors/ANetworkAdaptor/ANetworkAdaptor.h"
 #include "src/darknet-adaptor/adaptors/NetworkError.h"
 #include "src/darknet-adaptor/adaptors/NetworksCApi/NetworksRegistry.h"
@@ -34,8 +35,9 @@ namespace
 
 using darknet_adaptor::adaptors::ANetworkAdaptorPtr;
 using darknet_adaptor::adaptors::NetworksRegistry;
+using darknet_adaptor::loaders::NetworkWeights;
 using darknet_adaptor::loaders::OrigDefaultLoader;
-using darknet_adaptor::loaders::WeightsFileFormats;
+using dxxdd::WeightsFileFormats;
 
 std::string path_of(const char* path) { return path ? std::string{path} : ""; }
 
@@ -159,8 +161,8 @@ void load_weights_upto(network* net, char* filename, int cutoff)
 {
   const std::string path = path_of(filename);
 
-  if (!WeightsFileFormats::of_file(path)->create_reader()->load(*net, path,
-                                                                cutoff)) {
+  if (!WeightsFileFormats::of_file(path)->create_reader()->load(
+          NetworkWeights{*net}, path, cutoff)) {
     file_error(__FILE__, __LINE__, filename);
   }
 }
@@ -175,7 +177,7 @@ void save_weights_upto(network net, char* filename, int cutoff, int save_ema)
   const std::string path = path_of(filename);
 
   if (!WeightsFileFormats::of_file(path)->create_writer()->save(
-          net, path, cutoff, save_ema != 0)) {
+          NetworkWeights{net}, path, cutoff, save_ema != 0)) {
     file_error(__FILE__, __LINE__, filename);
   }
 }

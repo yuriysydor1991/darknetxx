@@ -5,7 +5,7 @@
 
 #include "ILib.h"
 
-namespace darknetxx011
+namespace darknetxx012
 {
 
 class ILibMock : public ILib
@@ -14,6 +14,6 @@ class ILibMock : public ILib
   MOCK_METHOD(bool, libcall, (LibraryContextPtr ctx), (override));
 };
 
-}  // namespace darknetxx011
+}  // namespace darknetxx012
 
 #endif  // DARKNETXX_PROJECT_ILIBMOCK_CLASS_H

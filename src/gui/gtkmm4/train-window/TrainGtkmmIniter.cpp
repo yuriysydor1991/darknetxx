@@ -13,7 +13,7 @@ TrainGtkmmIniter::TrainGtkmmIniter()
 }
 
 std::shared_ptr<AWindowContext> TrainGtkmmIniter::create_window_context(
-    app::AppCtxPtr ctx, darknetxx011::LibraryContextPtr libctx)
+    app::AppCtxPtr ctx, darknetxx012::LibraryContextPtr libctx)
 {
   return std::make_shared<TrainWindowContext>(ctx, libctx);
 }

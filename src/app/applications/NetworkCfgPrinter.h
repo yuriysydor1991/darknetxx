@@ -12,7 +12,7 @@ namespace app
 /**
  * @brief The network cfg printer application: prints the darknet (YOLO4) cfg
  * of the network the weights file of the --dump-cfg flag keeps (see the
- * darknetxx011::LibraryFacade::network_cfg) into the standard output, nothing
+ * darknetxx012::LibraryFacade::network_cfg) into the standard output, nothing
  * else, so the output redirected into a file is the cfg file of the network
  * to examine or to train anew.
  */

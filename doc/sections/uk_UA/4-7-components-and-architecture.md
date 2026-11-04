@@ -18,7 +18,7 @@
 1. [Компоненти адаптера Darknet](/doc/sections/uk_UA/4-7-2-darknet-adaptor-components.md) - місток, який керує оригінальним кодом Darknet для навчання чи розпізнавання (простір імен `darknet_adaptor`).
 1. [Допоміжні компоненти](/doc/sections/uk_UA/4-7-3-supporting-components.md) - контролер OpenMP, підсистема журналювання, контролер стиснення zlib і допоміжні утиліти.
 1. [Файли ваг нейромереж](/doc/sections/uk_UA/4-7-4-network-weights-files.md) - оригінальні файли ваг darknet, файли dxxwjz1 (стиснені gzip документи JSON з вагами), файли dxxwjz2 (опис нейромережі і запис навчання поряд з вагами) файли dxxwjz3 (те саме лише з даних JSON, включно з cfg нейромережі) і файли dxxwjz4 (те саме з текстом опису) з їхніми проектами (проект dxxwjz4p містить ще й зображення, тобто весь проект навчання в одному файлі), класи їх читання, запису і перевірки та конвертер між ними (простір імен `darknet_adaptor::loaders`).
-1. [Бібліотека darknetxx](/doc/sections/uk_UA/4-7-5-the-darknetxx-library.md) - спільна бібліотека, до якої будуються три рівні вище, її встановлюваний фасад (простір імен `darknetxx011`) і її реалізація (простір імен `darknetxx_impl`).
+1. [Бібліотека darknetxx](/doc/sections/uk_UA/4-7-5-the-darknetxx-library.md) - спільна бібліотека, до якої будуються три рівні вище, її встановлюваний фасад (простір імен `darknetxx012`) і її реалізація (простір імен `darknetxx_impl`).
 
 Сигнали операційної системи, на які реагує уся програма, охоплює підкомпонент `src/app/signals-handlers` рівня `app`, описаний у секції [Обробка сигналів операційної системи](/doc/sections/uk_UA/4-8-handling-the-OS-signals.md).
 
@@ -28,9 +28,9 @@
 `app::ApplicationFactory`. Фабрика будує `app::ApplicationContext`, дозволяє
 `app::CommandLineParser` заповнити його, після чого створює відповідного нащадка
 `app::IApplication`. `app::Application` перетворює контекст на
-`darknetxx011::LibraryContext` бібліотеки darknetxx за допомогою
+`darknetxx012::LibraryContext` бібліотеки darknetxx за допомогою
 `converters::ApplicationContext2LibraryContext` і виконує роботу, яку з нього
-створює `darknetxx011::LibraryFacade` бібліотеки (див.
+створює `darknetxx012::LibraryFacade` бібліотеки (див.
 [Бібліотека darknetxx](/doc/sections/uk_UA/4-7-5-the-darknetxx-library.md)):
 навчання чи розпізнавання за допомогою `darknet_adaptor::DarknetController`,
 який обирає і запускає конкретного робітника Darknet (розпізнавач, тренер

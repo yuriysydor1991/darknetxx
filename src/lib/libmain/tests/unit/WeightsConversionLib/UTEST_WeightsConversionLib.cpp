@@ -6,14 +6,17 @@
 #include <utility>
 
 #include "LibraryContext.h"
-#include "src/NetworksLoaders/weights-converter/WeightsConverter.h"
+#include "src/NetworksLoaders/network-weights/NetworkWeightsConverter.h"
 #include "src/lib/libmain/WeightsConversionLib.h"
 
 using namespace darknetxx_impl;
 using namespace testing;
 
-using darknet_adaptor::loaders::WeightsConversion;
-using darknet_adaptor::loaders::WeightsConverter;
+using dxxdd::WeightsConversion;
+
+// the converter the WeightsConversionLib creates, the one of the darknet
+// networks
+using WeightsConverter = darknet_adaptor::loaders::NetworkWeightsConverter;
 
 class UTEST_WeightsConversionLib : public Test
 {
@@ -31,8 +34,8 @@ class UTEST_WeightsConversionLib : public Test
 
   ~UTEST_WeightsConversionLib() { WeightsConverter::onMockCreate = nullptr; }
 
-  darknetxx011::LibraryContextPtr ctx{
-      std::make_shared<darknetxx011::LibraryContext>()};
+  darknetxx012::LibraryContextPtr ctx{
+      std::make_shared<darknetxx012::LibraryContext>()};
 
   WeightsConversionLib conversionLib;
 };

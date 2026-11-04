@@ -29,11 +29,11 @@ namespace darknetxxGtkmm4::window::event_handlers
  */
 class TrainingEventsHandler
     : public IWindowEventHandler,
-      public darknetxx011::ITrainingListener,
+      public darknetxx012::ITrainingListener,
       public std::enable_shared_from_this<TrainingEventsHandler>
 {
  public:
-  using TrainingProgress = darknetxx011::TrainingProgress;
+  using TrainingProgress = darknetxx012::TrainingProgress;
 
   virtual ~TrainingEventsHandler() = default;
   explicit TrainingEventsHandler(std::shared_ptr<TrainWindowContext> nmwctx);
@@ -48,7 +48,7 @@ class TrainingEventsHandler
   virtual void train();
   virtual void on_train_button();
 
-  virtual void show_started(const darknetxx011::ATrainingProjectPtr& project);
+  virtual void show_started(const darknetxx012::ATrainingProjectPtr& project);
   virtual void show_progress();
   virtual void show_finished();
 
@@ -58,7 +58,7 @@ class TrainingEventsHandler
 
   /// @brief Shows the chart the training record of the latest weights of
   /// the project redraws, false for none.
-  bool show_recorded_chart(const darknetxx011::ATrainingProject& project);
+  bool show_recorded_chart(const darknetxx012::ATrainingProject& project);
   std::string finished_text();
 
   std::shared_ptr<TrainWindowContext> mwctx;
@@ -74,7 +74,7 @@ class TrainingEventsHandler
 
   /// @brief The project trained, the chart of the latest training of which
   /// is shown.
-  darknetxx011::ATrainingProjectPtr mproject;
+  darknetxx012::ATrainingProjectPtr mproject;
 };
 
 }  // namespace darknetxxGtkmm4::window::event_handlers

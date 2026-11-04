@@ -27,7 +27,7 @@ bool NetworkProject::open(const std::string& path, std::string& message)
   std::string cfg;
   NetworkModel opened;
 
-  if (!darknetxx011::LibraryFacade::network_description(path, cfg,
+  if (!darknetxx012::LibraryFacade::network_description(path, cfg,
                                                         opened.classes) ||
       !opened.read(cfg)) {
     message = "The " + path + " file keeps no network";
@@ -58,7 +58,7 @@ bool NetworkProject::save(const std::string& path, std::string& message)
     return false;
   }
 
-  if (!darknetxx011::LibraryFacade::save_network(mpath, path, model.cfg(),
+  if (!darknetxx012::LibraryFacade::save_network(mpath, path, model.cfg(),
                                                  model.classes, message)) {
     return false;
   }

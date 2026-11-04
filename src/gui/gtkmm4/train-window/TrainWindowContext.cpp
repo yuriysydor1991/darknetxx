@@ -10,9 +10,9 @@ namespace darknetxxGtkmm4
 {
 
 TrainWindowContext::TrainWindowContext(app::AppCtxPtr nactx,
-                                       darknetxx011::LibraryContextPtr nlibctx)
+                                       darknetxx012::LibraryContextPtr nlibctx)
     : AWindowContext{std::move(nactx), nlibctx},
-      trainer{darknetxx011::LibraryFacade::create_trainer(nlibctx)}
+      trainer{darknetxx012::LibraryFacade::create_trainer(nlibctx)}
 {
 }
 

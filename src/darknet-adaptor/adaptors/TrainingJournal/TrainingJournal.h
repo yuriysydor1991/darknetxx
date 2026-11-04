@@ -5,8 +5,7 @@
 #include <memory>
 #include <string>
 
-#include "src/NetworksLoaders/IWeightsFileFormat.h"
-#include "src/NetworksLoaders/weights-model/WeightsDocument.h"
+#include "src/NetworksLoaders/DataDriversAliases.h"
 #include "src/darknet.h"
 
 namespace darknet_adaptor::adaptors
@@ -33,8 +32,8 @@ class TrainingJournal
    * dxxwjz3p one), which every
    * save of the weights but the EMA ones updates; empty for none.
    */
-  TrainingJournal(loaders::IWeightsFileFormatPtr nformat,
-                  loaders::WeightsDocument nrest, std::string nproject = {});
+  TrainingJournal(dxxdd::IWeightsFileFormatPtr nformat,
+                  dxxdd::WeightsDocument nrest, std::string nproject = {});
 
   /// @brief Records the losses of the iteration after the recorded ones.
   void record(int iteration, float loss, float avg_loss);
@@ -50,14 +49,14 @@ class TrainingJournal
   bool save(network& net, const std::string& stem, bool ema);
 
   /// @brief The network description and the training record so far.
-  const loaders::WeightsDocument& rest() const;
+  const dxxdd::WeightsDocument& rest() const;
 
  private:
   /// @brief Replaces the project file with the one of the weights.
   bool save_project(network& net) const;
 
-  loaders::IWeightsFileFormatPtr mformat;
-  loaders::WeightsDocument mrest;
+  dxxdd::IWeightsFileFormatPtr mformat;
+  dxxdd::WeightsDocument mrest;
   std::string mproject;
   /// the seconds of the resumed training
   double mresumed;

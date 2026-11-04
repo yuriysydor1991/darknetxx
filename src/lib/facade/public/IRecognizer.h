@@ -1,5 +1,5 @@
-#ifndef DARKNETXX_011_IRECOGNIZER_CLASS_H
-#define DARKNETXX_011_IRECOGNIZER_CLASS_H
+#ifndef DARKNETXX_012_IRECOGNIZER_CLASS_H
+#define DARKNETXX_012_IRECOGNIZER_CLASS_H
 
 #include <memory>
 
@@ -7,7 +7,7 @@
 #include "LibraryContext.h"
 #include "Recognition.h"
 
-namespace darknetxx011
+namespace darknetxx012
 {
 
 /**
@@ -34,6 +34,6 @@ class DARKNETXX_LIB_API IRecognizer
 
 using IRecognizerPtr = std::shared_ptr<IRecognizer>;
 
-}  // namespace darknetxx011
+}  // namespace darknetxx012
 
-#endif  // DARKNETXX_011_IRECOGNIZER_CLASS_H
+#endif  // DARKNETXX_012_IRECOGNIZER_CLASS_H

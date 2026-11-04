@@ -16,7 +16,7 @@ namespace darknet_adaptor
 class DarknetController
 {
  public:
-  using LibCtxPtr = darknetxx011::LibraryContextPtr;
+  using LibCtxPtr = darknetxx012::LibraryContextPtr;
   using DarknetControllerPtr = std::shared_ptr<DarknetController>;
   using IDarknetAdaptorPtr = adaptors::IDarknetAdaptorPtr;
 

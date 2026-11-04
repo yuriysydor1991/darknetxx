@@ -76,8 +76,10 @@ target_include_directories(
 )
 
 # The darknet C computation with the C++ network infrastructure (the layers
-# and networks memory, the loaders, the weights files, the darknet C API of
-# them), the whole darknet core without the application: the tests link it.
+# and networks memory, the loaders, the views of the darknetxx-datadrivers
+# library over the networks, the darknet C API of them), the whole darknet core
+# without the application: the tests link it. The weights files formats come
+# of the library, which the enabler links to every target of the project.
 add_library(DarknetXXNetworksCore INTERFACE)
 
 target_sources(
@@ -90,18 +92,8 @@ target_sources(
     $<TARGET_OBJECTS:DarknetCXXANetworkAdaptorOBJ>
     $<TARGET_OBJECTS:DarknetCXXLayersOBJ>
     $<TARGET_OBJECTS:DarknetCXXNetworkLoaderOrigDefaultOBJ>
-    $<TARGET_OBJECTS:DarknetCXXWeightsModelOBJ>
-    $<TARGET_OBJECTS:DarknetCXXOrigWeightsOBJ>
-    $<TARGET_OBJECTS:DarknetCXXDxxwjz1V1OBJ>
-    $<TARGET_OBJECTS:DarknetCXXDxxwjz2V2OBJ>
-    $<TARGET_OBJECTS:DarknetCXXDxxwjz2pV1OBJ>
-    $<TARGET_OBJECTS:DarknetCXXDxxwjz3V3OBJ>
-    $<TARGET_OBJECTS:DarknetCXXDxxwjz3pV1OBJ>
-    $<TARGET_OBJECTS:DarknetCXXDxxwjz4V4OBJ>
-    $<TARGET_OBJECTS:DarknetCXXDxxwjz4pV1OBJ>
-    $<TARGET_OBJECTS:DarknetCXXYolo4FolderOBJ>
-    $<TARGET_OBJECTS:DarknetCXXWeightsFormatsOBJ>
-    $<TARGET_OBJECTS:DarknetCXXWeightsConverterOBJ>
+    $<TARGET_OBJECTS:DarknetCXXNetworkWeightsOBJ>
+    $<TARGET_OBJECTS:DarknetCXXNetworkRewriterOBJ>
     $<TARGET_OBJECTS:DarknetCXXNetworksCApiOBJ>
     $<TARGET_OBJECTS:DarknetCXXTrainingDataOBJ>
     $<TARGET_OBJECTS:DarknetCXXTrainingJournalOBJ>
@@ -111,7 +103,6 @@ target_sources(
     $<TARGET_OBJECTS:DarknetCXXHelpersComponentOBJ>
     $<TARGET_OBJECTS:DarknetXXLog4CInterfaceObj>
     $<TARGET_OBJECTS:DarknetXXDefaultLoggerObj>
-    $<TARGET_OBJECTS:DarknetXXZlibControllerObj>
 )
 
 target_include_directories(
@@ -133,8 +124,6 @@ target_link_libraries(
   INTERFACE
     ${OpenCV_LIBS}
     Threads::Threads
-    nlohmann_json::nlohmann_json
-    ZLIB::ZLIB
     ${Backtrace_LIBRARIES}
 )
 

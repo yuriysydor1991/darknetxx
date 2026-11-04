@@ -9,9 +9,9 @@
 #include "LibraryFacade.h"
 #include "src/tests/component/bias-networks/BiasNetworks.h"
 
-using darknetxx011::LibraryContext;
-using darknetxx011::LibraryFacade;
-using darknetxx011::Recognition;
+using darknetxx012::LibraryContext;
+using darknetxx012::LibraryFacade;
+using darknetxx012::Recognition;
 
 namespace fs = std::filesystem;
 
@@ -80,7 +80,7 @@ class CTEST_NetworkRecognizer : public testing::Test
   fs::path dir{fs::path{CTEST_NetworkRecognizer_DATA_DIR} /
                testing::UnitTest::GetInstance()->current_test_info()->name()};
   LibraryContext ctx;
-  darknetxx011::IRecognizerPtr recognizer{LibraryFacade::create_recognizer()};
+  darknetxx012::IRecognizerPtr recognizer{LibraryFacade::create_recognizer()};
 };
 
 TEST_F(CTEST_NetworkRecognizer, the_detector_boxes_the_objects)

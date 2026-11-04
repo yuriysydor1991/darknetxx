@@ -7,3 +7,4 @@ if (NOT ENABLE_COMPONENT_TESTS AND NOT ENABLE_INTEGRATION_TESTS)
 endif()
 
 add_subdirectory(weights-factory)
+add_subdirectory(formats-access)

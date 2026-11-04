@@ -89,7 +89,7 @@ one and the same `src/main.cpp`, the `src/app` component hands its sources to
 both of them (see [src/app/CMakeLists.txt](/src/app/CMakeLists.txt)) and both
 of them link the darknetxx library (see the
 [The darknetxx library](/doc/sections/en_US/4-7-5-the-darknetxx-library.md)
-section), the `darknetxx011::LibraryFacade` of which the `app::Application`
+section), the `darknetxx012::LibraryFacade` of which the `app::Application`
 performs the conversion by, the very same way it performs the training and
 the detection of the main binary.
 

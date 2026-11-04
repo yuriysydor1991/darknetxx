@@ -16,15 +16,15 @@ namespace darknetxx_impl
  * classifies them (see the IRecognitionMethod). The network is loaded by the
  * first recognition of it's files and kept for the next ones.
  */
-class NetworkRecognizer : public darknetxx011::IRecognizer
+class NetworkRecognizer : public darknetxx012::IRecognizer
 {
  public:
-  using LibraryContext = darknetxx011::LibraryContext;
+  using LibraryContext = darknetxx012::LibraryContext;
 
   virtual ~NetworkRecognizer() = default;
   NetworkRecognizer() = default;
 
-  virtual darknetxx011::Recognition recognize(
+  virtual darknetxx012::Recognition recognize(
       const LibraryContext& ctx) override;
 
  protected:
@@ -34,7 +34,7 @@ class NetworkRecognizer : public darknetxx011::IRecognizer
 
   /// @brief Recognizes the image of the context by the loaded network.
   virtual void recognize_image(const LibraryContext& ctx,
-                               darknetxx011::Recognition& recognition);
+                               darknetxx012::Recognition& recognition);
 
  private:
   /// @brief The weights, the network and the names files of the network.

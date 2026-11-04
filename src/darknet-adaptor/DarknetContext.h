@@ -6,7 +6,7 @@
 #include <thread>
 #include <vector>
 
-#include "src/NetworksLoaders/weights-model/Yolo4Annotations.h"
+#include "src/NetworksLoaders/DataDriversAliases.h"
 #include "src/darknet-adaptor/DarknetStrings.h"
 #include "src/detector/detector_context.h"
 #include "src/lib/facade/public/LibraryContext.h"
@@ -26,7 +26,7 @@ class TrainingJournal;
 class DarknetContext
 {
  public:
-  using LibCtxPtr = darknetxx011::LibraryContextPtr;
+  using LibCtxPtr = darknetxx012::LibraryContextPtr;
   using DarknetContextPtr = std::shared_ptr<DarknetContext>;
   using detector_context_ptr = std::shared_ptr<detector_context>;
   using ANetworkAdaptorPtr = std::shared_ptr<adaptors::ANetworkAdaptor>;
@@ -224,7 +224,7 @@ class DarknetContext
    * until the release_networks() call, the networks of which read the lists
    * of the TrainingDataRegistry names.
    */
-  void set_training_annotations(const loaders::Yolo4Annotations& annotations);
+  void set_training_annotations(const dxxdd::Yolo4Annotations& annotations);
 
   const ANetworkAdaptorPtrs& get_train_networks() const;
   const ANetworkAdaptorPtr& get_map_network() const;

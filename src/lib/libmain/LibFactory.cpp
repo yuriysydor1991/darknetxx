@@ -22,7 +22,7 @@ LibFactory::LibFactory()
 
 LibFactory::LibraryContextPtr LibFactory::create_default_context()
 {
-  return std::make_shared<darknetxx011::LibraryContext>();
+  return std::make_shared<darknetxx012::LibraryContext>();
 }
 
 LibFactory::ILibPtr LibFactory::create_library(LibraryContextPtr ctx)

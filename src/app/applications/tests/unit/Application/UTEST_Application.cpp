@@ -15,9 +15,9 @@
 
 using namespace app;
 using namespace testing;
-using darknetxx011::ILibMock;
-using darknetxx011::LibraryContextPtr;
-using darknetxx011::LibraryFacade;
+using darknetxx012::ILibMock;
+using darknetxx012::LibraryContextPtr;
+using darknetxx012::LibraryFacade;
 
 class UTEST_Application : public Test
 {

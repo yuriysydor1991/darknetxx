@@ -25,7 +25,7 @@ namespace app
 class Application : public IApplication
 {
  public:
-  using LibraryContextPtr = darknetxx011::LibraryContextPtr;
+  using LibraryContextPtr = darknetxx012::LibraryContextPtr;
   using CtxConverterPtr = converters::ApplicationContext2LibraryContextPtr;
 
   virtual ~Application() = default;

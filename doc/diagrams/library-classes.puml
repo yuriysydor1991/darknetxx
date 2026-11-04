@@ -4,7 +4,7 @@ title darknetxx library - the facade and the implementation class structure
 skinparam shadowing false
 hide empty members
 
-package "darknetxx011 (the installed facade/public headers)" {
+package "darknetxx012 (the installed facade/public headers)" {
   class LibraryFacade {
     +{static} create_library_context() : LibraryContextPtr
     +{static} create_library(ctx) : ILibPtr

@@ -103,7 +103,11 @@ target_include_directories(
   PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-# the dxxwjz3 files of the trainings are the gzip compressed JSON documents
+# The dxxwjz3 files of the trainings are the gzip compressed JSON documents.
+# The darknetxx-datadrivers library reads and writes them for the project, the
+# test reads them on it's own, so the zlib is the dependency of the test alone.
+find_package(ZLIB REQUIRED)
+
 target_link_libraries(
   ITEST_digits
   nlohmann_json::nlohmann_json

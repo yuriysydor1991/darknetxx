@@ -123,8 +123,8 @@ class CTEST_RecognitionWindow : public testing::Test
   char** argv{nullptr};
   std::shared_ptr<app::ApplicationContext> actx{
       std::make_shared<app::ApplicationContext>(argc, argv)};
-  darknetxx011::LibraryContextPtr libctx{
-      darknetxx011::LibraryFacade::create_library_context()};
+  darknetxx012::LibraryContextPtr libctx{
+      darknetxx012::LibraryFacade::create_library_context()};
   std::shared_ptr<RecognitionWindowContext> mwctx;
   darknetxxGtkmm4::window::RecognitionWindowLoader* loader{nullptr};
 };
@@ -207,8 +207,8 @@ TEST_F(CTEST_RecognitionWindow,
 
 TEST_F(CTEST_RecognitionWindow, the_dxxwjz2p_project_alone_is_the_network)
 {
-  const darknetxx011::LibraryContextPtr conversion =
-      darknetxx011::LibraryFacade::create_library_context();
+  const darknetxx012::LibraryContextPtr conversion =
+      darknetxx012::LibraryFacade::create_library_context();
 
   conversion->convert_from = "weights";
   conversion->convert_src = file("detector.weights");
@@ -217,7 +217,7 @@ TEST_F(CTEST_RecognitionWindow, the_dxxwjz2p_project_alone_is_the_network)
   conversion->convert_cfg = file("detector.cfg");
   conversion->convert_names = file("abc.names");
 
-  ASSERT_TRUE(darknetxx011::LibraryFacade::create_library(conversion)
+  ASSERT_TRUE(darknetxx012::LibraryFacade::create_library(conversion)
                   ->libcall(conversion));
 
   show();

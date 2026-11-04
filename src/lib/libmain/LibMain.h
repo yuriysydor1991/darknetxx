@@ -11,10 +11,10 @@ namespace darknetxx_impl
  * @brief The darknet work: the detection of the detect_cfg network or the
  * training of the train_cfg one.
  */
-class LibMain : public darknetxx011::ILib
+class LibMain : public darknetxx012::ILib
 {
  public:
-  using LibraryContextPtr = darknetxx011::LibraryContextPtr;
+  using LibraryContextPtr = darknetxx012::LibraryContextPtr;
 
   virtual ~LibMain() = default;
   LibMain() = default;

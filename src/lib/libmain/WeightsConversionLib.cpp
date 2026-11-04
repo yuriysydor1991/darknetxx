@@ -2,14 +2,15 @@
 
 #include <cassert>
 
-#include "src/NetworksLoaders/weights-formats/WeightsFileFormats.h"
+#include "src/NetworksLoaders/DataDriversAliases.h"
+#include "src/NetworksLoaders/network-weights/NetworkWeightsConverter.h"
 #include "src/log/log.h"
 
 namespace darknetxx_impl
 {
 
-using darknet_adaptor::loaders::IWeightsFileFormatPtr;
-using darknet_adaptor::loaders::WeightsFileFormats;
+using dxxdd::IWeightsFileFormatPtr;
+using dxxdd::WeightsFileFormats;
 
 bool WeightsConversionLib::libcall(LibraryContextPtr ctx)
 {
@@ -48,7 +49,7 @@ bool WeightsConversionLib::libcall(LibraryContextPtr ctx)
     return false;
   }
 
-  darknet_adaptor::loaders::WeightsConversion conversion;
+  dxxdd::WeightsConversion conversion;
   conversion.from = from;
   conversion.src = ctx->convert_src;
   conversion.to = into;
@@ -66,7 +67,9 @@ bool WeightsConversionLib::libcall(LibraryContextPtr ctx)
 WeightsConversionLib::WeightsConverterPtr
 WeightsConversionLib::create_weights_converter()
 {
-  return darknet_adaptor::loaders::WeightsConverter::create();
+  // the files of no structure of their own are read by the darknet network of
+  // their cfg, the very network the project trains and detects with
+  return darknet_adaptor::loaders::NetworkWeightsConverter::create();
 }
 
 }  // namespace darknetxx_impl

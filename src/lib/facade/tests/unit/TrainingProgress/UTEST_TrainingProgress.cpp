@@ -2,7 +2,7 @@
 
 #include "TrainingProgress.h"
 
-using darknetxx011::TrainingProgress;
+using darknetxx012::TrainingProgress;
 
 TEST(UTEST_TrainingProgress, done_fraction_is_the_done_iterations_part)
 {

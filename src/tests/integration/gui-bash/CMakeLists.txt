@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.13)
 # started by ctest as
 #
 #   bash prints-the-gui-help.sh <GUI binary>
-#   bash no-gui-toolkit-in-the-other-binaries.sh <darknetxx> [<darknetxxConverter>]
+#   bash no-gui-toolkit-in-the-other-binaries.sh <darknetxx>
 #
 # and reporting their verdict through the exit status. The windows themselves
 # are tested by the CTEST_TrainWindow, the CTEST_RecognitionWindow, the
@@ -40,11 +40,8 @@ if(NOT TARGET ${DARKNETXX_BINARY_NAME})
   return()
 endif()
 
+# the darknetxxConverter binary is the one of the darknetxx-datadrivers library
 set(ITEST_OTHER_BINARIES "$<TARGET_FILE:${DARKNETXX_BINARY_NAME}>")
-
-if(TARGET ${DARKNETXX_CONVERTER_BINARY_NAME})
-  list(APPEND ITEST_OTHER_BINARIES "$<TARGET_FILE:${DARKNETXX_CONVERTER_BINARY_NAME}>")
-endif()
 
 add_test(
   NAME ITEST_gui_bash.no_gui_toolkit_in_the_other_binaries

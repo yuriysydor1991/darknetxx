@@ -8,7 +8,7 @@
 #include "LibraryContext.h"
 #include "Yolo4Folder.h"
 
-using darknetxx011::Yolo4Folder;
+using darknetxx012::Yolo4Folder;
 
 namespace fs = std::filesystem;
 
@@ -131,7 +131,7 @@ TEST_F(CTEST_Yolo4Folder, the_backup_key_of_the_cfg_names_the_weights_folder)
 
 TEST_F(CTEST_Yolo4Folder, enter_points_the_context_to_the_folder)
 {
-  darknetxx011::LibraryContext actx;
+  darknetxx012::LibraryContext actx;
 
   write("cfg/net.cfg", "[net]\n");
   write("data/obj.names", "a\n");
@@ -154,7 +154,7 @@ TEST_F(CTEST_Yolo4Folder, enter_points_the_context_to_the_folder)
 
 TEST_F(CTEST_Yolo4Folder, enter_creates_the_backup_folder)
 {
-  darknetxx011::LibraryContext actx;
+  darknetxx012::LibraryContext actx;
 
   write("cfg/net.cfg", "[net]\n");
 

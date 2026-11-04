@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 3.13)
 
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/tools")
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/enablers")
-list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/enablers/compression")
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/enablers/packagers")
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/profilers")
 
@@ -42,33 +41,15 @@ if (ENABLE_SANITIZERS OR ENABLE_SANITIZERS_THREADS)
   include(darknetxx-sanitizers)
 endif()
 
-# The dxxwjz1 network weights files (see the
-# src/NetworksLoaders/dxxwjz/dxxwjz1 directory) are the gzip
-# compressed JSON documents, which the zlib and the nlohmann json libraries
-# read and write, so neither of them can be left out. The option turned OFF is
-# turned back ON: the cache of a build directory configured before the files
-# keeps the OFF default the nlohmann json option had then.
-foreach(required_library_option ENABLE_ZLIB ENABLE_NLOHMANN_JSON)
-  get_property(
-    required_library_option_cached
-    CACHE ${required_library_option}
-    PROPERTY TYPE
-    SET
-  )
+# The network weights files, the training projects and their conversion come
+# from the darknetxx-datadrivers library, which is found installed in the
+# system. It is made available before the sources are added, since the object
+# libraries all over the src subtree compile against it (see the enabler).
+include(darknetxx-DarknetxxDataDrivers-enabler)
 
-  if (required_library_option_cached AND NOT ${required_library_option})
-    message(
-      WARNING
-      "The dxxwjz1 network weights files require the library of the "
-      "${required_library_option} option, the option is turned ON"
-    )
-    set_property(CACHE ${required_library_option} PROPERTY VALUE ON)
-  endif()
-endforeach()
-
-# Each of the enablers declares or checks its ENABLE_* option and returns early
-# when disabled, so they are included unconditionally.
-include(darknetxx-zlib-enabler)
+# The component and the integration tests read the dxxwjz JSON documents the
+# library writes, the nlohmann json library is of no use for the rest of the
+# project (the enabler returns for the option turned OFF).
 include(darknetxx-nlohmann-json-enabler)
 include(darknetxx-Qt6-enabler)
 # the GUI binaries of the toolkits found, which the rest take

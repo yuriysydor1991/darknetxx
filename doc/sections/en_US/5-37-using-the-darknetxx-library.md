@@ -1,6 +1,6 @@
 ## Using the darknetxx library
 
-The project builds the shared `darknetxx-0.11` library of all it's
+The project builds the shared `darknetxx-0.12` library of all it's
 functionality (see the [The darknetxx library](/doc/sections/en_US/4-7-5-the-darknetxx-library.md)
 section) and the executables over it. Another CMake project uses the library
 made available by the FetchContent or installed and found by the
@@ -11,7 +11,7 @@ made available by the FetchContent or installed and found by the
 | CMake option | Default | Effect |
 | --- | --- | --- |
 | `ENABLE_DARKNETXX_EXECUTABLES` | `ON` for the top level project, `OFF` for the project of another one | Builds and installs the `darknetxx`, the `darknetxxConverter`, the `darknetxx-train-gui` and the `darknetxx-recognition-gui` executables. `OFF` builds and installs the library alone. |
-| `DARKNETXX_LIB_INSTALL_DEV_FILES` | `ON` | Installs the public headers, the CMake package files and the `libdarknetxx-0.11.so` namelink beside the library. `OFF` installs the library runtime alone. |
+| `DARKNETXX_LIB_INSTALL_DEV_FILES` | `ON` | Installs the public headers, the CMake package files and the `libdarknetxx-0.12.so` namelink beside the library. `OFF` installs the library runtime alone. |
 | `DARKNETXX_LIBRARY_NAME` | `darknetxx-<major>.<minor>` | The name of the library, of it's target, of the headers directory and of the CMake package. |
 
 The library alone, with the development files:
@@ -28,10 +28,10 @@ installs
 
 | Installed file | `DARKNETXX_LIB_INSTALL_DEV_FILES=ON` | `OFF` |
 | --- | --- | --- |
-| `<prefix>/lib/libdarknetxx-0.11.so.0.11.0` and it's `.so.0.11` soname link | yes | yes |
-| `<prefix>/lib/libdarknetxx-0.11.so` namelink | yes | no |
-| `<prefix>/include/darknetxx-0.11/*.h` public headers | yes | no |
-| `<prefix>/lib/cmake/darknetxx-0.11/*.cmake` package files | yes | no |
+| `<prefix>/lib/libdarknetxx-0.12.so.0.12.0` and it's `.so.0.12` soname link | yes | yes |
+| `<prefix>/lib/libdarknetxx-0.12.so` namelink | yes | no |
+| `<prefix>/include/darknetxx-0.12/*.h` public headers | yes | no |
+| `<prefix>/lib/cmake/darknetxx-0.12/*.cmake` package files | yes | no |
 | `<prefix>/share/darknetxx/<version>` darknet data (the labels font, the names lists) | yes | yes |
 
 The `lib` directory is the `CMAKE_INSTALL_LIBDIR` one, `lib/x86_64-linux-gnu`
@@ -56,16 +56,16 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(darknetxx)
 
 add_executable(my-trainer main.cpp)
-target_link_libraries(my-trainer darknetxx-0.11::darknetxx-0.11)
+target_link_libraries(my-trainer darknetxx-0.12::darknetxx-0.12)
 ```
 
 ### find_package
 
 ```cmake
-find_package(darknetxx-0.11 REQUIRED CONFIG)
+find_package(darknetxx-0.12 REQUIRED CONFIG)
 
 add_executable(my-trainer main.cpp)
-target_link_libraries(my-trainer darknetxx-0.11::darknetxx-0.11)
+target_link_libraries(my-trainer darknetxx-0.12::darknetxx-0.12)
 ```
 
 ### The code
@@ -76,11 +76,11 @@ headers by the library prefixed name, which another library of the same names
 does not shadow:
 
 ```cpp
-#include <darknetxx-0.11/LibraryFacade.h>
+#include <darknetxx-0.12/LibraryFacade.h>
 
 int main()
 {
-  auto ctx = darknetxx011::LibraryFacade::create_library_context();
+  auto ctx = darknetxx012::LibraryFacade::create_library_context();
 
   ctx->convert_from = "weights";
   ctx->convert_src = "yolov4.weights";
@@ -88,7 +88,7 @@ int main()
   ctx->convert_to = "dxxwjz1";
   ctx->convert_dst = "yolov4.dxxwjz1";
 
-  auto lib = darknetxx011::LibraryFacade::create_library(ctx);
+  auto lib = darknetxx012::LibraryFacade::create_library(ctx);
 
   return lib != nullptr && lib->libcall(ctx) ? 0 : 1;
 }
@@ -108,5 +108,5 @@ dxxwjz2p, dxxwjz3, dxxwjz3p, dxxwjz4 or dxxwjz4p file keeps (the empty one for t
 `LibraryFacade::save_network` saves the edited cfg text and class names into
 such a file (the network editor binaries save by it). A program
 of an own logger hands it over by the `LibraryFacade::init_logger` before any
-other call, the library logs into the `darknetxx-0.11.0.log` file of the
+other call, the library logs into the `darknetxx-0.12.0.log` file of the
 working directory and the console otherwise.

@@ -87,12 +87,7 @@ std::shared_ptr<ApplicationContext> ApplicationFactory::create_context(
 
 std::shared_ptr<IApplication> ApplicationFactory::create_default_application()
 {
-#if defined(DARKNETXX_CONVERTER_ONLY)
-  // There is no default application in a converter only binary: what it can
-  // do is named by the conversion command line flags, so the help message
-  // which lists them is what an empty command line deserves.
-  return create_help_printer();
-#elif defined(DARKNETXX_TRAIN_GUI)
+#if defined(DARKNETXX_TRAIN_GUI)
   return std::make_shared<TrainGuiApplication>();
 #elif defined(DARKNETXX_RECOGNITION_GUI)
   return std::make_shared<RecognitionGuiApplication>();
@@ -155,20 +150,11 @@ std::shared_ptr<IApplication> ApplicationFactory::create_application(
     return create_library_application();
   }
 
-#ifndef DARKNETXX_CONVERTER_ONLY
   // the chart drawn of the weights file alone, no window of the GUI one
   if (ctx->chart_requested()) {
     LOGT("Creating the training chart application");
     return create_library_application();
   }
-#endif  // DARKNETXX_CONVERTER_ONLY
-
-#ifdef DARKNETXX_CONVERTER_ONLY
-  // the help printer reports the failure of the command line, which asks for
-  // nothing the binary does
-  LOGE("No network weights file conversion was requested");
-  ctx->push_error("No network weights file conversion was requested");
-#endif  // DARKNETXX_CONVERTER_ONLY
 
   LOGT("Creating the default application object");
 
@@ -187,7 +173,7 @@ int ApplicationFactory::run(int& gargc, char**& gargv)
   }
 
   // the library logs into the very same logger
-  darknetxx011::LibraryFacade::init_logger(LOG_REAL_LOGGER());
+  darknetxx012::LibraryFacade::init_logger(LOG_REAL_LOGGER());
 
   std::shared_ptr<ApplicationContext> ctx = create_context(gargc, gargv);
 

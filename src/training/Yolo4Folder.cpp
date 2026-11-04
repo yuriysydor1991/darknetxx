@@ -1,11 +1,11 @@
 #include "Yolo4Folder.h"
 
-#include "src/NetworksLoaders/yolo4-folder/Yolo4FolderLayout.h"
+#include "src/NetworksLoaders/DataDriversAliases.h"
 
-namespace darknetxx011
+namespace darknetxx012
 {
 
-using darknet_adaptor::loaders::yolo4::Yolo4FolderLayout;
+using dxxdd::yolo4::Yolo4FolderLayout;
 
 Yolo4Folder::Yolo4Folder(const std::string& npath)
     : ATrainingProject{absolute_of(npath)}
@@ -22,4 +22,4 @@ std::string Yolo4Folder::names() const
   return Yolo4FolderLayout::names(path());
 }
 
-}  // namespace darknetxx011
+}  // namespace darknetxx012

@@ -4,7 +4,7 @@
 
 #include "LibraryContext.h"
 
-using darknetxx011::LibraryContext;
+using darknetxx012::LibraryContext;
 
 TEST(UTEST_LibraryContext, no_stop_is_requested_at_first)
 {

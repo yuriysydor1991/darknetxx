@@ -30,7 +30,7 @@ class IGUIIniter
    * @return Returns false on an error.
    */
   virtual bool run(app::AppCtxPtr ctx,
-                   darknetxx011::LibraryContextPtr libctx) = 0;
+                   darknetxx012::LibraryContextPtr libctx) = 0;
 
   /// @brief Releases whatever the run() call acquired.
   virtual void deinit() = 0;

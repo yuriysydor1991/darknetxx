@@ -32,13 +32,13 @@ class GtkmmIniter : public gui::IGUIIniter
   GtkmmIniter(std::string nname, std::string nid);
 
   virtual bool run(app::AppCtxPtr ctx,
-                   darknetxx011::LibraryContextPtr libctx) override;
+                   darknetxx012::LibraryContextPtr libctx) override;
   virtual void deinit() override;
 
  protected:
   /// @brief The window of the GUI, not loaded yet.
   virtual std::shared_ptr<AWindowContext> create_window_context(
-      app::AppCtxPtr ctx, darknetxx011::LibraryContextPtr libctx) = 0;
+      app::AppCtxPtr ctx, darknetxx012::LibraryContextPtr libctx) = 0;
 
   /// @brief Loads the window, connects it's handlers and shows it.
   virtual bool show_window(Gtk::Application& app);

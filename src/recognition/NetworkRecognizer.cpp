@@ -7,8 +7,8 @@
 #include <opencv2/imgproc.hpp>
 
 #include "image_opencv.h"
+#include "src/NetworksLoaders/DataDriversAliases.h"
 #include "src/NetworksLoaders/OrigDefaultLoader/OrigDefaultLoader.h"
-#include "src/NetworksLoaders/weights-formats/NetworkSource.h"
 #include "src/OMP/OMPController.h"
 #include "src/log/log.h"
 #include "src/recognition/ImageClassification.h"
@@ -18,10 +18,10 @@
 namespace darknetxx_impl
 {
 
-darknetxx011::Recognition NetworkRecognizer::recognize(
+darknetxx012::Recognition NetworkRecognizer::recognize(
     const LibraryContext& ctx)
 {
-  darknetxx011::Recognition recognition;
+  darknetxx012::Recognition recognition;
 
   // the OpenMP threads of the calling thread
   ompi::OMPController::create()->adjust_threads(ctx.threads);
@@ -43,7 +43,7 @@ darknetxx011::Recognition NetworkRecognizer::recognize(
 }
 
 void NetworkRecognizer::recognize_image(const LibraryContext& ctx,
-                                        darknetxx011::Recognition& recognition)
+                                        darknetxx012::Recognition& recognition)
 {
   network& net = *mnet->get();
   const cv::Mat read = cv::imread(
@@ -86,8 +86,8 @@ void NetworkRecognizer::recognize_image(const LibraryContext& ctx,
 
 bool NetworkRecognizer::load(const LibraryContext& ctx, std::string& error)
 {
-  using darknet_adaptor::loaders::NetworkSource;
   using darknet_adaptor::loaders::OrigDefaultLoader;
+  using dxxdd::NetworkSource;
 
   // the dxxwjz2 weights file keeps the network it is the weights of
   const std::string& cfg =

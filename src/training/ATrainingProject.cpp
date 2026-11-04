@@ -4,15 +4,15 @@
 #include <system_error>
 #include <utility>
 
-#include "src/NetworksLoaders/weights-formats/NetworkSource.h"
+#include "src/NetworksLoaders/DataDriversAliases.h"
 #include "src/log/log.h"
 
-namespace darknetxx011
+namespace darknetxx012
 {
 
 namespace fs = std::filesystem;
 
-using darknet_adaptor::loaders::NetworkSource;
+using dxxdd::NetworkSource;
 
 ATrainingProject::ATrainingProject(fs::path nroot) : root{std::move(nroot)} {}
 
@@ -95,4 +95,4 @@ void ATrainingProject::train(std::string ncfg, std::string nweights)
   weightsFile = std::move(nweights);
 }
 
-}  // namespace darknetxx011
+}  // namespace darknetxx012

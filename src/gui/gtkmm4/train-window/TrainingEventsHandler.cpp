@@ -67,8 +67,8 @@ void TrainingEventsHandler::train()
 {
   auto* status = mwctx->wloader.status_label();
   const std::string path = mwctx->wloader.project_entry()->get_text().raw();
-  const darknetxx011::ATrainingProjectPtr project =
-      darknetxx011::LibraryFacade::open_training_project(path);
+  const darknetxx012::ATrainingProjectPtr project =
+      darknetxx012::LibraryFacade::open_training_project(path);
 
   if (!project->valid()) {
     status->set_text("No network to train found in " + path +
@@ -100,7 +100,7 @@ void TrainingEventsHandler::on_train_button()
 }
 
 void TrainingEventsHandler::show_started(
-    const darknetxx011::ATrainingProjectPtr& project)
+    const darknetxx012::ATrainingProjectPtr& project)
 {
   auto* loader = &mwctx->wloader;
 
@@ -187,10 +187,10 @@ void TrainingEventsHandler::load_chart()
 }
 
 bool TrainingEventsHandler::show_recorded_chart(
-    const darknetxx011::ATrainingProject& project)
+    const darknetxx012::ATrainingProject& project)
 {
   const std::vector<unsigned char> png =
-      darknetxx011::LibraryFacade::training_chart(project.latest_weights());
+      darknetxx012::LibraryFacade::training_chart(project.latest_weights());
 
   if (png.empty()) {
     return false;

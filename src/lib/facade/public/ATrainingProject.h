@@ -1,5 +1,5 @@
-#ifndef DARKNETXX_011_ATRAININGPROJECT_CLASS_H
-#define DARKNETXX_011_ATRAININGPROJECT_CLASS_H
+#ifndef DARKNETXX_012_ATRAININGPROJECT_CLASS_H
+#define DARKNETXX_012_ATRAININGPROJECT_CLASS_H
 
 #include <filesystem>
 #include <memory>
@@ -8,7 +8,7 @@
 #include "LibraryAPI.h"
 #include "LibraryContext.h"
 
-namespace darknetxx011
+namespace darknetxx012
 {
 
 /**
@@ -65,6 +65,6 @@ class DARKNETXX_LIB_API ATrainingProject
 
 using ATrainingProjectPtr = std::shared_ptr<const ATrainingProject>;
 
-}  // namespace darknetxx011
+}  // namespace darknetxx012
 
-#endif  // DARKNETXX_011_ATRAININGPROJECT_CLASS_H
+#endif  // DARKNETXX_012_ATRAININGPROJECT_CLASS_H

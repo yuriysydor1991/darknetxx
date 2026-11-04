@@ -14,8 +14,8 @@
 
 using namespace testing;
 using darknet_adaptor::adaptors::TrainingChart;
-using darknet_adaptor::loaders::NetworkDescription;
-using darknet_adaptor::loaders::WeightsDocument;
+using dxxdd::NetworkDescription;
+using dxxdd::WeightsDocument;
 
 namespace
 {

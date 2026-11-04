@@ -24,7 +24,7 @@ class AWindowContext
   using Handlers = std::vector<window::event_handlers::IWindowEventHandlerPtr>;
 
   virtual ~AWindowContext() = default;
-  AWindowContext(app::AppCtxPtr nactx, darknetxx011::LibraryContextPtr nlibctx);
+  AWindowContext(app::AppCtxPtr nactx, darknetxx012::LibraryContextPtr nlibctx);
 
   /// @brief Loads the window and connects the event handlers of it.
   virtual bool load();
@@ -36,7 +36,7 @@ class AWindowContext
   virtual void clear();
 
   app::AppCtxPtr actx;
-  darknetxx011::LibraryContextPtr libctx;
+  darknetxx012::LibraryContextPtr libctx;
 
  protected:
   virtual window::AWindowLoader& loader() = 0;

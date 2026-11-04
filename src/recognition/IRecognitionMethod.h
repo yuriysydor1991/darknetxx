@@ -19,7 +19,7 @@ class IRecognitionMethod
 {
  public:
   using ClassNames = std::vector<std::string>;
-  using Objects = std::vector<darknetxx011::RecognizedObject>;
+  using Objects = std::vector<darknetxx012::RecognizedObject>;
 
   virtual ~IRecognitionMethod() = default;
   IRecognitionMethod() = default;

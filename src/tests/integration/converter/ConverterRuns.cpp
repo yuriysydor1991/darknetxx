@@ -12,13 +12,10 @@
 #include <tuple>
 #include <vector>
 
+#include "FormatsAccess.h"
 #include "ITEST_converter_provider.h"
 #include "NetworkChecks.h"
 #include "WeightsFile.h"
-#include "src/NetworksLoaders/dxxwjz/dxxwjz1/Dxxwjz1Reader.h"
-#include "src/NetworksLoaders/dxxwjz/dxxwjz2/Dxxwjz2Reader.h"
-#include "src/NetworksLoaders/original-weights/OrigWeightsReader.h"
-#include "src/NetworksLoaders/original-weights/OrigWeightsWriter.h"
 
 namespace converter_test
 {

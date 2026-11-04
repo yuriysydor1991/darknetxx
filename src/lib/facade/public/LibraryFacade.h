@@ -1,5 +1,5 @@
-#ifndef DARKNETXX_011_LIBRARYFACADE_CLASS_H
-#define DARKNETXX_011_LIBRARYFACADE_CLASS_H
+#ifndef DARKNETXX_012_LIBRARYFACADE_CLASS_H
+#define DARKNETXX_012_LIBRARYFACADE_CLASS_H
 
 #include <string>
 #include <tuple>
@@ -13,7 +13,7 @@
 #include "LibraryAPI.h"
 #include "LibraryContext.h"
 
-namespace darknetxx011
+namespace darknetxx012
 {
 
 /**
@@ -119,6 +119,6 @@ class DARKNETXX_LIB_API LibraryFacade
   static void init_logger(const logger::ILoggerPtr& appLogger);
 };
 
-}  // namespace darknetxx011
+}  // namespace darknetxx012
 
-#endif  // DARKNETXX_011_LIBRARYFACADE_CLASS_H
+#endif  // DARKNETXX_012_LIBRARYFACADE_CLASS_H

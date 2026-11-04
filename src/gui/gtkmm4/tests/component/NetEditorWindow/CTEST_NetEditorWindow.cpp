@@ -167,8 +167,8 @@ class CTEST_NetEditorWindow : public testing::Test
   char** argv{nullptr};
   std::shared_ptr<app::ApplicationContext> actx{
       std::make_shared<app::ApplicationContext>(argc, argv)};
-  darknetxx011::LibraryContextPtr libctx{
-      darknetxx011::LibraryFacade::create_library_context()};
+  darknetxx012::LibraryContextPtr libctx{
+      darknetxx012::LibraryFacade::create_library_context()};
   std::shared_ptr<NetEditorWindowContext> mwctx;
   darknetxxGtkmm4::window::NetEditorWindowLoader* loader{nullptr};
 };

@@ -25,7 +25,7 @@ class RecognitionPainter
    */
   static std::vector<unsigned char> paint(
       const cv::Mat& image,
-      const std::vector<darknetxx011::RecognizedObject>& objects);
+      const std::vector<darknetxx012::RecognizedObject>& objects);
 };
 
 }  // namespace darknetxx_impl

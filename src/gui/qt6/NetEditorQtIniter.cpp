@@ -14,7 +14,7 @@ namespace darknetxxQt6
 {
 
 bool NetEditorQtIniter::run(app::AppCtxPtr ctx,
-                            darknetxx011::LibraryContextPtr libctx)
+                            darknetxx012::LibraryContextPtr libctx)
 {
   static constexpr const int WATCH_INTERVAL_MS = 200;
 

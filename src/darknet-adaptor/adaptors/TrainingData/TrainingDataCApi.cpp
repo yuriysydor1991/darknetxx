@@ -15,7 +15,7 @@
 #include "src/darknet-adaptor/adaptors/orig-includes.h"
 
 using darknet_adaptor::adaptors::TrainingDataRegistry;
-using darknet_adaptor::loaders::Yolo4Box;
+using dxxdd::Yolo4Box;
 
 extern "C" {
 

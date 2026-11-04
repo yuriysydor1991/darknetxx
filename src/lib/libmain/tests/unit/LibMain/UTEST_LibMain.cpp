@@ -9,8 +9,8 @@
 #include "src/lib/libmain/LibMain.h"
 
 using darknet_adaptor::DarknetController;
-using darknetxx011::LibraryContext;
-using darknetxx011::LibraryContextPtr;
+using darknetxx012::LibraryContext;
+using darknetxx012::LibraryContextPtr;
 using darknetxx_impl::LibMain;
 using ompi::OMPController;
 

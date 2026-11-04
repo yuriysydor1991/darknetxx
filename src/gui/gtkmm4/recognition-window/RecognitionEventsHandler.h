@@ -42,11 +42,11 @@ class RecognitionEventsHandler : public IWindowEventHandler
 
  private:
   std::shared_ptr<RecognitionWindowContext> mwctx;
-  darknetxx011::IRecognizerPtr recognizer;
+  darknetxx012::IRecognizerPtr recognizer;
 
   /// @brief The running recognition, joined once it is shown.
   std::thread mworker;
-  darknetxx011::Recognition mrecognition;
+  darknetxx012::Recognition mrecognition;
   Glib::Dispatcher mrecognized;
 
   /// @brief The entries changed while the recognition ran.

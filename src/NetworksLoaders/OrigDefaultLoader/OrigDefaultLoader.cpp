@@ -16,11 +16,8 @@
 #include <utility>
 #include <vector>
 
-#include "src/NetworksLoaders/OrigDefaultLoader/CfgSection.h"
-#include "src/NetworksLoaders/weights-formats/NetworkSource.h"
-#include "src/NetworksLoaders/weights-formats/WeightsFileFormats.h"
-#include "src/NetworksLoaders/weights-model/NetworkFiles.h"
-#include "src/NetworksLoaders/weights-model/WeightsSchema.h"
+#include "src/NetworksLoaders/DataDriversAliases.h"
+#include "src/NetworksLoaders/network-weights/NetworkWeights.h"
 #include "src/darknet-adaptor/DarknetContext.h"
 #include "src/darknet-adaptor/adaptors/ALayerAdaptor/ALayerAdaptor.h"
 #include "src/darknet-adaptor/adaptors/ANetworkAdaptor/ANetworkAdaptor.h"
@@ -168,6 +165,12 @@ bool OrigDefaultLoader::load(DarknetContextPtr dctx)
     LOGE("Failure to load the network: " << error.what());
     return false;
   }
+  // the cfg sections of the library throw their own error: the cfg file
+  // unable to open, the option before the first section
+  catch (const dxxdd::CfgError& error) {
+    LOGE("Failure to load the network: " << error.what());
+    return false;
+  }
   catch (const std::bad_alloc& error) {
     LOGE("Failure to allocate the network, possibly out of CPU RAM: "
          << error.what());
@@ -190,8 +193,8 @@ bool OrigDefaultLoader::load_train_networks(const DarknetContextPtr& dctx)
 
   const std::string& cfg = dctx->get_Train_cfg();
   const std::string& weights = dctx->get_Latest_weights();
-  const IWeightsFileFormatPtr format =
-      WeightsFileFormats::named(dctx->get_Save_format());
+  const dxxdd::IWeightsFileFormatPtr format =
+      dxxdd::WeightsFileFormats::named(dctx->get_Save_format());
 
   if (format == nullptr) {
     throw NetworkError("Unknown network weights file format to save: " +
@@ -199,10 +202,10 @@ bool OrigDefaultLoader::load_train_networks(const DarknetContextPtr& dctx)
   }
 
   // the network file of the dxxwjz2p project keeps the annotations too
-  const WeightsDocument source = read_source(cfg);
-  const NetworkDescription& description = source.network;
+  const dxxdd::WeightsDocument source = read_source(cfg);
+  const dxxdd::NetworkDescription& description = source.network;
   const bool annotated = !source.annotations.empty();
-  WeightsDocument rest;
+  dxxdd::WeightsDocument rest;
   std::vector<ANetworkAdaptorPtr> nets;
   // the iteration of the weights the training goes on from
   int iteration = 0;
@@ -272,7 +275,7 @@ bool OrigDefaultLoader::load_train_networks(const DarknetContextPtr& dctx)
         " names for classes=" + std::to_string(net.layers[net.n - 1].classes));
   }
 
-  rest.network = NetworkDescription{description.cfg(), names};
+  rest.network = dxxdd::NetworkDescription{description.cfg(), names};
   rest.annotations = source.annotations;
 
   // the description of the project over the one of the weights it resumes
@@ -281,7 +284,7 @@ bool OrigDefaultLoader::load_train_networks(const DarknetContextPtr& dctx)
   }
 
   dctx->set_class_names(names);
-  dctx->set_training_base(NetworkSource::base_of(cfg, iteration));
+  dctx->set_training_base(dxxdd::NetworkSource::base_of(cfg, iteration));
 
   dctx->set_train_networks(std::move(nets));
   dctx->set_map_network(std::move(map));
@@ -296,9 +299,9 @@ bool OrigDefaultLoader::load_train_networks(const DarknetContextPtr& dctx)
   // the project is the latest weights of it's training, the backups aside;
   // the dxxwjz4p one keeps the images, so the dxxwjz4 file beside it is
   const std::string trained =
-      annotated ? NetworkSource::trained_of(cfg) : std::string{};
+      annotated ? dxxdd::NetworkSource::trained_of(cfg) : std::string{};
 
-  if (NetworkSource::keeps_images(cfg)) {
+  if (dxxdd::NetworkSource::keeps_images(cfg)) {
     std::error_code error;
     const std::filesystem::path project = std::filesystem::absolute(cfg, error);
 
@@ -314,7 +317,7 @@ bool OrigDefaultLoader::load_train_networks(const DarknetContextPtr& dctx)
 }
 
 ANetworkAdaptorPtr OrigDefaultLoader::make_map_network(
-    const DarknetContextPtr& dctx, const NetworkDescription& description,
+    const DarknetContextPtr& dctx, const dxxdd::NetworkDescription& description,
     const ANetworkAdaptorPtr& train)
 {
   auto odctx = dctx->get_darknet_ctx();
@@ -365,14 +368,14 @@ ANetworkAdaptorPtr OrigDefaultLoader::load_inference_network(
     const std::string& cfg, const std::string& weights,
     const std::string& names, std::vector<std::string>& classes)
 {
-  const NetworkDescription description = read_description(cfg);
+  const dxxdd::NetworkDescription description = read_description(cfg);
 
   // set batch=1
   ANetworkAdaptorPtr net = parse_network_text(description.cfg(), cfg, 1, 1);
 
   require_weights(weights);
 
-  WeightsDocument rest;
+  dxxdd::WeightsDocument rest;
 
   load_weights(*net->get(), weights, rest);
 
@@ -384,16 +387,17 @@ ANetworkAdaptorPtr OrigDefaultLoader::load_inference_network(
   return net;
 }
 
-NetworkDescription OrigDefaultLoader::read_description(const std::string& path)
+dxxdd::NetworkDescription OrigDefaultLoader::read_description(
+    const std::string& path)
 {
   return read_source(path).network;
 }
 
-WeightsDocument OrigDefaultLoader::read_source(const std::string& path)
+dxxdd::WeightsDocument OrigDefaultLoader::read_source(const std::string& path)
 {
-  WeightsDocument source;
+  dxxdd::WeightsDocument source;
 
-  if (!NetworkSource::read(path, source)) {
+  if (!dxxdd::NetworkSource::read(path, source)) {
     throw NetworkError("Couldn't read the network of the file: " + path);
   }
 
@@ -401,24 +405,24 @@ WeightsDocument OrigDefaultLoader::read_source(const std::string& path)
 }
 
 void OrigDefaultLoader::load_weights(network& net, const std::string& weights,
-                                     WeightsDocument& rest)
+                                     dxxdd::WeightsDocument& rest)
 {
-  const IWeightsReaderPtr reader =
-      WeightsFileFormats::of_file(weights)->create_reader();
+  const dxxdd::IWeightsReaderPtr reader =
+      dxxdd::WeightsFileFormats::of_file(weights)->create_reader();
 
-  if (!reader->load(net, weights, net.n, rest)) {
+  if (!reader->load(NetworkWeights{net}, weights, net.n, rest)) {
     throw NetworkError("Couldn't load the weights file: " + weights);
   }
 }
 
 void OrigDefaultLoader::require_weights(const std::string& weights)
 {
-  WeightsDocument rest;
+  dxxdd::WeightsDocument rest;
   bool held = true;
 
-  if (NetworkSource::describes(weights) &&
-      WeightsFileFormats::of_file(weights)->create_reader()->peek(weights, rest,
-                                                                  held) &&
+  if (dxxdd::NetworkSource::describes(weights) &&
+      dxxdd::WeightsFileFormats::of_file(weights)->create_reader()->peek(
+          weights, rest, held) &&
       !held) {
     throw NetworkError("The " + weights +
                        " file holds no weights, it's the network to train");
@@ -426,13 +430,13 @@ void OrigDefaultLoader::require_weights(const std::string& weights)
 }
 
 std::vector<std::string> OrigDefaultLoader::class_names(
-    const std::string& file, const WeightsDocument& rest,
-    const NetworkDescription& description, const network& net)
+    const std::string& file, const dxxdd::WeightsDocument& rest,
+    const dxxdd::NetworkDescription& description, const network& net)
 {
   std::vector<std::string> names;
 
   if (!file.empty()) {
-    if (!NetworkFiles::read_classes(file, names)) {
+    if (!dxxdd::NetworkFiles::read_classes(file, names)) {
       LOGE("Couldn't read the class names file: " << file);
     }
 
@@ -451,7 +455,7 @@ std::vector<std::string> OrigDefaultLoader::class_names(
 
   if (net.names != nullptr &&
       std::filesystem::is_regular_file(net.names, error)) {
-    NetworkFiles::read_classes(net.names, names);
+    dxxdd::NetworkFiles::read_classes(net.names, names);
   }
 
   return names;
@@ -475,7 +479,7 @@ ANetworkAdaptorPtr OrigDefaultLoader::load_network(const std::string& cfg,
   if (!weights.empty()) {
     CLOGI(" Try to load weights: %s", weights.c_str());
 
-    WeightsDocument rest;
+    dxxdd::WeightsDocument rest;
 
     load_weights(*net->get(), weights, rest);
   }
@@ -499,7 +503,7 @@ ANetworkAdaptorPtr OrigDefaultLoader::load_network_custom(
   if (!weights.empty()) {
     CLOGI(" Try to load weights: %s", weights.c_str());
 
-    WeightsDocument rest;
+    dxxdd::WeightsDocument rest;
 
     load_weights(*net->get(), weights, rest);
   }
@@ -532,7 +536,7 @@ ANetworkAdaptorPtr OrigDefaultLoader::parse_network_text(
     int time_steps)
 {
   std::istringstream text{cfg};
-  CfgSections sections = CfgSection::read_cfg(text, filename);
+  dxxdd::CfgSections sections = dxxdd::CfgSection::read_cfg(text, filename);
 
   if (sections.empty()) {
     CLOGEM("Config file has no sections");
@@ -553,7 +557,7 @@ ANetworkAdaptorPtr OrigDefaultLoader::parse_network_text(
     params.train = 1;  // allocates memory for Inference & Training
   }
 
-  CfgSection& net_section = sections.front();
+  dxxdd::CfgSection& net_section = sections.front();
 
   if (net_section.type() != "[net]" && net_section.type() != "[network]") {
     CLOGEM("First section must be [net] or [network]");
@@ -608,7 +612,7 @@ ANetworkAdaptorPtr OrigDefaultLoader::parse_network_text(
 
   for (size_t section = 1U; section < sections.size(); ++section) {
     const int count = static_cast<int>(section) - 1;
-    CfgSection& options = sections[section];
+    dxxdd::CfgSection& options = sections[section];
 
     params.train = old_params_train;
     if (count < last_stop_backward) params.train = 0;
@@ -617,7 +621,8 @@ ANetworkAdaptorPtr OrigDefaultLoader::parse_network_text(
     CLOGI("%4d ", count);
 
     ALayerAdaptorPtr adaptor;
-    const LAYER_TYPE lt = WeightsSchema::section_type(options.type());
+    const LAYER_TYPE lt = NetworkWeights::type_of(
+        dxxdd::WeightsSchema::section_type(options.type()));
 
     if (lt == CONVOLUTIONAL) {
       adaptor = parse_convolutional(options, params);
@@ -878,7 +883,7 @@ learning_rate_policy OrigDefaultLoader::get_policy(const std::string& s)
   return CONSTANT;
 }
 
-void OrigDefaultLoader::parse_net_options(CfgSection& options,
+void OrigDefaultLoader::parse_net_options(dxxdd::CfgSection& options,
                                           ANetworkAdaptor& anet)
 {
   network& net = *anet.get();
@@ -1062,7 +1067,7 @@ void OrigDefaultLoader::parse_net_options(CfgSection& options,
   net.savechart = options.find_int_quiet("savechart", 0);
 }
 
-ALayerAdaptorPtr OrigDefaultLoader::parse_local(CfgSection& options,
+ALayerAdaptorPtr OrigDefaultLoader::parse_local(dxxdd::CfgSection& options,
                                                 const size_params& params)
 {
   const int n = options.find_int("filters", 1);
@@ -1085,7 +1090,7 @@ ALayerAdaptorPtr OrigDefaultLoader::parse_local(CfgSection& options,
 }
 
 ALayerAdaptorPtr OrigDefaultLoader::parse_convolutional(
-    CfgSection& options, const size_params& params)
+    dxxdd::CfgSection& options, const size_params& params)
 {
   const int n = options.find_int("filters", 1);
   const int groups = options.find_int_quiet("groups", 1);
@@ -1184,7 +1189,7 @@ ALayerAdaptorPtr OrigDefaultLoader::parse_convolutional(
   return adaptor;
 }
 
-ALayerAdaptorPtr OrigDefaultLoader::parse_crnn(CfgSection& options,
+ALayerAdaptorPtr OrigDefaultLoader::parse_crnn(dxxdd::CfgSection& options,
                                                const size_params& params)
 {
   const int size = options.find_int_quiet("size", 3);
@@ -1212,7 +1217,7 @@ ALayerAdaptorPtr OrigDefaultLoader::parse_crnn(CfgSection& options,
   return adaptor;
 }
 
-ALayerAdaptorPtr OrigDefaultLoader::parse_rnn(CfgSection& options,
+ALayerAdaptorPtr OrigDefaultLoader::parse_rnn(dxxdd::CfgSection& options,
                                               const size_params& params)
 {
   const int output = options.find_int("output", 1);
@@ -1231,7 +1236,7 @@ ALayerAdaptorPtr OrigDefaultLoader::parse_rnn(CfgSection& options,
   return adaptor;
 }
 
-ALayerAdaptorPtr OrigDefaultLoader::parse_gru(CfgSection& options,
+ALayerAdaptorPtr OrigDefaultLoader::parse_gru(dxxdd::CfgSection& options,
                                               const size_params& params)
 {
   const int output = options.find_int("output", 1);
@@ -1241,7 +1246,7 @@ ALayerAdaptorPtr OrigDefaultLoader::parse_gru(CfgSection& options,
                                 params.time_steps, batch_normalize);
 }
 
-ALayerAdaptorPtr OrigDefaultLoader::parse_lstm(CfgSection& options,
+ALayerAdaptorPtr OrigDefaultLoader::parse_lstm(dxxdd::CfgSection& options,
                                                const size_params& params)
 {
   const int output = options.find_int("output", 1);
@@ -1251,7 +1256,7 @@ ALayerAdaptorPtr OrigDefaultLoader::parse_lstm(CfgSection& options,
                                  params.time_steps, batch_normalize);
 }
 
-ALayerAdaptorPtr OrigDefaultLoader::parse_conv_lstm(CfgSection& options,
+ALayerAdaptorPtr OrigDefaultLoader::parse_conv_lstm(dxxdd::CfgSection& options,
                                                     const size_params& params)
 {
   // a ConvLSTM with a larger transitional kernel should be able to capture
@@ -1289,7 +1294,7 @@ ALayerAdaptorPtr OrigDefaultLoader::parse_conv_lstm(CfgSection& options,
   return adaptor;
 }
 
-ALayerAdaptorPtr OrigDefaultLoader::parse_history(CfgSection& options,
+ALayerAdaptorPtr OrigDefaultLoader::parse_history(dxxdd::CfgSection& options,
                                                   const size_params& params)
 {
   const int history_size = options.find_int("history_size", 4);
@@ -1299,7 +1304,7 @@ ALayerAdaptorPtr OrigDefaultLoader::parse_history(CfgSection& options,
                                              params.time_steps, params.train);
 }
 
-ALayerAdaptorPtr OrigDefaultLoader::parse_connected(CfgSection& options,
+ALayerAdaptorPtr OrigDefaultLoader::parse_connected(dxxdd::CfgSection& options,
                                                     const size_params& params)
 {
   const int output = options.find_int("output", 1);
@@ -1317,7 +1322,7 @@ ALayerAdaptorPtr OrigDefaultLoader::parse_connected(CfgSection& options,
   return adaptor;
 }
 
-ALayerAdaptorPtr OrigDefaultLoader::parse_softmax(CfgSection& options,
+ALayerAdaptorPtr OrigDefaultLoader::parse_softmax(dxxdd::CfgSection& options,
                                                   const size_params& params)
 {
   const int groups = options.find_int_quiet("groups", 1);
@@ -1342,8 +1347,8 @@ ALayerAdaptorPtr OrigDefaultLoader::parse_softmax(CfgSection& options,
   return adaptor;
 }
 
-ALayerAdaptorPtr OrigDefaultLoader::parse_contrastive(CfgSection& options,
-                                                      const size_params& params)
+ALayerAdaptorPtr OrigDefaultLoader::parse_contrastive(
+    dxxdd::CfgSection& options, const size_params& params)
 {
   const int classes = options.find_int("classes", 1000);
   layer* yolo_layer = nullptr;
@@ -1448,7 +1453,7 @@ std::vector<float> OrigDefaultLoader::get_classes_multipliers(const char* cpc,
   return classes_multipliers;
 }
 
-ALayerAdaptorPtr OrigDefaultLoader::parse_yolo(CfgSection& options,
+ALayerAdaptorPtr OrigDefaultLoader::parse_yolo(dxxdd::CfgSection& options,
                                                const size_params& params)
 {
   const int classes = options.find_int("classes", 20);
@@ -1596,7 +1601,7 @@ ALayerAdaptorPtr OrigDefaultLoader::parse_yolo(CfgSection& options,
 }
 
 ALayerAdaptorPtr OrigDefaultLoader::parse_gaussian_yolo(
-    CfgSection& options, const size_params& params)
+    dxxdd::CfgSection& options, const size_params& params)
 {
   const int classes = options.find_int("classes", 20);
   const int max_boxes = options.find_int_quiet("max", 200);
@@ -1726,7 +1731,7 @@ ALayerAdaptorPtr OrigDefaultLoader::parse_gaussian_yolo(
   return adaptor;
 }
 
-ALayerAdaptorPtr OrigDefaultLoader::parse_region(CfgSection& options,
+ALayerAdaptorPtr OrigDefaultLoader::parse_region(dxxdd::CfgSection& options,
                                                  const size_params& params)
 {
   const int coords = options.find_int("coords", 4);
@@ -1786,7 +1791,7 @@ ALayerAdaptorPtr OrigDefaultLoader::parse_region(CfgSection& options,
   return adaptor;
 }
 
-ALayerAdaptorPtr OrigDefaultLoader::parse_detection(CfgSection& options,
+ALayerAdaptorPtr OrigDefaultLoader::parse_detection(dxxdd::CfgSection& options,
                                                     const size_params& params)
 {
   const int coords = options.find_int("coords", 1);
@@ -1816,7 +1821,7 @@ ALayerAdaptorPtr OrigDefaultLoader::parse_detection(CfgSection& options,
   return adaptor;
 }
 
-ALayerAdaptorPtr OrigDefaultLoader::parse_cost(CfgSection& options,
+ALayerAdaptorPtr OrigDefaultLoader::parse_cost(dxxdd::CfgSection& options,
                                                const size_params& params)
 {
   const char* type_s = options.find_str("type", "sse");
@@ -1831,7 +1836,7 @@ ALayerAdaptorPtr OrigDefaultLoader::parse_cost(CfgSection& options,
   return adaptor;
 }
 
-ALayerAdaptorPtr OrigDefaultLoader::parse_crop(CfgSection& options,
+ALayerAdaptorPtr OrigDefaultLoader::parse_crop(dxxdd::CfgSection& options,
                                                const size_params& params)
 {
   const int crop_height = options.find_int("crop_height", 1);
@@ -1862,7 +1867,7 @@ ALayerAdaptorPtr OrigDefaultLoader::parse_crop(CfgSection& options,
   return adaptor;
 }
 
-ALayerAdaptorPtr OrigDefaultLoader::parse_reorg(CfgSection& options,
+ALayerAdaptorPtr OrigDefaultLoader::parse_reorg(dxxdd::CfgSection& options,
                                                 const size_params& params)
 {
   const int stride = options.find_int("stride", 1);
@@ -1879,7 +1884,7 @@ ALayerAdaptorPtr OrigDefaultLoader::parse_reorg(CfgSection& options,
   return layers::ReorgLayer::make(batch, w, h, c, stride, reverse);
 }
 
-ALayerAdaptorPtr OrigDefaultLoader::parse_reorg_old(CfgSection& options,
+ALayerAdaptorPtr OrigDefaultLoader::parse_reorg_old(dxxdd::CfgSection& options,
                                                     const size_params& params)
 {
   CLOGIM("reorg_old");
@@ -1899,7 +1904,7 @@ ALayerAdaptorPtr OrigDefaultLoader::parse_reorg_old(CfgSection& options,
 }
 
 ALayerAdaptorPtr OrigDefaultLoader::parse_local_avgpool(
-    CfgSection& options, const size_params& params)
+    dxxdd::CfgSection& options, const size_params& params)
 {
   const int stride = options.find_int("stride", 1);
   const int stride_x = options.find_int_quiet("stride_x", stride);
@@ -1924,7 +1929,7 @@ ALayerAdaptorPtr OrigDefaultLoader::parse_local_avgpool(
                                     antialiasing, avgpool, params.train);
 }
 
-ALayerAdaptorPtr OrigDefaultLoader::parse_maxpool(CfgSection& options,
+ALayerAdaptorPtr OrigDefaultLoader::parse_maxpool(dxxdd::CfgSection& options,
                                                   const size_params& params)
 {
   const int stride = options.find_int("stride", 1);
@@ -1955,7 +1960,7 @@ ALayerAdaptorPtr OrigDefaultLoader::parse_maxpool(CfgSection& options,
   return adaptor;
 }
 
-ALayerAdaptorPtr OrigDefaultLoader::parse_avgpool(CfgSection& options,
+ALayerAdaptorPtr OrigDefaultLoader::parse_avgpool(dxxdd::CfgSection& options,
                                                   const size_params& params)
 {
   (void)options;
@@ -1971,7 +1976,7 @@ ALayerAdaptorPtr OrigDefaultLoader::parse_avgpool(CfgSection& options,
   return layers::AvgpoolLayer::make(batch, w, h, c);
 }
 
-ALayerAdaptorPtr OrigDefaultLoader::parse_dropout(CfgSection& options,
+ALayerAdaptorPtr OrigDefaultLoader::parse_dropout(dxxdd::CfgSection& options,
                                                   const size_params& params)
 {
   const float probability = options.find_float("probability", .2f);
@@ -2013,7 +2018,7 @@ ALayerAdaptorPtr OrigDefaultLoader::parse_dropout(CfgSection& options,
 }
 
 ALayerAdaptorPtr OrigDefaultLoader::parse_normalization(
-    CfgSection& options, const size_params& params)
+    dxxdd::CfgSection& options, const size_params& params)
 {
   const float alpha = options.find_float("alpha", .0001f);
   const float beta = options.find_float("beta", .75);
@@ -2024,7 +2029,7 @@ ALayerAdaptorPtr OrigDefaultLoader::parse_normalization(
                                           params.c, size, alpha, beta, kappa);
 }
 
-ALayerAdaptorPtr OrigDefaultLoader::parse_batchnorm(CfgSection& options,
+ALayerAdaptorPtr OrigDefaultLoader::parse_batchnorm(dxxdd::CfgSection& options,
                                                     const size_params& params)
 {
   (void)options;
@@ -2033,7 +2038,7 @@ ALayerAdaptorPtr OrigDefaultLoader::parse_batchnorm(CfgSection& options,
                                       params.c, params.train);
 }
 
-ALayerAdaptorPtr OrigDefaultLoader::parse_shortcut(CfgSection& options,
+ALayerAdaptorPtr OrigDefaultLoader::parse_shortcut(dxxdd::CfgSection& options,
                                                    const size_params& params)
 {
   const char* activation_s = options.find_str("activation", "linear");
@@ -2124,7 +2129,7 @@ ALayerAdaptorPtr OrigDefaultLoader::parse_shortcut(CfgSection& options,
 }
 
 ALayerAdaptorPtr OrigDefaultLoader::parse_scale_channels(
-    CfgSection& options, const size_params& params)
+    dxxdd::CfgSection& options, const size_params& params)
 {
   const char* l = options.find("from");
   if (!l) {
@@ -2151,7 +2156,7 @@ ALayerAdaptorPtr OrigDefaultLoader::parse_scale_channels(
   return adaptor;
 }
 
-ALayerAdaptorPtr OrigDefaultLoader::parse_sam(CfgSection& options,
+ALayerAdaptorPtr OrigDefaultLoader::parse_sam(dxxdd::CfgSection& options,
                                               const size_params& params)
 {
   const char* l = options.find("from");
@@ -2178,7 +2183,7 @@ ALayerAdaptorPtr OrigDefaultLoader::parse_sam(CfgSection& options,
   return adaptor;
 }
 
-ALayerAdaptorPtr OrigDefaultLoader::parse_implicit(CfgSection& options,
+ALayerAdaptorPtr OrigDefaultLoader::parse_implicit(dxxdd::CfgSection& options,
                                                    const size_params& params)
 {
   const float mean_init = options.find_float("mean", 0.0);
@@ -2190,7 +2195,7 @@ ALayerAdaptorPtr OrigDefaultLoader::parse_implicit(CfgSection& options,
                                      std_init, filters, atoms);
 }
 
-ALayerAdaptorPtr OrigDefaultLoader::parse_activation(CfgSection& options,
+ALayerAdaptorPtr OrigDefaultLoader::parse_activation(dxxdd::CfgSection& options,
                                                      const size_params& params)
 {
   const char* activation_s = options.find_str("activation", "linear");
@@ -2210,7 +2215,7 @@ ALayerAdaptorPtr OrigDefaultLoader::parse_activation(CfgSection& options,
   return adaptor;
 }
 
-ALayerAdaptorPtr OrigDefaultLoader::parse_upsample(CfgSection& options,
+ALayerAdaptorPtr OrigDefaultLoader::parse_upsample(dxxdd::CfgSection& options,
                                                    const size_params& params)
 {
   const int stride = options.find_int("stride", 2);
@@ -2223,7 +2228,7 @@ ALayerAdaptorPtr OrigDefaultLoader::parse_upsample(CfgSection& options,
   return adaptor;
 }
 
-ALayerAdaptorPtr OrigDefaultLoader::parse_route(CfgSection& options,
+ALayerAdaptorPtr OrigDefaultLoader::parse_route(dxxdd::CfgSection& options,
                                                 const size_params& params)
 {
   const char* l = options.find("layers");

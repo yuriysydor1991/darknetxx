@@ -27,7 +27,7 @@ class UTEST_ApplicationFactory : public Test
     Application::onMockCreate = nullptr;
     ApplicationHelpPrinter::onMockCreate = nullptr;
     ApplicationVersionPrinter::onMockCreate = nullptr;
-    darknetxx011::LibraryFacade::reset();
+    darknetxx012::LibraryFacade::reset();
     SignalsHandler::onMockCreate = nullptr;
   }
 
@@ -424,7 +424,7 @@ TEST_F(UTEST_ApplicationFactory, the_library_logs_into_the_application_logger)
 
   EXPECT_CALL(initLogger, Call(_)).Times(1);
 
-  darknetxx011::LibraryFacade::on_init_logger = initLogger.AsStdFunction();
+  darknetxx012::LibraryFacade::on_init_logger = initLogger.AsStdFunction();
 
   factory->run(customArgc, customArgv);
 }

@@ -3,7 +3,7 @@
 #include <iomanip>
 #include <sstream>
 
-namespace darknetxx011
+namespace darknetxx012
 {
 
 bool Recognition::succeeded() const { return error.empty(); }
@@ -23,4 +23,4 @@ std::string Recognition::summary_text() const
   return text.str();
 }
 
-}  // namespace darknetxx011
+}  // namespace darknetxx012

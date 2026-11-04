@@ -9,7 +9,7 @@
 
 using namespace app;
 using namespace testing;
-using darknetxx011::LibraryFacade;
+using darknetxx012::LibraryFacade;
 
 class UTEST_NetworkCfgPrinter : public Test
 {

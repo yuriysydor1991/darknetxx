@@ -7,7 +7,7 @@
 #include "src/converters/ApplicationContext2LibraryContext.h"
 
 using converters::ApplicationContext2LibraryContext;
-using darknetxx011::LibraryContext;
+using darknetxx012::LibraryContext;
 
 class UTEST_ApplicationContext2LibraryContext : public testing::Test
 {
@@ -15,7 +15,7 @@ class UTEST_ApplicationContext2LibraryContext : public testing::Test
   int argc{0};
   char** argv{nullptr};
   app::AppCtxPtr appctx{std::make_shared<app::ApplicationContext>(argc, argv)};
-  darknetxx011::LibraryContextPtr libctx{std::make_shared<LibraryContext>()};
+  darknetxx012::LibraryContextPtr libctx{std::make_shared<LibraryContext>()};
   ApplicationContext2LibraryContext converter;
 };
 

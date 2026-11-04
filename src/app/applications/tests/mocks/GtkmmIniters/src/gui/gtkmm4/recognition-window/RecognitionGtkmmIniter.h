@@ -9,7 +9,7 @@ namespace darknetxxGtkmm4
 class RecognitionGtkmmIniter : public gui::IGUIIniter
 {
  public:
-  bool run(app::AppCtxPtr, darknetxx011::LibraryContextPtr) override
+  bool run(app::AppCtxPtr, darknetxx012::LibraryContextPtr) override
   {
     return true;
   }

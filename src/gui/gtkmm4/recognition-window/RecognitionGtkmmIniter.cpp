@@ -13,7 +13,7 @@ RecognitionGtkmmIniter::RecognitionGtkmmIniter()
 }
 
 std::shared_ptr<AWindowContext> RecognitionGtkmmIniter::create_window_context(
-    app::AppCtxPtr ctx, darknetxx011::LibraryContextPtr libctx)
+    app::AppCtxPtr ctx, darknetxx012::LibraryContextPtr libctx)
 {
   return std::make_shared<RecognitionWindowContext>(ctx, libctx);
 }

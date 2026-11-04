@@ -62,7 +62,7 @@ package "src/gui/qt6" {
   [NetEditorMainWindow,\nNetEditorQtIniter] as qtwin
 }
 
-package "src/lib (the darknetxx-0.11 shared library)" as libpkg {
+package "src/lib (the darknetxx-0.12 shared library)" as libpkg {
   package "facade/public" {
     [LibraryFacade] as facade
     [LibraryContext] as libctx

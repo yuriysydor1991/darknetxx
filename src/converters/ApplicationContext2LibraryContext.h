@@ -20,7 +20,7 @@ namespace converters
 class ApplicationContext2LibraryContext
 {
  public:
-  using LibraryContextPtr = darknetxx011::LibraryContextPtr;
+  using LibraryContextPtr = darknetxx012::LibraryContextPtr;
 
   virtual ~ApplicationContext2LibraryContext() = default;
   ApplicationContext2LibraryContext() = default;
@@ -30,9 +30,9 @@ class ApplicationContext2LibraryContext
 
  protected:
   static void convert_darknet_params(const app::ApplicationContext& appctx,
-                                     darknetxx011::LibraryContext& libctx);
+                                     darknetxx012::LibraryContext& libctx);
   static void convert_conversion_params(const app::ApplicationContext& appctx,
-                                        darknetxx011::LibraryContext& libctx);
+                                        darknetxx012::LibraryContext& libctx);
 };
 
 using ApplicationContext2LibraryContextPtr =

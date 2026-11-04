@@ -3,7 +3,7 @@
 The whole functionality of the project - the darknet training and detection,
 the network weights files conversion, the background training of the YOLO4
 folders and of the dxxwjz2p, dxxwjz3p and dxxwjz4p projects and the recognition of the images by the networks of the weights
-files - is the shared `darknetxx-0.11` library the
+files - is the shared `darknetxx-0.12` library the
 [`src/lib`](/src/lib) directory builds of the facade, the `libmain` and the
 components beside it, laid out the way the
 [cpp-app-template](https://github.com/yuriysydor1991/cpp-app-template) `applib`
@@ -20,7 +20,7 @@ The standalone source of the diagram below is
 @startuml
 hide empty members
 
-package "darknetxx011 (the installed facade/public headers)" {
+package "darknetxx012 (the installed facade/public headers)" {
   class LibraryFacade {
     +{static} create_library_context() : LibraryContextPtr
     +{static} create_library(ctx) : ILibPtr
@@ -147,7 +147,7 @@ LibraryFacade ..> ILogger : adopts
 ## The facade
 
 The [`src/lib/facade/public`](/src/lib/facade/public) headers are the whole
-installable interface of the library, in the `darknetxx011` namespace (the
+installable interface of the library, in the `darknetxx012` namespace (the
 project name and it's major and minor version):
 
 - **`LibraryFacade`** - the entry point: it creates the library context, the

@@ -6,10 +6,10 @@
 namespace darknetxx_impl
 {
 
-class WeightsConversionLib : public darknetxx011::ILib
+class WeightsConversionLib : public darknetxx012::ILib
 {
  public:
-  bool libcall(darknetxx011::LibraryContextPtr) override { return true; }
+  bool libcall(darknetxx012::LibraryContextPtr) override { return true; }
 };
 
 }  // namespace darknetxx_impl

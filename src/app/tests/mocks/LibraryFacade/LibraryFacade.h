@@ -1,5 +1,5 @@
-#ifndef DARKNETXX_011_LIBRARYFACADE_CLASS_H
-#define DARKNETXX_011_LIBRARYFACADE_CLASS_H
+#ifndef DARKNETXX_012_LIBRARYFACADE_CLASS_H
+#define DARKNETXX_012_LIBRARYFACADE_CLASS_H
 
 #include <functional>
 #include <memory>
@@ -12,7 +12,7 @@
 #include "ITrainer.h"
 #include "LibraryContext.h"
 
-namespace darknetxx011
+namespace darknetxx012
 {
 
 /**
@@ -81,6 +81,6 @@ class LibraryFacade
   }
 };
 
-}  // namespace darknetxx011
+}  // namespace darknetxx012
 
-#endif  // DARKNETXX_011_LIBRARYFACADE_CLASS_H
+#endif  // DARKNETXX_012_LIBRARYFACADE_CLASS_H

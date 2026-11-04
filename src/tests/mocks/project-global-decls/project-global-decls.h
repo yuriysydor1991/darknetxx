@@ -7,7 +7,6 @@ namespace project_decls
 {
 
 const std::string PROJECT_NAME = "darknetxx";
-const std::string PROJECT_CONVERTER_NAME = "darknetxxConverter";
 const std::string PROJECT_TRAIN_GUI_NAME = "darknetxx-train-gui";
 const std::string PROJECT_RECOGNITION_GUI_NAME = "darknetxx-recognition-gui";
 const std::string PROJECT_NET_EDITOR_GUI_NAME = "darknetxx-net-editor-gui";

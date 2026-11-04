@@ -70,7 +70,7 @@ TEST_F(CTEST_NetworkProject, the_new_network_saves_and_opens_back)
   EXPECT_FALSE(opened.modified());
 
   // the saved project is the network to train
-  ASSERT_TRUE(darknetxx011::LibraryFacade::network_description(
+  ASSERT_TRUE(darknetxx012::LibraryFacade::network_description(
       file("net.dxxwjz3p"), cfg, classes));
   EXPECT_EQ(cfg, project.model.cfg());
 }

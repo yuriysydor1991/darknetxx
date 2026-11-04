@@ -45,8 +45,6 @@ if(ENABLE_DARKNETXX_EXECUTABLES)
   if(NOT DARKNETXX_NET_EDITOR_ONLY)
     darknetxx_add_app_target(${DARKNETXX_BINARY_NAME})
     list(APPEND DARKNETXX_APP_TARGETS ${DARKNETXX_BINARY_NAME})
-
-    include(${CMAKE_CURRENT_SOURCE_DIR}/darknetxxConverter-target.cmake)
   endif()
 
   include(${CMAKE_CURRENT_SOURCE_DIR}/darknetxx-gui-targets.cmake)

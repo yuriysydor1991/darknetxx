@@ -1,0 +1,14 @@
+#ifndef DARKNETXX_PROJECT_CTEST_NETWORK_WEIGHTS_DATA_PROVIDER_CLASS_H
+#define DARKNETXX_PROJECT_CTEST_NETWORK_WEIGHTS_DATA_PROVIDER_CLASS_H
+
+class CTEST_NetworkWeights_provider
+{
+ public:
+  /// the cfg files of the darknet networks, the yolov1 directory included
+  inline static constexpr const char* const CFG_DIR = "@CTEST_NETWORK_WEIGHTS_CFG_DIR@";
+
+  /// the reference networks and weights files of the loader component test
+  inline static constexpr const char* const DATA_DIR = "@CTEST_NETWORK_WEIGHTS_DATA_DIR@";
+};
+
+#endif  // DARKNETXX_PROJECT_CTEST_NETWORK_WEIGHTS_DATA_PROVIDER_CLASS_H

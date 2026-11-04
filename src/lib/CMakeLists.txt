@@ -12,7 +12,7 @@ add_compile_definitions(DARKNETXX_LIB_BUILDING=1)
 
 # The components the library is built of, the src directories beside this
 # one, included from here so they build under the library definitions above.
-foreach(LIB_COMPONENT darknet-adaptor helpers OMP zlib training recognition)
+foreach(LIB_COMPONENT darknet-adaptor helpers OMP training recognition)
   add_subdirectory(
     ${PROJECT_SOURCE_DIR}/src/${LIB_COMPONENT}
     ${PROJECT_BINARY_DIR}/src/${LIB_COMPONENT}
@@ -79,7 +79,7 @@ foreach(public_header IN LISTS DARKNETXX_LIB_PUBLIC_HEADERS)
 endforeach()
 
 # Both the include root and the library name one are exported, so a user
-# writes the safe #include <darknetxx-0.11/LibraryFacade.h> or the short
+# writes the safe #include <darknetxx-0.12/LibraryFacade.h> or the short
 # #include <LibraryFacade.h>.
 target_include_directories(
   ${DARKNETXX_LIBRARY_NAME}

@@ -122,8 +122,9 @@ set(
   "Sets the maximum severity of the compiled log messages. Error=0. Trace=5. By default Info=3"
 )
 
-# The dxxwjz1 network weights files are the JSON documents, so the library is
-# required (see the darknetxx-feature-enabler module).
+# The dxxwjz network weights files are the JSON documents of the
+# darknetxx-datadrivers library, which the component and the integration tests
+# read (see the darknetxx-feature-enabler module).
 option(
   ENABLE_NLOHMANN_JSON
   "Set to ON to enable the nlohmann json library (by using system wide available or through Internet)"
@@ -146,7 +147,7 @@ set(
 
 option(
   ENABLE_DARKNETXX_EXECUTABLES
-  "Build and install the darknetxx, the darknetxxConverter and the GUI executables beside the library"
+  "Build and install the darknetxx and the GUI executables beside the library"
   ${DARKNETXX_IS_TOP_LEVEL}
 )
 
@@ -157,32 +158,13 @@ option(
 )
 
 # ---------------------------------------------------------------------------
-# The converter only binary.
-#
-# The project builds two application binaries out of one and the same code.
-# The main one trains and runs the networks; the second one, named after it,
-# carries the network weights files format conversion alone (the original
-# darknet weights, the dxxwjz1 and the dxxwjz2 ones, see the
-# src/NetworksLoaders directory). It is the very same
-# src/app component compiled with the DARKNETXX_CONVERTER_ONLY definition,
-# which leaves the app::Application class (and with it the training and the
-# detection the class starts) out. The conversion stays available through the
-# command line of the main binary as well, so the second one adds a deployment
-# option rather than a feature.
-#
-#   (nothing given)                        -> both binaries
-#   -DENABLE_DARKNETXX_CONVERTER=OFF       -> the main binary alone
+# The network weights files converter only binary, the darknetxxConverter, is
+# the one of the darknetxx-datadrivers library the formats came to (see the
+# cmake/enablers/darknetxx-DarknetxxDataDrivers-enabler.cmake): the library
+# installs it beside itself. The conversion stays available through the command
+# line of the main binary of this project as well (the --convert-* flags), which
+# reads the original weights files by the darknet network of their cfg.
 # ---------------------------------------------------------------------------
-option(
-  ENABLE_DARKNETXX_CONVERTER
-  "Build the network weights files converter only binary beside the main application one"
-  ON
-)
-
-set(
-  DARKNETXX_CONVERTER_BINARY_NAME "${DARKNETXX_BINARY_NAME}Converter"
-  CACHE STRING "The network weights files converter only binary name and target"
-)
 
 # ---------------------------------------------------------------------------
 # The GUI binaries: the works of the main binary behind the GTKmm 4 windows

@@ -43,7 +43,7 @@ RecognitionWindowContext::Handlers RecognitionWindowContext::create_handlers()
   std::vector<std::string> formats;
 
   for (const std::string& extension :
-       darknetxx011::LibraryFacade::weights_extensions()) {
+       darknetxx012::LibraryFacade::weights_extensions()) {
     formats.push_back(extension.substr(1));
   }
 

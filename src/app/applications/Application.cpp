@@ -74,7 +74,7 @@ int Application::perform(AppCtxPtr ctx)
     return INVALID;
   }
 
-  auto lib = darknetxx011::LibraryFacade::create_library(libctx);
+  auto lib = darknetxx012::LibraryFacade::create_library(libctx);
 
   // the library tells the reason
   if (lib == nullptr) {
@@ -99,7 +99,7 @@ int Application::perform(AppCtxPtr ctx)
 int Application::draw_chart(AppCtxPtr ctx)
 {
   const std::vector<unsigned char> png =
-      darknetxx011::LibraryFacade::training_chart(ctx->latest_weights);
+      darknetxx012::LibraryFacade::training_chart(ctx->latest_weights);
 
   if (png.empty()) {
     LOGE("No training chart of the weights file " << ctx->latest_weights);
@@ -125,7 +125,7 @@ int Application::draw_chart(AppCtxPtr ctx)
 Application::LibraryContextPtr Application::create_and_convert_libctx(
     AppCtxPtr ctx)
 {
-  auto libctx = darknetxx011::LibraryFacade::create_library_context();
+  auto libctx = darknetxx012::LibraryFacade::create_library_context();
   auto converter = create_ctx_converter();
 
   assert(libctx != nullptr);

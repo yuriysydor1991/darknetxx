@@ -1,12 +1,12 @@
-#ifndef DARKNETXX_011_ITRAININGLISTENER_CLASS_H
-#define DARKNETXX_011_ITRAININGLISTENER_CLASS_H
+#ifndef DARKNETXX_012_ITRAININGLISTENER_CLASS_H
+#define DARKNETXX_012_ITRAININGLISTENER_CLASS_H
 
 #include <memory>
 
 #include "LibraryAPI.h"
 #include "TrainingProgress.h"
 
-namespace darknetxx011
+namespace darknetxx012
 {
 
 /**
@@ -26,6 +26,6 @@ class DARKNETXX_LIB_API ITrainingListener
 
 using ITrainingListenerPtr = std::shared_ptr<ITrainingListener>;
 
-}  // namespace darknetxx011
+}  // namespace darknetxx012
 
-#endif  // DARKNETXX_011_ITRAININGLISTENER_CLASS_H
+#endif  // DARKNETXX_012_ITRAININGLISTENER_CLASS_H

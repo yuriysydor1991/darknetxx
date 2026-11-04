@@ -8,8 +8,8 @@
 #include "src/recognition/NetworkRecognizer.h"
 #include "src/training/BackgroundTrainer.h"
 
-using darknetxx011::LibraryContext;
-using darknetxx011::LibraryContextPtr;
+using darknetxx012::LibraryContext;
+using darknetxx012::LibraryContextPtr;
 using namespace darknetxx_impl;
 
 class UTEST_LibFactory : public testing::Test

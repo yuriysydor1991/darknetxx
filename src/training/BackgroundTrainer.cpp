@@ -20,7 +20,7 @@ BackgroundTrainer::BackgroundTrainer(LibraryContextPtr nctx, ILibPtr ntraining)
   assert(training != nullptr);
 }
 
-bool BackgroundTrainer::train(const darknetxx011::ATrainingProject& project)
+bool BackgroundTrainer::train(const darknetxx012::ATrainingProject& project)
 {
   if (running()) {
     LOGE("The training is running already");

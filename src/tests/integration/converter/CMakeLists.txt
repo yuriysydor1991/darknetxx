@@ -1,12 +1,13 @@
 cmake_minimum_required(VERSION 3.13)
 
-# The integration test of the network weights files converter only binary: the
-# ITEST_converter tests run the darknetxxConverter executable (and the
-# conversion command line of the darknetxx one) the way a user does and check
-# the files it produces. The generated networks of every variant of the
-# weights factory convert from the original darknet weights file to the
+# The integration test of the network weights files conversion of the main
+# binary: the ITEST_converter tests run the conversion command line of the
+# darknetxx executable the way a user does and check the files it produces
+# (the darknetxxConverter binary is the one of the darknetxx-datadrivers
+# library now, it's own tests run it). The generated networks of every variant
+# of the weights factory convert from the original darknet weights file to the
 # dxxwjz1 and the dxxwjz2 ones and back into the same bytes.
-if(NOT TARGET ${DARKNETXX_CONVERTER_BINARY_NAME})
+if(NOT TARGET ${DARKNETXX_BINARY_NAME})
   message(STATUS
     "The ITEST_converter tests are skipped, the binary they drive is not "
     "being built")
@@ -35,14 +36,13 @@ add_executable(
 # the tests run the executables, so they are built along with them
 add_dependencies(
   ITEST_converter
-  ${DARKNETXX_CONVERTER_BINARY_NAME}
   ${DARKNETXX_BINARY_NAME}
 )
 
 target_compile_definitions(
   ITEST_converter
   PRIVATE
-    ITEST_CONVERTER_BINARY=\"$<TARGET_FILE:${DARKNETXX_CONVERTER_BINARY_NAME}>\"
+    ITEST_CONVERTER_BINARY=\"$<TARGET_FILE:${DARKNETXX_BINARY_NAME}>\"
     ITEST_DARKNETXX_BINARY=\"$<TARGET_FILE:${DARKNETXX_BINARY_NAME}>\"
 )
 
@@ -56,6 +56,7 @@ target_include_directories(
 target_link_libraries(
   ITEST_converter
   DarknetXXNetworksCore
+  DarknetXXFormatsAccess
   DarknetXXWeightsFactory
   GTest::gtest_main GTest::gmock
 )

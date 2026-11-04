@@ -4,7 +4,9 @@
 class ITEST_converter_provider
 {
  public:
-  // the executables paths are known at the build time only
+  // the executables paths are known at the build time only: the binary of
+  // the conversions is the main one (the darknetxxConverter binary is the one
+  // of the darknetxx-datadrivers library)
   inline static constexpr const char* const CONVERTER = ITEST_CONVERTER_BINARY;
   inline static constexpr const char* const DARKNETXX = ITEST_DARKNETXX_BINARY;
 

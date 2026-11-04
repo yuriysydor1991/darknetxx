@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.13)
 
 project(
   darknetxx
-  VERSION 0.11.0
+  VERSION 0.12.0
   DESCRIPTION "Ported version of Darknet NN"
   HOMEPAGE_URL "http://www.kytok.org.ua/"
   LANGUAGES CXX C
@@ -39,8 +39,8 @@ if(DARKNETXX_IS_TOP_LEVEL)
 else()
   # The options of the project which uses this one name it's own tests, tools,
   # packages and warnings, so the same named options of this one are turned
-  # off, and the libraries this one requires are turned on, all of them inside
-  # the scope of this project alone.
+  # off, all of them inside the scope of this project alone. The nlohmann json
+  # library serves the tests of this one alone.
   foreach(
     top_level_option
     ENABLE_UNIT_TESTS ENABLE_COMPONENT_TESTS ENABLE_INTEGRATION_TESTS
@@ -52,8 +52,7 @@ else()
     set(${top_level_option} OFF)
   endforeach()
 
-  set(ENABLE_ZLIB ON)
-  set(ENABLE_NLOHMANN_JSON ON)
+  set(ENABLE_NLOHMANN_JSON OFF)
 endif()
 
 set(CMAKE_CXX_STANDARD 17)

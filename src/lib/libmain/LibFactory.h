@@ -18,10 +18,10 @@ class LibFactory
 {
  public:
   using LibFactoryPtr = std::shared_ptr<LibFactory>;
-  using ILibPtr = darknetxx011::ILibPtr;
-  using ITrainerPtr = darknetxx011::ITrainerPtr;
-  using IRecognizerPtr = darknetxx011::IRecognizerPtr;
-  using LibraryContextPtr = darknetxx011::LibraryContextPtr;
+  using ILibPtr = darknetxx012::ILibPtr;
+  using ITrainerPtr = darknetxx012::ITrainerPtr;
+  using IRecognizerPtr = darknetxx012::IRecognizerPtr;
+  using LibraryContextPtr = darknetxx012::LibraryContextPtr;
 
   virtual ~LibFactory() = default;
 
@@ -30,7 +30,7 @@ class LibFactory
 
   virtual LibraryContextPtr create_default_context();
 
-  /// @brief See the darknetxx011::LibraryFacade::create_library.
+  /// @brief See the darknetxx012::LibraryFacade::create_library.
   virtual ILibPtr create_library(LibraryContextPtr ctx);
 
   virtual ITrainerPtr create_trainer(LibraryContextPtr ctx);

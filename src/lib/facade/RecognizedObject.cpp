@@ -3,7 +3,7 @@
 #include <iomanip>
 #include <sstream>
 
-namespace darknetxx011
+namespace darknetxx012
 {
 
 bool RecognizedObject::boxed() const { return width > 0 && height > 0; }
@@ -23,4 +23,4 @@ std::string RecognizedObject::text() const
   return text.str();
 }
 
-}  // namespace darknetxx011
+}  // namespace darknetxx012

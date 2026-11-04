@@ -109,9 +109,6 @@ pipeline {
         stage('UTEST_CommandLineParser') {
           steps { sh 'cd $BUILDDIR && ctest -R "UTEST_CommandLineParser\\." --output-on-failure --output-junit $BDJUNITOUT/UTEST_CommandLineParser.junit.xml' }
         }
-        stage('UTEST_ConverterOnlyApplicationFactory') {
-          steps { sh 'cd $BUILDDIR && ctest -R "UTEST_ConverterOnlyApplicationFactory\\." --output-on-failure --output-junit $BDJUNITOUT/UTEST_ConverterOnlyApplicationFactory.junit.xml' }
-        }
         stage('UTEST_ApplicationContext2LibraryContext') {
           steps { sh 'cd $BUILDDIR && ctest -R "UTEST_ApplicationContext2LibraryContext\\." --output-on-failure --output-junit $BDJUNITOUT/UTEST_ApplicationContext2LibraryContext.junit.xml' }
         }
@@ -172,14 +169,17 @@ pipeline {
         stage('CTEST_ANetworkAdaptor') {
           steps { sh 'cd $BUILDDIR && ctest -R "CTEST_ANetworkAdaptor[._]" --output-on-failure --output-junit $BDJUNITOUT/CTEST_ANetworkAdaptor.junit.xml' }
         }
-        stage('CTEST_CfgSection') {
-          steps { sh 'cd $BUILDDIR && ctest -R "CTEST_CfgSection\\." --output-on-failure --output-junit $BDJUNITOUT/CTEST_CfgSection.junit.xml' }
-        }
         // The network cfg parser tests: the CTEST_OrigDefaultLoader ones and
         // the CTEST_OrigDefaultLoader_<suite> ones of the generated networks
         // and of the networks of the DarknetContext.
         stage('CTEST_OrigDefaultLoader') {
           steps { sh 'cd $BUILDDIR && ctest -R "CTEST_OrigDefaultLoader[._]" --output-on-failure --output-junit $BDJUNITOUT/CTEST_OrigDefaultLoader.junit.xml' }
+        }
+        // The darknet network view the darknetxx-datadrivers library reads
+        // and writes the files of: the arrays, the layer types and the cfg
+        // structure of the library compared with the darknet network.
+        stage('CTEST_NetworkWeights') {
+          steps { sh 'cd $BUILDDIR && ctest -R "CTEST_NetworkWeights\\." --output-on-failure --output-junit $BDJUNITOUT/CTEST_NetworkWeights.junit.xml' }
         }
         // The weights file tests: the CTEST_OrigWeightsFile ones and the
         // CTEST_OrigWeightsFile_<suite> ones of the generated variants.
@@ -202,12 +202,6 @@ pipeline {
         }
         stage('CTEST_WeightsConverter') {
           steps { sh 'cd $BUILDDIR && ctest -R "CTEST_WeightsConverter[._]" --output-on-failure --output-junit $BDJUNITOUT/CTEST_WeightsConverter.junit.xml' }
-        }
-        stage('UTEST_ZlibController') {
-          steps { sh 'cd $BUILDDIR && ctest -R "UTEST_ZlibController\\." --output-on-failure --output-junit $BDJUNITOUT/UTEST_ZlibController.junit.xml' }
-        }
-        stage('CTEST_ZlibController') {
-          steps { sh 'cd $BUILDDIR && ctest -R "CTEST_ZlibController\\." --output-on-failure --output-junit $BDJUNITOUT/CTEST_ZlibController.junit.xml' }
         }
       }
       post { always { junit "$BUILDDIR/$BDJUNITOUT/*.xml" } }
@@ -293,9 +287,11 @@ pipeline {
       post { always { junit "$BUILDDIR/$BDJUNITOUT/ITEST_digits_bash.junit.xml" } }
     }
 
-    // The darknetxxConverter executable converts the weights files of the
-    // generated networks back and forth, driven by the gtest ITEST_converter
-    // ones and by the scripts of the ITEST_converter_bash ones.
+    // The conversion flags of the darknetxx executable convert the weights
+    // files of the generated networks back and forth by the darknetxx-datadrivers
+    // library, driven by the gtest ITEST_converter ones and by the scripts of
+    // the ITEST_converter_bash ones (the darknetxxConverter binary is the one
+    // of the library now, tested there).
     stage('Integration tests (converter)') {
       steps { sh 'cd $BUILDDIR && ctest -R "ITEST_converter[._]" --output-on-failure --output-junit $BDJUNITOUT/ITEST_converter.junit.xml' }
       post { always { junit "$BUILDDIR/$BDJUNITOUT/ITEST_converter.junit.xml" } }

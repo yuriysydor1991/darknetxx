@@ -1,9 +1,11 @@
 cmake_minimum_required(VERSION 3.13)
 
-add_subdirectory(weights-model)
+# The network weights files and the training projects formats are the ones of
+# the darknetxx-datadrivers library (see the
+# cmake/enablers/darknetxx-DarknetxxDataDrivers-enabler.cmake). The darknet
+# networks of them stay here: the loader of the networks of the cfg files, the
+# view of the library over the darknet networks and the rewrite of the edited
+# network into the files.
 add_subdirectory(OrigDefaultLoader)
-add_subdirectory(original-weights)
-add_subdirectory(dxxwjz)
-add_subdirectory(yolo4-folder)
-add_subdirectory(weights-formats)
-add_subdirectory(weights-converter)
+add_subdirectory(network-weights)
+add_subdirectory(network-rewriter)

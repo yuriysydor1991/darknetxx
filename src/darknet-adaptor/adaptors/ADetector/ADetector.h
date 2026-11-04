@@ -16,7 +16,7 @@ namespace darknet_adaptor::adaptors
 class ADetector : virtual public IDarknetAdaptor
 {
  public:
-  using LibCtxPtr = darknetxx011::LibraryContextPtr;
+  using LibCtxPtr = darknetxx012::LibraryContextPtr;
   using ADetectorPtr = std::shared_ptr<ADetector>;
 
   virtual ~ADetector() = default;

@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-#include "src/NetworksLoaders/weights-model/Yolo4Annotations.h"
+#include "src/NetworksLoaders/DataDriversAliases.h"
 
 namespace darknet_adaptor::adaptors
 {
@@ -27,7 +27,7 @@ class TrainingDataRegistry
   inline static const std::string VALID_LIST{"dxxwjz2p:valid"};
 
   /// @brief Keeps the lists and the labels of the annotations.
-  static void publish(const loaders::Yolo4Annotations& annotations);
+  static void publish(const dxxdd::Yolo4Annotations& annotations);
 
   /// @brief Forgets the published ones.
   static void withdraw();
@@ -40,11 +40,11 @@ class TrainingDataRegistry
 
   /// @brief The boxes of the label file path, false for none.
   static bool boxes(const std::string& labelpath,
-                    std::vector<loaders::Yolo4Box>& found);
+                    std::vector<dxxdd::Yolo4Box>& found);
 
  private:
   using Lists = std::map<std::string, std::vector<std::string>>;
-  using Labels = std::map<std::string, std::vector<loaders::Yolo4Box>>;
+  using Labels = std::map<std::string, std::vector<dxxdd::Yolo4Box>>;
 
   static std::mutex& mutex();
   static Lists& lists();

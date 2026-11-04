@@ -91,7 +91,7 @@ void print_conversion_options(std::ostream& out)
   out << "\n  Where FORMAT is one of:\n";
 
   for (const auto& [name, description] :
-       darknetxx011::LibraryFacade::conversion_formats()) {
+       darknetxx012::LibraryFacade::conversion_formats()) {
     print_option(out, "  " + name, "", description);
   }
 }
@@ -129,13 +129,6 @@ int ApplicationHelpPrinter::run(std::shared_ptr<ApplicationContext> ctx)
                "<FILE>", "write the application log into the given file");
 
   print_conversion_options(out);
-
-#ifdef DARKNETXX_CONVERTER_ONLY
-  // the converter only binary runs no training nor detection
-  out << std::endl;
-
-  return ctx->errors.empty() ? 0 : INVALID;
-#endif  // DARKNETXX_CONVERTER_ONLY
 
   out << "\nNetwork and model options:\n";
   print_option(out, CMDParamNames::train_cfgw, "<FILE>",

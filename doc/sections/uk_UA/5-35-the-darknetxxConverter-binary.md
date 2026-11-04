@@ -89,7 +89,7 @@ gzip документами JSON, а файл dxxwjz4p - архівом ZIP зі
 файли їм обом (див. [src/app/CMakeLists.txt](/src/app/CMakeLists.txt)) і обидва
 лінкуються з бібліотекою darknetxx (див. секцію
 [Бібліотека darknetxx](/doc/sections/uk_UA/4-7-5-the-darknetxx-library.md)),
-за допомогою `darknetxx011::LibraryFacade` якої `app::Application` виконує
+за допомогою `darknetxx012::LibraryFacade` якої `app::Application` виконує
 конвертування так само, як навчання і розпізнавання головного бінарного файлу.
 
 [src/darknetxxConverter-target.cmake](/src/darknetxxConverter-target.cmake)

@@ -20,14 +20,14 @@ class TrainWindowContext
  public:
   virtual ~TrainWindowContext() = default;
   TrainWindowContext(app::AppCtxPtr nactx,
-                     darknetxx011::LibraryContextPtr nlibctx);
+                     darknetxx012::LibraryContextPtr nlibctx);
 
   /// @brief Waits for the stopped training and breaks the references of the
   /// parts to each other.
   virtual void clear() override;
 
   window::TrainWindowLoader wloader;
-  darknetxx011::ITrainerPtr trainer;
+  darknetxx012::ITrainerPtr trainer;
 
  protected:
   virtual window::AWindowLoader& loader() override;

@@ -18,7 +18,7 @@ class OMPController
 {
  public:
   using OMPControllerPtr = std::shared_ptr<OMPController>;
-  using LibCtxPtr = darknetxx011::LibraryContextPtr;
+  using LibCtxPtr = darknetxx012::LibraryContextPtr;
 
   virtual ~OMPController() = default;
   OMPController() = default;

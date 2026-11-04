@@ -254,18 +254,18 @@ scripts/docker/cpu-train-gui.sh /path/to/the/yolo4/folder -DDOCKER_GUI_TRAINING_
 `darknetxxGtkmm4::window::event_handlers::ChooserEventsHandler` кожного поля
 файлу чи теки і `StopSignalEventsHandler` сигналу зупинки ОС.
 
-Вікно навчання навчає `darknetxx011::ATrainingProject`, який
+Вікно навчання навчає `darknetxx012::ATrainingProject`, який
 `LibraryFacade::open_training_project()` відкриває за шляхом поля
-(`darknetxx011::Yolo4Folder` для теки, проект для файлу `*.dxxwjz2p`,
-`*.dxxwjz3p` чи `*.dxxwjz4p`), за допомогою `darknetxx011::ITrainer`, якого створює
-`darknetxx011::LibraryFacade` бібліотеки darknetxx (див. секцію
+(`darknetxx012::Yolo4Folder` для теки, проект для файлу `*.dxxwjz2p`,
+`*.dxxwjz3p` чи `*.dxxwjz4p`), за допомогою `darknetxx012::ITrainer`, якого створює
+`darknetxx012::LibraryFacade` бібліотеки darknetxx (див. секцію
 [Бібліотека darknetxx](/doc/sections/uk_UA/4-7-5-the-darknetxx-library.md)).
 Тренер запускає навчання бібліотеки у власному потоці і зупиняє його запитом
 зупинки контексту бібліотеки, який підіймає і прапорець зупинки контексту
 програми. Навчання повідомляє про кожну ітерацію
-`darknetxx011::ITrainingListener` контексту бібліотеки, який реалізує вікно.
+`darknetxx012::ITrainingListener` контексту бібліотеки, який реалізує вікно.
 
-Вікно розпізнавання розпізнає за допомогою `darknetxx011::IRecognizer`
+Вікно розпізнавання розпізнає за допомогою `darknetxx012::IRecognizer`
 фасаду бібліотеки у власному потоці і показує результат
-`darknetxx011::Recognition`, який повертає розпізнавач: список
-`darknetxx011::RecognizedObject` і зображення PNG з об'єктами в рамках.
+`darknetxx012::Recognition`, який повертає розпізнавач: список
+`darknetxx012::RecognizedObject` і зображення PNG з об'єктами в рамках.

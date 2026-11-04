@@ -5,10 +5,8 @@
 #include <string>
 #include <vector>
 
+#include "src/NetworksLoaders/DataDriversAliases.h"
 #include "src/NetworksLoaders/INetworkLoader.h"
-#include "src/NetworksLoaders/OrigDefaultLoader/CfgSection.h"
-#include "src/NetworksLoaders/weights-model/NetworkDescription.h"
-#include "src/NetworksLoaders/weights-model/WeightsDocument.h"
 #include "src/darknet-adaptor/DarknetContext.h"
 #include "src/darknet-adaptor/adaptors/ALayerAdaptor/ALayerAdaptor.h"
 #include "src/darknet-adaptor/adaptors/ANetworkAdaptor/ANetworkAdaptor.h"
@@ -144,22 +142,23 @@ class OrigDefaultLoader : virtual public INetworkLoader
    * [net] section options and the layers of the given training network,
    * which it computes with.
    */
-  ANetworkAdaptorPtr make_map_network(const DarknetContextPtr& dctx,
-                                      const NetworkDescription& description,
-                                      const ANetworkAdaptorPtr& train);
+  ANetworkAdaptorPtr make_map_network(
+      const DarknetContextPtr& dctx,
+      const dxxdd::NetworkDescription& description,
+      const ANetworkAdaptorPtr& train);
 
   /// @brief The description of the network of the cfg or the dxxwjz2 file,
   /// throws NetworkError on the failure.
-  static NetworkDescription read_description(const std::string& path);
+  static dxxdd::NetworkDescription read_description(const std::string& path);
 
   /// @brief Everything the network file keeps but the weights (see the
   /// NetworkSource::read()), throws NetworkError on the failure.
-  static WeightsDocument read_source(const std::string& path);
+  static dxxdd::WeightsDocument read_source(const std::string& path);
 
   /// @brief Loads the weights file of any format into the network, keeps the
   /// rest of the file. Throws NetworkError on the failure.
   static void load_weights(network& net, const std::string& weights,
-                           WeightsDocument& rest);
+                           dxxdd::WeightsDocument& rest);
 
   /// @brief Throws NetworkError for the dxxwjz2 file of no weights, the
   /// network to train.
@@ -168,10 +167,10 @@ class OrigDefaultLoader : virtual public INetworkLoader
   /// @brief The class names of the work (see the load()), the names file is
   /// the --names one.
   static std::vector<std::string> class_names(
-      const std::string& file, const WeightsDocument& rest,
-      const NetworkDescription& description, const network& net);
+      const std::string& file, const dxxdd::WeightsDocument& rest,
+      const dxxdd::NetworkDescription& description, const network& net);
 
-  void parse_net_options(CfgSection& options, ANetworkAdaptor& net);
+  void parse_net_options(dxxdd::CfgSection& options, ANetworkAdaptor& net);
   static learning_rate_policy get_policy(const std::string& s);
   static void set_train_only_bn(network& net);
 
@@ -179,58 +178,70 @@ class OrigDefaultLoader : virtual public INetworkLoader
   /// NetworkError for the one not parsed yet.
   static const layer& parsed_layer(const size_params& params, int index);
 
-  ALayerAdaptorPtr parse_local(CfgSection& options, const size_params& params);
-  ALayerAdaptorPtr parse_convolutional(CfgSection& options,
+  ALayerAdaptorPtr parse_local(dxxdd::CfgSection& options,
+                               const size_params& params);
+  ALayerAdaptorPtr parse_convolutional(dxxdd::CfgSection& options,
                                        const size_params& params);
-  ALayerAdaptorPtr parse_crnn(CfgSection& options, const size_params& params);
-  ALayerAdaptorPtr parse_rnn(CfgSection& options, const size_params& params);
-  ALayerAdaptorPtr parse_gru(CfgSection& options, const size_params& params);
-  ALayerAdaptorPtr parse_lstm(CfgSection& options, const size_params& params);
-  ALayerAdaptorPtr parse_conv_lstm(CfgSection& options,
+  ALayerAdaptorPtr parse_crnn(dxxdd::CfgSection& options,
+                              const size_params& params);
+  ALayerAdaptorPtr parse_rnn(dxxdd::CfgSection& options,
+                             const size_params& params);
+  ALayerAdaptorPtr parse_gru(dxxdd::CfgSection& options,
+                             const size_params& params);
+  ALayerAdaptorPtr parse_lstm(dxxdd::CfgSection& options,
+                              const size_params& params);
+  ALayerAdaptorPtr parse_conv_lstm(dxxdd::CfgSection& options,
                                    const size_params& params);
-  ALayerAdaptorPtr parse_history(CfgSection& options,
+  ALayerAdaptorPtr parse_history(dxxdd::CfgSection& options,
                                  const size_params& params);
-  ALayerAdaptorPtr parse_connected(CfgSection& options,
+  ALayerAdaptorPtr parse_connected(dxxdd::CfgSection& options,
                                    const size_params& params);
-  ALayerAdaptorPtr parse_softmax(CfgSection& options,
+  ALayerAdaptorPtr parse_softmax(dxxdd::CfgSection& options,
                                  const size_params& params);
-  ALayerAdaptorPtr parse_contrastive(CfgSection& options,
+  ALayerAdaptorPtr parse_contrastive(dxxdd::CfgSection& options,
                                      const size_params& params);
-  ALayerAdaptorPtr parse_yolo(CfgSection& options, const size_params& params);
-  ALayerAdaptorPtr parse_gaussian_yolo(CfgSection& options,
+  ALayerAdaptorPtr parse_yolo(dxxdd::CfgSection& options,
+                              const size_params& params);
+  ALayerAdaptorPtr parse_gaussian_yolo(dxxdd::CfgSection& options,
                                        const size_params& params);
-  ALayerAdaptorPtr parse_region(CfgSection& options, const size_params& params);
-  ALayerAdaptorPtr parse_detection(CfgSection& options,
+  ALayerAdaptorPtr parse_region(dxxdd::CfgSection& options,
+                                const size_params& params);
+  ALayerAdaptorPtr parse_detection(dxxdd::CfgSection& options,
                                    const size_params& params);
-  ALayerAdaptorPtr parse_cost(CfgSection& options, const size_params& params);
-  ALayerAdaptorPtr parse_crop(CfgSection& options, const size_params& params);
-  ALayerAdaptorPtr parse_reorg(CfgSection& options, const size_params& params);
-  ALayerAdaptorPtr parse_reorg_old(CfgSection& options,
+  ALayerAdaptorPtr parse_cost(dxxdd::CfgSection& options,
+                              const size_params& params);
+  ALayerAdaptorPtr parse_crop(dxxdd::CfgSection& options,
+                              const size_params& params);
+  ALayerAdaptorPtr parse_reorg(dxxdd::CfgSection& options,
+                               const size_params& params);
+  ALayerAdaptorPtr parse_reorg_old(dxxdd::CfgSection& options,
                                    const size_params& params);
-  ALayerAdaptorPtr parse_local_avgpool(CfgSection& options,
+  ALayerAdaptorPtr parse_local_avgpool(dxxdd::CfgSection& options,
                                        const size_params& params);
-  ALayerAdaptorPtr parse_maxpool(CfgSection& options,
+  ALayerAdaptorPtr parse_maxpool(dxxdd::CfgSection& options,
                                  const size_params& params);
-  ALayerAdaptorPtr parse_avgpool(CfgSection& options,
+  ALayerAdaptorPtr parse_avgpool(dxxdd::CfgSection& options,
                                  const size_params& params);
-  ALayerAdaptorPtr parse_dropout(CfgSection& options,
+  ALayerAdaptorPtr parse_dropout(dxxdd::CfgSection& options,
                                  const size_params& params);
-  ALayerAdaptorPtr parse_normalization(CfgSection& options,
+  ALayerAdaptorPtr parse_normalization(dxxdd::CfgSection& options,
                                        const size_params& params);
-  ALayerAdaptorPtr parse_batchnorm(CfgSection& options,
+  ALayerAdaptorPtr parse_batchnorm(dxxdd::CfgSection& options,
                                    const size_params& params);
-  ALayerAdaptorPtr parse_shortcut(CfgSection& options,
+  ALayerAdaptorPtr parse_shortcut(dxxdd::CfgSection& options,
                                   const size_params& params);
-  ALayerAdaptorPtr parse_scale_channels(CfgSection& options,
+  ALayerAdaptorPtr parse_scale_channels(dxxdd::CfgSection& options,
                                         const size_params& params);
-  ALayerAdaptorPtr parse_sam(CfgSection& options, const size_params& params);
-  ALayerAdaptorPtr parse_implicit(CfgSection& options,
+  ALayerAdaptorPtr parse_sam(dxxdd::CfgSection& options,
+                             const size_params& params);
+  ALayerAdaptorPtr parse_implicit(dxxdd::CfgSection& options,
                                   const size_params& params);
-  ALayerAdaptorPtr parse_activation(CfgSection& options,
+  ALayerAdaptorPtr parse_activation(dxxdd::CfgSection& options,
                                     const size_params& params);
-  ALayerAdaptorPtr parse_upsample(CfgSection& options,
+  ALayerAdaptorPtr parse_upsample(dxxdd::CfgSection& options,
                                   const size_params& params);
-  ALayerAdaptorPtr parse_route(CfgSection& options, const size_params& params);
+  ALayerAdaptorPtr parse_route(dxxdd::CfgSection& options,
+                               const size_params& params);
   ALayerAdaptorPtr parse_empty(const size_params& params);
 
   /**

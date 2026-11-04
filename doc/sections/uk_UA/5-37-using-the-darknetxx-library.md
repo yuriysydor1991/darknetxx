@@ -1,6 +1,6 @@
 ## Використання бібліотеки darknetxx
 
-Проект будує спільну бібліотеку `darknetxx-0.11` усієї своєї функціональності
+Проект будує спільну бібліотеку `darknetxx-0.12` усієї своєї функціональності
 (див. секцію [Бібліотека darknetxx](/doc/sections/uk_UA/4-7-5-the-darknetxx-library.md))
 і виконувані файли над нею. Інший проект CMake використовує бібліотеку,
 доступну через FetchContent чи встановлену і знайдену командою
@@ -11,7 +11,7 @@
 | Параметр CMake | За замовчуванням | Дія |
 | --- | --- | --- |
 | `ENABLE_DARKNETXX_EXECUTABLES` | `ON` для проекту верхнього рівня, `OFF` для проекту іншого | Будує і встановлює виконувані файли `darknetxx`, `darknetxxConverter`, `darknetxx-train-gui` і `darknetxx-recognition-gui`. `OFF` будує і встановлює лише бібліотеку. |
-| `DARKNETXX_LIB_INSTALL_DEV_FILES` | `ON` | Встановлює публічні заголовки, файли пакету CMake і посилання `libdarknetxx-0.11.so` разом з бібліотекою. `OFF` встановлює лише бібліотеку виконання. |
+| `DARKNETXX_LIB_INSTALL_DEV_FILES` | `ON` | Встановлює публічні заголовки, файли пакету CMake і посилання `libdarknetxx-0.12.so` разом з бібліотекою. `OFF` встановлює лише бібліотеку виконання. |
 | `DARKNETXX_LIBRARY_NAME` | `darknetxx-<основна>.<додаткова>` | Назва бібліотеки, її цілі, директорії заголовків і пакету CMake. |
 
 Лише бібліотека з файлами розробки:
@@ -28,10 +28,10 @@ cmake --install build --prefix /usr/local
 
 | Встановлений файл | `DARKNETXX_LIB_INSTALL_DEV_FILES=ON` | `OFF` |
 | --- | --- | --- |
-| `<префікс>/lib/libdarknetxx-0.11.so.0.11.0` і посилання soname `.so.0.11` | так | так |
-| посилання `<префікс>/lib/libdarknetxx-0.11.so` | так | ні |
-| публічні заголовки `<префікс>/include/darknetxx-0.11/*.h` | так | ні |
-| файли пакету `<префікс>/lib/cmake/darknetxx-0.11/*.cmake` | так | ні |
+| `<префікс>/lib/libdarknetxx-0.12.so.0.12.0` і посилання soname `.so.0.12` | так | так |
+| посилання `<префікс>/lib/libdarknetxx-0.12.so` | так | ні |
+| публічні заголовки `<префікс>/include/darknetxx-0.12/*.h` | так | ні |
+| файли пакету `<префікс>/lib/cmake/darknetxx-0.12/*.cmake` | так | ні |
 | дані darknet `<префікс>/share/darknetxx/<версія>` (шрифт міток, списки назв) | так | так |
 
 Директорія `lib` - це `CMAKE_INSTALL_LIBDIR`, `lib/x86_64-linux-gnu` для
@@ -56,16 +56,16 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(darknetxx)
 
 add_executable(my-trainer main.cpp)
-target_link_libraries(my-trainer darknetxx-0.11::darknetxx-0.11)
+target_link_libraries(my-trainer darknetxx-0.12::darknetxx-0.12)
 ```
 
 ### find_package
 
 ```cmake
-find_package(darknetxx-0.11 REQUIRED CONFIG)
+find_package(darknetxx-0.12 REQUIRED CONFIG)
 
 add_executable(my-trainer main.cpp)
-target_link_libraries(my-trainer darknetxx-0.11::darknetxx-0.11)
+target_link_libraries(my-trainer darknetxx-0.12::darknetxx-0.12)
 ```
 
 ### Код
@@ -76,11 +76,11 @@ target_link_libraries(my-trainer darknetxx-0.11::darknetxx-0.11)
 назвами:
 
 ```cpp
-#include <darknetxx-0.11/LibraryFacade.h>
+#include <darknetxx-0.12/LibraryFacade.h>
 
 int main()
 {
-  auto ctx = darknetxx011::LibraryFacade::create_library_context();
+  auto ctx = darknetxx012::LibraryFacade::create_library_context();
 
   ctx->convert_from = "weights";
   ctx->convert_src = "yolov4.weights";
@@ -88,7 +88,7 @@ int main()
   ctx->convert_to = "dxxwjz1";
   ctx->convert_dst = "yolov4.dxxwjz1";
 
-  auto lib = darknetxx011::LibraryFacade::create_library(ctx);
+  auto lib = darknetxx012::LibraryFacade::create_library(ctx);
 
   return lib != nullptr && lib->libcall(ctx) ? 0 : 1;
 }
@@ -108,5 +108,5 @@ int main()
 класів у такий файл (ним зберігають бінарні файли редактора нейромереж).
 Програма з власним журналом передає
 його функцією `LibraryFacade::init_logger` перед будь-яким іншим викликом,
-інакше бібліотека веде журнал у файл `darknetxx-0.11.0.log` робочої
+інакше бібліотека веде журнал у файл `darknetxx-0.12.0.log` робочої
 директорії і в консоль.

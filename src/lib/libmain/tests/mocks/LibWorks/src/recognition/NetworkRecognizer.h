@@ -6,11 +6,11 @@
 namespace darknetxx_impl
 {
 
-class NetworkRecognizer : public darknetxx011::IRecognizer
+class NetworkRecognizer : public darknetxx012::IRecognizer
 {
  public:
-  darknetxx011::Recognition recognize(
-      const darknetxx011::LibraryContext&) override
+  darknetxx012::Recognition recognize(
+      const darknetxx012::LibraryContext&) override
   {
     return {};
   }

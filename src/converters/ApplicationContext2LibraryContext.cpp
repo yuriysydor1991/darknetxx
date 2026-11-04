@@ -24,7 +24,7 @@ bool ApplicationContext2LibraryContext::convert(app::AppCtxPtr appctx,
 }
 
 void ApplicationContext2LibraryContext::convert_darknet_params(
-    const app::ApplicationContext& appctx, darknetxx011::LibraryContext& libctx)
+    const app::ApplicationContext& appctx, darknetxx012::LibraryContext& libctx)
 {
   libctx.train_cfg = appctx.train_cfg;
   libctx.detect_cfg = appctx.detect_cfg;
@@ -75,7 +75,7 @@ void ApplicationContext2LibraryContext::convert_darknet_params(
 }
 
 void ApplicationContext2LibraryContext::convert_conversion_params(
-    const app::ApplicationContext& appctx, darknetxx011::LibraryContext& libctx)
+    const app::ApplicationContext& appctx, darknetxx012::LibraryContext& libctx)
 {
   libctx.convert_from = appctx.convert_from;
   libctx.convert_src = appctx.convert_src;

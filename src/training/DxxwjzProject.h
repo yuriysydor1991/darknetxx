@@ -19,7 +19,7 @@ namespace darknetxx_impl
  * the training saves it's latest weights into the dxxwjz4 file of the name of
  * the project beside it and resumes from that file once it's there.
  */
-class DxxwjzProject : public darknetxx011::ATrainingProject
+class DxxwjzProject : public darknetxx012::ATrainingProject
 {
  public:
   explicit DxxwjzProject(const std::string& npath);

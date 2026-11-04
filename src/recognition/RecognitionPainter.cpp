@@ -15,7 +15,7 @@ namespace darknetxx_impl
 
 std::vector<unsigned char> RecognitionPainter::paint(
     const cv::Mat& image,
-    const std::vector<darknetxx011::RecognizedObject>& objects)
+    const std::vector<darknetxx012::RecognizedObject>& objects)
 {
   // the size the small images are enlarged to and the bright colors, which
   // the black labels are read on

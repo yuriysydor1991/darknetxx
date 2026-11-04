@@ -1,5 +1,5 @@
-#ifndef DARKNETXX_011_LIBRARYCONTEXT_CLASS_H
-#define DARKNETXX_011_LIBRARYCONTEXT_CLASS_H
+#ifndef DARKNETXX_012_LIBRARYCONTEXT_CLASS_H
+#define DARKNETXX_012_LIBRARYCONTEXT_CLASS_H
 
 #include <atomic>
 #include <memory>
@@ -11,7 +11,7 @@
 /**
  * @brief The namespace of the installable library interface.
  */
-namespace darknetxx011
+namespace darknetxx012
 {
 
 /**
@@ -120,6 +120,6 @@ class DARKNETXX_LIB_API LibraryContext
 
 using LibraryContextPtr = LibraryContext::LibraryContextPtr;
 
-}  // namespace darknetxx011
+}  // namespace darknetxx012
 
-#endif  // DARKNETXX_011_LIBRARYCONTEXT_CLASS_H
+#endif  // DARKNETXX_012_LIBRARYCONTEXT_CLASS_H

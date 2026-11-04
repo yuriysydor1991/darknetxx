@@ -3,7 +3,7 @@
 
 #include "ILib.h"
 #include "LibraryContext.h"
-#include "src/NetworksLoaders/weights-converter/WeightsConverter.h"
+#include "src/NetworksLoaders/DataDriversAliases.h"
 
 namespace darknetxx_impl
 {
@@ -12,11 +12,11 @@ namespace darknetxx_impl
  * @brief The network weights file conversion the convert_* parameters of the
  * context name (see the WeightsFileFormats).
  */
-class WeightsConversionLib : public darknetxx011::ILib
+class WeightsConversionLib : public darknetxx012::ILib
 {
  public:
-  using LibraryContextPtr = darknetxx011::LibraryContextPtr;
-  using WeightsConverterPtr = darknet_adaptor::loaders::WeightsConverterPtr;
+  using LibraryContextPtr = darknetxx012::LibraryContextPtr;
+  using WeightsConverterPtr = dxxdd::WeightsConverterPtr;
 
   virtual ~WeightsConversionLib() = default;
   WeightsConversionLib() = default;

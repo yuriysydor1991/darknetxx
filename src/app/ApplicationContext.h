@@ -165,7 +165,7 @@ struct ApplicationContext
 
   /// @brief The network weights file format to read, the name given after the
   /// --convert-from command line flag (see the
-  /// darknetxx011::LibraryFacade::conversion_formats).
+  /// darknetxx012::LibraryFacade::conversion_formats).
   std::string convert_from;
   /// @brief The network weights file to read, given after the --convert-src
   /// command line flag.

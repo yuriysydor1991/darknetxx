@@ -99,8 +99,8 @@ class CTEST_TrainWindow : public testing::Test
   char** argv{nullptr};
   std::shared_ptr<app::ApplicationContext> actx{
       std::make_shared<app::ApplicationContext>(argc, argv)};
-  darknetxx011::LibraryContextPtr libctx{
-      darknetxx011::LibraryFacade::create_library_context()};
+  darknetxx012::LibraryContextPtr libctx{
+      darknetxx012::LibraryFacade::create_library_context()};
   std::shared_ptr<TrainWindowContext> mwctx;
   darknetxxGtkmm4::window::TrainWindowLoader* loader{nullptr};
 };
@@ -213,8 +213,8 @@ TEST_F(CTEST_TrainWindow, the_close_waits_for_the_stopped_training)
 TEST_F(CTEST_TrainWindow, the_dxxwjz2p_project_trains_and_resumes)
 {
   const fs::path project = folder / "project" / "digits.dxxwjz2p";
-  const darknetxx011::LibraryContextPtr conversion =
-      darknetxx011::LibraryFacade::create_library_context();
+  const darknetxx012::LibraryContextPtr conversion =
+      darknetxx012::LibraryFacade::create_library_context();
 
   // the project of the folder, the images of which stay in it
   conversion->convert_from = "yolo4";
@@ -222,7 +222,7 @@ TEST_F(CTEST_TrainWindow, the_dxxwjz2p_project_trains_and_resumes)
   conversion->convert_to = "dxxwjz2p";
   conversion->convert_dst = project.string();
 
-  ASSERT_TRUE(darknetxx011::LibraryFacade::create_library(conversion)
+  ASSERT_TRUE(darknetxx012::LibraryFacade::create_library(conversion)
                   ->libcall(conversion));
 
   open(project);

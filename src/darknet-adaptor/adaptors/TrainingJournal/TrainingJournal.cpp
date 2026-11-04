@@ -8,14 +8,15 @@
 #include <utility>
 #include <vector>
 
-#include "src/NetworksLoaders/weights-formats/WeightsFileFormats.h"
+#include "src/NetworksLoaders/DataDriversAliases.h"
+#include "src/NetworksLoaders/network-weights/NetworkWeights.h"
 #include "src/log/log.h"
 
 namespace darknet_adaptor::adaptors
 {
 
-TrainingJournal::TrainingJournal(loaders::IWeightsFileFormatPtr nformat,
-                                 loaders::WeightsDocument nrest,
+TrainingJournal::TrainingJournal(dxxdd::IWeightsFileFormatPtr nformat,
+                                 dxxdd::WeightsDocument nrest,
                                  std::string nproject)
     : mformat{std::move(nformat)},
       mrest{std::move(nrest)},
@@ -55,7 +56,8 @@ bool TrainingJournal::save(network& net, const std::string& stem,
   mrest.training.seconds(mresumed + trained.count());
 
   const bool saved = mformat->create_writer()->save(
-      net, stem + mformat->extension(), net.n, ema, mrest);
+      loaders::NetworkWeights{net}, stem + mformat->extension(), net.n, ema,
+      mrest);
 
   return saved && (ema || mproject.empty() || save_project(net));
 }
@@ -66,8 +68,8 @@ bool TrainingJournal::save_project(network& net) const
   std::error_code error;
 
   // the project is replaced by the complete file alone
-  if (!loaders::WeightsFileFormats::of_file(mproject)->create_writer()->save(
-          net, temporary, net.n, false, mrest)) {
+  if (!dxxdd::WeightsFileFormats::of_file(mproject)->create_writer()->save(
+          loaders::NetworkWeights{net}, temporary, net.n, false, mrest)) {
     std::filesystem::remove(temporary, error);
     return false;
   }
@@ -75,8 +77,7 @@ bool TrainingJournal::save_project(network& net) const
   std::filesystem::rename(temporary, mproject, error);
 
   if (error) {
-    LOGE("Fail to update the project " << mproject << ": "
-                                       << error.message());
+    LOGE("Fail to update the project " << mproject << ": " << error.message());
     std::filesystem::remove(temporary, error);
     return false;
   }
@@ -84,6 +85,6 @@ bool TrainingJournal::save_project(network& net) const
   return true;
 }
 
-const loaders::WeightsDocument& TrainingJournal::rest() const { return mrest; }
+const dxxdd::WeightsDocument& TrainingJournal::rest() const { return mrest; }
 
 }  // namespace darknet_adaptor::adaptors

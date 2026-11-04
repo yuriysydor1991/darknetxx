@@ -1,6 +1,6 @@
 #include "LibraryContext.h"
 
-namespace darknetxx011
+namespace darknetxx012
 {
 
 bool LibraryContext::conversion_requested() const
@@ -25,4 +25,4 @@ void LibraryContext::stop_with(const std::atomic_bool& flag)
   mstopFlag.store(&flag);
 }
 
-}  // namespace darknetxx011
+}  // namespace darknetxx012

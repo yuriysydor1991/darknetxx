@@ -8,21 +8,21 @@
 namespace darknetxx_impl
 {
 
-class BackgroundTrainer : public darknetxx011::ITrainer
+class BackgroundTrainer : public darknetxx012::ITrainer
 {
  public:
-  BackgroundTrainer(darknetxx011::LibraryContextPtr nctx,
-                    darknetxx011::ILibPtr ntraining)
+  BackgroundTrainer(darknetxx012::LibraryContextPtr nctx,
+                    darknetxx012::ILibPtr ntraining)
       : ctx{nctx}, training{ntraining}
   {
   }
 
-  bool train(const darknetxx011::ATrainingProject&) override { return true; }
+  bool train(const darknetxx012::ATrainingProject&) override { return true; }
   void stop() override {}
   bool running() const override { return false; }
 
-  darknetxx011::LibraryContextPtr ctx;
-  darknetxx011::ILibPtr training;
+  darknetxx012::LibraryContextPtr ctx;
+  darknetxx012::ILibPtr training;
 };
 
 }  // namespace darknetxx_impl

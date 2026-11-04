@@ -18,7 +18,7 @@ The application is organized into a few cooperating layers:
 1. [Darknet adaptor components](/doc/sections/en_US/4-7-2-darknet-adaptor-components.md) - the bridge that drives the original Darknet code to train or to detect (the `darknet_adaptor` namespace).
 1. [Supporting components](/doc/sections/en_US/4-7-3-supporting-components.md) - the OpenMP controller, the logging subsystem, the zlib compression controller and the helper utilities.
 1. [Network weights files](/doc/sections/en_US/4-7-4-network-weights-files.md) - the original darknet weights files, the dxxwjz1 ones (the gzip compressed JSON documents of the weights), the dxxwjz2 ones (the network description and the training record beside the weights) the dxxwjz3 ones (the same of nothing but the JSON data, the network cfg included) and the dxxwjz4 ones (the same of the description text) with their projects (the dxxwjz4p one of the images too, the whole training project in one file), their readers, writers and validators and the converter between them (the `darknet_adaptor::loaders` namespace).
-1. [The darknetxx library](/doc/sections/en_US/4-7-5-the-darknetxx-library.md) - the shared library the three layers above are built into, it's installable facade (the `darknetxx011` namespace) and it's implementation (the `darknetxx_impl` namespace).
+1. [The darknetxx library](/doc/sections/en_US/4-7-5-the-darknetxx-library.md) - the shared library the three layers above are built into, it's installable facade (the `darknetxx012` namespace) and it's implementation (the `darknetxx_impl` namespace).
 
 The OS signals the whole application reacts on are covered by the `src/app/signals-handlers` subcomponent of the `app` layer, described by the [Handling the OS signals](/doc/sections/en_US/4-8-handling-the-OS-signals.md) section.
 
@@ -28,9 +28,9 @@ The `main()` function only forwards the command line arguments to the
 `app::ApplicationFactory`. The factory builds an `app::ApplicationContext`, lets
 the `app::CommandLineParser` fill it and then creates the appropriate
 `app::IApplication` descendant. The `app::Application` converts the context into
-the `darknetxx011::LibraryContext` of the darknetxx library by the
+the `darknetxx012::LibraryContext` of the darknetxx library by the
 `converters::ApplicationContext2LibraryContext` and performs the work the
-`darknetxx011::LibraryFacade` of the library creates of it (see
+`darknetxx012::LibraryFacade` of the library creates of it (see
 [The darknetxx library](/doc/sections/en_US/4-7-5-the-darknetxx-library.md)):
 the training or the detection by the `darknet_adaptor::DarknetController`,
 which selects and runs the concrete Darknet worker (a detector, a trainer,

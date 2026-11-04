@@ -4,7 +4,7 @@
 #include <iomanip>
 #include <sstream>
 
-namespace darknetxx011
+namespace darknetxx012
 {
 
 TrainingProgress::TrainingProgress(const int niteration, const int niterations,
@@ -60,4 +60,4 @@ std::string TrainingProgress::details_text() const
   return text.str();
 }
 
-}  // namespace darknetxx011
+}  // namespace darknetxx012

@@ -1,11 +1,11 @@
-#ifndef DARKNETXX_011_TRAININGPROGRESS_CLASS_H
-#define DARKNETXX_011_TRAININGPROGRESS_CLASS_H
+#ifndef DARKNETXX_012_TRAININGPROGRESS_CLASS_H
+#define DARKNETXX_012_TRAININGPROGRESS_CLASS_H
 
 #include <string>
 
 #include "LibraryAPI.h"
 
-namespace darknetxx011
+namespace darknetxx012
 {
 
 /**
@@ -40,6 +40,6 @@ class DARKNETXX_LIB_API TrainingProgress
   double mhours_left;
 };
 
-}  // namespace darknetxx011
+}  // namespace darknetxx012
 
-#endif  // DARKNETXX_011_TRAININGPROGRESS_CLASS_H
+#endif  // DARKNETXX_012_TRAININGPROGRESS_CLASS_H

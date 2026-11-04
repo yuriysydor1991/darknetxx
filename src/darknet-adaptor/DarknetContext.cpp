@@ -137,7 +137,7 @@ void DarknetContext::report_iteration(const detector_context* ctx, void* data)
     return;
   }
 
-  dctx->lctx->training_listener->on_iteration(darknetxx011::TrainingProgress{
+  dctx->lctx->training_listener->on_iteration(darknetxx012::TrainingProgress{
       ctx->current_iteration, ctx->net.max_batches, ctx->loss, ctx->avg_loss,
       get_current_rate(ctx->net), ctx->avg_time});
 }
@@ -198,7 +198,7 @@ void DarknetContext::set_training_journal(TrainingJournalPtr njournal)
     return;
   }
 
-  const loaders::TrainingRecord& record = journal->rest().training;
+  const dxxdd::TrainingRecord& record = journal->rest().training;
 
   internal->resumed = train_chart_record{record.iterations().data(),
                                          record.avg_losses().data(),
@@ -1465,7 +1465,7 @@ const DarknetContext::ANetworkAdaptorPtr& DarknetContext::get_detect_network()
 }
 
 void DarknetContext::set_training_annotations(
-    const loaders::Yolo4Annotations& annotations)
+    const dxxdd::Yolo4Annotations& annotations)
 {
   adaptors::TrainingDataRegistry::publish(annotations);
   annotated = true;

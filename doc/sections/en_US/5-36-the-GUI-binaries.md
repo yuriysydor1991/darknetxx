@@ -271,19 +271,19 @@ it's widgets and of the event handlers of them, the
 or folder entry and the `StopSignalEventsHandler` of the OS stop signal among
 them.
 
-The training window trains the `darknetxx011::ATrainingProject` the
+The training window trains the `darknetxx012::ATrainingProject` the
 `LibraryFacade::open_training_project()` opens of the entry path (the
-`darknetxx011::Yolo4Folder` of a folder, the project of a `*.dxxwjz2p`, a
-`*.dxxwjz3p` or a `*.dxxwjz4p` file) by the `darknetxx011::ITrainer` the
-`darknetxx011::LibraryFacade` of the darknetxx library creates (see the
+`darknetxx012::Yolo4Folder` of a folder, the project of a `*.dxxwjz2p`, a
+`*.dxxwjz3p` or a `*.dxxwjz4p` file) by the `darknetxx012::ITrainer` the
+`darknetxx012::LibraryFacade` of the darknetxx library creates (see the
 [The darknetxx library](/doc/sections/en_US/4-7-5-the-darknetxx-library.md)
 section), which runs the training of the library in a thread of it's own and
 stops it by the stop request of the library context, the one the stop flag of
 the application context raises too. The training reports every iteration to
-the `darknetxx011::ITrainingListener` of the library context, which the window
+the `darknetxx012::ITrainingListener` of the library context, which the window
 implements.
 
-The recognition window recognizes by the `darknetxx011::IRecognizer` of the
+The recognition window recognizes by the `darknetxx012::IRecognizer` of the
 library facade in a thread of it's own and shows the
-`darknetxx011::Recognition` it gives: the `darknetxx011::RecognizedObject`
+`darknetxx012::Recognition` it gives: the `darknetxx012::RecognizedObject`
 list and the PNG image of the objects boxed.

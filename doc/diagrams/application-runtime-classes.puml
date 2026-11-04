@@ -136,10 +136,10 @@ CommandLineParser --> ApplicationContext : fills
 Application --> ApplicationContext : holds actx
 SignalsHandler --> ApplicationContext : raises the signals flags
 Application ..> ApplicationContext2LibraryContext : converts actx by
-ApplicationContext2LibraryContext ..> "darknetxx011::LibraryContext" : fills
-Application ..> "darknetxx011::LibraryFacade" : performs the work it creates
+ApplicationContext2LibraryContext ..> "darknetxx012::LibraryContext" : fills
+Application ..> "darknetxx012::LibraryFacade" : performs the work it creates
 GuiApplication ..> "gui::IGUIIniter" : shows the window of
-ApplicationFactory ..> "darknetxx011::LibraryFacade" : hands the logger over
-NetworkCfgPrinter ..> "darknetxx011::LibraryFacade" : prints the network cfg of
+ApplicationFactory ..> "darknetxx012::LibraryFacade" : hands the logger over
+NetworkCfgPrinter ..> "darknetxx012::LibraryFacade" : prints the network cfg of
 
 @enduml

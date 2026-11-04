@@ -4,7 +4,7 @@ namespace darknetxxGtkmm4
 {
 
 AWindowContext::AWindowContext(app::AppCtxPtr nactx,
-                               darknetxx011::LibraryContextPtr nlibctx)
+                               darknetxx012::LibraryContextPtr nlibctx)
     : actx{std::move(nactx)}, libctx{std::move(nlibctx)}
 {
 }

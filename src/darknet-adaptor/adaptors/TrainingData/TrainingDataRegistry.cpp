@@ -5,7 +5,7 @@
 namespace darknet_adaptor::adaptors
 {
 
-void TrainingDataRegistry::publish(const loaders::Yolo4Annotations& annotations)
+void TrainingDataRegistry::publish(const dxxdd::Yolo4Annotations& annotations)
 {
   std::lock_guard<std::mutex> lock{mutex()};
 
@@ -13,10 +13,10 @@ void TrainingDataRegistry::publish(const loaders::Yolo4Annotations& annotations)
              {VALID_LIST, annotations.validation_paths()}};
   labels().clear();
 
-  for (const loaders::Yolo4Image& image : annotations.images) {
+  for (const dxxdd::Yolo4Image& image : annotations.images) {
     // the label file path the darknet reads the boxes of the image by
-    const auto [label, added] = labels().emplace(
-        loaders::Yolo4Image::label_of(image.path), image.boxes);
+    const auto [label, added] =
+        labels().emplace(dxxdd::Yolo4Image::label_of(image.path), image.boxes);
 
     // the image of both of the lists has the same boxes
     if (!added && label->second != image.boxes) {
@@ -57,7 +57,7 @@ bool TrainingDataRegistry::paths(const std::string& name,
 }
 
 bool TrainingDataRegistry::boxes(const std::string& labelpath,
-                                 std::vector<loaders::Yolo4Box>& found)
+                                 std::vector<dxxdd::Yolo4Box>& found)
 {
   std::lock_guard<std::mutex> lock{mutex()};
   const auto label = labels().find(labelpath);

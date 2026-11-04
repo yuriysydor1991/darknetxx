@@ -9,15 +9,13 @@
 #include <vector>
 
 #include "CTEST_OrigDefaultLoader_provider.h"
+#include "FormatsAccess.h"
 #include "LibraryContext.h"
 #include "NetworkChecks.h"
 #include "NetworkTracer.h"
 #include "WeightsNetSpec.h"
 #include "WeightsVariants.h"
 #include "src/NetworksLoaders/OrigDefaultLoader/OrigDefaultLoader.h"
-#include "src/NetworksLoaders/dxxwjz/dxxwjz2/Dxxwjz2Writer.h"
-#include "src/NetworksLoaders/original-weights/OrigWeightsReader.h"
-#include "src/NetworksLoaders/weights-model/NetworkFiles.h"
 #include "src/darknet-adaptor/DarknetContext.h"
 #include "src/darknet-adaptor/adaptors/ANetworkAdaptor/ANetworkAdaptor.h"
 #include "src/darknet-adaptor/adaptors/NetworkError.h"
@@ -404,7 +402,6 @@ TEST_F(CTEST_OrigDefaultLoader, cfg_errors_throw)
       {"no sections", ""},
       {"no net section",
        "[convolutional]\nfilters=4\nsize=3\nactivation=leaky\n"},
-      {"option before the net section", "batch=1\n[net]\nwidth=8\n"},
       {"unknown section",
        std::string{NET_HEADER} + "[unknown_layer]\nfoo=bar\n"},
       {"no input", "[net]\nbatch=1\n[convolutional]\nfilters=4\nsize=3\n"},
@@ -465,6 +462,11 @@ TEST_F(CTEST_OrigDefaultLoader, cfg_errors_throw)
 
     EXPECT_THROW(parse(content), NetworkError);
   }
+
+  // the option before the net section is the error of the cfg sections of the
+  // darknetxx-datadrivers library, which throw their own error (the load()
+  // of the loader fails of both)
+  EXPECT_THROW(parse("batch=1\n[net]\nwidth=8\n"), dxxdd::CfgError);
 
   EXPECT_THROW(loader.parse_network_cfg(workspace.file("missing.cfg")),
                NetworkError);
@@ -755,8 +757,8 @@ INSTANTIATE_TEST_SUITE_P(Random, CTEST_OrigDefaultLoader_generated,
 class CTEST_OrigDefaultLoader_context : public CTEST_OrigDefaultLoader
 {
  public:
-  std::shared_ptr<darknetxx011::LibraryContext> actx =
-      std::make_shared<darknetxx011::LibraryContext>();
+  std::shared_ptr<darknetxx012::LibraryContext> actx =
+      std::make_shared<darknetxx012::LibraryContext>();
   std::shared_ptr<DarknetContext> dctx;
 
   void SetUp() override

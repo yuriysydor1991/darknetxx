@@ -18,7 +18,7 @@ class RecognitionGtkmmIniter : public GtkmmIniter
 
  protected:
   virtual std::shared_ptr<AWindowContext> create_window_context(
-      app::AppCtxPtr ctx, darknetxx011::LibraryContextPtr libctx) override;
+      app::AppCtxPtr ctx, darknetxx012::LibraryContextPtr libctx) override;
 };
 
 }  // namespace darknetxxGtkmm4

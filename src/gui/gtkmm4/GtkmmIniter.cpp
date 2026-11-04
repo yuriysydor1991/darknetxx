@@ -19,7 +19,7 @@ GtkmmIniter::GtkmmIniter(std::string nname, std::string nid)
 }
 
 bool GtkmmIniter::run(app::AppCtxPtr ctx,
-                      darknetxx011::LibraryContextPtr libctx)
+                      darknetxx012::LibraryContextPtr libctx)
 {
   assert(ctx != nullptr);
   assert(libctx != nullptr);

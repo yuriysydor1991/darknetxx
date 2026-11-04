@@ -13,7 +13,7 @@ NetEditorGtkmmIniter::NetEditorGtkmmIniter()
 }
 
 std::shared_ptr<AWindowContext> NetEditorGtkmmIniter::create_window_context(
-    app::AppCtxPtr ctx, darknetxx011::LibraryContextPtr libctx)
+    app::AppCtxPtr ctx, darknetxx012::LibraryContextPtr libctx)
 {
   return std::make_shared<NetEditorWindowContext>(ctx, libctx);
 }

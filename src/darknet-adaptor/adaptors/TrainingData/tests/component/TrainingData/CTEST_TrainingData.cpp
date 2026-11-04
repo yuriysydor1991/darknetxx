@@ -10,9 +10,9 @@
 #include "src/darknet-adaptor/adaptors/orig-includes.h"
 
 using darknet_adaptor::adaptors::TrainingDataRegistry;
-using darknet_adaptor::loaders::Yolo4Annotations;
-using darknet_adaptor::loaders::Yolo4Box;
-using darknet_adaptor::loaders::Yolo4Image;
+using dxxdd::Yolo4Annotations;
+using dxxdd::Yolo4Box;
+using dxxdd::Yolo4Image;
 
 namespace
 {

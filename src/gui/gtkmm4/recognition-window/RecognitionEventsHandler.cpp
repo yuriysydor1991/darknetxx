@@ -23,7 +23,7 @@ RecognitionEventsHandler::~RecognitionEventsHandler()
 RecognitionEventsHandler::RecognitionEventsHandler(
     std::shared_ptr<RecognitionWindowContext> nmwctx)
     : mwctx{std::move(nmwctx)},
-      recognizer{darknetxx011::LibraryFacade::create_recognizer()}
+      recognizer{darknetxx012::LibraryFacade::create_recognizer()}
 {
 }
 

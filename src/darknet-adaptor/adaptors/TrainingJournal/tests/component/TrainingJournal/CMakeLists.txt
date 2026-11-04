@@ -14,6 +14,7 @@ target_compile_definitions(
 target_link_libraries(
   CTEST_TrainingJournal
   DarknetXXNetworksCore
+  DarknetXXFormatsAccess
   DarknetXXWeightsFactory
   GTest::gtest_main
 )

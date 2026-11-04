@@ -33,6 +33,6 @@ endif()
 # for example:
 #   target_link_libraries(${DARKNETXX_BINARY_NAME} nlohmann_json::nlohmann_json)
 #
-# The darknetxx links it into the dxxwjz1 network weights files reader and
-# writer (see the src/NetworksLoaders/dxxwjz/dxxwjz1
-# directory).
+# The darknetxx links it into the tests which read the dxxwjz JSON documents of
+# the darknetxx-datadrivers library (the network weights files themselves are
+# read and written by that library).

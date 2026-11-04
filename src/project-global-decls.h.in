@@ -8,8 +8,6 @@ namespace project_decls {
 
 /// @brief Global project' binary name
 const std::string PROJECT_NAME = "${DARKNETXX_BINARY_NAME}" ;
-/// @brief Global project' network weights files converter only binary name
-const std::string PROJECT_CONVERTER_NAME = "${DARKNETXX_CONVERTER_BINARY_NAME}" ;
 /// @brief Global project' GUI training binary name
 const std::string PROJECT_TRAIN_GUI_NAME = "${DARKNETXX_TRAIN_GUI_BINARY_NAME}" ;
 /// @brief Global project' GUI recognition binary name

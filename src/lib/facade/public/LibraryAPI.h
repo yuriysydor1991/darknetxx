@@ -1,5 +1,5 @@
-#ifndef DARKNETXX_011_LIBRARYAPI_H
-#define DARKNETXX_011_LIBRARYAPI_H
+#ifndef DARKNETXX_012_LIBRARYAPI_H
+#define DARKNETXX_012_LIBRARYAPI_H
 
 /**
  * @brief Marks the classes of the installable library interface, the only
@@ -15,4 +15,4 @@
 #define DARKNETXX_LIB_API __attribute__((visibility("default")))
 #endif  // _WIN32
 
-#endif  // DARKNETXX_011_LIBRARYAPI_H
+#endif  // DARKNETXX_012_LIBRARYAPI_H

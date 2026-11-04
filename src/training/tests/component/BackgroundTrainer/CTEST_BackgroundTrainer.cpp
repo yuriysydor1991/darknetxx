@@ -10,16 +10,10 @@
 #include <numeric>
 #include <vector>
 
+#include "FormatsAccess.h"
 #include "ITrainingListener.h"
 #include "LibraryFacade.h"
 #include "Yolo4Folder.h"
-#include "src/NetworksLoaders/dxxwjz/dxxwjz2p/Dxxwjz2pReader.h"
-#include "src/NetworksLoaders/dxxwjz/dxxwjz3/Dxxwjz3Reader.h"
-#include "src/NetworksLoaders/dxxwjz/dxxwjz4/Dxxwjz4Reader.h"
-#include "src/NetworksLoaders/weights-converter/WeightsConverter.h"
-#include "src/NetworksLoaders/weights-formats/WeightsFileFormats.h"
-#include "src/NetworksLoaders/weights-model/NetworkFiles.h"
-#include "src/NetworksLoaders/weights-model/WeightsDocument.h"
 #include "src/darknet-adaptor/adaptors/TrainingData/TrainingDataRegistry.h"
 
 using darknet_adaptor::adaptors::TrainingDataRegistry;
@@ -31,10 +25,10 @@ using darknet_adaptor::loaders::WeightsFileFormats;
 using darknet_adaptor::loaders::dxxwjz2p::v1::Dxxwjz2pReader;
 using darknet_adaptor::loaders::dxxwjz3::v3::Dxxwjz3Reader;
 using darknet_adaptor::loaders::dxxwjz4::v4::Dxxwjz4Reader;
-using darknetxx011::ITrainer;
-using darknetxx011::LibraryContext;
-using darknetxx011::LibraryFacade;
-using darknetxx011::Yolo4Folder;
+using darknetxx012::ITrainer;
+using darknetxx012::LibraryContext;
+using darknetxx012::LibraryFacade;
+using darknetxx012::Yolo4Folder;
 
 namespace fs = std::filesystem;
 
@@ -42,10 +36,10 @@ namespace
 {
 
 /// @brief Records the iterations and the end of the training it listens to.
-class Listener : public darknetxx011::ITrainingListener
+class Listener : public darknetxx012::ITrainingListener
 {
  public:
-  void on_iteration(const darknetxx011::TrainingProgress& progress) override
+  void on_iteration(const darknetxx012::TrainingProgress& progress) override
   {
     std::lock_guard<std::mutex> lock{mutex};
 
@@ -267,7 +261,7 @@ TEST_F(CTEST_BackgroundTrainer, trains_the_dxxwjz2p_project_of_the_folder)
 
   ctx->map = true;
 
-  const darknetxx011::ATrainingProjectPtr opened =
+  const darknetxx012::ATrainingProjectPtr opened =
       LibraryFacade::open_training_project(project.string());
 
   ASSERT_TRUE(opened->valid());
@@ -324,7 +318,7 @@ TEST_F(CTEST_BackgroundTrainer, trains_the_dxxwjz4p_project_into_the_dxxwjz4)
                        std::istreambuf_iterator<char>{}};
   };
   const std::string packed = bytes_of(project);
-  const darknetxx011::ATrainingProjectPtr opened =
+  const darknetxx012::ATrainingProjectPtr opened =
       LibraryFacade::open_training_project(project.string());
 
   ASSERT_TRUE(opened->valid());
@@ -356,9 +350,9 @@ TEST_F(CTEST_BackgroundTrainer, trains_the_dxxwjz4p_project_into_the_dxxwjz4)
 
 TEST_F(CTEST_BackgroundTrainer, projects_of_the_paths)
 {
-  const darknetxx011::ATrainingProjectPtr yolo4 =
+  const darknetxx012::ATrainingProjectPtr yolo4 =
       LibraryFacade::open_training_project(folder.string());
-  const darknetxx011::ATrainingProjectPtr none =
+  const darknetxx012::ATrainingProjectPtr none =
       LibraryFacade::open_training_project((folder / "none.dxxwjz2p").string());
 
   EXPECT_TRUE(yolo4->valid());

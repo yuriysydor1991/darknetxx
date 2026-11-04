@@ -7,15 +7,13 @@
 #include <vector>
 
 #include "image_opencv.h"
-#include "src/NetworksLoaders/OrigDefaultLoader/CfgSection.h"
-#include "src/NetworksLoaders/weights-formats/NetworkSource.h"
-#include "src/NetworksLoaders/weights-formats/WeightsFileFormats.h"
+#include "src/NetworksLoaders/DataDriversAliases.h"
 #include "src/log/log.h"
 
 namespace darknet_adaptor::adaptors
 {
 
-bool TrainingChart::render(const loaders::WeightsDocument& rest,
+bool TrainingChart::render(const dxxdd::WeightsDocument& rest,
                            std::vector<unsigned char>& png)
 {
   // the grid and the scale of the chart of the training
@@ -26,8 +24,8 @@ bool TrainingChart::render(const loaders::WeightsDocument& rest,
 
   try {
     std::istringstream cfg{rest.network.cfg()};
-    loaders::CfgSections sections =
-        loaders::CfgSection::read_cfg(cfg, "the network cfg of the chart");
+    dxxdd::CfgSections sections =
+        dxxdd::CfgSection::read_cfg(cfg, "the network cfg of the chart");
 
     if (!sections.empty()) {
       max_batches = sections.front().find_int_quiet("max_batches", 0);
@@ -44,7 +42,7 @@ bool TrainingChart::render(const loaders::WeightsDocument& rest,
     return false;
   }
 
-  const loaders::TrainingRecord& training = rest.training;
+  const dxxdd::TrainingRecord& training = rest.training;
   const train_chart_record record{training.iterations().data(),
                                   training.avg_losses().data(),
                                   static_cast<int>(training.size()),
@@ -74,15 +72,15 @@ bool TrainingChart::render(const loaders::WeightsDocument& rest,
 bool TrainingChart::render_file(const std::string& weights,
                                 std::vector<unsigned char>& png)
 {
-  loaders::WeightsDocument rest;
+  dxxdd::WeightsDocument rest;
   bool held = false;
 
-  if (weights.empty() || !loaders::NetworkSource::describes(weights)) {
+  if (weights.empty() || !dxxdd::NetworkSource::describes(weights)) {
     LOGD("The weights file " << weights << " keeps no training record");
     return false;
   }
 
-  return loaders::WeightsFileFormats::of_file(weights)->create_reader()->peek(
+  return dxxdd::WeightsFileFormats::of_file(weights)->create_reader()->peek(
              weights, rest, held) &&
          render(rest, png);
 }

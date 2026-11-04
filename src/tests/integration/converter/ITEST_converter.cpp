@@ -8,10 +8,8 @@
 #include <vector>
 
 #include "ConverterRuns.h"
+#include "FormatsAccess.h"
 #include "ITEST_converter_provider.h"
-#include "src/NetworksLoaders/dxxwjz/dxxwjz1/Dxxwjz1Reader.h"
-#include "src/NetworksLoaders/original-weights/OrigWeightsReader.h"
-#include "src/NetworksLoaders/original-weights/OrigWeightsWriter.h"
 #include "src/log/default-logger/DefaultLogger.h"
 
 using namespace testing;
@@ -120,15 +118,20 @@ TEST_F(ITEST_converter, main_binary_converts_the_same_way)
   check_back_and_forth(ITEST_converter_provider::DARKNETXX, weights, cfg,
                        workspace);
 
-  const std::string by_converter = workspace.file("by_converter.dxxwjz1");
+  // the dxxwjz1 file of the binary is the one of the conversion of the
+  // darknetxx-datadrivers library run by the test itself, by the darknet
+  // network of the cfg the very way the binary does
+  const std::string in_process = workspace.file("in_process.dxxwjz1");
+  darknet_adaptor::loaders::WeightsConversion conversion;
 
-  ASSERT_EQ(converter(conversion_args("weights", weights, "dxxwjz1",
-                                      by_converter, cfg))
-                .status,
-            0);
+  conversion.from = darknet_adaptor::loaders::format_named("weights");
+  conversion.src = weights;
+  conversion.to = darknet_adaptor::loaders::format_named("dxxwjz1");
+  conversion.dst = in_process;
+  conversion.cfg = cfg;
 
-  // the dxxwjz1 file of either binary is one and the same file
-  EXPECT_TRUE(files_equal(by_converter, weights + ".dxxwjz1"));
+  ASSERT_TRUE(darknet_adaptor::loaders::WeightsConverter{}.convert(conversion));
+  EXPECT_TRUE(files_equal(in_process, weights + ".dxxwjz1"));
 }
 
 TEST_F(ITEST_converter, dxxwjz1_file_is_the_gzip_compressed_json_document)
@@ -186,35 +189,10 @@ TEST_F(ITEST_converter, dxxwjz2_file_keeps_the_network_description)
   EXPECT_TRUE(files_equal(reference("1.weights"), back));
 }
 
-TEST_F(ITEST_converter, help_lists_the_conversion_alone)
-{
-  const RunResult result = converter({"--help"});
-
-  EXPECT_EQ(result.status, 0);
-
-  const std::string output = result.output();
-
-  EXPECT_NE(
-      output.find(std::filesystem::path{ITEST_converter_provider::CONVERTER}
-                      .filename()
-                      .string() +
-                  " [OPTIONS]"),
-      std::string::npos)
-      << output;
-
-  for (const std::string& part :
-       {std::string{"--convert-from"}, std::string{"--convert-src"},
-        std::string{"--convert-to"}, std::string{"--convert-dst"},
-        std::string{"--convert-cfg"}, std::string{"--convert-names"},
-        std::string{"weights"}, std::string{"dxxwjz1"},
-        std::string{"dxxwjz2"}}) {
-    EXPECT_NE(output.find(part), std::string::npos) << part;
-  }
-
-  // the converter only binary runs no training nor detection
-  EXPECT_EQ(output.find("--train-cfg"), std::string::npos);
-  EXPECT_EQ(output.find("--detect-cfg"), std::string::npos);
-}
+// The help_lists_the_conversion_alone, the version_names_the_converter and the
+// empty_command_line_is_the_failed_help cases of the converter only binary
+// are the tests of the darknetxxConverter binary of the darknetxx-datadrivers
+// library now.
 
 TEST_F(ITEST_converter, main_binary_help_lists_the_conversion_too)
 {
@@ -230,28 +208,6 @@ TEST_F(ITEST_converter, main_binary_help_lists_the_conversion_too)
         std::string{"--train-cfg"}, std::string{"--detect-cfg"}}) {
     EXPECT_NE(output.find(part), std::string::npos) << part;
   }
-}
-
-TEST_F(ITEST_converter, version_names_the_converter)
-{
-  const RunResult result = converter({"--version"});
-
-  EXPECT_EQ(result.status, 0);
-  EXPECT_NE(result.output().find(
-                std::filesystem::path{ITEST_converter_provider::CONVERTER}
-                    .filename()
-                    .string() +
-                " version "),
-            std::string::npos)
-      << result.output();
-}
-
-TEST_F(ITEST_converter, empty_command_line_is_the_failed_help)
-{
-  const RunResult result = converter({});
-
-  EXPECT_NE(result.status, 0);
-  EXPECT_NE(result.output().find("--convert-from"), std::string::npos);
 }
 
 TEST_F(ITEST_converter, failed_conversions_write_nothing)

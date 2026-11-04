@@ -1,12 +1,12 @@
-#ifndef DARKNETXX_011_ILIB_CLASS_H
-#define DARKNETXX_011_ILIB_CLASS_H
+#ifndef DARKNETXX_012_ILIB_CLASS_H
+#define DARKNETXX_012_ILIB_CLASS_H
 
 #include <memory>
 
 #include "LibraryAPI.h"
 #include "LibraryContext.h"
 
-namespace darknetxx011
+namespace darknetxx012
 {
 
 /**
@@ -27,6 +27,6 @@ class DARKNETXX_LIB_API ILib
 
 using ILibPtr = ILib::ILibPtr;
 
-}  // namespace darknetxx011
+}  // namespace darknetxx012
 
-#endif  // DARKNETXX_011_ILIB_CLASS_H
+#endif  // DARKNETXX_012_ILIB_CLASS_H

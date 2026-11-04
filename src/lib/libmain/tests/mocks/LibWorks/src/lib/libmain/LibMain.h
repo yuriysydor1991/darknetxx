@@ -6,10 +6,10 @@
 namespace darknetxx_impl
 {
 
-class LibMain : public darknetxx011::ILib
+class LibMain : public darknetxx012::ILib
 {
  public:
-  bool libcall(darknetxx011::LibraryContextPtr) override { return true; }
+  bool libcall(darknetxx012::LibraryContextPtr) override { return true; }
 };
 
 }  // namespace darknetxx_impl

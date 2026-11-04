@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-#include "src/NetworksLoaders/weights-model/WeightsDocument.h"
+#include "src/NetworksLoaders/DataDriversAliases.h"
 
 namespace darknet_adaptor::adaptors
 {
@@ -24,7 +24,7 @@ class TrainingChart
 
   /// @brief The chart of the network description and the training record
   /// of the rest, false (logged) for the cfg of no max_batches.
-  static bool render(const loaders::WeightsDocument& rest,
+  static bool render(const dxxdd::WeightsDocument& rest,
                      std::vector<unsigned char>& png);
 
   /// @brief The render() of the weights file which keeps the record (the

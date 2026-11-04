@@ -15,17 +15,17 @@ namespace darknetxx_impl
  * @brief Runs the training work in it's own thread. The training listener of
  * the context hears the iterations and the end of it.
  */
-class BackgroundTrainer : public darknetxx011::ITrainer
+class BackgroundTrainer : public darknetxx012::ITrainer
 {
  public:
-  using LibraryContextPtr = darknetxx011::LibraryContextPtr;
-  using ILibPtr = darknetxx011::ILibPtr;
+  using LibraryContextPtr = darknetxx012::LibraryContextPtr;
+  using ILibPtr = darknetxx012::ILibPtr;
 
   /// @brief Stops the running training and waits for it.
   virtual ~BackgroundTrainer();
   BackgroundTrainer(LibraryContextPtr nctx, ILibPtr ntraining);
 
-  virtual bool train(const darknetxx011::ATrainingProject& project) override;
+  virtual bool train(const darknetxx012::ATrainingProject& project) override;
   virtual void stop() override;
   virtual bool running() const override;
 

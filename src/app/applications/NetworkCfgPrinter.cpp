@@ -21,7 +21,7 @@ int NetworkCfgPrinter::run(std::shared_ptr<ApplicationContext> ctx)
   }
 
   const std::string cfg =
-      darknetxx011::LibraryFacade::network_cfg(ctx->dump_cfg);
+      darknetxx012::LibraryFacade::network_cfg(ctx->dump_cfg);
 
   if (cfg.empty()) {
     LOGE("No network cfg of the "

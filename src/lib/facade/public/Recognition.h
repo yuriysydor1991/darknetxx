@@ -1,5 +1,5 @@
-#ifndef DARKNETXX_011_RECOGNITION_CLASS_H
-#define DARKNETXX_011_RECOGNITION_CLASS_H
+#ifndef DARKNETXX_012_RECOGNITION_CLASS_H
+#define DARKNETXX_012_RECOGNITION_CLASS_H
 
 #include <string>
 #include <vector>
@@ -7,7 +7,7 @@
 #include "LibraryAPI.h"
 #include "RecognizedObject.h"
 
-namespace darknetxx011
+namespace darknetxx012
 {
 
 /**
@@ -32,6 +32,6 @@ class DARKNETXX_LIB_API Recognition
   double seconds{0.0};
 };
 
-}  // namespace darknetxx011
+}  // namespace darknetxx012
 
-#endif  // DARKNETXX_011_RECOGNITION_CLASS_H
+#endif  // DARKNETXX_012_RECOGNITION_CLASS_H
