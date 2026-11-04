@@ -112,6 +112,9 @@ pipeline {
         stage('UTEST_ApplicationContext2LibraryContext') {
           steps { sh 'cd $BUILDDIR && ctest -R "UTEST_ApplicationContext2LibraryContext\\." --output-on-failure --output-junit $BDJUNITOUT/UTEST_ApplicationContext2LibraryContext.junit.xml' }
         }
+        stage('UTEST_NetworkCfgPrinter') {
+          steps { sh 'cd $BUILDDIR && ctest -R "UTEST_NetworkCfgPrinter\\." --output-on-failure --output-junit $BDJUNITOUT/UTEST_NetworkCfgPrinter.junit.xml' }
+        }
       }
       post { always { junit "$BUILDDIR/$BDJUNITOUT/*.xml" } }
     }
@@ -200,8 +203,46 @@ pipeline {
         stage('CTEST_Dxxwjz1') {
           steps { sh 'cd $BUILDDIR && ctest -R "CTEST_Dxxwjz1[._]" --output-on-failure --output-junit $BDJUNITOUT/CTEST_Dxxwjz1.junit.xml' }
         }
+        // The other weights files formats and the YOLO4 training folder, the
+        // darknet networks of which round trip through the library (the
+        // CTEST_Dxxwjz2_parser ones of the dxxwjz2 documents included).
+        stage('CTEST_Dxxwjz2') {
+          steps { sh 'cd $BUILDDIR && ctest -R "CTEST_Dxxwjz2[._]" --output-on-failure --output-junit $BDJUNITOUT/CTEST_Dxxwjz2.junit.xml' }
+        }
+        stage('CTEST_Dxxwjz2p') {
+          steps { sh 'cd $BUILDDIR && ctest -R "CTEST_Dxxwjz2p\\." --output-on-failure --output-junit $BDJUNITOUT/CTEST_Dxxwjz2p.junit.xml' }
+        }
+        stage('CTEST_Dxxwjz3') {
+          steps { sh 'cd $BUILDDIR && ctest -R "CTEST_Dxxwjz3\\." --output-on-failure --output-junit $BDJUNITOUT/CTEST_Dxxwjz3.junit.xml' }
+        }
+        stage('CTEST_Dxxwjz3p') {
+          steps { sh 'cd $BUILDDIR && ctest -R "CTEST_Dxxwjz3p\\." --output-on-failure --output-junit $BDJUNITOUT/CTEST_Dxxwjz3p.junit.xml' }
+        }
+        stage('CTEST_Dxxwjz4') {
+          steps { sh 'cd $BUILDDIR && ctest -R "CTEST_Dxxwjz4\\." --output-on-failure --output-junit $BDJUNITOUT/CTEST_Dxxwjz4.junit.xml' }
+        }
+        stage('CTEST_Dxxwjz4p') {
+          steps { sh 'cd $BUILDDIR && ctest -R "CTEST_Dxxwjz4p\\." --output-on-failure --output-junit $BDJUNITOUT/CTEST_Dxxwjz4p.junit.xml' }
+        }
+        stage('CTEST_Yolo4FolderFormat') {
+          steps { sh 'cd $BUILDDIR && ctest -R "CTEST_Yolo4FolderFormat\\." --output-on-failure --output-junit $BDJUNITOUT/CTEST_Yolo4FolderFormat.junit.xml' }
+        }
         stage('CTEST_WeightsConverter') {
           steps { sh 'cd $BUILDDIR && ctest -R "CTEST_WeightsConverter[._]" --output-on-failure --output-junit $BDJUNITOUT/CTEST_WeightsConverter.junit.xml' }
+        }
+        stage('CTEST_NetworkRewriter') {
+          steps { sh 'cd $BUILDDIR && ctest -R "CTEST_NetworkRewriter\\." --output-on-failure --output-junit $BDJUNITOUT/CTEST_NetworkRewriter.junit.xml' }
+        }
+        // The training records of the darknet adaptor: the chart, the
+        // data and the journal of the training.
+        stage('CTEST_TrainingChart') {
+          steps { sh 'cd $BUILDDIR && ctest -R "CTEST_TrainingChart\\." --output-on-failure --output-junit $BDJUNITOUT/CTEST_TrainingChart.junit.xml' }
+        }
+        stage('CTEST_TrainingData') {
+          steps { sh 'cd $BUILDDIR && ctest -R "CTEST_TrainingData\\." --output-on-failure --output-junit $BDJUNITOUT/CTEST_TrainingData.junit.xml' }
+        }
+        stage('CTEST_TrainingJournal') {
+          steps { sh 'cd $BUILDDIR && ctest -R "CTEST_TrainingJournal\\." --output-on-failure --output-junit $BDJUNITOUT/CTEST_TrainingJournal.junit.xml' }
         }
       }
       post { always { junit "$BUILDDIR/$BDJUNITOUT/*.xml" } }
@@ -216,9 +257,6 @@ pipeline {
         }
         stage('UTEST_TrainingProgress') {
           steps { sh 'cd $BUILDDIR && ctest -R "UTEST_TrainingProgress\\." --output-on-failure --output-junit $BDJUNITOUT/UTEST_TrainingProgress.junit.xml' }
-        }
-        stage('UTEST_ConversionFormats') {
-          steps { sh 'cd $BUILDDIR && ctest -R "UTEST_ConversionFormats\\." --output-on-failure --output-junit $BDJUNITOUT/UTEST_ConversionFormats.junit.xml' }
         }
         stage('UTEST_LibFactory') {
           steps { sh 'cd $BUILDDIR && ctest -R "UTEST_LibFactory\\." --output-on-failure --output-junit $BDJUNITOUT/UTEST_LibFactory.junit.xml' }
@@ -242,8 +280,9 @@ pipeline {
       post { always { junit "$BUILDDIR/$BDJUNITOUT/*.xml" } }
     }
 
-    // The tests of the GUI binaries. The CTEST_TrainWindow and the
-    // CTEST_RecognitionWindow ones skip themselves without a display to show
+    // The tests of the GUI binaries. The CTEST_TrainWindow, the
+    // CTEST_RecognitionWindow, the CTEST_NetEditorWindow and the
+    // CTEST_NetEditorQtWindow ones skip themselves without a display to show
     // the window on.
     stage('GUI tests') {
       parallel {
@@ -256,11 +295,30 @@ pipeline {
         stage('UTEST_RecognitionGuiApplicationFactory') {
           steps { sh 'cd $BUILDDIR && ctest -R "UTEST_RecognitionGuiApplicationFactory\\." --output-on-failure --output-junit $BDJUNITOUT/UTEST_RecognitionGuiApplicationFactory.junit.xml' }
         }
+        stage('UTEST_NetEditorGuiApplicationFactory') {
+          steps { sh 'cd $BUILDDIR && ctest -R "UTEST_NetEditorGuiApplicationFactory\\." --output-on-failure --output-junit $BDJUNITOUT/UTEST_NetEditorGuiApplicationFactory.junit.xml' }
+        }
+        stage('UTEST_NetEditorQtGuiApplicationFactory') {
+          steps { sh 'cd $BUILDDIR && ctest -R "UTEST_NetEditorQtGuiApplicationFactory\\." --output-on-failure --output-junit $BDJUNITOUT/UTEST_NetEditorQtGuiApplicationFactory.junit.xml' }
+        }
         stage('CTEST_TrainWindow') {
           steps { sh 'cd $BUILDDIR && ctest -R "CTEST_TrainWindow\\." --output-on-failure --output-junit $BDJUNITOUT/CTEST_TrainWindow.junit.xml' }
         }
         stage('CTEST_RecognitionWindow') {
           steps { sh 'cd $BUILDDIR && ctest -R "CTEST_RecognitionWindow\\." --output-on-failure --output-junit $BDJUNITOUT/CTEST_RecognitionWindow.junit.xml' }
+        }
+        stage('CTEST_NetEditorWindow') {
+          steps { sh 'cd $BUILDDIR && ctest -R "CTEST_NetEditorWindow\\." --output-on-failure --output-junit $BDJUNITOUT/CTEST_NetEditorWindow.junit.xml' }
+        }
+        stage('CTEST_NetEditorQtWindow') {
+          steps { sh 'cd $BUILDDIR && ctest -R "CTEST_NetEditorQtWindow\\." --output-on-failure --output-junit $BDJUNITOUT/CTEST_NetEditorQtWindow.junit.xml' }
+        }
+        // The model of the network editors and the projects they save.
+        stage('CTEST_NetEditorModel') {
+          steps { sh 'cd $BUILDDIR && ctest -R "CTEST_NetEditorModel\\." --output-on-failure --output-junit $BDJUNITOUT/CTEST_NetEditorModel.junit.xml' }
+        }
+        stage('CTEST_NetworkProject') {
+          steps { sh 'cd $BUILDDIR && ctest -R "CTEST_NetworkProject\\." --output-on-failure --output-junit $BDJUNITOUT/CTEST_NetworkProject.junit.xml' }
         }
         stage('ITEST_gui_bash') {
           steps { sh 'cd $BUILDDIR && ctest -R "ITEST_gui_bash\\." --output-on-failure --output-junit $BDJUNITOUT/ITEST_gui_bash.junit.xml' }
@@ -270,11 +328,11 @@ pipeline {
     }
 
     // The ctest adds the ITEST_digits_training fixture test on its own, which
-    // trains the network the ITEST_digits tests check by the darknetxx
-    // executable. With the sanitizers of the Debug build above that takes a
-    // couple of minutes.
+    // trains the network the ITEST_digits and the ITEST_digits_dxxwjz3 tests
+    // check by the darknetxx executable. With the sanitizers of the Debug
+    // build above that takes a couple of minutes.
     stage('Integration tests') {
-      steps { sh 'cd $BUILDDIR && ctest -R "ITEST_digits\\." --output-on-failure --output-junit $BDJUNITOUT/ITEST_digits.junit.xml' }
+      steps { sh 'cd $BUILDDIR && ctest -R "ITEST_digits(_dxxwjz3)?\\." --output-on-failure --output-junit $BDJUNITOUT/ITEST_digits.junit.xml' }
       post { always { junit "$BUILDDIR/$BDJUNITOUT/ITEST_digits.junit.xml" } }
     }
 
