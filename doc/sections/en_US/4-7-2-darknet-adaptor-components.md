@@ -101,7 +101,6 @@ class NetworkWeights {
   +NetworkWeights(net)
   +NetworkWeights(adaptor)
   +{static} layout_of(net, options) : WeightsLayoutEntries
-  +{static} type_of(type) : LayerType / LAYER_TYPE
 }
 
 class TrainingJournal {

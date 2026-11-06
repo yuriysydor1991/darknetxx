@@ -85,7 +85,7 @@ package "darknetxx-datadrivers (the DarknetxxDataDrivers012 namespace, the dxxdd
     +{static} read_cfg(text, name) : CfgSections
   }
 
-  class "LayerType, WeightsSchema,\nWeightsLayout, WeightsReport" as Schema
+  class "LayerType, DarknetLayerType, WeightsSchema,\nWeightsLayout, WeightsReport" as Schema
 
   class "the formats: the original weights, the dxxwjz1 ... dxxwjz4p,\nthe YOLO4 folder, their validators, the ZlibController" as Formats <<inside the shared object>>
 
@@ -98,7 +98,6 @@ package "darknet_adaptor::loaders" {
     +NetworkWeights(adaptor)
     +{static} create(adaptor) : NetworkWeightsPtr
     +{static} layout_of(net, options) : WeightsLayoutEntries
-    +{static} type_of(type) : LayerType / LAYER_TYPE
   }
 
   class NetworkWeightsConverter {

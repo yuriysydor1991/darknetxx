@@ -37,6 +37,8 @@
 | `src/NetworksLoaders/OrigDefaultLoader/CfgSection.h` | секції файлу cfg | `CfgSection` публічних заголовних файлів, яка кидає `CfgError` |
 | `src/zlib` | `zlibi::ZlibController` і файлові потоки gzip | усередині бібліотеки |
 | `src/darknetxxConverter-target.cmake` | бінарний файл `darknetxxConverter` | бінарний файл бібліотеки (див. секцію [Бінарний файл darknetxxConverter](/doc/sections/uk_UA/5-35-the-darknetxxConverter-binary.md)) |
+| `src/detector-cmake-adaptor/darknet/src/structs`, `enums` і структура `layer` файлу `layers/layer.h` | C типи нейромережі та шарів darknet | заголовкові файли `<DarknetxxDataDrivers-0.12/darknet/*.h>`, які включають джерельні коди darknet |
+| перевірки типів шарів і `type_of()` класу `NetworkWeights` | `LayerType` значення `LAYER_TYPE` darknet і назад | `DarknetLayerType` публічних заголовкових файлів |
 
 Публічні заголовні файли директорії `include/DarknetxxDataDrivers-0.12`, простір імен `DarknetxxDataDrivers012`, - це весь інтерфейс бібліотеки. Класи форматів - класи читання, запису і перевірки, аналізатори і кодеки кожного з них - будуються з прихованою видимістю символів і залишаються всередині спільного об'єкта, тож darknetxx звертається до форматів лише через реєстр `WeightsFileFormats`: за їхніми назвами (тими, що й у командному рядку) і за розширеннями назв файлів, а будь-який інший шлях - це оригінальний файл ваг. Бібліотека не містить коду darknet: типи шарів - це її `LayerType` (`LAYER_TYPE` darknet з тими самими назвами і значеннями), а нейромережі, у які завантажуються і з яких зберігаються файли, - це подання користувача бібліотеки над його власними нейромережами (`INetworkWeights`).
 
@@ -140,7 +142,7 @@ package "darknetxx-datadrivers (the DarknetxxDataDrivers012 namespace, the dxxdd
     +{static} read_cfg(text, name) : CfgSections
   }
 
-  class "LayerType, WeightsSchema,\nWeightsLayout, WeightsReport" as Schema
+  class "LayerType, DarknetLayerType, WeightsSchema,\nWeightsLayout, WeightsReport" as Schema
 
   class "the formats: the original weights, the dxxwjz1 ... dxxwjz4p,\nthe YOLO4 folder, their validators, the ZlibController" as Formats <<inside the shared object>>
 
@@ -153,7 +155,6 @@ package "darknet_adaptor::loaders" {
     +NetworkWeights(adaptor)
     +{static} create(adaptor) : NetworkWeightsPtr
     +{static} layout_of(net, options) : WeightsLayoutEntries
-    +{static} type_of(type) : LayerType / LAYER_TYPE
   }
 
   class NetworkWeightsConverter {
@@ -247,7 +248,7 @@ TrainingDataRegistry ..> WeightsDocument : the annotations of
 - `layout(options)` - масиви float нейромережі у порядку файлів ваг за параметрами (збереження, збереження EMA, завантаження з їхніми транспонуваннями, до обмеження шарів), ті самі масиви структури нейромережі, у які завантажують класи читання і з яких зберігають класи запису. Обхід шарів нейромережі darknet, який виконували оригінальні `save_weights_upto()` і `load_weights_upto()`, - `WeightsLayout::of()` колишньої моделі ваг - переїхав у цей проект як `NetworkWeights::layout_of()`, бо він обходить шари darknet;
 - `seen()`, `loaded_seen(seen)` і `saved_seen()` - кількість зображень, які бачила нейромережа, значення seen завантаженого файлу, за яким іде поточна ітерація нейромережі (`get_current_batch()`), і значення seen збереженого файлу поточної ітерації (`get_current_iteration()`, помножене на batch і subdivisions), так, як це робили оригінальні функції.
 
-Подання створюється зі структури нейромережі лише на час виклику (`NetworkWeights{net}`, яке `OrigDefaultLoader`, `load_weights_upto()` і `save_weights_upto()` C API darknet і `TrainingJournal` передають класам читання і запису), з константної структури нейромережі, за якою читаються і перевіряються документи, або з адаптера нейромережі, який подання тримає живим (`NetworkWeights::create()` у `NetworkWeightsConverter`). [`NetworkWeights.cpp`](/src/NetworksLoaders/network-weights/NetworkWeights.cpp) під час компіляції перевіряє, що кожен `dxxdd::LayerType` збігається з `LAYER_TYPE` darknet тієї самої назви значення за значенням, тож вони перетворюються одне в одне самим лише `static_cast` (`NetworkWeights::type_of()` в обидва боки), і що версія файлів ваг, яку записує бібліотека (її `WeightsHeader::CURRENT_MAJOR`, `CURRENT_MINOR` і `CURRENT_REVISION`), - це `MAJOR_VERSION`, `MINOR_VERSION` і `PATCH_VERSION` з `version.h` вихідних файлів darknet: бібліотека інших типів чи іншої версії зупиняє побудову проекту, а не читання файлів.
+Подання створюється зі структури нейромережі лише на час виклику (`NetworkWeights{net}`, яке `OrigDefaultLoader`, `load_weights_upto()` і `save_weights_upto()` C API darknet і `TrainingJournal` передають класам читання і запису), з константної структури нейромережі, за якою читаються і перевіряються документи, або з адаптера нейромережі, який подання тримає живим (`NetworkWeights::create()` у `NetworkWeightsConverter`). Типи шарів перетворюються `dxxdd::DarknetLayerType::type_of()` в обидва боки, що бібліотека перевіряє під час власної компіляції. [`NetworkWeights.cpp`](/src/NetworksLoaders/network-weights/NetworkWeights.cpp) під час компіляції перевіряє, що версія файлів ваг, яку записує бібліотека (її `WeightsHeader::CURRENT_MAJOR`, `CURRENT_MINOR` і `CURRENT_REVISION`), - це `MAJOR_VERSION`, `MINOR_VERSION` і `PATCH_VERSION` з `version.h` вихідних файлів darknet: бібліотека іншої версії зупиняє побудову проекту, а не читання файлів.
 
 ### Дві нейромережі cfg
 

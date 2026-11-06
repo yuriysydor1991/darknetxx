@@ -61,6 +61,7 @@ The library itself is built with the zlib and the nlohmann JSON libraries (the s
 | --- | --- |
 | `<prefix>/lib/libDarknetxxDataDrivers-0.12.so.0.12.0` with it's `.so.0` soname and `.so` namelink links | the shared library |
 | `<prefix>/include/DarknetxxDataDrivers-0.12/*.h` | the public headers of the `DarknetxxDataDrivers012` namespace |
+| `<prefix>/include/DarknetxxDataDrivers-0.12/darknet/*.h` | the darknet network and layer C types the darknet sources of the project include |
 | `<prefix>/lib/cmake/DarknetxxDataDrivers-0.12/*.cmake` | the CMake package of the `DarknetxxDataDrivers-0.12::DarknetxxDataDrivers-0.12` target |
 | `<prefix>/bin/darknetxxConverter` | the network weights files converter binary |
 

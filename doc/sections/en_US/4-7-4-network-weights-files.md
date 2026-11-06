@@ -37,6 +37,8 @@ The network weights files and the training projects formats lived in the [`src/N
 | `src/NetworksLoaders/OrigDefaultLoader/CfgSection.h` | the sections of the cfg file | the `CfgSection` of the public headers, which throws the `CfgError` |
 | `src/zlib` | the `zlibi::ZlibController` and the gzip file streams | inside the library |
 | `src/darknetxxConverter-target.cmake` | the `darknetxxConverter` binary | the binary of the library (see [The darknetxxConverter binary](/doc/sections/en_US/5-35-the-darknetxxConverter-binary.md) section) |
+| `src/detector-cmake-adaptor/darknet/src/structs`, `enums` and the `layer` struct of the `layers/layer.h` | the darknet network and layer C types | the `<DarknetxxDataDrivers-0.12/darknet/*.h>` headers, which the darknet sources include |
+| the layer types checks and the `type_of()` of the `NetworkWeights` | the `LayerType` of the darknet `LAYER_TYPE` and back | the `DarknetLayerType` of the public headers |
 
 The public headers of the `include/DarknetxxDataDrivers-0.12` directory, the `DarknetxxDataDrivers012` namespace, are the whole interface of the library. The classes of the formats - the readers, the writers, the validators, the parsers and the codecs of every one of them - are built with the hidden symbols visibility and stay inside the shared object, so the darknetxx reaches the formats by the `WeightsFileFormats` registry alone: of their names (the ones of the command line) and of the file name extensions, every other path being the original weights file. The library carries no darknet code: the types of the layers are it's `LayerType` (the darknet `LAYER_TYPE` of the very same names and values), the networks the files are loaded into and saved of are the views of the library user over it's own networks (the `INetworkWeights`).
 
@@ -140,7 +142,7 @@ package "darknetxx-datadrivers (the DarknetxxDataDrivers012 namespace, the dxxdd
     +{static} read_cfg(text, name) : CfgSections
   }
 
-  class "LayerType, WeightsSchema,\nWeightsLayout, WeightsReport" as Schema
+  class "LayerType, DarknetLayerType, WeightsSchema,\nWeightsLayout, WeightsReport" as Schema
 
   class "the formats: the original weights, the dxxwjz1 ... dxxwjz4p,\nthe YOLO4 folder, their validators, the ZlibController" as Formats <<inside the shared object>>
 
@@ -153,7 +155,6 @@ package "darknet_adaptor::loaders" {
     +NetworkWeights(adaptor)
     +{static} create(adaptor) : NetworkWeightsPtr
     +{static} layout_of(net, options) : WeightsLayoutEntries
-    +{static} type_of(type) : LayerType / LAYER_TYPE
   }
 
   class NetworkWeightsConverter {
@@ -247,7 +248,7 @@ The library knows no darknet network: it's readers load the weights of the files
 - `layout(options)` - the float arrays of the network in the order of the weights files of the options (the saves, the EMA saves, the loads with their transpositions, up to the cutoff), the very arrays of the network struct the readers load into and the writers save of. The walk of the darknet network layers the original `save_weights_upto()` and `load_weights_upto()` did - the `WeightsLayout::of()` of the former weights model - moved into this project as the `NetworkWeights::layout_of()`, since it walks the darknet layers;
 - `seen()`, `loaded_seen(seen)` and `saved_seen()` - the count of the images the network has seen, the seen of the loaded file with the current iteration of the network following it (the `get_current_batch()`), the seen of the saved file of the current iteration (the `get_current_iteration()` times the batch and the subdivisions), the way the original functions did.
 
-The view is made of the network struct for the call alone (the `NetworkWeights{net}` the `OrigDefaultLoader`, the `load_weights_upto()` and the `save_weights_upto()` of the darknet C API and the `TrainingJournal` hand over to the readers and the writers), of the const network struct the documents are read and validated by, or of the network adaptor the view keeps alive (the `NetworkWeights::create()` of the `NetworkWeightsConverter`). The [`NetworkWeights.cpp`](/src/NetworksLoaders/network-weights/NetworkWeights.cpp) checks at the compile time that every `dxxdd::LayerType` is the darknet `LAYER_TYPE` of the same name value for value, so the two convert by the `static_cast` alone (the `NetworkWeights::type_of()` of both ways), and that the version of the weights files the library writes (the `WeightsHeader::CURRENT_MAJOR`, `CURRENT_MINOR` and `CURRENT_REVISION` of it) is the `MAJOR_VERSION`, the `MINOR_VERSION` and the `PATCH_VERSION` of the `version.h` of the darknet sources: a library of other types or of another version fails the build of the project instead of the reads of the files.
+The view is made of the network struct for the call alone (the `NetworkWeights{net}` the `OrigDefaultLoader`, the `load_weights_upto()` and the `save_weights_upto()` of the darknet C API and the `TrainingJournal` hand over to the readers and the writers), of the const network struct the documents are read and validated by, or of the network adaptor the view keeps alive (the `NetworkWeights::create()` of the `NetworkWeightsConverter`). The layer types convert by the `dxxdd::DarknetLayerType::type_of()` of both ways, which the library checks at its own compile time. The [`NetworkWeights.cpp`](/src/NetworksLoaders/network-weights/NetworkWeights.cpp) checks at the compile time that the version of the weights files the library writes (the `WeightsHeader::CURRENT_MAJOR`, `CURRENT_MINOR` and `CURRENT_REVISION` of it) is the `MAJOR_VERSION`, the `MINOR_VERSION` and the `PATCH_VERSION` of the `version.h` of the darknet sources: a library of another version fails the build of the project instead of the reads of the files.
 
 ### The two networks of the cfg
 

@@ -61,6 +61,7 @@ LD_LIBRARY_PATH=/opt/darknetxx/lib darknetxx --version
 | --- | --- |
 | `<prefix>/lib/libDarknetxxDataDrivers-0.12.so.0.12.0` з посиланнями soname `.so.0` і namelink `.so` | спільну бібліотеку |
 | `<prefix>/include/DarknetxxDataDrivers-0.12/*.h` | публічні заголовні файли простору імен `DarknetxxDataDrivers012` |
+| `<prefix>/include/DarknetxxDataDrivers-0.12/darknet/*.h` | C типи нейромережі та шарів darknet, які включають джерельні коди darknet проекту |
 | `<prefix>/lib/cmake/DarknetxxDataDrivers-0.12/*.cmake` | пакет CMake цілі `DarknetxxDataDrivers-0.12::DarknetxxDataDrivers-0.12` |
 | `<prefix>/bin/darknetxxConverter` | бінарний файл конвертера файлів ваг нейромереж |
 
