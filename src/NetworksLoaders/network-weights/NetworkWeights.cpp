@@ -1,5 +1,7 @@
 #include "src/NetworksLoaders/network-weights/NetworkWeights.h"
 
+#include <DarknetxxDataDrivers-0.12/DarknetLayerType.h>
+
 #include <cstddef>
 #include <cstdint>
 #include <memory>
@@ -16,95 +18,6 @@ namespace darknet_adaptor::loaders
 
 namespace
 {
-
-// The layer types of the library are the darknet ones, name for name and
-// value for value, so the two convert by the static_cast alone.
-static_assert(static_cast<int>(dxxdd::LayerType::CONVOLUTIONAL) ==
-                  CONVOLUTIONAL,
-              "the CONVOLUTIONAL layer type of the library is the darknet one");
-static_assert(
-    static_cast<int>(dxxdd::LayerType::DECONVOLUTIONAL) == DECONVOLUTIONAL,
-    "the DECONVOLUTIONAL layer type of the library is the darknet one");
-static_assert(static_cast<int>(dxxdd::LayerType::CONNECTED) == CONNECTED,
-              "the CONNECTED layer type of the library is the darknet one");
-static_assert(static_cast<int>(dxxdd::LayerType::MAXPOOL) == MAXPOOL,
-              "the MAXPOOL layer type of the library is the darknet one");
-static_assert(static_cast<int>(dxxdd::LayerType::LOCAL_AVGPOOL) ==
-                  LOCAL_AVGPOOL,
-              "the LOCAL_AVGPOOL layer type of the library is the darknet one");
-static_assert(static_cast<int>(dxxdd::LayerType::SOFTMAX) == SOFTMAX,
-              "the SOFTMAX layer type of the library is the darknet one");
-static_assert(static_cast<int>(dxxdd::LayerType::DETECTION) == DETECTION,
-              "the DETECTION layer type of the library is the darknet one");
-static_assert(static_cast<int>(dxxdd::LayerType::DROPOUT) == DROPOUT,
-              "the DROPOUT layer type of the library is the darknet one");
-static_assert(static_cast<int>(dxxdd::LayerType::CROP) == CROP,
-              "the CROP layer type of the library is the darknet one");
-static_assert(static_cast<int>(dxxdd::LayerType::ROUTE) == ROUTE,
-              "the ROUTE layer type of the library is the darknet one");
-static_assert(static_cast<int>(dxxdd::LayerType::COST) == COST,
-              "the COST layer type of the library is the darknet one");
-static_assert(static_cast<int>(dxxdd::LayerType::NORMALIZATION) ==
-                  NORMALIZATION,
-              "the NORMALIZATION layer type of the library is the darknet one");
-static_assert(static_cast<int>(dxxdd::LayerType::AVGPOOL) == AVGPOOL,
-              "the AVGPOOL layer type of the library is the darknet one");
-static_assert(static_cast<int>(dxxdd::LayerType::LOCAL) == LOCAL,
-              "the LOCAL layer type of the library is the darknet one");
-static_assert(static_cast<int>(dxxdd::LayerType::SHORTCUT) == SHORTCUT,
-              "the SHORTCUT layer type of the library is the darknet one");
-static_assert(
-    static_cast<int>(dxxdd::LayerType::SCALE_CHANNELS) == SCALE_CHANNELS,
-    "the SCALE_CHANNELS layer type of the library is the darknet one");
-static_assert(static_cast<int>(dxxdd::LayerType::SAM) == SAM,
-              "the SAM layer type of the library is the darknet one");
-static_assert(static_cast<int>(dxxdd::LayerType::ACTIVE) == ACTIVE,
-              "the ACTIVE layer type of the library is the darknet one");
-static_assert(static_cast<int>(dxxdd::LayerType::RNN) == RNN,
-              "the RNN layer type of the library is the darknet one");
-static_assert(static_cast<int>(dxxdd::LayerType::GRU) == GRU,
-              "the GRU layer type of the library is the darknet one");
-static_assert(static_cast<int>(dxxdd::LayerType::LSTM) == LSTM,
-              "the LSTM layer type of the library is the darknet one");
-static_assert(static_cast<int>(dxxdd::LayerType::CONV_LSTM) == CONV_LSTM,
-              "the CONV_LSTM layer type of the library is the darknet one");
-static_assert(static_cast<int>(dxxdd::LayerType::HISTORY) == HISTORY,
-              "the HISTORY layer type of the library is the darknet one");
-static_assert(static_cast<int>(dxxdd::LayerType::CRNN) == CRNN,
-              "the CRNN layer type of the library is the darknet one");
-static_assert(static_cast<int>(dxxdd::LayerType::BATCHNORM) == BATCHNORM,
-              "the BATCHNORM layer type of the library is the darknet one");
-static_assert(static_cast<int>(dxxdd::LayerType::NETWORK) == NETWORK,
-              "the NETWORK layer type of the library is the darknet one");
-static_assert(static_cast<int>(dxxdd::LayerType::XNOR) == XNOR,
-              "the XNOR layer type of the library is the darknet one");
-static_assert(static_cast<int>(dxxdd::LayerType::REGION) == REGION,
-              "the REGION layer type of the library is the darknet one");
-static_assert(static_cast<int>(dxxdd::LayerType::YOLO) == YOLO,
-              "the YOLO layer type of the library is the darknet one");
-static_assert(static_cast<int>(dxxdd::LayerType::GAUSSIAN_YOLO) ==
-                  GAUSSIAN_YOLO,
-              "the GAUSSIAN_YOLO layer type of the library is the darknet one");
-static_assert(static_cast<int>(dxxdd::LayerType::ISEG) == ISEG,
-              "the ISEG layer type of the library is the darknet one");
-static_assert(static_cast<int>(dxxdd::LayerType::REORG) == REORG,
-              "the REORG layer type of the library is the darknet one");
-static_assert(static_cast<int>(dxxdd::LayerType::REORG_OLD) == REORG_OLD,
-              "the REORG_OLD layer type of the library is the darknet one");
-static_assert(static_cast<int>(dxxdd::LayerType::UPSAMPLE) == UPSAMPLE,
-              "the UPSAMPLE layer type of the library is the darknet one");
-static_assert(static_cast<int>(dxxdd::LayerType::LOGXENT) == LOGXENT,
-              "the LOGXENT layer type of the library is the darknet one");
-static_assert(static_cast<int>(dxxdd::LayerType::L2NORM) == L2NORM,
-              "the L2NORM layer type of the library is the darknet one");
-static_assert(static_cast<int>(dxxdd::LayerType::EMPTY) == EMPTY,
-              "the EMPTY layer type of the library is the darknet one");
-static_assert(static_cast<int>(dxxdd::LayerType::BLANK) == BLANK,
-              "the BLANK layer type of the library is the darknet one");
-static_assert(static_cast<int>(dxxdd::LayerType::CONTRASTIVE) == CONTRASTIVE,
-              "the CONTRASTIVE layer type of the library is the darknet one");
-static_assert(static_cast<int>(dxxdd::LayerType::IMPLICIT) == IMPLICIT,
-              "the IMPLICIT layer type of the library is the darknet one");
 
 // The library writes the version of the weights files the darknet sources of
 // the project write.
@@ -139,7 +52,7 @@ class LayoutWalk
 
     dxxdd::WeightsLayoutEntry entry;
     entry.layer = index;
-    entry.type = NetworkWeights::type_of(type);
+    entry.type = dxxdd::DarknetLayerType::type_of(type);
     entry.sub = sub;
     entry.kind = kind;
     entry.data = data;
@@ -248,7 +161,7 @@ dxxdd::LayerType NetworkWeights::type(const int layer) const
     return dxxdd::LayerType::BLANK;
   }
 
-  return type_of(mnet.layers[layer].type);
+  return dxxdd::DarknetLayerType::type_of(mnet.layers[layer].type);
 }
 
 dxxdd::WeightsLayoutEntries NetworkWeights::layout(
@@ -283,16 +196,6 @@ uint64_t NetworkWeights::saved_seen()
                                        mnet.batch * mnet.subdivisions);
 
   return *mnet.seen;
-}
-
-dxxdd::LayerType NetworkWeights::type_of(const LAYER_TYPE type)
-{
-  return static_cast<dxxdd::LayerType>(type);
-}
-
-LAYER_TYPE NetworkWeights::type_of(const dxxdd::LayerType type)
-{
-  return static_cast<LAYER_TYPE>(type);
 }
 
 dxxdd::WeightsLayoutEntries NetworkWeights::layout_of(

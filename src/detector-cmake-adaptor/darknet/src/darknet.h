@@ -9,6 +9,11 @@
 #define _CRTDBG_MAP_ALLOC
 #endif
 
+#include <DarknetxxDataDrivers-0.12/darknet/contrastive_params.h>
+#include <DarknetxxDataDrivers-0.12/darknet/enums.h>
+#include <DarknetxxDataDrivers-0.12/darknet/network.h>
+#include <DarknetxxDataDrivers-0.12/darknet/network_state.h>
+#include <DarknetxxDataDrivers-0.12/darknet/tree.h>
 #include <assert.h>
 #include <pthread.h>
 #include <stdint.h>
@@ -16,12 +21,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "src/enums/enums.h"
 #include "src/layers/layer.h"
-#include "src/structs/contrastive_params.h"
-#include "src/structs/network.h"
-#include "src/structs/network_state.h"
-#include "src/structs/tree.h"
 
 #ifndef LIB_API
 #ifdef LIB_EXPORTS

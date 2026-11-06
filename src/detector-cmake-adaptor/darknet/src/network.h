@@ -10,6 +10,7 @@
 #define __STDC_FORMAT_MACROS 1
 #endif
 #endif
+#include <DarknetxxDataDrivers-0.12/darknet/network_state.h>
 #include <inttypes.h>
 #include <stdint.h>
 
@@ -17,7 +18,6 @@
 #include "data.h"
 #include "image.h"
 #include "layers/layer.h"
-#include "src/structs/network_state.h"
 #include "tree.h"
 
 #ifdef __cplusplus

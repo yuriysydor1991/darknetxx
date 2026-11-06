@@ -1,6 +1,7 @@
 #ifndef DARKNETXX_PROJECT_TESTS_FORMATS_ACCESS_H
 #define DARKNETXX_PROJECT_TESTS_FORMATS_ACCESS_H
 
+#include <DarknetxxDataDrivers-0.12/DarknetLayerType.h>
 #include <zlib.h>
 
 #include <cstdint>
@@ -108,7 +109,7 @@ using WeightsConverter = NetworkWeightsConverter;
 /// @brief The library layer type of the darknet one.
 inline dxxdd::LayerType library_type(const LAYER_TYPE type)
 {
-  return NetworkWeights::type_of(type);
+  return dxxdd::DarknetLayerType::type_of(type);
 }
 
 /**
@@ -128,7 +129,7 @@ struct WeightsSchema : dxxdd::WeightsSchema
 
   static const std::string& name(const LAYER_TYPE type)
   {
-    return dxxdd::WeightsSchema::name(NetworkWeights::type_of(type));
+    return dxxdd::WeightsSchema::name(dxxdd::DarknetLayerType::type_of(type));
   }
 
   static bool parse(const std::string& text, LAYER_TYPE& type)
@@ -139,38 +140,41 @@ struct WeightsSchema : dxxdd::WeightsSchema
       return false;
     }
 
-    type = NetworkWeights::type_of(parsed);
+    type = dxxdd::DarknetLayerType::type_of(parsed);
 
     return true;
   }
 
   static bool has_weights(const LAYER_TYPE type)
   {
-    return dxxdd::WeightsSchema::has_weights(NetworkWeights::type_of(type));
+    return dxxdd::WeightsSchema::has_weights(
+        dxxdd::DarknetLayerType::type_of(type));
   }
 
   static const std::vector<dxxdd::WeightsSubLayer>& sublayers(
       const LAYER_TYPE type)
   {
-    return dxxdd::WeightsSchema::sublayers(NetworkWeights::type_of(type));
+    return dxxdd::WeightsSchema::sublayers(
+        dxxdd::DarknetLayerType::type_of(type));
   }
 
   static LAYER_TYPE sublayer_type(const LAYER_TYPE type)
   {
-    return NetworkWeights::type_of(
-        dxxdd::WeightsSchema::sublayer_type(NetworkWeights::type_of(type)));
+    return dxxdd::DarknetLayerType::type_of(dxxdd::WeightsSchema::sublayer_type(
+        dxxdd::DarknetLayerType::type_of(type)));
   }
 
   static const std::vector<dxxdd::WeightsArrayKind>& arrays(
       const LAYER_TYPE type)
   {
-    return dxxdd::WeightsSchema::arrays(NetworkWeights::type_of(type));
+    return dxxdd::WeightsSchema::arrays(dxxdd::DarknetLayerType::type_of(type));
   }
 
   static int rank(const LAYER_TYPE type, const dxxdd::WeightsSubLayer sub,
                   const dxxdd::WeightsArrayKind kind)
   {
-    return dxxdd::WeightsSchema::rank(NetworkWeights::type_of(type), sub, kind);
+    return dxxdd::WeightsSchema::rank(dxxdd::DarknetLayerType::type_of(type),
+                                      sub, kind);
   }
 };
 

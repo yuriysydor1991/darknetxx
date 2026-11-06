@@ -21,9 +21,8 @@ namespace darknet_adaptor::loaders
  * The layout of the view is the walk of the darknet network layers the
  * original save_weights_upto() and load_weights_upto() did (see the
  * dxxdd::WeightsLayout), so the library reads and writes the very same bytes
- * the darknet does. The layer types of the library are the LAYER_TYPE ones of
- * the darknet and the version of the weights files is the one of the darknet
- * sources: the implementation checks the two at the compile time.
+ * the darknet does. The version of the weights files is the one of the
+ * darknet sources: the implementation checks it at the compile time.
  *
  * The view keeps the network it is made of: the network struct belongs to
  * the code which made the view, the adaptor made view keeps the adaptor alive
@@ -69,12 +68,6 @@ class NetworkWeights : public dxxdd::INetworkWeights
   static dxxdd::WeightsLayoutEntries layout_of(
       const network& net, const dxxdd::WeightsLayoutOptions& options =
                               dxxdd::WeightsLayoutOptions{});
-
-  /// @brief The library layer type of the darknet one.
-  static dxxdd::LayerType type_of(LAYER_TYPE type);
-
-  /// @brief The darknet layer type of the library one.
-  static LAYER_TYPE type_of(dxxdd::LayerType type);
 
  private:
   adaptors::ANetworkAdaptorPtr madaptor;

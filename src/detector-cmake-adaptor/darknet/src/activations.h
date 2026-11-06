@@ -1,9 +1,10 @@
 #ifndef ACTIVATIONS_H
 #define ACTIVATIONS_H
+#include <DarknetxxDataDrivers-0.12/darknet/enums.h>
+
 #include "dark_cuda.h"
 #include "darknet.h"
 #include "math.h"
-#include "src/enums/enums.h"
 #include "utils.h"
 
 // typedef enum{

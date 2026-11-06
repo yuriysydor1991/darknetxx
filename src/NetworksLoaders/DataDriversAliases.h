@@ -1,7 +1,7 @@
 #ifndef DARKNET_CXX_PORT_PROJECT_DATA_DRIVERS_ALIASES_H
 #define DARKNET_CXX_PORT_PROJECT_DATA_DRIVERS_ALIASES_H
 
-// The one and only place in the whole project that names the
+// The one and only place in the whole project that names the namespace of the
 // darknetxx-datadrivers library. Everything else - the weights documents, the
 // formats and their readers and writers, the network sources, the cfg sections
 // and the converter - is reached through the dxxdd alias declared below, so

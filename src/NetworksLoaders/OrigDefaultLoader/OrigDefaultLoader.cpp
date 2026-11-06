@@ -1,5 +1,7 @@
 #include "src/NetworksLoaders/OrigDefaultLoader/OrigDefaultLoader.h"
 
+#include <DarknetxxDataDrivers-0.12/DarknetLayerType.h>
+
 #include <algorithm>
 #include <cassert>
 #include <cfloat>
@@ -621,7 +623,7 @@ ANetworkAdaptorPtr OrigDefaultLoader::parse_network_text(
     CLOGI("%4d ", count);
 
     ALayerAdaptorPtr adaptor;
-    const LAYER_TYPE lt = NetworkWeights::type_of(
+    const LAYER_TYPE lt = dxxdd::DarknetLayerType::type_of(
         dxxdd::WeightsSchema::section_type(options.type()));
 
     if (lt == CONVOLUTIONAL) {

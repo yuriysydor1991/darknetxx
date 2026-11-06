@@ -1,5 +1,7 @@
 #include "network.h"
 
+#include <DarknetxxDataDrivers-0.12/darknet/network.h>
+#include <DarknetxxDataDrivers-0.12/darknet/network_state.h>
 #include <assert.h>
 #include <limits.h>
 #include <stdio.h>
@@ -40,8 +42,6 @@
 #include "memory.h"
 #include "parser.h"
 #include "src/clog/clog.h"
-#include "src/structs/network.h"
-#include "src/structs/network_state.h"
 #include "utils.h"
 
 load_args get_base_args(network *net)

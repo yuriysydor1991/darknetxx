@@ -1,6 +1,8 @@
 #ifndef DARKNET_CXX_PORT_PROJECT_ORIG_INCLUDE_4_ORIG_DEFAULT_LOADER_H
 #define DARKNET_CXX_PORT_PROJECT_ORIG_INCLUDE_4_ORIG_DEFAULT_LOADER_H
 
+#include <DarknetxxDataDrivers-0.12/darknet/enums.h>
+
 #include "activations.h"
 #include "assert.h"
 #include "blas.h"
@@ -39,7 +41,6 @@
 #include "option_list.h"
 #include "parser.h"
 #include "src/clog/clog.h"
-#include "src/enums/enums.h"
 #include "utils.h"
 #include "version.h"
 

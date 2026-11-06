@@ -134,21 +134,6 @@ ANetworkAdaptorPtr darknet_network(const std::string& cfg, std::string& message)
 
 }  // namespace
 
-TEST(CTEST_NetworkWeights, the_library_layer_types_are_the_darknet_ones)
-{
-  for (int type = 0; type <= static_cast<int>(IMPLICIT); ++type) {
-    const auto darknet = static_cast<LAYER_TYPE>(type);
-
-    EXPECT_EQ(NetworkWeights::type_of(NetworkWeights::type_of(darknet)),
-              darknet);
-    EXPECT_EQ(static_cast<int>(NetworkWeights::type_of(darknet)), type);
-  }
-
-  EXPECT_EQ(NetworkWeights::type_of(dxxdd::LayerType::CONVOLUTIONAL),
-            CONVOLUTIONAL);
-  EXPECT_EQ(NetworkWeights::type_of(dxxdd::LayerType::IMPLICIT), IMPLICIT);
-}
-
 /*
  * The library reads the original weights files by the structure of the cfg it
  * makes itself (the darknetxxConverter of the library knows no darknet

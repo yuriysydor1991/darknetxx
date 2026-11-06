@@ -1,5 +1,7 @@
 #include "src/NetworksLoaders/network-rewriter/NetworkRewriter.h"
 
+#include <DarknetxxDataDrivers-0.12/DarknetLayerType.h>
+
 #include <algorithm>
 #include <climits>
 #include <exception>
@@ -182,7 +184,8 @@ int NetworkRewriter::fitting_layers(const dxxdd::WeightsDocument& document,
 
   for (const dxxdd::WeightsLayer& layer : document.layers) {
     if (layer.index >= net.n ||
-        NetworkWeights::type_of(net.layers[layer.index].type) != layer.type) {
+        dxxdd::DarknetLayerType::type_of(net.layers[layer.index].type) !=
+            layer.type) {
       return layer.index;
     }
 
