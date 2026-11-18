@@ -10,11 +10,11 @@
 cmake -S . -B build -DENABLE_DARKNETXX_DATA_DRIVERS=ON
 ```
 
-Модуль [cmake/enablers/darknetxx-DarknetxxDataDrivers-enabler.cmake](/cmake/enablers/darknetxx-DarknetxxDataDrivers-enabler.cmake) шукає бібліотеку функцією `find_package()` за її конфігурацією пакета CMake і, якщо бібліотеку не знайдено, зупиняє конфігурацію з помилкою, яка пояснює, як її надати. Завантаження через Інтернет не передбачено: бібліотека використовується встановленою, так само як проект [ImagesAnnotator](https://github.com/yuriysydor1991/ImagesAnnotator) використовує власні бібліотеки даних, а її заголовні файли підключаються через версіоновану директорію `<DarknetxxDataDrivers-0.12/...>`, яку надає лише встановлення. Модуль приєднує бібліотеку до кожної цілі проекту (функцією `link_libraries()`), бо з нею компілюються об'єктні бібліотеки всієї директорії [`src`](/src) і виконувані файли тестів, тож модуль підключається ще до того, як додаються вихідні файли.
+Модуль [cmake/enablers/darknetxx-DarknetxxDataDrivers-enabler.cmake](/cmake/enablers/darknetxx-DarknetxxDataDrivers-enabler.cmake) шукає бібліотеку функцією `find_package()` за її конфігурацією пакета CMake, а якщо встановленої бібліотеки не знайдено, отримує її вихідні файли засобом CMake `FetchContent` з репозиторію і тегу, наведених нижче, і будує її разом з проектом - так само, як модуль [cmake/tools/darknetxx-enabler-function.cmake](/cmake/tools/darknetxx-enabler-function.cmake) робить доступними інші сторонні бібліотеки. Обидва способи дають одну й ту саму ціль `DarknetxxDataDrivers-0.12::DarknetxxDataDrivers-0.12` і версіоновану директорію заголовних файлів `<DarknetxxDataDrivers-0.12/...>`, яку дерево побудови завантаженої бібліотеки перенаправляє до її публічних заголовних файлів. Завантажена бібліотека будується сама - без своїх тестів, інструментів і пакетів - з бібліотекою nlohmann JSON проекту, а `cmake --install` проекту встановлює і її. Модуль приєднує бібліотеку до кожної цілі проекту (функцією `link_libraries()`), бо з нею компілюються об'єктні бібліотеки всієї директорії [`src`](/src) і виконувані файли тестів, тож модуль підключається ще до того, як додаються вихідні файли.
 
 ### Побудова і встановлення бібліотеки
 
-Бібліотека не є пакетом дистрибутива, тож її будують з вихідних файлів і встановлюють ще до конфігурації проекту. Скрипт [misc/ci/install-darknetxx-datadrivers.sh](/misc/ci/install-darknetxx-datadrivers.sh) клонує, будує (побудова `Release`) і встановлює її однією командою, а його єдиним аргументом є префікс встановлення, за замовчуванням `/usr/local`:
+Встановлювати бібліотеку не обов'язково, але встановлена бібліотека позбавляє кожну директорію побудови проекту її завантаження і побудови, і саме так роблять маніфести пакувальників і образи Docker. Бібліотека не є пакетом дистрибутива, тож її будують з вихідних файлів. Скрипт [misc/ci/install-darknetxx-datadrivers.sh](/misc/ci/install-darknetxx-datadrivers.sh) клонує, будує (побудова `Release`) і встановлює її однією командою, а його єдиним аргументом є префікс встановлення, за замовчуванням `/usr/local`:
 
 ```
 # в середині кореневої директорії проекту
@@ -69,7 +69,7 @@ LD_LIBRARY_PATH=/opt/darknetxx/lib darknetxx --version
 
 ### Інший репозиторій і тег
 
-Ця побудова бібліотеку не завантажує, але маніфести пакувальників і образи Docker - flatpak, snap, docker і конвеєра Jenkins - будують її у власному ізольованому середовищі й беруть репозиторій з цих двох змінних кешу (див. секції [Вмикання підтримки генерації flatpak пакету](/doc/sections/uk_UA/5-11-enabling-the-flatpak-package-generation-support.md), [Вмикання пакувальника snap](/doc/sections/uk_UA/5-19-enabling-the-snap-package-manager.md) і [Вмикання підтримки запуску Docker-контейнера](/doc/sections/uk_UA/5-12-enabling-the-docker-container-build-and-run.md)):
+Якщо встановленої бібліотеки не знайдено, конфігурація завантажує її з цих двох змінних кешу, а маніфести пакувальників і образи Docker - flatpak, snap, docker і конвеєра Jenkins - будують її у власному ізольованому середовищі з тих самих змінних (див. секції [Вмикання підтримки генерації flatpak пакету](/doc/sections/uk_UA/5-11-enabling-the-flatpak-package-generation-support.md), [Вмикання пакувальника snap](/doc/sections/uk_UA/5-19-enabling-the-snap-package-manager.md) і [Вмикання підтримки запуску Docker-контейнера](/doc/sections/uk_UA/5-12-enabling-the-docker-container-build-and-run.md)):
 
 ```
 cmake -S . -B build \
@@ -79,7 +79,7 @@ cmake -S . -B build \
 
 ### Інша назва пакета
 
-Бібліотека містить свою мажорну і мінорну версію у назвах встановленого пакета, цілі та бібліотеки - `DarknetxxDataDrivers-0.12`, відповідно до її публічного простору імен з версією `DarknetxxDataDrivers012`, - тож дві мінорні версії встановлюються повністю одна поряд з одною. Її власні опції `LIB_INCLUDE_MINOR_IN_NAME` (за замовчуванням `ON`), `LIB_INCLUDE_MICRO_IN_NAME` і `LIB_NAME_SUFFIX` скорочують або подовжують цю назву. Назву, яку конфігурація шукає функцією `find_package()`, задає змінна кешу `DARKNETXX_DXXDD_PACKAGE`:
+Бібліотека містить свою мажорну і мінорну версію у назвах встановленого пакета, цілі та бібліотеки - `DarknetxxDataDrivers-0.12`, відповідно до її публічного простору імен з версією `DarknetxxDataDrivers012`, - тож дві мінорні версії встановлюються повністю одна поряд з одною. Її власні опції `DXXDD_LIB_INCLUDE_MINOR_IN_NAME` (за замовчуванням `ON`), `DXXDD_LIB_INCLUDE_MICRO_IN_NAME` і `DXXDD_LIB_NAME_SUFFIX` скорочують або подовжують цю назву. Назву, яку конфігурація шукає функцією `find_package()` і яку має мати також ціль завантаженої бібліотеки, задає змінна кешу `DARKNETXX_DXXDD_PACKAGE`:
 
 ```
 cmake -S . -B build -DDARKNETXX_DXXDD_PACKAGE=DarknetxxDataDrivers-0.12
@@ -89,9 +89,9 @@ cmake -S . -B build -DDARKNETXX_DXXDD_PACKAGE=DarknetxxDataDrivers-0.12
 
 | Опція CMake | За замовчуванням | Дія |
 | --- | --- | --- |
-| `ENABLE_DARKNETXX_DATA_DRIVERS` | `ON` | Шукає бібліотеку. `OFF` лише попереджає: без неї проект не компілюється. |
+| `ENABLE_DARKNETXX_DATA_DRIVERS` | `ON` | Шукає бібліотеку, а якщо її не встановлено - завантажує. `OFF` лише попереджає: без неї проект не компілюється. |
 | `DARKNETXX_DXXDD_PACKAGE` | `DarknetxxDataDrivers-0.12` | Назва пакета (і цілі) CMake бібліотеки, яку треба шукати. |
-| `DARKNETXX_DXXDD_GIT` | `https://github.com/yuriysydor1991/darknetxx-datadrivers.git` | Репозиторій, з якого маніфести пакувальників і образи Docker будують бібліотеку. |
+| `DARKNETXX_DXXDD_GIT` | `https://github.com/yuriysydor1991/darknetxx-datadrivers.git` | Репозиторій, з якого бібліотеку завантажують, а маніфести пакувальників і образи Docker її будують. |
 | `DARKNETXX_DXXDD_GIT_TAG` | `main` | Гілка або тег цього репозиторію. |
 
 ### Що проект бере з бібліотеки
