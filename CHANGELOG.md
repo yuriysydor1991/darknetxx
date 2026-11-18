@@ -21,6 +21,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Introducing the ENABLE_DEB_DARKNETXX_DATA_DRIVERS option, which packs the shared object of the library into the deb package
 - Erasing the ENABLE_DARKNETXX_CONVERTER option, the DARKNETXX_CONVERTER_BINARY_NAME cache variable, the DARKNETXX_CONVERTER_ONLY code paths, the zlib enabler of the ENABLE_ZLIB option and the src/zlib directory; the nlohmann json library serves the tests alone
 - Documenting the darknetxx-datadrivers library in the READMEs and the doc sections
+- Introducing the NVIDIA GPU training and detection: the darknetxx-CUDA-enabler CMake module of the ENABLE_CUDA, ENABLE_CUDNN and ENABLE_CUDNN_HALF options, the CUDA kernels and the restored dark_cuda.c of the original Darknet
+- Introducing the src/darknet-adaptor/adaptors/Devices component: the INetworkDevice of the networks with the host and the CUDA devices, the GPU memory of every layer kind kept by the ResourcesKeeper of the layer and the network adaptors
+- Selecting the GPUs of the --gpus list for the training and the detection networks, falling back to the CPU on the machine of no CUDA GPU
 
 ## [app0.9.0] - 2025-03-20
 

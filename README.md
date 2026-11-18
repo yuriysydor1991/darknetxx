@@ -121,6 +121,7 @@ The very same sections are also available in Ukrainian under [doc/README.uk_UA.m
     1. [Using the darknetxx library](/doc/sections/en_US/5-37-using-the-darknetxx-library.md)
     1. [The network editor binaries](/doc/sections/en_US/5-38-the-network-editor-binaries.md)
     1. [Enabling the darknetxx-datadrivers library](/doc/sections/en_US/5-39-enabling-the-darknetxx-datadrivers-library.md)
+    1. [Enabling the CUDA GPU training](/doc/sections/en_US/5-40-enabling-the-CUDA-GPU-training.md)
 1. [Run the executable](/doc/sections/en_US/6-run-the-executable.md)
     1. [IDE run](/doc/sections/en_US/6-1-IDE-run.md)
     1. Command line run

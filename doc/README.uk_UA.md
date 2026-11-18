@@ -124,6 +124,7 @@ cmake -B build -S . -DCMAKE_PREFIX_PATH=/opt/darknetxx && cmake --build build
     1. [Використання бібліотеки darknetxx](/doc/sections/uk_UA/5-37-using-the-darknetxx-library.md)
     1. [Бінарні файли редактора нейромереж](/doc/sections/uk_UA/5-38-the-network-editor-binaries.md)
     1. [Вмикання бібліотеки darknetxx-datadrivers](/doc/sections/uk_UA/5-39-enabling-the-darknetxx-datadrivers-library.md)
+    1. [Вмикання навчання на CUDA GPU](/doc/sections/uk_UA/5-40-enabling-the-CUDA-GPU-training.md)
 1. [Запуск головного виконуваного файлу](/doc/sections/uk_UA/6-run-the-executable.md)
     1. [Запуск через IDE](/doc/sections/uk_UA/6-1-IDE-run.md)
     1. Запуск з терміналу

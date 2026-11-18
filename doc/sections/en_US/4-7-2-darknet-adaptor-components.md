@@ -239,6 +239,15 @@ Every C copy of a network struct shares it's buffers, the scalar changes the C
 code makes to it's copy (the batch of the dynamic mini batch and the like) are
 taken over by the adaptor on the next C API call.
 
+A network computes on the device it is placed on (the `INetworkDevice` of the
+[`src/darknet-adaptor/adaptors/Devices`](/src/darknet-adaptor/adaptors/Devices)
+component): the host one keeps the workspace on the host, the GPU one of the
+CUDA build places the device arrays of every layer the way the original
+`make_*_layer()` and `resize_*_layer()` allocated them and keeps them as the
+resources of the layer adaptors (see the
+[Enabling the CUDA GPU training](/doc/sections/en_US/5-40-enabling-the-CUDA-GPU-training.md)
+section).
+
 The ported resize routines fix the memory errors of the original ones: the
 XNOR input buffers of the convolutional layer, the antialiasing blur sub-layer
 of the convolutional and the maxpool layers, the `x` and the `x_norm` buffers
