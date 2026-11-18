@@ -6,7 +6,9 @@
 #include <vector>
 
 #include "src/darknet-adaptor/adaptors/ALayerAdaptor/ALayerAdaptor.h"
+#include "src/darknet-adaptor/adaptors/Devices/INetworkDevice.h"
 #include "src/darknet-adaptor/adaptors/IDarknetAdaptor.h"
+#include "src/darknet-adaptor/adaptors/ResourcesKeeper.h"
 #include "src/darknet-adaptor/adaptors/StructAdaptorHelper.h"
 #include "src/darknet-adaptor/adaptors/orig-includes.h"
 
@@ -32,11 +34,15 @@ namespace darknet_adaptor::adaptors
  *   of the array (see ALayerAdaptor::bind()), so darknet computes with the
  *   very struct the adaptor keeps. The layers are ALayerAdaptor objects kept
  *   alive by the network.
+ * - The network computes on the device it is placed on (see place()), the
+ *   device memory of the GPU builds is the resources the network and it's
+ *   layers keep.
  * - The adaptor has to be owned by a std::shared_ptr (see create()), which
  *   get() relies on.
  */
 class ANetworkAdaptor : virtual public IDarknetAdaptor,
                         virtual public StructAdaptorHelper,
+                        public ResourcesKeeper,
                         public std::enable_shared_from_this<ANetworkAdaptor>
 {
  public:
@@ -281,9 +287,22 @@ class ANetworkAdaptor : virtual public IDarknetAdaptor,
   /**
    * @brief Replaces the workspace with the zeroed one of the given size in
    * bytes (the NULL for none), the way darknet allocated it with the
-   * xcalloc(1, bytes).
+   * xcalloc(1, bytes). The workspace of the same size is zeroed in place.
    */
   void workspace_bytes(size_t bytes);
+
+  /**
+   * @brief Places the made network on the device it computes on from now on:
+   * the memory of it's layers and the workspace, which the resize() and the
+   * set_batch() of it place again.
+   */
+  void place(const devices::INetworkDevice& device);
+
+  /// @brief The device the network computes on, the host one till placed.
+  const devices::INetworkDevice& device() const;
+
+  /// @brief The biggest workspace of the layers in bytes.
+  size_t layers_workspace() const;
 
   /**
    * @brief The resize_network(): resizes every layer to the new w x h
@@ -317,8 +336,8 @@ class ANetworkAdaptor : virtual public IDarknetAdaptor,
   /**
    * @brief The copy_weights_net(): points the layers of the net_map network
    * at the layers of the net_train one, the single image batch, single step
-   * inference ones. The net_map has to keep the slots of the net_train
-   * layers count.
+   * inference ones, which keep the cuDNN descriptors of the net_map layers.
+   * The net_map has to keep the slots of the net_train layers count.
    */
   static void copy_weights_net(const network& net_train, network& net_map);
   void output(const std::vector<float>& nval);
@@ -452,6 +471,7 @@ class ANetworkAdaptor : virtual public IDarknetAdaptor,
   static networkptr create_net();
 
   networkptr net;
+  const devices::INetworkDevice* mdevice;
 
   std::vector<uint64_t> vseen;
   std::vector<float> vbadlabels_reject_threshold;

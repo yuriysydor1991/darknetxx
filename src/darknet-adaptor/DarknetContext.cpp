@@ -161,6 +161,11 @@ int DarknetContext::save_weights(const detector_context* ctx,
 
   network view = ctx->net;
 
+  // the weights the training computes on the device
+  if (const auto net = adaptors::NetworksRegistry::find(view)) {
+    net->device().pull(view);
+  }
+
   return dctx->journal->save(view, stem, ema != 0) ? 1 : 0;
 }
 

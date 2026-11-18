@@ -9,7 +9,9 @@
 #include <string>
 #include <vector>
 
+#include "src/darknet-adaptor/adaptors/Devices/NetworkDevices.h"
 #include "src/darknet-adaptor/adaptors/IDarknetAdaptor.h"
+#include "src/darknet-adaptor/adaptors/LayerDescriptors.h"
 #include "src/darknet-adaptor/adaptors/Layers/AvgpoolLayer.h"
 #include "src/darknet-adaptor/adaptors/Layers/BatchnormLayer.h"
 #include "src/darknet-adaptor/adaptors/Layers/ConvLstmLayer.h"
@@ -37,7 +39,8 @@
 namespace darknet_adaptor::adaptors
 {
 
-ANetworkAdaptor::ANetworkAdaptor() : net{create_net()}
+ANetworkAdaptor::ANetworkAdaptor()
+    : net{create_net()}, mdevice{&devices::NetworkDevices::host()}
 {
   assert(net != nullptr);
 
@@ -86,15 +89,28 @@ void ANetworkAdaptor::link_output()
   }
 
   net->outputs = get_network_output_size(*net);
-  borrow_output(get_network_output(*net));
+
+  // the host output of the last not COST layer, the get_network_output() of
+  // the GPU builds copies it from the device
+  int last = net->n - 1;
+  while (last > 0 && net->layers[last].type == COST) --last;
+
+  borrow_output(net->layers[last].output);
 }
 
 void ANetworkAdaptor::workspace_bytes(size_t bytes)
 {
   assert(net != nullptr);
 
-  // a fresh buffer of the exact size, as the original reallocated it
-  vworkspace = std::vector<float>((bytes + sizeof(float) - 1U) / sizeof(float));
+  const size_t size = (bytes + sizeof(float) - 1U) / sizeof(float);
+
+  // the same size keeps the buffer the C copies of the network point at
+  if (size == vworkspace.size()) {
+    std::fill(vworkspace.begin(), vworkspace.end(), 0.F);
+  } else {
+    vworkspace = std::vector<float>(size);
+  }
+
   net->workspace = data_or_null(vworkspace);
 }
 
@@ -107,7 +123,6 @@ void ANetworkAdaptor::resize(int w, int h)
   dnet.w = w;
   dnet.h = h;
   int inputs = 0;
-  size_t workspace_size = 0;
 
   CLOGI("Resizing to %d x %d...", w, h);
 
@@ -197,8 +212,6 @@ void ANetworkAdaptor::resize(int w, int h)
                            layer_type_2_string(l.type));
     }
 
-    if (l.workspace_size > workspace_size) workspace_size = l.workspace_size;
-
     // the antialiasing layer passes the output of it's blur sub-layer on, the
     // way the parser linked the next layer (the original passed the output
     // size of the layer itself)
@@ -210,7 +223,7 @@ void ANetworkAdaptor::resize(int w, int h)
     h = passed.out_h;
   }
 
-  workspace_bytes(workspace_size);
+  mdevice->place(*this);
 
   // the last layer output may have moved with it's buffer
   link_output();
@@ -235,8 +248,6 @@ void ANetworkAdaptor::recalculate_workspace_size()
 {
   assert(net != nullptr);
 
-  size_t workspace_size = 0;
-
   for (int i = 0; i < net->n; ++i) {
     layer& l = net->layers[i];
 
@@ -247,11 +258,9 @@ void ANetworkAdaptor::recalculate_workspace_size()
     } else if (l.type == CONNECTED) {
       l.workspace_size = get_connected_workspace_size(l);
     }
-
-    if (l.workspace_size > workspace_size) workspace_size = l.workspace_size;
   }
 
-  workspace_bytes(workspace_size);
+  mdevice->place(*this);
 }
 
 void ANetworkAdaptor::fuse_conv_batchnorm()
@@ -368,6 +377,8 @@ void ANetworkAdaptor::fuse_conv_batchnorm()
       CLOGT(" Fusion skip layer type: %d", l->type);
     }
   }
+
+  mdevice->push(*net);
 }
 
 void ANetworkAdaptor::calculate_binary_weights()
@@ -399,20 +410,47 @@ void ANetworkAdaptor::calculate_binary_weights()
     }
   }
 
+  mdevice->place(*this);
+
   CLOGTM(" calculate_binary_weights Done!");
 }
 
 void ANetworkAdaptor::copy_weights_net(const network& net_train,
                                        network& net_map)
 {
-  // the cuDNN descriptors of the net_map layers the original kept are of
-  // the GPU builds only
   for (int k = 0; k < net_train.n; ++k) {
+    const layer own = net_map.layers[k];
+
     net_map.layers[k] = net_train.layers[k];
+    LayerDescriptors::copy(own, net_map.layers[k]);
     net_map.layers[k].batch = 1;
     net_map.layers[k].steps = 1;
     net_map.layers[k].train = 0;
   }
+}
+
+void ANetworkAdaptor::place(const devices::INetworkDevice& device)
+{
+  mdevice = &device;
+  mdevice->place(*this);
+}
+
+const devices::INetworkDevice& ANetworkAdaptor::device() const
+{
+  return *mdevice;
+}
+
+size_t ANetworkAdaptor::layers_workspace() const
+{
+  assert(net != nullptr);
+
+  size_t workspace = 0U;
+
+  for (int i = 0; i < net->n; ++i) {
+    workspace = std::max(workspace, net->layers[i].workspace_size);
+  }
+
+  return workspace;
 }
 
 networkptr ANetworkAdaptor::create_net()

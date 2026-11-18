@@ -215,17 +215,24 @@ bool OrigDefaultLoader::load_train_networks(const DarknetContextPtr& dctx)
   // every network of a GPU gets the same random initialization
   srand(static_cast<unsigned int>(time(nullptr)));
   const int seed = rand();
+  const adaptors::devices::INetworkDevice& device =
+      adaptors::devices::NetworkDevices::current();
 
   for (int k = 0; k < odctx->ngpus; ++k) {
     srand(static_cast<unsigned int>(seed));
 
-    ANetworkAdaptorPtr net = parse_network_text(description.cfg(), cfg, 0, 0);
+    if (odctx->gpus != nullptr) {
+      device.select(odctx->gpus[k]);
+    }
+
+    ANetworkAdaptorPtr net =
+        parse_network_text(description.cfg(), cfg, 0, 0, device);
     network& view = *net->get();
 
     view.benchmark_layers = odctx->benchmark_layers;
 
     if (!weights.empty()) {
-      load_weights(view, weights, rest);
+      load_weights(*net, weights, rest);
     }
 
     iteration = *view.cur_iteration;
@@ -326,8 +333,18 @@ ANetworkAdaptorPtr OrigDefaultLoader::make_map_network(
 
   CLOGIM(" Prepare additional network for mAP calculation...");
 
+  const adaptors::devices::INetworkDevice& device =
+      adaptors::devices::NetworkDevices::current();
+
+  // the GPU of the first training network, which layers it computes with
+  if (odctx->gpus != nullptr) {
+    device.select(odctx->gpus[0]);
+  }
+
+  // the own layers are released, so they're made on the host alone
   ANetworkAdaptorPtr map =
-      parse_network_text(description.cfg(), dctx->get_Train_cfg(), 1, 1);
+      parse_network_text(description.cfg(), dctx->get_Train_cfg(), 1, 1,
+                         adaptors::devices::NetworkDevices::host());
   network& view = *map->get();
 
   view.benchmark_layers = odctx->benchmark_layers;
@@ -347,18 +364,25 @@ ANetworkAdaptorPtr OrigDefaultLoader::make_map_network(
 
   map->hierarchy(source.hierarchy);
   map->link_output();
+  map->place(device);
 
   return map;
 }
 
 bool OrigDefaultLoader::load_detect_network(const DarknetContextPtr& dctx)
 {
+  const auto odctx = dctx->get_darknet_ctx();
+
+  if (odctx->gpus != nullptr) {
+    adaptors::devices::NetworkDevices::current().select(odctx->gpus[0]);
+  }
+
   std::vector<std::string> names;
   ANetworkAdaptorPtr net =
       load_inference_network(dctx->get_Detect_cfg(), dctx->get_Latest_weights(),
                              dctx->get_Names(), names);
 
-  net->get()->benchmark_layers = dctx->get_darknet_ctx()->benchmark_layers;
+  net->get()->benchmark_layers = odctx->benchmark_layers;
 
   dctx->set_class_names(std::move(names));
   dctx->set_detect_network(std::move(net));
@@ -379,7 +403,7 @@ ANetworkAdaptorPtr OrigDefaultLoader::load_inference_network(
 
   dxxdd::WeightsDocument rest;
 
-  load_weights(*net->get(), weights, rest);
+  load_weights(*net, weights, rest);
 
   net->fuse_conv_batchnorm();
   net->calculate_binary_weights();
@@ -406,15 +430,19 @@ dxxdd::WeightsDocument OrigDefaultLoader::read_source(const std::string& path)
   return source;
 }
 
-void OrigDefaultLoader::load_weights(network& net, const std::string& weights,
+void OrigDefaultLoader::load_weights(ANetworkAdaptor& net,
+                                     const std::string& weights,
                                      dxxdd::WeightsDocument& rest)
 {
+  network& view = *net.get();
   const dxxdd::IWeightsReaderPtr reader =
       dxxdd::WeightsFileFormats::of_file(weights)->create_reader();
 
-  if (!reader->load(NetworkWeights{net}, weights, net.n, rest)) {
+  if (!reader->load(NetworkWeights{view}, weights, view.n, rest)) {
     throw NetworkError("Couldn't load the weights file: " + weights);
   }
+
+  net.device().push(view);
 }
 
 void OrigDefaultLoader::require_weights(const std::string& weights)
@@ -483,7 +511,7 @@ ANetworkAdaptorPtr OrigDefaultLoader::load_network(const std::string& cfg,
 
     dxxdd::WeightsDocument rest;
 
-    load_weights(*net->get(), weights, rest);
+    load_weights(*net, weights, rest);
   }
 
   if (clear) {
@@ -507,7 +535,7 @@ ANetworkAdaptorPtr OrigDefaultLoader::load_network_custom(
 
     dxxdd::WeightsDocument rest;
 
-    load_weights(*net->get(), weights, rest);
+    load_weights(*net, weights, rest);
   }
 
   net->fuse_conv_batchnorm();
@@ -535,7 +563,7 @@ ANetworkAdaptorPtr OrigDefaultLoader::parse_network_cfg_custom(
 
 ANetworkAdaptorPtr OrigDefaultLoader::parse_network_text(
     const std::string& cfg, const std::string& filename, int batch,
-    int time_steps)
+    int time_steps, const adaptors::devices::INetworkDevice& device)
 {
   std::istringstream text{cfg};
   dxxdd::CfgSections sections = dxxdd::CfgSection::read_cfg(text, filename);
@@ -588,9 +616,6 @@ ANetworkAdaptorPtr OrigDefaultLoader::parse_network_text(
   int avg_outputs = 0;
   int avg_counter = 0;
   float bflops = 0;
-  size_t workspace_size = 0;
-  size_t max_inputs = 0;
-  size_t max_outputs = 0;
   int receptive_w = 1, receptive_h = 1;
   int receptive_w_scale = 1, receptive_h_scale = 1;
   const int show_receptive_field =
@@ -793,16 +818,6 @@ ANetworkAdaptorPtr OrigDefaultLoader::parse_network_text(
 
     const layer& bound = net.layers[count];
 
-    if (bound.workspace_size > workspace_size) {
-      workspace_size = bound.workspace_size;
-    }
-    if (static_cast<size_t>(bound.inputs) > max_inputs) {
-      max_inputs = static_cast<size_t>(bound.inputs);
-    }
-    if (static_cast<size_t>(bound.outputs) > max_outputs) {
-      max_outputs = static_cast<size_t>(bound.outputs);
-    }
-
     if (section + 1U < sections.size()) {
       if (bound.antialiasing) {
         params.h = bound.input_layer->out_h;
@@ -852,9 +867,7 @@ ANetworkAdaptorPtr OrigDefaultLoader::parse_network_text(
   CLOGI("Total BFLOPS %5.3f", static_cast<double>(bflops));
   CLOGI("avg_outputs = %d", avg_outputs);
 
-  if (workspace_size) {
-    anet->workspace_bytes(workspace_size);
-  }
+  anet->place(device);
 
   if (net.n > 0) {
     const LAYER_TYPE lt = net.layers[net.n - 1].type;

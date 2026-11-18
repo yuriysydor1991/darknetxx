@@ -26,6 +26,7 @@
 #include "src/NetworksLoaders/OrigDefaultLoader/OrigDefaultLoader.h"
 #include "src/NetworksLoaders/network-weights/NetworkWeights.h"
 #include "src/darknet-adaptor/adaptors/ANetworkAdaptor/ANetworkAdaptor.h"
+#include "src/darknet-adaptor/adaptors/Devices/NetworkDevices.h"
 #include "src/darknet-adaptor/adaptors/NetworkError.h"
 #include "src/darknet-adaptor/adaptors/NetworksCApi/NetworksRegistry.h"
 #include "src/darknet-adaptor/adaptors/orig-includes.h"
@@ -40,6 +41,17 @@ using darknet_adaptor::loaders::OrigDefaultLoader;
 using dxxdd::WeightsFileFormats;
 
 std::string path_of(const char* path) { return path ? std::string{path} : ""; }
+
+/// @brief The device the network of the view computes on, the host one for
+/// the network of no adaptor.
+const darknet_adaptor::adaptors::devices::INetworkDevice& device_of(
+    const network& view)
+{
+  const ANetworkAdaptorPtr net = NetworksRegistry::find(view);
+
+  return net ? net->device()
+             : darknet_adaptor::adaptors::devices::NetworkDevices::host();
+}
 
 /// @brief Ends the process with the error, the way the original did.
 [[noreturn]] void fail(const char* function, const std::exception& failure)
@@ -165,6 +177,8 @@ void load_weights_upto(network* net, char* filename, int cutoff)
           NetworkWeights{*net}, path, cutoff)) {
     file_error(__FILE__, __LINE__, filename);
   }
+
+  device_of(*net).push(*net);
 }
 
 void load_weights(network* net, char* filename)
@@ -175,6 +189,8 @@ void load_weights(network* net, char* filename)
 void save_weights_upto(network net, char* filename, int cutoff, int save_ema)
 {
   const std::string path = path_of(filename);
+
+  device_of(net).pull(net);
 
   if (!WeightsFileFormats::of_file(path)->create_writer()->save(
           NetworkWeights{net}, path, cutoff, save_ema != 0)) {

@@ -73,3 +73,32 @@ target_link_options(
   DarknetCXXADetectorTrainerOrigDarknetCMakeCXXAdaptorOBJ
   PRIVATE ${SANITIZERS_LIST_LINK}
 )
+
+if(ENABLE_CUDA)
+  add_library(
+    DarknetCXXADetectorTrainerOrigDarknetCMakeCudaAdaptorOBJ OBJECT
+    ${DARKNET_ORIG_CUDA_SOURCES}
+  )
+
+  target_include_directories(
+    DarknetCXXADetectorTrainerOrigDarknetCMakeCudaAdaptorOBJ
+    PRIVATE
+      ${PROJECT_SOURCE_DIR}
+      ${PROJECT_BINARY_DIR}
+      ${MOD_DARKNET_INCLUDES}
+      ${OpenCV_INCLUDE_DIRS}
+  )
+
+  # the kernels compile with none of the C and C++ options of the project
+  set_target_properties(
+    DarknetCXXADetectorTrainerOrigDarknetCMakeCudaAdaptorOBJ
+    PROPERTIES COMPILE_OPTIONS ""
+  )
+
+  if(ENABLE_OPENMP)
+    target_compile_options(
+      DarknetCXXADetectorTrainerOrigDarknetCMakeCudaAdaptorOBJ
+      PRIVATE -Xcompiler=-fopenmp
+    )
+  endif()
+endif()

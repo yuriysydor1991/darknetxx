@@ -343,7 +343,9 @@ float train_network_waitkey(network net, data d, int wait_key)
   }
   (*net.cur_iteration) += 1;
 #ifdef GPU
-  update_network_gpu(net);
+  if (gpu_index >= 0) update_network_gpu(net);
+  else
+    update_network(net);
 #else   // GPU
   update_network(net);
 #endif  // GPU

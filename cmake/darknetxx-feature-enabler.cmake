@@ -41,6 +41,9 @@ if (ENABLE_SANITIZERS OR ENABLE_SANITIZERS_THREADS)
   include(darknetxx-sanitizers)
 endif()
 
+# The GPU definitions and libraries of every target, so before the sources.
+include(darknetxx-CUDA-enabler)
+
 # The component and the integration tests read the dxxwjz JSON documents the
 # darknetxx-datadrivers library writes, the nlohmann json library is of no use
 # for the rest of the project (the enabler returns for the option turned OFF).

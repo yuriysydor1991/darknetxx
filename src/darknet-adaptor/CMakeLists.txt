@@ -91,6 +91,7 @@ target_sources(
     $<TARGET_OBJECTS:DarknetCXXALayerAdaptorOBJ>
     $<TARGET_OBJECTS:DarknetCXXANetworkAdaptorOBJ>
     $<TARGET_OBJECTS:DarknetCXXLayersOBJ>
+    $<TARGET_OBJECTS:DarknetCXXDevicesOBJ>
     $<TARGET_OBJECTS:DarknetCXXNetworkLoaderOrigDefaultOBJ>
     $<TARGET_OBJECTS:DarknetCXXNetworkWeightsOBJ>
     $<TARGET_OBJECTS:DarknetCXXNetworkRewriterOBJ>
@@ -104,6 +105,16 @@ target_sources(
     $<TARGET_OBJECTS:DarknetXXLog4CInterfaceObj>
     $<TARGET_OBJECTS:DarknetXXDefaultLoggerObj>
 )
+
+# the GPU memory of the networks and the kernels of the darknet code
+if(ENABLE_CUDA)
+  target_sources(
+    DarknetXXNetworksCore
+    INTERFACE
+      $<TARGET_OBJECTS:DarknetCXXADetectorTrainerOrigDarknetCMakeCudaAdaptorOBJ>
+      $<TARGET_OBJECTS:DarknetCXXCudaDevicesOBJ>
+  )
+endif()
 
 target_include_directories(
   DarknetXXNetworksCore

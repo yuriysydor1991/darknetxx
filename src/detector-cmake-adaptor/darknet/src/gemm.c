@@ -355,7 +355,6 @@ void transpose_32x32_bits_my(uint32_t *A, uint32_t *B, int lda, int ldb)
 }
 */
 
-#ifndef GPU
 uint8_t reverse_8_bit(uint8_t a)
 {
   return ((a * 0x0802LU & 0x22110LU) | (a * 0x8020LU & 0x88440LU)) *
@@ -428,8 +427,8 @@ void transpose32_optimized(uint32_t A[32])
   }
 }
 
-void transpose_32x32_bits_reversed_diagonale(uint32_t *A, uint32_t *B, int m,
-                                             int n)
+static void transpose_32x32_bits_reversed_diagonale(uint32_t *A, uint32_t *B,
+                                                    int m, int n)
 {
   unsigned A_tmp[32];
   int i;
@@ -532,8 +531,6 @@ lda / 8, ldb / 8);
     }
 }
 */
-
-#endif
 
 // transpose by 32-bit
 void transpose_bin(uint32_t *A, uint32_t *B, const int n, const int m,

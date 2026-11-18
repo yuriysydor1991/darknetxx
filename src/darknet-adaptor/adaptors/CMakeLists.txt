@@ -9,6 +9,8 @@ add_subdirectory(
 
 add_library(
   DarknetCXXAAdaptorsGeneralOBJ OBJECT
+  LayerDescriptors.cpp
+  ResourcesKeeper.cpp
   StructAdaptorHelper.cpp
 )
 
@@ -25,6 +27,7 @@ add_subdirectory(ADetector)
 add_subdirectory(ALayerAdaptor)
 add_subdirectory(ANetworkAdaptor)
 add_subdirectory(Layers)
+add_subdirectory(Devices)
 
 # the src/NetworksLoaders component, built with the darknet includes and the
 # OpenCV definitions of the adaptors

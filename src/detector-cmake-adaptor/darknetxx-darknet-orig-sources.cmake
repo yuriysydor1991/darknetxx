@@ -105,6 +105,24 @@ set(
   ${MOD_DARKNET_SRC_ROOT}/src/image_opencv.cpp
 )
 
+# the CUDA runtime of the darknet code and it's kernels, the GPU build alone
+set(DARKNET_ORIG_CUDA_SOURCES "")
+
+if(ENABLE_CUDA)
+  list(APPEND DARKNET_ORIG_C_SOURCES ${MOD_DARKNET_SRC_ROOT}/src/dark_cuda.c)
+
+  foreach(
+    kernels
+    activation avgpool_layer blas col2im convolutional crop_layer
+    dropout_layer im2col maxpool_layer network
+  )
+    list(
+      APPEND DARKNET_ORIG_CUDA_SOURCES
+      ${MOD_DARKNET_SRC_ROOT}/src/cuda/${kernels}_kernels.cu
+    )
+  endforeach()
+endif()
+
 configure_file(
   ${MOD_DARKNET_SRC_ROOT}/src/version.h.in 
   ${PROJECT_BINARY_DIR}/version.h

@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "src/darknet-adaptor/adaptors/IDarknetAdaptor.h"
+#include "src/darknet-adaptor/adaptors/ResourcesKeeper.h"
 #include "src/darknet-adaptor/adaptors/StructAdaptorHelper.h"
 #include "src/darknet-adaptor/adaptors/orig-includes.h"
 
@@ -38,11 +39,13 @@ namespace darknet_adaptor::adaptors
  * - The network keeps the structs of it's layers in one array, which darknet
  *   indexes. ANetworkAdaptor moves the layer struct into it's slot of that
  *   array with bind(), so the adaptor and darknet share the one struct.
+ * - The device arrays of the GPU builds are the resources it keeps.
  * - The adaptor has to be owned by a std::shared_ptr (see create()), which
  *   get() relies on.
  */
 class ALayerAdaptor : virtual public IDarknetAdaptor,
                       virtual public StructAdaptorHelper,
+                      public ResourcesKeeper,
                       public std::enable_shared_from_this<ALayerAdaptor>
 {
  public:

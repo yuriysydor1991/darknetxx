@@ -10,6 +10,7 @@
 #include "src/darknet-adaptor/DarknetContext.h"
 #include "src/darknet-adaptor/adaptors/ALayerAdaptor/ALayerAdaptor.h"
 #include "src/darknet-adaptor/adaptors/ANetworkAdaptor/ANetworkAdaptor.h"
+#include "src/darknet-adaptor/adaptors/Devices/NetworkDevices.h"
 #include "src/darknet-adaptor/adaptors/orig-includes.h"
 
 namespace darknet_adaptor::loaders
@@ -76,10 +77,12 @@ class OrigDefaultLoader : virtual public INetworkLoader
                                               int batch, int time_steps);
 
   /// @brief The parse_network_cfg_custom() of the cfg text of the named
-  /// file.
-  ANetworkAdaptorPtr parse_network_text(const std::string& cfg,
-                                        const std::string& filename, int batch,
-                                        int time_steps);
+  /// file, the network placed on the device.
+  ANetworkAdaptorPtr parse_network_text(
+      const std::string& cfg, const std::string& filename, int batch,
+      int time_steps,
+      const adaptors::devices::INetworkDevice& device =
+          adaptors::devices::NetworkDevices::current());
 
   /// @brief The parse_network_cfg(): the training network of the cfg file.
   ANetworkAdaptorPtr parse_network_cfg(const std::string& filename);
@@ -155,9 +158,9 @@ class OrigDefaultLoader : virtual public INetworkLoader
   /// NetworkSource::read()), throws NetworkError on the failure.
   static dxxdd::WeightsDocument read_source(const std::string& path);
 
-  /// @brief Loads the weights file of any format into the network, keeps the
-  /// rest of the file. Throws NetworkError on the failure.
-  static void load_weights(network& net, const std::string& weights,
+  /// @brief Loads the weights file of any format into the network and it's
+  /// device, keeps the rest of the file. Throws NetworkError on the failure.
+  static void load_weights(ANetworkAdaptor& net, const std::string& weights,
                            dxxdd::WeightsDocument& rest);
 
   /// @brief Throws NetworkError for the dxxwjz2 file of no weights, the

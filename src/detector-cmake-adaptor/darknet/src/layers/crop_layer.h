@@ -16,6 +16,7 @@ void backward_crop_layer(const crop_layer l, network_state state);
 
 #ifdef GPU
 void forward_crop_layer_gpu(crop_layer l, network_state state);
+void backward_crop_layer_gpu(const crop_layer l, network_state state);
 #endif
 
 #ifdef __cplusplus

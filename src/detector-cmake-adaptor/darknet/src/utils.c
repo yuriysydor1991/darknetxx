@@ -42,6 +42,9 @@ double what_time_is_it_now()
   return (double)time.tv_sec + (double)time.tv_usec * .000001;
 }
 
+// the microseconds the GPU layers benchmark times
+double get_time_point() { return what_time_is_it_now() * 1000000.; }
+
 int *read_map(char *filename)
 {
   int n = 0;

@@ -112,7 +112,7 @@ image get_convolutional_delta(convolutional_layer l)
 size_t get_workspace_size32(layer l)
 {
 #ifdef CUDNN
-  if (gpu_index >= 0) {
+  if (gpu_index >= 0 && l.srcTensorDesc) {
     size_t most = 0;
     size_t s = 0;
     CHECK_CUDNN(cudnnGetConvolutionForwardWorkspaceSize(
@@ -145,7 +145,7 @@ size_t get_workspace_size32(layer l)
 size_t get_workspace_size16(layer l)
 {
 #if defined(CUDNN) && defined(CUDNN_HALF)
-  if (gpu_index >= 0) {
+  if (gpu_index >= 0 && l.srcTensorDesc16) {
     size_t most = 0;
     size_t s = 0;
     CHECK_CUDNN(cudnnGetConvolutionForwardWorkspaceSize(
