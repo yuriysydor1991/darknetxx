@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.13)
 
 option(
   ENABLE_DARKNETXX_DATA_DRIVERS
-  "Set to ON to enable the darknetxx-datadrivers network files formats library (system wide installed)"
+  "Set to ON to enable the darknetxx-datadrivers network files formats library (by using system wide available or through Internet)"
   ON
 )
 
@@ -24,9 +24,10 @@ endif()
 # The library carries its major and minor version inside the installed package,
 # target and binary names, matching its version carrying public namespace, so
 # that two minor versions install completely side by side. The default below is
-# what the library produces out of the box; its own LIB_INCLUDE_MINOR_IN_NAME
-# (ON by default), LIB_INCLUDE_MICRO_IN_NAME and LIB_NAME_SUFFIX options may
-# shorten or extend that name. The name the find_package() probe asks for is
+# what the library produces out of the box; its own
+# DXXDD_LIB_INCLUDE_MINOR_IN_NAME (ON by default),
+# DXXDD_LIB_INCLUDE_MICRO_IN_NAME and DXXDD_LIB_NAME_SUFFIX options may shorten
+# or extend that name. The name the find_package() probe asks for is
 # therefore a cache variable rather than a literal, so a differently named
 # build of the very same library - a major-only "DarknetxxDataDrivers-0" or a
 # "DarknetxxDataDrivers-0.12-dev" one - is found by a single -D on the command
@@ -39,12 +40,11 @@ set(
   CACHE STRING "The darknetxx-datadrivers CMake package (and target) name to look for"
 )
 
-# Where the library comes from. Nothing in this build fetches it - the two
-# variables are what the packager manifests, which have to build it inside
-# their own sandbox, are configured with (the misc/packagers/flatpak.conf.json.in
-# and the misc/packagers/snapcraft.yaml.in ones, the misc/Dockerfiles/*.in
-# images and the misc/ci/install-darknetxx-datadrivers.sh script of the
-# pipelines).
+# Where the library is fetched from when it isn't installed - the two variables
+# the packager manifests, which have to build it inside their own sandbox, are
+# configured with as well (the misc/packagers/flatpak.conf.json.in and the
+# misc/packagers/snapcraft.yaml.in ones, the misc/Dockerfiles/*.in images and
+# the misc/ci/install-darknetxx-datadrivers.sh script of the pipelines).
 set(
   DARKNETXX_DXXDD_GIT "https://github.com/yuriysydor1991/darknetxx-datadrivers.git"
   CACHE STRING "The darknetxx-datadrivers library git source repository"
@@ -54,30 +54,25 @@ set(
   CACHE STRING "The darknetxx-datadrivers project git repository tag of interest"
 )
 
-# No Internet fallback: the library is consumed installed, the way its own
-# "Using the library in your project" documentation section describes, and its
-# headers are included through the versioned <DarknetxxDataDrivers-0.12/...>
-# directory only an installation provides (see the
-# src/NetworksLoaders/DataDriversAliases.h), which pins the library version
-# every translation unit is talking to.
-#
-# The package carries its <package>ConfigVersion.cmake of the same minor
-# version compatibility, while the package name itself carries the major and
-# the minor version already, so no version is requested here.
-find_package(${DARKNETXX_DXXDD_PACKAGE} QUIET CONFIG)
-
-if (NOT ${DARKNETXX_DXXDD_PACKAGE}_FOUND)
-  message(FATAL_ERROR
-    "The ${DARKNETXX_DXXDD_PACKAGE} library was not found in the system. "
-    "Build and install it from ${DARKNETXX_DXXDD_GIT} (the "
-    "misc/ci/install-darknetxx-datadrivers.sh script does), point the project "
-    "at it with -DCMAKE_PREFIX_PATH=<prefix>, or correct the package name with "
-    "-DDARKNETXX_DXXDD_PACKAGE=<name>. The project does not build without it: "
-    "the network weights files and the training projects are read and written "
-    "exclusively by this library.")
-endif()
+# The installed package when the find_package() finds it, the sources fetched
+# and built along with the project otherwise - both of the very same target and
+# <DarknetxxDataDrivers-0.12/...> headers (the package name pins the version).
+darknetxx_default_3rdparty_enabler(
+  NAME ${DARKNETXX_DXXDD_PACKAGE}
+  GIT_REPOSITORY ${DARKNETXX_DXXDD_GIT}
+  GIT_TAG ${DARKNETXX_DXXDD_GIT_TAG}
+)
 
 set(DXXDD_LIBRARIES ${DARKNETXX_DXXDD_PACKAGE}::${DARKNETXX_DXXDD_PACKAGE})
+
+if (NOT TARGET ${DXXDD_LIBRARIES})
+  message(FATAL_ERROR
+    "The darknetxx-datadrivers library made available provides no "
+    "${DXXDD_LIBRARIES} target. Fetch a ${DARKNETXX_DXXDD_PACKAGE} revision "
+    "with -DDARKNETXX_DXXDD_GIT_TAG=<tag>, point the project at an installed "
+    "one with -DCMAKE_PREFIX_PATH=<prefix>, or correct the package name with "
+    "-DDARKNETXX_DXXDD_PACKAGE=<name>.")
+endif()
 
 message(STATUS "darknetxx-datadrivers target: ${DXXDD_LIBRARIES}")
 

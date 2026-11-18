@@ -41,16 +41,18 @@ if (ENABLE_SANITIZERS OR ENABLE_SANITIZERS_THREADS)
   include(darknetxx-sanitizers)
 endif()
 
-# The network weights files, the training projects and their conversion come
-# from the darknetxx-datadrivers library, which is found installed in the
-# system. It is made available before the sources are added, since the object
-# libraries all over the src subtree compile against it (see the enabler).
-include(darknetxx-DarknetxxDataDrivers-enabler)
-
 # The component and the integration tests read the dxxwjz JSON documents the
-# library writes, the nlohmann json library is of no use for the rest of the
-# project (the enabler returns for the option turned OFF).
+# darknetxx-datadrivers library writes, the nlohmann json library is of no use
+# for the rest of the project (the enabler returns for the option turned OFF).
+# Made available first, so a fetched darknetxx-datadrivers builds against it.
 include(darknetxx-nlohmann-json-enabler)
+
+# The network weights files, the training projects and their conversion come
+# from the darknetxx-datadrivers library, the installed one or the one fetched
+# and built along with the project. It is made available before the sources are
+# added, since the object libraries all over the src subtree compile against it
+# (see the enabler).
+include(darknetxx-DarknetxxDataDrivers-enabler)
 include(darknetxx-Qt6-enabler)
 # the GUI binaries of the toolkits found, which the rest take
 include(darknetxx-gui-binaries)

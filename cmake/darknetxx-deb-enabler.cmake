@@ -25,14 +25,16 @@ set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
 # link, into the lib directory the project installs it's own library into - so
 # the package is complete on its own, the way the ImagesAnnotator project packs
 # it's own data libraries. The darknetxxConverter binary of the library comes
-# with the packages of the library itself.
+# with the packages of the library itself. A fetched library is installed by
+# it's own install rules, the darknetxxConverter included, so only a found one
+# is packed here.
 option(
   ENABLE_DEB_DARKNETXX_DATA_DRIVERS
   "Set to ON to pack the darknetxx-datadrivers library the binaries are linked against into the deb package"
   ON
 )
 
-if(ENABLE_DEB_DARKNETXX_DATA_DRIVERS AND DXXDD_LIBRARIES)
+if(ENABLE_DEB_DARKNETXX_DATA_DRIVERS AND ${DARKNETXX_DXXDD_PACKAGE}_FOUND)
   install(
     FILES
       $<TARGET_FILE:${DXXDD_LIBRARIES}>
